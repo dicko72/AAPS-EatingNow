@@ -10,6 +10,7 @@ import info.nightscout.shared.logging.AAPSLogger
 import info.nightscout.androidaps.plugins.aps.openAPSAMA.OpenAPSAMAPlugin
 import info.nightscout.androidaps.plugins.aps.openAPSSMB.OpenAPSSMBPlugin
 import info.nightscout.androidaps.plugins.aps.openAPSSMBDynamicISF.OpenAPSSMBDynamicISFPlugin
+import info.nightscout.androidaps.plugins.aps.EN.ENPlugin
 import info.nightscout.androidaps.plugins.bus.RxBus
 import info.nightscout.androidaps.plugins.configBuilder.ConstraintChecker
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification
@@ -38,6 +39,7 @@ class SafetyPlugin @Inject constructor(
     private val openAPSAMAPlugin: OpenAPSAMAPlugin,
     private val openAPSSMBPlugin: OpenAPSSMBPlugin,
     private val openAPSSMBDynamicISFPlugin: OpenAPSSMBDynamicISFPlugin,
+    private val ENPlugin: ENPlugin,
     private val sensitivityOref1Plugin: SensitivityOref1Plugin,
     private val activePlugin: ActivePlugin,
     private val hardLimits: HardLimits,
@@ -104,7 +106,9 @@ class SafetyPlugin @Inject constructor(
 
     override fun isAdvancedFilteringEnabled(value: Constraint<Boolean>): Constraint<Boolean> {
         val bgSource = activePlugin.activeBgSource
-        if (!bgSource.advancedFilteringSupported()) value.set(aapsLogger, false, rh.gs(R.string.smbalwaysdisabled), this)
+        //if (!bgSource.advancedFilteringSupported()) value.set(aapsLogger, false, rh.gs(R.string.smbalwaysdisabled), this)
+        if (!bgSource.advancedFilteringSupported()) value.set(aapsLogger,true,"SMB Override with all BG sources enabled",this) // SMB always on regardless of bg source
+
         return value
     }
 
@@ -190,12 +194,16 @@ class SafetyPlugin @Inject constructor(
 
     override fun applyMaxIOBConstraints(maxIob: Constraint<Double>): Constraint<Double> {
         val apsMode = sp.getString(R.string.key_aps_mode, "open")
-        val maxIobPref: Double = if (openAPSSMBPlugin.isEnabled() || openAPSSMBDynamicISFPlugin.isEnabled()) sp.getDouble(R.string.key_openapssmb_max_iob, 3.0) else sp.getDouble(R.string
-        .key_openapsma_max_iob, 1.5)
+        val maxIobPref: Double = when {
+            ENPlugin.isEnabled()                                                      -> sp.getDouble( R.string.key_openapssmb_max_iob,3.0)
+            openAPSSMBPlugin.isEnabled() || openAPSSMBDynamicISFPlugin.isEnabled()    -> sp.getDouble( R.string.key_openapssmb_max_iob,3.0)
+            else                                                                                    -> sp.getDouble( R.string.key_openapsma_max_iob,1.5)
+        }
         maxIob.setIfSmaller(aapsLogger, maxIobPref, rh.gs(R.string.limitingiob, maxIobPref, rh.gs(R.string.maxvalueinpreferences)), this)
         if (openAPSAMAPlugin.isEnabled()) maxIob.setIfSmaller(aapsLogger, hardLimits.maxIobAMA(), rh.gs(R.string.limitingiob, hardLimits.maxIobAMA(), rh.gs(R.string.hardlimit)), this)
         if (openAPSSMBPlugin.isEnabled()) maxIob.setIfSmaller(aapsLogger, hardLimits.maxIobSMB(), rh.gs(R.string.limitingiob, hardLimits.maxIobSMB(), rh.gs(R.string.hardlimit)), this)
         if (openAPSSMBDynamicISFPlugin.isEnabled()) maxIob.setIfSmaller(aapsLogger, hardLimits.maxIobSMB(), rh.gs(R.string.limitingiob, hardLimits.maxIobSMB(), rh.gs(R.string.hardlimit)), this)
+        if (ENPlugin.isEnabled()) maxIob.setIfSmaller(aapsLogger, hardLimits.maxIobEN(), String.format(rh.gs(R.string.limitingiob), hardLimits.maxIobEN(), rh.gs(R.string.hardlimit)), this)
         if (apsMode == "lgs") maxIob.setIfSmaller(aapsLogger, HardLimits.MAX_IOB_LGS, rh.gs(R.string.limitingiob, HardLimits.MAX_IOB_LGS, rh.gs(R.string.lowglucosesuspend)), this)
         return maxIob
     }
