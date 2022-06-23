@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "info.nightscout.nsclient2",
+  "variantName": "nsclient2Release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 2,
+      "versionName": "unspecified-nsclient",
+      "outputFile": "wear-nsclient2-release.apk"
+    }
+  ],
+  "elementType": "File"
+}
