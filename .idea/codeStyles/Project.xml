@@ -12,9 +12,15 @@
     <XML>
       <option name="XML_TEXT_WRAP" value="0" />
     </XML>
+    <editorconfig>
+      <option name="ENABLED" value="false" />
+    </editorconfig>
     <codeStyleSettings language="JAVA">
       <option name="METHOD_ANNOTATION_WRAP" value="0" />
       <option name="FIELD_ANNOTATION_WRAP" value="0" />
+    </codeStyleSettings>
+    <codeStyleSettings language="Markdown">
+      <option name="RIGHT_MARGIN" value="500" />
     </codeStyleSettings>
     <codeStyleSettings language="XML">
       <option name="WRAP_ON_TYPING" value="0" />

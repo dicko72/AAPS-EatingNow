@@ -239,10 +239,11 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("EatingNowTimeEnd", sp.getInt(R.string.key_eatingnow_timeend, 17))
         this.profile.put("normal_target_bg", profile.getTargetMgdl().roundToInt())
         this.profile.put("enableGhostCOB", sp.getBoolean(R.string.key_use_ghostcob, false))
-        this.profile.put("COBWindow", sp.getInt(R.string.key_eatingnow_cobboostminutes, 0))
+        //this.profile.put("COBWindow", sp.getInt(R.string.key_eatingnow_cobboostminutes, 0))
 
         // Within the EN Window ********************************************************************************
         this.profile.put("ENWindow", sp.getInt(R.string.key_eatingnow_enwindowminutes, 0))
+        this.profile.put("ENWIOBTrigger", sp.getDouble(R.string.key_eatingnow_enwindowiob, 0.0))
         // Breakfast / first meal
         this.profile.put("BreakfastPct", sp.getInt(R.string.key_eatingnow_breakfastpct, 100))
         this.profile.put("Win_COB_maxBolus_breakfast", sp.getDouble(R.string.key_eatingnow_cobboost_maxbolus_breakfast, 0.0))

@@ -250,6 +250,16 @@
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
+                android:key="@string/key_eatingnow_enwindowiob"
+                android:title="EN Window IOB Trigger"
+                android:dialogMessage="Enable EN Window when IOB is over this threshold in current basal minutes.\n0 will not use this feature and rely on COB or manual bolus entries.\nThe EN Window will remain active until IOB falls below this threshold."
+                validate:floatmaxNumber="120"
+                validate:floatminNumber="0"
+                validate:testType="floatNumericRange"/>
+
+            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:inputType="numberDecimal"
                 android:title="Overnight SMB Restriction"
                 android:key="@string/key_eatingnow_smbbgoffset"
                 android:dialogMessage="There will be no SMB when below this BG offset at night unless COB or a TT lower or equal to normalTarget\ne.g. if normalTarget is 5.5 (99) and this setting is 1.5 (27) there will be no SMB below 7.0 (126)"
