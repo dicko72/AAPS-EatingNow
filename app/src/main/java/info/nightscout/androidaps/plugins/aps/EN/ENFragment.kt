@@ -164,5 +164,6 @@ class ENFragment : DaggerFragment() {
         binding.scriptdebugdata.text = ""
         binding.request.text = ""
         binding.lastrun.text = ""
+        binding.swipeRefresh.isRefreshing = false
     }
 }

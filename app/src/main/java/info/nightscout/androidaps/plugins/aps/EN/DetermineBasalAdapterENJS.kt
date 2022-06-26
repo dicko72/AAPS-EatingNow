@@ -47,8 +47,6 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
     @Inject lateinit var activePlugin: ActivePlugin
     @Inject lateinit var repository: AppRepository
     @Inject lateinit var dateUtil: DateUtil
-    //@Inject lateinit var danaPump: DanaPump
-
 
     private var profile = JSONObject()
     private var mGlucoseStatus = JSONObject()
