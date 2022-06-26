@@ -11,9 +11,9 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 2,
-      "versionName": "unspecified-nsclient",
-      "outputFile": "wear-nsclient-release.apk"
+      "versionCode": 1500,
+      "versionName": "3.1-beta1-nsclient",
+      "outputFile": "220626-6517be61-en-app-nsclient.apk"
     }
   ],
   "elementType": "File"
