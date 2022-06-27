@@ -373,8 +373,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // ENWindowOK is when there is a recent COB entry or manual bolus
     var ENWindowOK = (ENactive && profile.ENWindow > 0 && Math.min(c1Time, cTime ,bTime, b1Time) < profile.ENWindow || (profile.temptargetSet && target_bg <= normalTarget));
     if (!COB && (Math.min(b1Time,bTime) > profile.ENWindow) && !profile.temptargetSet) ENWindowOK = false; // if theres no COB and no recent bolus or TT then close the EN window
-    var ENWIOBTriggerOK = (profile.ENWIOBTrigger > 0 && iob_data.iob > (profile.current_basal * profile.ENWIOBTrigger/60));
-    if (ENactive && ENWIOBTriggerOK) ENWindowOK = true; // If theres enough IOB enable the window
+    var ENWIOBTriggerOK = (ENactive && profile.ENWIOBTrigger > 0 && iob_data.iob > (profile.current_basal * profile.ENWIOBTrigger/60));
+    if (ENWIOBTriggerOK) ENWindowOK = true; // If theres enough IOB enable the window
     var ENWindowRunTime = Math.min(c1Time, cTime, bTime, b1Time);
 
     // breakfast/first meal related vars
