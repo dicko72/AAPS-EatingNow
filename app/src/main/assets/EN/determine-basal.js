@@ -1461,6 +1461,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         //console.error(minPredBG,eventualBG);
         insulinReq = round( (Math.min(minPredBG,eventualBG) - target_bg) / sens_future, 2);
         insulinReqEN = (ENWindowOK ? round(((minPredBG+eventualBG)/2 - target_bg) /sens_future, 2) : insulinReq); // TESTING
+        //sens_future_bg = (Math.max(eventualBG,40) * sens_eBGweight) + (bg * (1-sens_eBGweight));
         // if that would put us over max_iob, then reduce accordingly
         if (insulinReq > max_iob-iob_data.iob) {
             rT.reason += "max_iob " + max_iob + ", ";
