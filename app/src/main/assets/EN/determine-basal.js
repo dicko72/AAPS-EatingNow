@@ -1213,7 +1213,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += (HypoPredBG <=125 && hypo_target <= target_bg ? ", HypoPredBG " + convert_bg(HypoPredBG, profile) + ", HypoTargetBG " + convert_bg(hypo_target, profile) : "");
     rT.reason += ", EN: " + (ENactive ? "Active" : "Inactive");
     rT.reason += (firstMealWindow ? " Breakfast " : "");
-    rT.reason += (ENWindowOK ? " (" + round(ENWindowRunTime)+"/"+profile.ENWindow+"m)" : "");
+    rT.reason += (ENWindowOK && ENWindowRunTime <= profile.ENWindow ? " Window (" + round(ENWindowRunTime)+"/"+profile.ENWindow+"m)" : "");
+    rT.reason += (ENWindowOK && ENWindowRunTime > profile.ENWindow ? " Window" : "");
     rT.reason += (!ENmaxIOBOK ? " IOB" : "");
     rT.reason += (meal_data.mealCOB > 0  ? " COB" : "");
     rT.reason += (profile.temptargetSet ? " TT="+convert_bg(target_bg, profile) : "");
