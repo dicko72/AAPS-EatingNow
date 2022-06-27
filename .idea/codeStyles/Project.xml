@@ -1,7 +1,7 @@
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
     <option name="AUTODETECT_INDENTS" value="false" />
-    <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="true" />
+    <option name="RIGHT_MARGIN" value="800" />
     <JetCodeStyleSettings>
       <option name="ALIGN_IN_COLUMNS_CASE_BRANCH" value="true" />
       <option name="NAME_COUNT_TO_USE_STAR_IMPORT" value="6" />
@@ -16,11 +16,13 @@
       <option name="ENABLED" value="false" />
     </editorconfig>
     <codeStyleSettings language="JAVA">
+      <option name="RIGHT_MARGIN" value="800" />
       <option name="METHOD_ANNOTATION_WRAP" value="0" />
       <option name="FIELD_ANNOTATION_WRAP" value="0" />
+      <option name="WRAP_ON_TYPING" value="0" />
     </codeStyleSettings>
     <codeStyleSettings language="Markdown">
-      <option name="RIGHT_MARGIN" value="500" />
+      <option name="RIGHT_MARGIN" value="800" />
     </codeStyleSettings>
     <codeStyleSettings language="XML">
       <option name="WRAP_ON_TYPING" value="0" />
