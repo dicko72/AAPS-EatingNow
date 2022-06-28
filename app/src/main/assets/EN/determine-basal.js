@@ -1460,10 +1460,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // insulinReq is the additional insulin required to get minPredBG down to target_bg
         //console.error(minPredBG,eventualBG);
         insulinReq = round( (Math.min(minPredBG,eventualBG) - target_bg) / sens_future, 2);
-        var insulinReqEN = insulinReq;
-        //insulinReqEN = (ENWindowOK ? round(((minPredBG+eventualBG)/2 - target_bg) /sens_future, 2) : insulinReq); // TESTING
-        insulinReqEN = (ENWindowOK && sens_eBGweight > 0 ? round( (((minPredBG + (eventualBG * sens_eBGweight))/2 - target_bg) /sens_future, 2) ,2) : insulinReq); // TESTING
-        //sens_future_bg = (Math.max(eventualBG,40) * sens_eBGweight) + (bg * (1-sens_eBGweight));
+        var insulinReqOrig = insulinReq;
+
+        insulinReq = (ENWindowOK ? round( ((minPredBG+eventualBG)/2 - target_bg) /sens_future, 2) : insulinReq); // TESTING
         // if that would put us over max_iob, then reduce accordingly
         if (insulinReq > max_iob-iob_data.iob) {
             rT.reason += "max_iob " + max_iob + ", ";
@@ -1506,8 +1505,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // ============  EATING NOW MODE  ==================== START ===
             var insulinReqPctDefault = 0.65; // this is the default insulinReqPct and maxBolus is respected outside of eating now
             var insulinReqPct = insulinReqPctDefault; // this is the default insulinReqPct and maxBolus is respected outside of eating now
-            var insulinReqOrig = insulinReq;
-            insulinReq = insulinReqEN; // TESTING
             var ENReason = "";
             var ENMaxSMB = maxBolus; // inherit AAPS maxBolus
             var maxBolusOrig = maxBolus;
