@@ -1458,9 +1458,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // insulinReq is the additional insulin required to get minPredBG down to target_bg
         //console.error(minPredBG,eventualBG);
         insulinReq = round( (Math.min(minPredBG,eventualBG) - target_bg) / sens_future, 2);
-        var insulinReqOrig = insulinReq;
+        var insulinReqOrig = insulinReq, minPredBGweight = 0.70;
 
-        insulinReq = (ENWindowOK ? round( ((minPredBG+eventualBG)/2 - target_bg) /sens_future, 2) : insulinReq); // TESTING
+        insulinReq = (ENWindowOK ? ((minPredBG * minPredBGweight) + (eventualBG * (1-minPredBGweight)) - target_bg) / sens_future : insulinReq); // TESTING
+        insulinReq = round(insulinReq,2);
+
         // if that would put us over max_iob, then reduce accordingly
         if (insulinReq > max_iob-iob_data.iob) {
             rT.reason += "max_iob " + max_iob + ", ";
