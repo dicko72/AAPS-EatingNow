@@ -433,7 +433,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // TIR
     var TIR_sens = false;
     if ((meal_data.TIRW2 == 0 || meal_data.TIRW2 < meal_data.TIRW1)  && Math.max(meal_data.TIRW1L, meal_data.TIRW2L) == 0) { // if the 2nd hour TIR window is less in range and there are no lows
-        TIR_sens = true;
+//        TIR_sens = true;
     } //else if (meal_data.TIRW2 < meal_data.TIRW1 )
 
 
