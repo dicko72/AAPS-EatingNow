@@ -1552,7 +1552,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     // prevent SMB when below target for UAM rises Hypo Rebound Protection :)
                     insulinReqPct = (bg < threshold && profile.ENWIOBTrigger == 0 ? 0 : insulinReqPct);
                     ENReason += (insulinReqPct == 0 ? ", HypoSafety Restrict SMB" : "");
-                    ENReason += (iob_data.iob < maxBolus * 0.75 && insulinReqPct != 0  ? ", Low IOB Restrict SMB" : "");
+                    ENReason += (insulinReqPct != 0  && iob_data.iob < maxBolus * 0.75 ? ", Low IOB Restrict SMB" : "");
                     ENMaxSMB = Math.min(maxBolus,ENMaxSMB); // use the most restrictive
                 }
                 // ===================================================
