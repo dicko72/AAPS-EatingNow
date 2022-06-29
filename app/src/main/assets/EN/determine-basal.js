@@ -325,11 +325,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // enable eatingnow if no TT and within safe hours
         if (ENtimeOK) ENactive = true;
         // If there are COB enable eating now
-        if (meal_data.mealCOB >0) ENactive = true;
+        if (COB) ENactive = true;
         // no EN with a TT other than normal target
         if (profile.temptargetSet) ENactive = false;
         if (profile.temptargetSet && target_bg <= normalTarget) ENactive = true;
     }
+
     //ENactive = false; //DEBUG
     enlog += "ENactive: " + ENactive + ", ENtimeOK: " + ENtimeOK+"\n";
     enlog += "ENmaxIOBOK: " + ENmaxIOBOK + ", max_iob: " + max_iob+"\n";
@@ -373,8 +374,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // ENWindowOK is when there is a recent COB entry or manual bolus
     var ENWindowOK = (ENactive && profile.ENWindow > 0 && Math.min(c1Time, cTime ,bTime, b1Time) < profile.ENWindow || (profile.temptargetSet && target_bg <= normalTarget));
     if (!COB && (Math.min(b1Time,bTime) > profile.ENWindow) && !profile.temptargetSet) ENWindowOK = false; // if theres no COB and no recent bolus or TT then close the EN window
-    var ENWIOBTriggerOK = (ENactive && profile.ENWIOBTrigger > 0 && iob_data.iob > (profile.current_basal * profile.ENWIOBTrigger/60));
-    if (ENWIOBTriggerOK) ENWindowOK = true; // If theres enough IOB enable the window
+    var SMBbgOffset = profile.current_basal * profile.ENWIOBTrigger/60, ENWIOBThreshOK = (ENactive && !ENWindowOK && ENWIOBThreshU > 0 && iob_data.iob > ENWIOBThreshU);
+    if (ENWIOBThreshOK) ENWindowOK = true; // If theres enough IOB enable the window
     var ENWindowRunTime = Math.min(c1Time, cTime, bTime, b1Time);
 
     // breakfast/first meal related vars
@@ -545,6 +546,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // Threshold for SMB at night
     var SMBbgOffset = (profile.SMBbgOffset  > 0 ? target_bg+profile.SMBbgOffset : target_bg);
+    var ENSleepMode = !ENactive && !ENtimeOK && bg < SMBbgOffset && !COB;
     enlog += "SMBbgOffset:"+SMBbgOffset+"\n";
 
     // Allow user preferences to adjust the scaling of ISF as BG increases
@@ -1208,17 +1210,24 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (lastUAMpredBG > 0) {
         rT.reason += ", UAMpredBG " + convert_bg(lastUAMpredBG, profile);
     }
-    // extra reason text
-    rT.reason += (HypoPredBG <=125 && hypo_target <= target_bg ? ", HypoPredBG " + convert_bg(HypoPredBG, profile) + ", HypoTargetBG " + convert_bg(hypo_target, profile) : "");
-    rT.reason += ", EN: " + (ENactive ? "Active" : "Inactive");
-    rT.reason += (firstMealWindow ? " Breakfast " : "");
-    rT.reason += (ENWindowOK && ENWindowRunTime <= profile.ENWindow ? " Window (" + round(ENWindowRunTime)+"/"+profile.ENWindow+"m)" : "");
-    rT.reason += (ENWindowOK && ENWindowRunTime > profile.ENWindow ? " Window" : "");
-    rT.reason += (ENWIOBTriggerOK ? " IOB > " + round(profile.current_basal * profile.ENWIOBTrigger/60,2) : "");
-    rT.reason += (!ENmaxIOBOK ? " IOB" : "");
-    rT.reason += (meal_data.mealCOB > 0  ? " COB" : "");
-    rT.reason += (profile.temptargetSet ? " TT="+convert_bg(target_bg, profile) : "");
-    rT.reason += (!ENactive && !ENtimeOK && bg < SMBbgOffset && meal_data.mealCOB==0 ? " No SMB < " + convert_bg(SMBbgOffset,profile) : "");
+
+    // main EN status
+    //rT.reason += (HypoPredBG <=125 && hypo_target <= target_bg ? ", HypoPredBG " + convert_bg(HypoPredBG, profile) + ", HypoTargetBG " + convert_bg(hypo_target, profile) : "");
+    rT.reason += ", EN: ";
+    if (!ENSleepMode) rT.reason += (ENactive ? "On" : "Off");
+    rT.reason += (ENSleepMode ? "Sleep" : "");
+    rT.reason += (ENSleepMode ? " (SMB bg>" + convert_bg(SMBbgOffset,profile) + ")": "");
+    rT.reason += (profile.temptargetSet ? " TT<="+convert_bg(normalTarget, profile) : "");
+    rT.reason += (COB && !profile.temptargetSet ? " COB>0" : "");
+
+    // EN window status
+    rT.reason += ", ENW: ";
+    rT.reason += (ENWindowOK ? "On" : "Off");
+    rT.reason += (firstMealWindow ? " Bkfst" : "");
+    rT.reason += (ENWindowOK && ENWindowRunTime <= profile.ENWindow ? " " + round(ENWindowRunTime)+"/"+profile.ENWindow+"m" : "");
+    rT.reason += (ENWIOBThreshOK ? " IOB>" + round(ENWIOBThreshU,2) : "");
+
+    // other EN stuff
     rT.reason += ", SR: " + (typeof autosens_data !== 'undefined' && autosens_data ? round(autosens_data.ratio,2) + "=": "") + sensitivityRatio;
     rT.reason += ", SR_TDD: " + round(SR_TDD,2);
     rT.reason += ", TDD:" + round(TDD, 2) + " " + (profile.sens_TDD_scale !=100 ? profile.sens_TDD_scale + "% " : "") + "("+convert_bg(sens_TDD, profile)+")";
@@ -1550,7 +1559,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     if (DeltaPct > DeltaPctThreshold && !ENWindowOK) ENReason += ", DeltaPct > " + round(DeltaPctThreshold*100) + "% EN" + (ENWindowOK ? "W" : "") + "-SMB";
                 } else {
                     // prevent SMB when below target for UAM rises Hypo Rebound Protection :)
-                    insulinReqPct = (bg < threshold && profile.ENWIOBTrigger == 0 ? 0 : insulinReqPct);
+                    insulinReqPct = (bg < threshold && ENWIOBThreshU == 0 ? 0 : insulinReqPct);
                     ENReason += (insulinReqPct == 0 ? ", HypoSafety Restrict SMB" : "");
                     ENReason += (insulinReqPct != 0  && iob_data.iob < maxBolus * 0.75 ? ", Low IOB Restrict SMB" : "");
                     ENMaxSMB = Math.min(maxBolus,ENMaxSMB); // use the most restrictive
@@ -1586,7 +1595,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             durationReq = round(60*worstCaseInsulinReq / profile.current_basal);
 
             // Nightmode TBR when below SMBbgOffset with no low TT / no COB
-            if (!ENactive && !ENtimeOK && bg < SMBbgOffset && meal_data.mealCOB==0)  {
+            if (ENSleepMode)  {
                 microBolus = 0;
             }
 
