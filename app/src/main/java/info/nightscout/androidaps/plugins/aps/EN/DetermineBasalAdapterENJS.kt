@@ -244,6 +244,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         // Within the EN Window ********************************************************************************
         this.profile.put("ENWindow", sp.getInt(R.string.key_eatingnow_enwindowminutes, 0))
         this.profile.put("ENWIOBTrigger", sp.getDouble(R.string.key_eatingnow_enwindowiob, 0.0))
+        this.profile.put("ENautostart", sp.getBoolean(R.string.key_enautostart, false))
+
         // Breakfast / first meal
         this.profile.put("BreakfastPct", sp.getInt(R.string.key_eatingnow_breakfastpct, 100))
         this.profile.put("Win_COB_maxBolus_breakfast", sp.getDouble(R.string.key_eatingnow_cobboost_maxbolus_breakfast, 0.0))
