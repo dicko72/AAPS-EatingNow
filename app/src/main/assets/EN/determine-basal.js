@@ -372,11 +372,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var cTime = (( new Date(systemTime).getTime() - meal_data.lastCarbTime) / 60000); // last carb entry after EN start
     var b1Time = (typeof meal_data.firstENBolusTime !== 'undefined' ? (( new Date(systemTime).getTime() - meal_data.firstENBolusTime) / 60000) : 9999); // first normal bolus after EN start
     var bTime = (typeof meal_data.lastENBolusTime !== 'undefined' ? (( new Date(systemTime).getTime() - meal_data.lastENBolusTime) / 60000) : 9999); // last normal bolus after EN start
+    // ENWIOBThreshOK if there is enough IOB to trigger the EN window
+    var ENWIOBThreshU = profile.current_basal * profile.ENWIOBTrigger/60, ENWIOBThreshOK = (ENactive && ENWIOBThreshU > 0 && iob_data.iob > ENWIOBThreshU);
     // ENWindowOK is when there is a recent COB entry or manual bolus
-    var ENWindowOK = (ENactive && profile.ENWindow > 0 && Math.min(c1Time, cTime ,bTime, b1Time) < profile.ENWindow || (profile.temptargetSet && target_bg <= normalTarget));
-    if (!COB && (Math.min(b1Time,bTime) > profile.ENWindow) && !profile.temptargetSet) ENWindowOK = false; // if theres no COB and no recent bolus or TT then close the EN window
-    var ENWIOBThreshU = profile.current_basal * profile.ENWIOBTrigger/60, ENWIOBThreshOK = (ENactive && !ENWindowOK && ENWIOBThreshU > 0 && iob_data.iob > ENWIOBThreshU);
-    if (ENWIOBThreshOK) ENWindowOK = true; // If theres enough IOB enable the window
+    var ENWindowOK = (ENactive && profile.ENWindow > 0 && Math.min(c1Time, cTime ,bTime, b1Time) < profile.ENWindow || (profile.temptargetSet && target_bg <= normalTarget) || ENWIOBThreshOK);
+    if (!COB && (Math.min(b1Time,bTime) > profile.ENWindow) && !profile.temptargetSet && !ENWIOBThreshOK) ENWindowOK = false; // if theres no COB and no recent bolus or TT then close the EN window
+
     var ENWindowRunTime = Math.min(c1Time, cTime, bTime, b1Time);
 
     // breakfast/first meal related vars
