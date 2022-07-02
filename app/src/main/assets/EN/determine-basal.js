@@ -436,10 +436,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     ins_val = (ins_peak < 60 ? (ins_val-ins_peak)+30 : (ins_val-ins_peak)+40);
     enlog += "insulinType is " + insulinType + ", ins_val is " + ins_val + ", ins_peak is " + ins_peak+"\n";
 
-    // TIR
-    var TIR_sens = false;
+    // TIR_sens - Low -1, Normal 0, High 1
+    var TIR_sens = 0;
     if ((meal_data.TIRW2 == 0 || meal_data.TIRW2 < meal_data.TIRW1)  && Math.max(meal_data.TIRW1L, meal_data.TIRW2L) == 0) { // if the 2nd hour TIR window is less in range and there are no lows
-//        TIR_sens = true;
+        TIR_sens = 1;
     } //else if (meal_data.TIRW2 < meal_data.TIRW1 )
 
 
@@ -447,7 +447,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // Limit ISF increase for sens_currentBG at 10mmol / 180mgdl
     var ISFbgMax = 180;
     // lets try TIR_sens with ISFbgMax
-    ISFbgMax = (TIR_sens ? Math.max(ISFbgMax,bg) : ISFbgMax);
+    ISFbgMax = (TIR_sens == 1 ? Math.max(ISFbgMax,bg) : ISFbgMax);
     enlog += "ISFbgMax:"+convert_bg(ISFbgMax, profile)+"\n";
 
     // ISF at normal target
@@ -1238,8 +1238,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += ", TDD:" + round(TDD, 2) + " " + (profile.sens_TDD_scale !=100 ? profile.sens_TDD_scale + "% " : "") + "("+convert_bg(sens_TDD, profile)+")";
     //rT.reason += ", TIRW1:" + round(meal_data.TIRW1H, 2) + "/" + round(meal_data.TIRW1, 2) + "/"+ round(meal_data.TIRW1L, 2);
     //rT.reason += ", TIRW2:" + round(meal_data.TIRW2H, 2) + "/" + round(meal_data.TIRW2, 2) + "/"+ round(meal_data.TIRW2L, 2);
-    rT.reason += ", TIRW1v2:" + round(meal_data.TIRW1, 2) + "/" + round(meal_data.TIRW2, 2);
-    rT.reason += (TIR_sens ? ", TIRS: " + convert_bg(ISFbgMax, profile) : "");
+    rT.reason += ", TIRH1v2:" + round(meal_data.TIRW1H, 2) + "/" + round(meal_data.TIRW2H, 2);
+    rT.reason += (TIR_sens && bg == ISFbgMax ? ", TIRS: " + convert_bg(ISFbgMax, profile) : "");
     rT.reason += "; ";
     rT.reason = esc_text(rT.reason);
 
