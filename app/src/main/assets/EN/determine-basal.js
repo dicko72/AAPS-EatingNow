@@ -1229,7 +1229,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += (ENWindowOK ? "On" : "Off");
     rT.reason += (firstMealWindow ? " Bkfst" : "");
     rT.reason += (ENWindowOK && ENWindowRunTime <= profile.ENWindow ? " " + round(ENWindowRunTime)+"/"+profile.ENWindow+"m" : "");
-    rT.reason += (!ENWTriggerOK && ENWIOBThreshU > 0 ? " IOB&lt;" + round(ENWIOBThreshU,2) : "");
+    rT.reason += (!ENWTriggerOK && ENWIOBThreshU > 0 && !ENSleepMode ? " IOB&lt;" + round(ENWIOBThreshU,2) : "");
 
     // other EN stuff
     rT.reason += ", SR: " + (typeof autosens_data !== 'undefined' && autosens_data ? round(autosens_data.ratio,2) + "=": "") + sensitivityRatio;
