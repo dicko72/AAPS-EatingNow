@@ -16,12 +16,6 @@
 
 //var round_basal = require('../round-basal')
 
-// Escape the text for < &lt; & > &gt;
-function esc_text(text)
-{
-    return (text.replace("<", "&lt;").replace(">", "&gt;").replace("+B+", "<b>").replace("-B-", "</b>"));
-}
-
 // Fix the round_basal issue?
 function round_basal(basal, profile)
 {
@@ -181,7 +175,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             return rT;
             //return tempBasalFunctions.setTempBasal(0, 30, profile, rT, currenttemp);
         } else { //do nothing.
-            rT.reason += esc_text(". Temp " + round(currenttemp.rate,2) + " <= current basal " + basal + "U/hr; doing nothing. ");
+            rT.reason += ". Temp " + round(currenttemp.rate,2) + " &lt;= current basal " + basal + "U/hr; doing nothing. ";
             return rT;
         }
     }
@@ -1227,8 +1221,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (!ENSleepMode) rT.reason += (ENactive ? "On" : "Off");
     rT.reason += (ENSleepMode ? "Sleep" : "");
     rT.reason += (ENSleepMode ? " (SMB bg>" + convert_bg(SMBbgOffset,profile) + ")": "");
-    rT.reason += (profile.temptargetSet ? " TT<="+convert_bg(normalTarget, profile) : "");
-    rT.reason += (COB && !profile.temptargetSet && !ENWindowOK ? " COB>0" : "");
+    rT.reason += (profile.temptargetSet ? " TT&lt="+convert_bg(normalTarget, profile) : "");
+    rT.reason += (COB && !profile.temptargetSet && !ENWindowOK ? " COB&gt;0" : "");
 
     // EN window status
     rT.reason += ", ENW: ";
@@ -1245,7 +1239,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += ", TIRW2:" + round(meal_data.TIRW2H) + "/"+ round(meal_data.TIRW2L);
     rT.reason += ", TIRS: " + TIR_sens;
     rT.reason += "; ";
-    rT.reason = esc_text(rT.reason);
 
     // use naive_eventualBG if above 40, but switch to minGuardBG if both eventualBGs hit floor of 39
     var carbsReqBG = naive_eventualBG;
@@ -1295,7 +1288,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
     if ( maxDelta > 0.30 * bg ) {
         console.error("maxDelta",convert_bg(maxDelta, profile),"> 30% of BG",convert_bg(bg, profile),"- disabling SMB");
-        rT.reason += esc_text("maxDelta "+convert_bg(maxDelta, profile)+" > 30% of BG "+convert_bg(bg, profile)+": SMB disabled; ");
+        rT.reason += "maxDelta "+convert_bg(maxDelta, profile)+" &gt; 30% of BG "+convert_bg(bg, profile)+": SMB disabled; ";
         enableSMB = false;
     }
 
@@ -1329,11 +1322,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // don't low glucose suspend if IOB is already super negative and BG is rising faster than predicted
     if (bg < threshold && iob_data.iob < -profile.current_basal*20/60 && minDelta > 0 && minDelta > expectedDelta) {
         rT.reason += "IOB "+iob_data.iob+" < " + round(-profile.current_basal*20/60,2);
-        rT.reason += " and minDelta " + convert_bg(minDelta, profile) + " > " + "expectedDelta " + convert_bg(expectedDelta, profile) + "; ";
-        rT.reason = esc_text(rT.reason);
+        rT.reason += " and minDelta " + convert_bg(minDelta, profile) + " &gt; " + "expectedDelta " + convert_bg(expectedDelta, profile) + "; ";
     // predictive low glucose suspend mode: BG is / is projected to be < threshold
     } else if ( bg < threshold || minGuardBG < threshold ) {
-        rT.reason += esc_text("minGuardBG " + convert_bg(minGuardBG, profile) + "<" + convert_bg(threshold, profile));
+        rT.reason += "minGuardBG " + convert_bg(minGuardBG, profile) + "&lt;" + convert_bg(threshold, profile);
         bgUndershoot = target_bg - minGuardBG;
         var worstCaseInsulinReq = bgUndershoot / sens;
         var durationReq = round(60*worstCaseInsulinReq / profile.current_basal);
@@ -1351,18 +1343,18 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     if (eventualBG < min_bg) { // if eventual BG is below target:
-        rT.reason += esc_text("Eventual " + (sens_predType !="BGL" ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " < " + convert_bg(min_bg, profile));
+        rT.reason += "Eventual " + (sens_predType !="BGL" ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &lt; " + convert_bg(min_bg, profile);
         // if 5m or 30m avg BG is rising faster than expected delta
         if ( minDelta > expectedDelta && minDelta > 0 && !carbsReq ) {
             // if naive_eventualBG < 40, set a 30m zero temp (oref0-pump-loop will let any longer SMB zero temp run)
             if (naive_eventualBG < 40) {
-                rT.reason += esc_text(", naive_eventualBG < 40. ");
+                rT.reason += ", naive_eventualBG &lt; 40. ";
                 return tempBasalFunctions.setTempBasal(0, 30, profile, rT, currenttemp);
             }
             if (glucose_status.delta > minDelta) {
-                rT.reason += esc_text(", but Delta " + convert_bg(tick, profile) + " > expectedDelta " + convert_bg(expectedDelta, profile));
+                rT.reason += ", but Delta " + convert_bg(tick, profile) + " &gt; expectedDelta " + convert_bg(expectedDelta, profile);
             } else {
-                rT.reason += esc_text(", but Min. Delta " + minDelta.toFixed(2) + " > Exp. Delta " + convert_bg(expectedDelta, profile));
+                rT.reason += ", but Min. Delta " + minDelta.toFixed(2) + " &gt; Exp. Delta " + convert_bg(expectedDelta, profile);
             }
             if (currenttemp.duration > 15 && (round_basal(basal, profile) === round_basal(currenttemp.rate, profile))) {
                 rT.reason += ", temp " + round(currenttemp.rate,2) + " ~ req " + basal + "U/hr. ";
@@ -1400,7 +1392,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             return tempBasalFunctions.setTempBasal(rate, 30, profile, rT, currenttemp);
         }
         if (typeof currenttemp.rate !== 'undefined' && (currenttemp.duration > 5 && rate >= currenttemp.rate * 0.8)) {
-            rT.reason += esc_text(", temp " + round(currenttemp.rate,2) + " ~< req " + rate + "U/hr. ");
+            rT.reason += ", temp " + round(currenttemp.rate,2) + " ~&lt; req " + rate + "U/hr. ";
             return rT;
         } else {
             // calculate a long enough zero temp to eventually correct back up to target
@@ -1432,9 +1424,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // if in SMB mode, don't cancel SMB zero temp
         if (! (microBolusAllowed && enableSMB)) {
             if (glucose_status.delta < minDelta) {
-                rT.reason += esc_text("Eventual " + (sens_predType !="BGL" ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " > " + convert_bg(min_bg, profile) + " but Delta " + convert_bg(tick, profile) + " < Exp. Delta " + convert_bg(expectedDelta, profile));
+                rT.reason += "Eventual " + (sens_predType !="BGL" ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &gt; " + convert_bg(min_bg, profile) + " but Delta " + convert_bg(tick, profile) + " &lt; Exp. Delta " + convert_bg(expectedDelta, profile);
             } else {
-                rT.reason += esc_text("Eventual " + (sens_predType !="BGL" ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " > " + convert_bg(min_bg, profile) + " but Min. Delta " + minDelta.toFixed(2) + " < Exp. Delta " + convert_bg(expectedDelta, profile));
+                rT.reason += "Eventual " + (sens_predType !="BGL" ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &gt; " + convert_bg(min_bg, profile) + " but Min. Delta " + minDelta.toFixed(2) + " &lt; Exp. Delta " + convert_bg(expectedDelta, profile);
             }
             if (currenttemp.duration > 15 && (round_basal(basal, profile) === round_basal(currenttemp.rate, profile))) {
                 rT.reason += ", temp " + round(currenttemp.rate,2) + " ~ req " + basal + "U/hr. ";
@@ -1463,10 +1455,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // eventual BG is at/above target
     // if iob is over max, just cancel any temps
     if ( eventualBG >= max_bg ) {
-        rT.reason += esc_text("Eventual " + (sens_predType !="BGL" ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " >= " +  convert_bg(max_bg, profile) + ", ");
+        rT.reason += "Eventual " + (sens_predType !="BGL" ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &gt;= " +  convert_bg(max_bg, profile) + ", ";
     }
     if (iob_data.iob > max_iob) {
-        rT.reason += esc_text("IOB " + round(iob_data.iob,2) + " > max_iob " + max_iob);
+        rT.reason += "IOB " + round(iob_data.iob,2) + " &gt; max_iob " + max_iob;
         if (currenttemp.duration > 15 && (round_basal(basal, profile) === round_basal(currenttemp.rate, profile))) {
             rT.reason += ", temp " + round(currenttemp.rate,2) + " ~ req " + basal + "U/hr. ";
             return rT;
@@ -1569,7 +1561,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if ((DeltaPct > DeltaPctThreshold && iob_data.iob > maxBolus * 0.75) || sens_predType == "COB" || ENWindowOK) {
                     insulinReqPct = insulinReqPct;
                     ENMaxSMB = ENMaxSMB;
-                    if (DeltaPct > DeltaPctThreshold && !ENWindowOK) ENReason += ", DeltaPct > " + round(DeltaPctThreshold*100) + "% EN" + (ENWindowOK ? "W" : "") + "-SMB";
+                    if (DeltaPct > DeltaPctThreshold && !ENWindowOK) ENReason += ", DeltaPct &gt; " + round(DeltaPctThreshold*100) + "% EN" + (ENWindowOK ? "W" : "") + "-SMB";
                 } else {
                     // prevent SMB when below target for UAM rises Hypo Rebound Protection :)
                     insulinReqPct = (bg < threshold && ENWIOBThreshU == 0 ? 0 : insulinReqPct); // disable SMB when below target and no intent to use auto EN window trigger
@@ -1639,7 +1631,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             }
             rT.reason += ". ";
             rT.reason += ENReason;
-            rT.reason = esc_text(rT.reason) + ". ";
+            rT.reason += ". ";
 
             //allow SMBs every 3 minutes by default
             var SMBInterval = 3;
@@ -1679,7 +1671,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         insulinScheduled = currenttemp.duration * (currenttemp.rate - basal) / 60;
         if (insulinScheduled >= insulinReq * 2) { // if current temp would deliver >2x more than the required insulin, lower the rate
-            rT.reason += esc_text(currenttemp.duration + "m@" + (currenttemp.rate).toFixed(2) + " > 2 * insulinReq. Setting temp basal of " + rate + "U/hr. ");
+            rT.reason += currenttemp.duration + "m@" + (currenttemp.rate).toFixed(2) + " &gt; 2 * insulinReq. Setting temp basal of " + rate + "U/hr. ";
             return tempBasalFunctions.setTempBasal(rate, 30, profile, rT, currenttemp);
         }
 
@@ -1689,12 +1681,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
 
         if (currenttemp.duration > 5 && (round_basal(rate, profile) <= round_basal(currenttemp.rate, profile))) { // if required temp <~ existing temp basal
-            rT.reason += esc_text("temp " + round(currenttemp.rate,2) + " >~ req " + rate + "U/hr. ");
+            rT.reason += "temp " + round(currenttemp.rate,2) + " &gt;~ req " + rate + "U/hr. ";
             return rT;
         }
 
         // required temp > existing temp basal
-        rT.reason += esc_text("temp " + round(currenttemp.rate,2) + " < " + rate + "U/hr. ");
+        rT.reason += "temp " + round(currenttemp.rate,2) + " &lt; " + rate + "U/hr. ";
         return tempBasalFunctions.setTempBasal(rate, 30, profile, rT, currenttemp);
     }
 
