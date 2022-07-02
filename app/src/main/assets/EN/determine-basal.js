@@ -436,19 +436,23 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     ins_val = (ins_peak < 60 ? (ins_val-ins_peak)+30 : (ins_val-ins_peak)+40);
     enlog += "insulinType is " + insulinType + ", ins_val is " + ins_val + ", ins_peak is " + ins_peak+"\n";
 
-    // TIR_sens - Low -1, Normal 0, High 1
-    var TIR_sens = 0;
-    if ((meal_data.TIRW2 == 0 || meal_data.TIRW2 < meal_data.TIRW1)  && Math.max(meal_data.TIRW1L, meal_data.TIRW2L) == 0) { // if the 2nd hour TIR window is less in range and there are no lows
-        TIR_sens = 1;
-    } //else if (meal_data.TIRW2 < meal_data.TIRW1 )
-
-
     enlog += "* advanced ISF:\n";
     // Limit ISF increase for sens_currentBG at 10mmol / 180mgdl
     var ISFbgMax = 180;
-    // lets try TIR_sens with ISFbgMax
-    ISFbgMax = (TIR_sens == 1 ? Math.max(ISFbgMax,bg) : ISFbgMax);
     enlog += "ISFbgMax:"+convert_bg(ISFbgMax, profile)+"\n";
+
+    // TIR_sens - Low -1, Normal 0, High 1
+    var TIR_sens = 0;
+    enlog += "* TIR_sens:\n";
+    if ((meal_data.TIRW2 == 0 || meal_data.TIRW2 < meal_data.TIRW1)  && Math.max(meal_data.TIRW1L, meal_data.TIRW2L) == 0) { // if the 2nd hour TIR window is less in range and there are no lows
+        TIR_sens = 1;
+        ISFbgMax = Math.max(ISFbgMax,bg);
+        enlog += "Higher TIRW2 detected, ISFbgMax may adjust to higher current bg"+"\n";
+    } else if (meal_data.TIRW2 < meal_data.TIRW1 && meal_data.TIRW2L > meal_data.TIRW1L) {
+        TIR_sens = -1;
+        ins_val = target_bg;
+        enlog += "Lower TIRW2 detected, ins_val adjusted to target_bg"+"\n";
+    }
 
     // ISF at normal target
     var sens_normalTarget = sens, sens_profile = sens; // use profile sens and keep profile sens with any SR
@@ -566,8 +570,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // sens_target_bg is used like a target, when the number is lower the ISF scaling is stronger
     // for delta > 4 and 105% change from short_avg or within COB window MAX 45 mins use lower target for ISF scaling
-    // for all times when EN time is OK use 20% higher target for less ISF scaling
-    var sens_target_bg = (ENWindowOK || bg > SMBbgOffset ? ins_val : ins_val * 1.2);
+    // for all times when EN time is OK use 20% higher target for less ISF scaling - TIR_sens replaces this
+    //var sens_target_bg = (ENWindowOK || bg > SMBbgOffset ? ins_val : ins_val * 1.2);
+    var sens_target_bg = ins_val;
     // only allow adjusted ISF target when eatingnow time is OK and bg below ISFbgMax, dont use at night
     sens_target_bg = (ENactive ? sens_target_bg : target_bg);
     var sens_BGscaler = (Math.log(Math.min(bg,ISFbgMax)/sens_target_bg)+1);
@@ -1236,10 +1241,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += ", SR: " + (typeof autosens_data !== 'undefined' && autosens_data ? round(autosens_data.ratio,2) + "=": "") + sensitivityRatio;
     rT.reason += ", SR_TDD: " + round(SR_TDD,2);
     rT.reason += ", TDD:" + round(TDD, 2) + " " + (profile.sens_TDD_scale !=100 ? profile.sens_TDD_scale + "% " : "") + "("+convert_bg(sens_TDD, profile)+")";
-    //rT.reason += ", TIRW1:" + round(meal_data.TIRW1H, 2) + "/" + round(meal_data.TIRW1, 2) + "/"+ round(meal_data.TIRW1L, 2);
-    //rT.reason += ", TIRW2:" + round(meal_data.TIRW2H, 2) + "/" + round(meal_data.TIRW2, 2) + "/"+ round(meal_data.TIRW2L, 2);
-    rT.reason += ", TIRH1v2:" + round(meal_data.TIRW1H, 2) + "/" + round(meal_data.TIRW2H, 2);
-    rT.reason += (TIR_sens && bg == ISFbgMax ? ", TIRS: " + convert_bg(ISFbgMax, profile) : "");
+    rT.reason += ", TIRW1:" + round(meal_data.TIRW1H) + "/" + round(meal_data.TIRW1L);
+    rT.reason += ", TIRW2:" + round(meal_data.TIRW2H) + "/"+ round(meal_data.TIRW2L);
+    rT.reason += ", TIRS: " + TIR_sens;
     rT.reason += "; ";
     rT.reason = esc_text(rT.reason);
 
