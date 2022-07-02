@@ -446,7 +446,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "* TIR_sens:\n";
     if ((meal_data.TIRW2 == 0 || meal_data.TIRW2 < meal_data.TIRW1)  && Math.max(meal_data.TIRW1L, meal_data.TIRW2L) == 0) { // if the 2nd hour TIR window is less in range and there are no lows
         TIR_sens = 1;
-        ISFbgMax = Math.max(ISFbgMax,bg);
+        ISFbgMax = Math.max(ISFbgMax,bg*0.9);
         enlog += "Higher TIRW2 detected, ISFbgMax may adjust to higher current bg"+"\n";
     } else if (meal_data.TIRW2 < meal_data.TIRW1 && meal_data.TIRW2L > meal_data.TIRW1L && !firstMealWindow) {
         TIR_sens = -1;
