@@ -1472,7 +1472,22 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         //console.error(minPredBG,eventualBG);
         insulinReq = round( (Math.min(minPredBG,eventualBG) - target_bg) / sens_future, 2);
         var insulinReqOrig = insulinReq;
-        var minPredBGweight = (ENWindowOK && bg < ISFbgMax ? 0.50 : 1);
+        var minPredBGweight = 1;
+
+        // evaluate prediction type and weighting similar to sens_eBGweight
+        if (ENWindowOK && bg < ISFbgMax) {
+            if (sens_predType == "UAM") {
+                minPredBGweight = 0.50;
+                minPredBGweight = (delta > 4 && DeltaPct > 1 && !COB ? 0.35 : minPredBGweight); // rising and accelerating
+            }
+//            if (sens_predType == "COB") {
+//                minPredBGweight = 0.50;
+//                minPredBGweight = (delta >=6 && DeltaPct > 1 ? 0.75 : minPredBGweight); // rising faster
+//            }
+//            if (sens_predType == "BGL") {
+//                minPredBGweight = 0.50; // small delta
+//            }
+        }
 
         insulinReq = ((minPredBG * minPredBGweight) + (eventualBG * (1-minPredBGweight)) - target_bg) / sens_future; // TESTING
         insulinReq = round(insulinReq,2);
