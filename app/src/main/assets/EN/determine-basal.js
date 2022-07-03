@@ -1474,7 +1474,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         var insulinReqOrig = insulinReq;
         var minPredBGweight = (ENWindowOK && bg < ISFbgMax ? 0.50 : 1);
 
-        insulinReq = (ENWindowOK ? ((minPredBG * minPredBGweight) + (eventualBG * (1-minPredBGweight)) - target_bg) / sens_future : insulinReq); // TESTING
+        insulinReq = ((minPredBG * minPredBGweight) + (eventualBG * (1-minPredBGweight)) - target_bg) / sens_future; // TESTING
         insulinReq = round(insulinReq,2);
 
         // if that would put us over max_iob, then reduce accordingly
