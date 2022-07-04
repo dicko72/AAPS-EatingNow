@@ -492,10 +492,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     } else {
         sensitivityRatio = (ENtimeOK && profile.enableSRTDD ? SR_TDD : 1);
         sensitivityRatio = (!profile.enableSRTDD && typeof autosens_data !== 'undefined' && autosens_data ? autosens_data.ratio : sensitivityRatio);
+        SensitivityRatio = (SensitivityRatio == 1 ? TIR_sens : SensitivityRatio); // TIR sensitivity TESTING
         if (sensitivityRatio > 1) {
             sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
-            //sensitivityRatio = (lastNormalCarbAge > 480 && !ENtimeOK ? 1 : sensitivityRatio); // set SR to 1 if no recent carbs (UAM) and its night time
-            sensitivityRatio = (!profile.enableSRTDD ? 1 : sensitivityRatio);
+            sensitivityRatio = (!profile.enableSRTDD ? TIR_sens : sensitivityRatio);
             sensitivityRatio = round(sensitivityRatio,2);
             enlog += "Sensitivity ratio >1 is now: "+sensitivityRatio+";\n";
         } else if (sensitivityRatio < 1) {
