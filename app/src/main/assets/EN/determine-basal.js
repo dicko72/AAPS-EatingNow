@@ -1485,10 +1485,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 minPredBGweight = 0.50;
                 minPredBGweight = (delta > 4 && DeltaPct > 1 && !COB ? 0.35 : minPredBGweight); // rising and accelerating
             }
-//            if (sens_predType == "COB") {
-//                minPredBGweight = 0.50;
-//                minPredBGweight = (delta >=6 && DeltaPct > 1 ? 0.75 : minPredBGweight); // rising faster
-//            }
+            if (sens_predType == "COB") {
+                minPredBGweight = 0.50;
+                //minPredBGweight = (delta >=6 && DeltaPct > 1 ? 0.50 : minPredBGweight); // rising faster and accelerating
+            }
 //            if (sens_predType == "BGL") {
 //                minPredBGweight = 0.50; // small delta
 //            }
