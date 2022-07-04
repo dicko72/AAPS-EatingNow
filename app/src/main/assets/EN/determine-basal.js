@@ -442,7 +442,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (meal_data.TIRW2H > 75 && TIR_sens == 1) TIR_sens += 1; //10%
     if (meal_data.TIRW3H > 75 && TIR_sens == 2) TIR_sens += 1; //15%
     if (meal_data.TIRW4H > 75 && TIR_sens == 3) TIR_sens += 1; //20%
-    TIR_sens *= 0.05;
+    TIR_sens = 1 + (TIR_sens*0.05);
 
     /*
     if ((meal_data.TIRW2 == 0 || meal_data.TIRW2 < meal_data.TIRW1)  && Math.max(meal_data.TIRW1L, meal_data.TIRW2L) == 0) { // if the 2nd hour TIR window is less in range and there are no lows
@@ -492,10 +492,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     } else {
         sensitivityRatio = (ENtimeOK && profile.enableSRTDD ? SR_TDD : 1);
         sensitivityRatio = (!profile.enableSRTDD && typeof autosens_data !== 'undefined' && autosens_data ? autosens_data.ratio : sensitivityRatio);
+        SensitivityRatio = (SensitivityRatio == 1 ? TIR_sens : SensitivityRatio); // TIR sensitivity TESTING
         if (sensitivityRatio > 1) {
             sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
-            //sensitivityRatio = (lastNormalCarbAge > 480 && !ENtimeOK ? 1 : sensitivityRatio); // set SR to 1 if no recent carbs (UAM) and its night time
-            sensitivityRatio = (!profile.enableSRTDD ? 1 : sensitivityRatio);
+            sensitivityRatio = (!profile.enableSRTDD ? TIR_sens : sensitivityRatio);
             sensitivityRatio = round(sensitivityRatio,2);
             enlog += "Sensitivity ratio >1 is now: "+sensitivityRatio+";\n";
         } else if (sensitivityRatio < 1) {
