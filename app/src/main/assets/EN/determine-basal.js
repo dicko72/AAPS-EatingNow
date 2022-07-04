@@ -492,8 +492,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     } else {
         sensitivityRatio = (ENtimeOK && profile.enableSRTDD ? SR_TDD : 1);
         sensitivityRatio = (!profile.enableSRTDD && typeof autosens_data !== 'undefined' && autosens_data ? autosens_data.ratio : sensitivityRatio);
-        sensitivityRatio = (sensitivityRatio == 1 ? TIR_sens : sensitivityRatio); // TIR sensitivity
-         TESTING
+        sensitivityRatio = (sensitivityRatio == 1 ? TIR_sens : sensitivityRatio); // TIR sensitivity TESTING
         if (sensitivityRatio > 1) {
             sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
             sensitivityRatio = (!profile.enableSRTDD ? TIR_sens : sensitivityRatio);
