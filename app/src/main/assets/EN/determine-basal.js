@@ -1486,7 +1486,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         var minPredBGweight = 1;
 
         // evaluate prediction type and weighting similar to sens_eBGweight
-        if (bg < ISFbgMax) {
+        if (ENtimeOK && bg < ISFbgMax) {
             if (sens_predType == "UAM") {
                 minPredBGweight = 0.50;
                 minPredBGweight = (delta > 4 && DeltaPct > 1 && !COB ? 0.35 : minPredBGweight); // rising and accelerating
