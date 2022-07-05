@@ -1483,7 +1483,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         //console.error(minPredBG,eventualBG);
         insulinReq = round( (Math.min(minPredBG,eventualBG) - target_bg) / sens_future, 2);
         var insulinReqOrig = insulinReq;
-        var minPredBGweight = 1;
+        var minPredBGweight = (ENactive ? 0.65 : 1);
 
         // evaluate prediction type and weighting similar to sens_eBGweight
         if (ENWindowOK && bg < ISFbgMax) {
