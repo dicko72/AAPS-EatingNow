@@ -402,7 +402,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var carb_ratio = (firstMealScaling ? round(profile.carb_ratio_midnight/(profile.BreakfastPct/100),1) : profile.carb_ratio);
     sens = (firstMealScaling ? round(profile.sens_midnight/(profile.BreakfastPct/100),1) : sens);
 
-    enlog += "ENTime: " + ENTime + ", firstMealWindow: "+ firstMealWindow + ", firstMealScaling: "+ firstMealScaling + ", b1Time:" +b1Time+", c1Time:" +c1Time+ ", bTime:" +bTime+ ", cTime:" +cTime+", ENWindowOK:" + ENWindowOK+"\n";
+    enlog += "ENTime: " + ENTime + ", firstMealWindow: "+ firstMealWindow + ", firstMealScaling: "+ firstMealScaling + ", b1Time:" +b1Time+", c1Time:" +c1Time+ ", tt1Time:"+tt1Time+", bTime:" +bTime+ ", cTime:" +cTime+", ENWindowOK:" + ENWindowOK+"\n";
     // If GhostCOB is enabled we will use COB when ENWindowOK but outside this window UAM will be used
     if (ignoreCOB && ENWindowOK && meal_data.mealCOB > 0 ) ignoreCOB = false;
 
