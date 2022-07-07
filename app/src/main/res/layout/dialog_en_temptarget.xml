@@ -23,7 +23,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:importantForAccessibility="no"
-                app:srcCompat="@drawable/ic_target_eatingsoon" />
+                app:srcCompat="@drawable/ic_temptarget_high" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -66,7 +66,6 @@
                 android:layout_width="130dp"
                 android:layout_height="40dp"
                 android:layout_marginBottom="2dp"
-                android:visibility="invisible"
                 app:customContentDescription="@string/target_label" />
 
             <TextView
