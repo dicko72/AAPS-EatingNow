@@ -323,6 +323,10 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.mealData.put("firstENBolusTime",firstENBolusTime)
         this.mealData.put("firstENBolusUnits",firstENBolusUnits)
 
+        // get the FIRST EN TT time since EN activation
+        val firstENTempTargetTime = repository.getENTemporaryTargetDataFromTime(ENStartTime,true).blockingGet().lastOrNull()?.timestamp
+        this.mealData.put("firstENTempTargetTime",firstENTempTargetTime)
+
         // get the LAST bolus time since EN activation
         val lastENBolusTime = repository.getBolusFromTimeOfType(ENStartTime,false, Bolus.Type.NORMAL ).blockingGet().lastOrNull()?.timestamp
         val lastENBolusUnits = repository.getBolusFromTimeOfType(ENStartTime,false, Bolus.Type.NORMAL ).blockingGet().lastOrNull()?.amount

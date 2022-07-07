@@ -149,6 +149,12 @@ import kotlin.math.roundToInt
             .map { if (!ascending) it.reversed() else it }
             .subscribeOn(Schedulers.io())
 
+    // Eating Now: Get the first EN TT since EN start time
+    fun getENTemporaryTargetDataFromTime(timestamp: Long, ascending: Boolean): Single<List<TemporaryTarget>> =
+        database.temporaryTargetDao.getENTemporaryTargetDataFromTime(timestamp, TemporaryTarget.Reason.EATING_NOW)
+            .map { if (!ascending) it.reversed() else it }
+            .subscribeOn(Schedulers.io())
+
     fun getTemporaryTargetDataIncludingInvalidFromTime(timestamp: Long, ascending: Boolean): Single<List<TemporaryTarget>> =
         database.temporaryTargetDao.getTemporaryTargetDataIncludingInvalidFromTime(timestamp)
             .map { if (!ascending) it.reversed() else it }
@@ -454,7 +460,7 @@ import kotlin.math.roundToInt
             .map { if (!ascending) it.reversed() else it }
             .subscribeOn(Schedulers.io())
 
-    // EN: Get the first bolus since EN Start
+    // Eating Now: Get the first bolus since EN Start
     fun getBolusFromTimeOfType(timestamp: Long, ascending: Boolean, type: Bolus.Type): Single<List<Bolus>> =
         database.bolusDao.getBolusesFromTimeOfType(type, timestamp)
             .map { if (!ascending) it.reversed() else it }
