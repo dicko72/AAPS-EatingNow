@@ -133,8 +133,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         // binding.temptarget.value =  profileFunction.getProfile()!!.getTargetMgdl()
         binding.temptarget.value = Profile.toCurrentUnits(units,profileFunction.getProfile()!!.getTargetMgdl())
         binding.duration.value = defaultValueHelper.determineEatingNowTTDuration().toDouble()
-        binding.reasonList.setText("Eating Now")
-        // binding.reasonList.setText(rh.gs(R.string.eatingsoon), false)
+        binding.reasonList.setText(rh.gs(R.string.eatingnow), false)
     }
 
     private fun shortClick(v: View) {
@@ -211,6 +210,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
                         timestamp = eventTime,
                         duration = TimeUnit.MINUTES.toMillis(duration.toLong()),
                         reason = when (reason) {
+                            rh.gs(R.string.eatingnow) -> TemporaryTarget.Reason.EATING_NOW
                             rh.gs(R.string.eatingsoon) -> TemporaryTarget.Reason.EATING_SOON
                             rh.gs(R.string.activity)   -> TemporaryTarget.Reason.ACTIVITY
                             rh.gs(R.string.hypo)       -> TemporaryTarget.Reason.HYPOGLYCEMIA
