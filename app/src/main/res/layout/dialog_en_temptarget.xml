@@ -61,12 +61,12 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 android:textStyle="bold" />
 
-            <TextView
+            <info.nightscout.androidaps.utils.ui.NumberPicker
                 android:id="@+id/temptarget"
                 android:layout_width="130dp"
                 android:layout_height="40dp"
                 android:layout_marginBottom="2dp"
-                android:visibility="visible"
+                android:visibility="invisible"
                 app:customContentDescription="@string/target_label" />
 
             <TextView
