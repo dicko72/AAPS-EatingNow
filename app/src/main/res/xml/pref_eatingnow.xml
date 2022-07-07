@@ -250,10 +250,10 @@
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
-                android:key="@string/key_eatingnow_enwindowiob"
+                android:key="@string/key_enwindowiob"
                 android:title="EN Window IOB Trigger"
-                android:dialogMessage="Enable EN Window when IOB is over this current basal minutes threshold.\n0 will not use this feature and rely on COB or manual bolus entries.\nThe EN Window will remain active until IOB falls below this threshold."
-                validate:floatmaxNumber="120"
+                android:dialogMessage="Enable EN Window when IOB is over this amount of units.\n0 will not use this feature and rely on COB or manual bolus entries.\nThe EN Window will remain active until IOB falls below this threshold."
+                validate:floatmaxNumber="30"
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
