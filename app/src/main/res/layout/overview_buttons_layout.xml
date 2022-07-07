@@ -79,6 +79,20 @@
             app:iconPadding="-4dp" />
 
         <info.nightscout.androidaps.utils.ui.SingleClickButton
+            android:id="@+id/en_button"
+            style="@style/ButtonSmallFontStyle"
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_marginEnd="-2dp"
+            android:layout_weight="0.5"
+            android:drawableTop="@drawable/ic_cp_bolus_carbs"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="EATING NOW"
+            android:textColor="?attr/icBolusCarbsColor"
+            app:iconPadding="-4dp" />
+
+        <info.nightscout.androidaps.utils.ui.SingleClickButton
             android:id="@+id/wizard_button"
             style="@style/ButtonSmallFontStyle"
             android:layout_width="0px"
