@@ -438,10 +438,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // TIR_sens - the amount of % like AS *** UNDER CONSTRUCTION ****
     var TIR_sens = 0;
     enlog += "* TIR_sens:\n";
-    if (meal_data.TIRW1H > 60 && TIR_sens == 0) TIR_sens += 1; //5%
-    if (meal_data.TIRW2H > 10 && TIR_sens == 1) TIR_sens += 1; //10%
-    if (meal_data.TIRW3H > 10 && TIR_sens == 2) TIR_sens += 1; //15%
-    if (meal_data.TIRW4H > 10 && TIR_sens == 3) TIR_sens += 1; //20%
+    if (meal_data.TIRW1H > 60 && TIR_sens == 0) TIR_sens += 2; //10%
+    if (meal_data.TIRW2H > 10 && TIR_sens == 1) TIR_sens += 1; //15%
+    if (meal_data.TIRW3H > 10 && TIR_sens == 2) TIR_sens += 1; //20%
+    if (meal_data.TIRW4H > 10 && TIR_sens == 3) TIR_sens += 1; //25%
     TIR_sens = 1 + (TIR_sens*0.05);
 
     /*
