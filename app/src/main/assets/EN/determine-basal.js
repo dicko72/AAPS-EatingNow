@@ -366,6 +366,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var cTime = (( new Date(systemTime).getTime() - meal_data.lastCarbTime) / 60000); // last carb entry after EN start
     var b1Time = (typeof meal_data.firstENBolusTime !== 'undefined' ? (( new Date(systemTime).getTime() - meal_data.firstENBolusTime) / 60000) : 9999); // first normal bolus after EN start
     var bTime = (typeof meal_data.lastENBolusTime !== 'undefined' ? (( new Date(systemTime).getTime() - meal_data.lastENBolusTime) / 60000) : 9999); // last normal bolus after EN start
+    var tt1Time = (typeof meal_data.firstENTempTargetTime !== 'undefined' ? (( new Date(systemTime).getTime() - meal_data.firstENTempTargetTime) / 60000) : 9999); // first EN TT after EN start
+
+
     // minutes since last bolus - relocated
     var lastBolusAge = round(( new Date(systemTime).getTime() - iob_data.lastBolusTime ) / 60000,1);
     // ENWTriggerOK if there is enough IOB to trigger the EN window or we had a recent SMB
@@ -383,8 +386,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (ENWindowOK && c1Time < profile.ENWindow) { // first cob entry is active and within EN Window
         firstMealWindow = true;
         if (b1Time != 9999 && b1Time > profile.ENWindow) firstMealWindow = false; // first bolus has also happened and is more than EN Window
+        if (tt1Time != 9999 && tt1Time > profile.ENWindow) firstMealWindow = false; // first TT has also happened and is more than EN Window
     } else if (ENWindowOK && b1Time < profile.ENWindow) { // first bolus entry is active and within EN Window
         firstMealWindow = true;
+        if (c1Time != 9999 && c1Time > profile.ENWindow) firstMealWindow = false; // first COB entry has also happened and is more than EN Window
+        if (tt1Time != 9999 && tt1Time > profile.ENWindow) firstMealWindow = false; // first TT has also happened and is more than EN Window
+    } else if (ENWindowOK && profile.temptargetSet && tt1Time < profile.ENWindow) { // first bolus entry is active and within EN Window
+        firstMealWindow = true;
+        if (b1Time != 9999 && b1Time > profile.ENWindow) firstMealWindow = false; // first bolus has also happened and is more than EN Window
         if (c1Time != 9999 && c1Time > profile.ENWindow) firstMealWindow = false; // first COB entry has also happened and is more than EN Window
     }
 
