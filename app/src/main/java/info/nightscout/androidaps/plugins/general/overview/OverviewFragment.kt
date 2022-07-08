@@ -956,7 +956,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
     fun updateTemporaryTarget() {
         val units = profileFunction.getUnits()
         val tempTarget = overviewData.temporaryTarget
-        val ENTTtext = if (tempTarget?.highTarget == profileFunction.getProfile()!!.getTargetMgdl()) "EN ACTIVE" else ""
+        val ENTTtext = if (tempTarget?.highTarget == profileFunction.getProfile()!!.getTargetMgdl()) "EATING NOW " else ""
 
         runOnUiThread {
             _binding ?: return@runOnUiThread
