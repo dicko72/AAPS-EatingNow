@@ -1576,7 +1576,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (ENWindowOK) {
                     if (COB) {
                         ENMaxSMB = (firstMealWindow ? profile.Win_COB_maxBolus_breakfast : profile.Win_COB_maxBolus);
-                        ENReason += ", Recent COB " + (profile.temptargetSet && target_bg == normalTarget ? " + TT" : "") + " ENW-SMB";
+                        //ENReason += ", Recent COB " + (profile.temptargetSet && target_bg == normalTarget ? " + TT" : "") + " ENW-SMB";
                     } else {
                         ENMaxSMB = (firstMealWindow ? profile.Win_UAM_maxBolus_breakfast : profile.Win_UAM_maxBolus);
                     }
