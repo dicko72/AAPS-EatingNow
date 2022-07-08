@@ -956,6 +956,8 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
     fun updateTemporaryTarget() {
         val units = profileFunction.getUnits()
         val tempTarget = overviewData.temporaryTarget
+        val ENTTtext = if (tempTarget.highTarget == profileFunction.getProfile()!!.getTargetMgdl()) "EN ACTIVE" else ""
+
         runOnUiThread {
             _binding ?: return@runOnUiThread
             if (tempTarget != null) {
@@ -963,7 +965,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                     binding.tempTarget,
                     R.attr.ribbonTextWarningColor,
                     R.attr.ribbonWarningColor,
-                    "A" + Profile.toTargetRangeString(tempTarget.lowTarget, tempTarget.highTarget, GlucoseUnit.MGDL, units) + " " + dateUtil.untilString(tempTarget.end, rh)
+                    ENTTtext + Profile.toTargetRangeString(tempTarget.lowTarget, tempTarget.highTarget, GlucoseUnit.MGDL, units) + " " + dateUtil.untilString(tempTarget.end, rh)
                 )
             } else {
                 // If the target is not the same as set in the profile then oref has overridden it
@@ -983,7 +985,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                             binding.tempTarget,
                             R.attr.ribbonTextDefaultColor,
                             R.attr.ribbonDefaultColor,
-                            "B" + Profile.toTargetRangeString(profile.getTargetLowMgdl(), profile.getTargetHighMgdl(), GlucoseUnit.MGDL, units)
+                            Profile.toTargetRangeString(profile.getTargetLowMgdl(), profile.getTargetHighMgdl(), GlucoseUnit.MGDL, units)
                         )
                     }
                 }
