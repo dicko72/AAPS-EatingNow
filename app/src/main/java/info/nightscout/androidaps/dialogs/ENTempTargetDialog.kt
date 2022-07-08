@@ -74,22 +74,25 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val units = profileFunction.getUnits()
+        binding.units.text = if (units == GlucoseUnit.MMOL) rh.gs(R.string.mmol) else rh.gs(R.string.mgdl)
+
+        // set the Eating Now defaults
+        val enTT = Profile.toCurrentUnits(units,profileFunction.getProfile()!!.getTargetMgdl())
+
         binding.duration.setParams(savedInstanceState?.getDouble("duration")
             ?: 0.0, 0.0, Constants.MAX_PROFILE_SWITCH_DURATION, 10.0, DecimalFormat("0"), false, binding.okcancel.ok)
 
         if (profileFunction.getUnits() == GlucoseUnit.MMOL)
             binding.temptarget.setParams(
                 savedInstanceState?.getDouble("tempTarget")
-                    ?: 8.0,
-                Constants.MIN_TT_MMOL, Constants.MAX_TT_MMOL, 0.1, DecimalFormat("0.0"), false, binding.okcancel.ok)
+                    ?: enTT,
+                Constants.MIN_TT_MMOL, enTT, 0.1, DecimalFormat("0.0"), false, binding.okcancel.ok)
         else
             binding.temptarget.setParams(
                 savedInstanceState?.getDouble("tempTarget")
-                    ?: 144.0,
+                    ?: enTT,
                 Constants.MIN_TT_MGDL, Constants.MAX_TT_MGDL, 1.0, DecimalFormat("0"), false, binding.okcancel.ok)
-
-        val units = profileFunction.getUnits()
-        binding.units.text = if (units == GlucoseUnit.MMOL) rh.gs(R.string.mmol) else rh.gs(R.string.mgdl)
 
         // temp target
         context?.let { context ->
@@ -128,10 +131,8 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
             binding.temptargetLabel.labelFor = binding.temptarget.editTextId
         }
 
-        // set the Eating Now defaults
-        // binding.temptarget.value = defaultValueHelper.determineEatingNowTT()
-        // binding.temptarget.value =  profileFunction.getProfile()!!.getTargetMgdl()
-        binding.temptarget.value = Profile.toCurrentUnits(units,profileFunction.getProfile()!!.getTargetMgdl())
+        // reset to Eating Now defaults
+        //binding.temptarget.value = Profile.toCurrentUnits(units,profileFunction.getProfile()!!.getTargetMgdl())
         binding.duration.value = defaultValueHelper.determineEatingNowTTDuration().toDouble()
         binding.reasonList.setText(rh.gs(R.string.eatingnow), false)
     }
