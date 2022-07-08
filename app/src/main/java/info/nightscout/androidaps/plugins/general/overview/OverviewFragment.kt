@@ -963,7 +963,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                     binding.tempTarget,
                     R.attr.ribbonTextWarningColor,
                     R.attr.ribbonWarningColor,
-                    Profile.toTargetRangeString(tempTarget.lowTarget, tempTarget.highTarget, GlucoseUnit.MGDL, units) + " " + dateUtil.untilString(tempTarget.end, rh)
+                    "A" + Profile.toTargetRangeString(tempTarget.lowTarget, tempTarget.highTarget, GlucoseUnit.MGDL, units) + " " + dateUtil.untilString(tempTarget.end, rh)
                 )
             } else {
                 // If the target is not the same as set in the profile then oref has overridden it
@@ -983,7 +983,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                             binding.tempTarget,
                             R.attr.ribbonTextDefaultColor,
                             R.attr.ribbonDefaultColor,
-                            Profile.toTargetRangeString(profile.getTargetLowMgdl(), profile.getTargetHighMgdl(), GlucoseUnit.MGDL, units)
+                            "B" + Profile.toTargetRangeString(profile.getTargetLowMgdl(), profile.getTargetHighMgdl(), GlucoseUnit.MGDL, units)
                         )
                     }
                 }
