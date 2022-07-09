@@ -299,15 +299,15 @@
                 validate:minNumber="0"
                 validate:testType="numericRange" />
 
-            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
-                android:defaultValue="0"
-                android:inputType="number"
-                android:key="@string/key_eatingnow_duration"
-                android:title="EN TT Duration"
-                android:dialogMessage="Time in minutes for EN Window when using the Eating Now TT button."
-                validate:maxNumber="180"
-                validate:minNumber="15"
-                validate:testType="numericRange" />
+<!--            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference-->
+<!--                android:defaultValue="0"-->
+<!--                android:inputType="number"-->
+<!--                android:key="@string/key_eatingnow_duration"-->
+<!--                android:title="EN TT Duration"-->
+<!--                android:dialogMessage="Time in minutes for EN Window when using the Eating Now TT button."-->
+<!--                validate:maxNumber="180"-->
+<!--                validate:minNumber="15"-->
+<!--                validate:testType="numericRange" />-->
 
             <Preference android:summary="The first manual bolus or carb entry is considered breakfast, or the first meal of the day.\nThe time of the first meal of the day may vary. ISF and CR scaling can be applied to a single ISF/CR profile entry allowing flexibility without profile shifts."></Preference>
 
