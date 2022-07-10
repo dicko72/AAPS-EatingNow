@@ -1505,6 +1505,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             minPredBGweight = (ENWindowOK ? minPredBGweight : minPredBGweight + 0.30);
         }
 
+        // when high and delta is small use minPredBG for sens_future
+        if (bg > ISFbgMax && minDelta >=-2 && minDelta <=2) {
+            // calculate the prediction bg based on the weightings for eventualBG
+            sens_future_bg = (Math.max(minPredBG,40);
+            // apply dynamic ISF scaling formula
+            sens_future_scaler = Math.log(sens_future_bg/75)+1;
+            sens_future = sens_normalTarget/sens_future_scaler;
+            minPredBGweight = 1;
+        }
+
         insulinReq = ((minPredBG * minPredBGweight) + (eventualBG * (1-minPredBGweight)) - target_bg) / sens_future; // TESTING
         insulinReq = round(insulinReq,2);
 
