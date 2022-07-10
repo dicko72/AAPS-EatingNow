@@ -155,6 +155,11 @@ import kotlin.math.roundToInt
             .map { if (!ascending) it.reversed() else it }
             .subscribeOn(Schedulers.io())
 
+    // Eating Now: Get the EN TT at this time
+    fun getENTemporaryTargetActiveAt(timestamp: Long): Single<List<TemporaryTarget>> =
+        database.temporaryTargetDao.getENTemporaryTargetActiveAt(timestamp,TemporaryTarget.Reason.EATING_NOW)
+            .subscribeOn(Schedulers.io())
+
     fun getTemporaryTargetDataIncludingInvalidFromTime(timestamp: Long, ascending: Boolean): Single<List<TemporaryTarget>> =
         database.temporaryTargetDao.getTemporaryTargetDataIncludingInvalidFromTime(timestamp)
             .map { if (!ascending) it.reversed() else it }

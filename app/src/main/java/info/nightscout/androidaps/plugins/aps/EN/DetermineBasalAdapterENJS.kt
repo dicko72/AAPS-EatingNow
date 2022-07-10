@@ -329,9 +329,9 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.mealData.put("firstENTempTargetTime",firstENTempTargetTime)
 
         // get the current EN TT info
-        val activeTempTargetEnd = repository.getENTemporaryTargetDataFromTime(now,true).blockingGet().lastOrNull()?.end
+        val activeTempTargetEnd = repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.end
         this.mealData.put("activeENTempTargetEnd",activeTempTargetEnd)
-        val activeTempTargetDuration = repository.getENTemporaryTargetDataFromTime(now,true).blockingGet().lastOrNull()?.duration
+        val activeTempTargetDuration = repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.duration
         this.mealData.put("activeENTempTargetDuration",activeTempTargetDuration)
 
 
