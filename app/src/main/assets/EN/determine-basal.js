@@ -1073,7 +1073,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var sens_predType, sens_eBGweight = 0;
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
-    //if (minDelta >=-2 && minDelta <=2) sens_predType = "BGL"; // small delta use current bg
 
     // evaluate prediction type and weighting
     if (sens_predType == "UAM") {
@@ -1087,6 +1086,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // if bg is falling and not slowly increase weighting to eventualBG
     sens_eBGweight = (delta < 0 && eventualBG < target_bg ? 1 : sens_eBGweight);
+    sens_eBGweight = (bg > ISFbgMax && minDelta >=-2 && minDelta <=2 ? 0 : sens_eBGweight); // small delta use current bg
 
     // calculate the prediction bg based on the weightings for eventualBG
     sens_future_bg = (Math.max(eventualBG,40) * sens_eBGweight) + (bg * (1-sens_eBGweight));
