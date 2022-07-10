@@ -1360,7 +1360,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     if (eventualBG < min_bg) { // if eventual BG is below target:
-        rT.reason += "Eventual " + (sens_predType ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &lt; " + convert_bg(min_bg, profile);
+        rT.reason += "Eventual " + (sens_predType ? sens_predType + " " : "") + "BG " + convert_bg(eventualBG, profile) + " &lt; " + convert_bg(min_bg, profile);
         // if 5m or 30m avg BG is rising faster than expected delta
         if ( minDelta > expectedDelta && minDelta > 0 && !carbsReq ) {
             // if naive_eventualBG < 40, set a 30m zero temp (oref0-pump-loop will let any longer SMB zero temp run)
@@ -1441,9 +1441,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // if in SMB mode, don't cancel SMB zero temp
         if (! (microBolusAllowed && enableSMB)) {
             if (glucose_status.delta < minDelta) {
-                rT.reason += "Eventual " + (sens_predType ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &gt; " + convert_bg(min_bg, profile) + " but Delta " + convert_bg(tick, profile) + " &lt; Exp. Delta " + convert_bg(expectedDelta, profile);
+                rT.reason += "Eventual " + (sens_predType ? sens_predType + " " : "") + "BG " + convert_bg(eventualBG, profile) + " &gt; " + convert_bg(min_bg, profile) + " but Delta " + convert_bg(tick, profile) + " &lt; Exp. Delta " + convert_bg(expectedDelta, profile);
             } else {
-                rT.reason += "Eventual " + (sens_predType ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &gt; " + convert_bg(min_bg, profile) + " but Min. Delta " + minDelta.toFixed(2) + " &lt; Exp. Delta " + convert_bg(expectedDelta, profile);
+                rT.reason += "Eventual " + (sens_predType ? sens_predType + " " : "") + "BG " + convert_bg(eventualBG, profile) + " &gt; " + convert_bg(min_bg, profile) + " but Min. Delta " + minDelta.toFixed(2) + " &lt; Exp. Delta " + convert_bg(expectedDelta, profile);
             }
             if (currenttemp.duration > 15 && (round_basal(basal, profile) === round_basal(currenttemp.rate, profile))) {
                 rT.reason += ", temp " + round(currenttemp.rate,2) + " ~ req " + basal + "U/hr. ";
@@ -1472,7 +1472,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // eventual BG is at/above target
     // if iob is over max, just cancel any temps
     if ( eventualBG >= max_bg ) {
-        rT.reason += "Eventual" + (" " + sens_predType ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &gt;= " +  convert_bg(max_bg, profile) + ", ";
+        rT.reason += "Eventual " + (sens_predType ? sens_predType + " " : "") + " BG " + convert_bg(eventualBG, profile) + " &gt;= " +  convert_bg(max_bg, profile) + ", ";
     }
     if (iob_data.iob > max_iob) {
         rT.reason += "IOB " + round(iob_data.iob,2) + " &gt; max_iob " + max_iob;
