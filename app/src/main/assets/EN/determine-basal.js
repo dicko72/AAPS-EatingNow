@@ -367,6 +367,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var b1Time = (typeof meal_data.firstENBolusTime !== 'undefined' ? (( new Date(systemTime).getTime() - meal_data.firstENBolusTime) / 60000) : 9999); // first normal bolus after EN start
     var bTime = (typeof meal_data.lastENBolusTime !== 'undefined' ? (( new Date(systemTime).getTime() - meal_data.lastENBolusTime) / 60000) : 9999); // last normal bolus after EN start
     var tt1Time = (typeof meal_data.firstENTempTargetTime !== 'undefined' ? (( new Date(systemTime).getTime() - meal_data.firstENTempTargetTime) / 60000) : 9999); // first EN TT after EN start
+    var ttTime = (typeof meal_data.activeENTempTargetStartTime !== 'undefined' ? (( new Date(systemTime).getTime() - meal_data.activeENTempTargetStartTime) / 60000) : 9999); // active EN TT
 
 
     // minutes since last bolus - relocated
@@ -378,7 +379,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var ENWindowOK = (ENactive && profile.ENWindow > 0 && Math.min(c1Time, cTime ,bTime, b1Time) < profile.ENWindow || (profile.temptargetSet && target_bg <= normalTarget) || ENWTriggerOK);
     if (!COB && (Math.min(b1Time,bTime) > profile.ENWindow) && !profile.temptargetSet && !ENWTriggerOK) ENWindowOK = false; // if theres no COB and no recent bolus or TT then close the EN window
 
-    var ENWindowRunTime = Math.min(c1Time, cTime, bTime, b1Time);
+    var ENWindowRunTime = Math.min(c1Time, cTime, bTime, b1Time, ttTime);
 
     // breakfast/first meal related vars
     // firstMealWindow is when either c1Time or b1Time is less than EN Window
@@ -1504,6 +1505,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
             minPredBGweight = (ENWindowOK ? minPredBGweight : minPredBGweight + 0.30);
         }
+
 
         // when high and delta is small or slowing use minPredBG for sens_future
         if (bg > ISFbgMax && (minDelta >=-2 && minDelta <=2 || DeltaPct <1)) {
