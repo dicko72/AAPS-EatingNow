@@ -7,6 +7,7 @@ import info.nightscout.androidaps.data.MealData
 import info.nightscout.androidaps.database.AppRepository
 import info.nightscout.androidaps.database.ValueWrapper
 import info.nightscout.androidaps.database.entities.Bolus
+import info.nightscout.androidaps.database.interfaces.end
 import info.nightscout.androidaps.extensions.convertedToAbsolute
 import info.nightscout.androidaps.extensions.getPassedDurationToTimeInMinutes
 import info.nightscout.androidaps.extensions.plannedRemainingMinutes
@@ -326,6 +327,13 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         // get the FIRST EN TT time since EN activation
         val firstENTempTargetTime = repository.getENTemporaryTargetDataFromTime(ENStartTime,true).blockingGet().lastOrNull()?.timestamp
         this.mealData.put("firstENTempTargetTime",firstENTempTargetTime)
+
+        // get the current EN TT info
+        val activeTempTargetEnd = repository.getENTemporaryTargetDataFromTime(now,true).blockingGet().lastOrNull()?.end
+        this.mealData.put("activeENTempTargetEnd",activeTempTargetEnd)
+        val activeTempTargetDuration = repository.getENTemporaryTargetDataFromTime(now,true).blockingGet().lastOrNull()?.duration
+        this.mealData.put("activeENTempTargetDuration",activeTempTargetDuration)
+
 
         // get the LAST bolus time since EN activation
         val lastENBolusTime = repository.getBolusFromTimeOfType(ENStartTime,false, Bolus.Type.NORMAL ).blockingGet().lastOrNull()?.timestamp
