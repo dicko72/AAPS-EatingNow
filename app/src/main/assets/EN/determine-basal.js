@@ -379,7 +379,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var ENWindowOK = (ENactive && profile.ENWindow > 0 && Math.min(c1Time, cTime ,bTime, b1Time) < profile.ENWindow || (profile.temptargetSet && target_bg <= normalTarget) || ENWTriggerOK);
     if (!COB && (Math.min(b1Time,bTime) > profile.ENWindow) && !profile.temptargetSet && !ENWTriggerOK) ENWindowOK = false; // if theres no COB and no recent bolus or TT then close the EN window
 
-    var ENWindowRunTime = Math.min(c1Time, cTime, bTime, b1Time, ttTime);
+    var ENWindowRunTime = Math.min(c1Time, cTime, bTime, b1Time, ttTime), ENWindowDuration = (activeENTempTargetDuration ? activeENTempTargetDuration : profile.ENWindow);
 
     // breakfast/first meal related vars
     // firstMealWindow is when either c1Time or b1Time is less than EN Window
@@ -1244,7 +1244,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += ", ENW: ";
     rT.reason += (ENWindowOK ? "On" : "Off");
     rT.reason += (firstMealWindow ? " Bkfst" : "");
-    rT.reason += (ENWindowOK && ENWindowRunTime <= profile.ENWindow ? " " + round(ENWindowRunTime)+"/"+profile.ENWindow+"m" : "");
+    rT.reason += (ENWindowOK && ENWindowRunTime <= profile.ENWindow ? " " + round(ENWindowRunTime)+"/"+ ENWindowDuration +"m" : "");
     rT.reason += (!ENWTriggerOK && ENWIOBThreshU > 0 && !ENSleepMode ? " IOB&lt;" + round(ENWIOBThreshU,2) : "");
 
     // other EN stuff
