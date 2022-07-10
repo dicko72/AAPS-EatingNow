@@ -50,7 +50,6 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
     @Inject lateinit var dateUtil: DateUtil
 
     private var profile = JSONObject()
-    private var enprofile = JSONObject()
     private var mGlucoseStatus = JSONObject()
     private var iobData: JSONArray? = null
     private var mealData = JSONObject()
@@ -79,7 +78,6 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         aapsLogger.debug(LTag.APS, "Profile:        " + profile.toString().also { profileParam = it })
         aapsLogger.debug(LTag.APS, "Meal data:      " + mealData.toString().also { mealDataParam = it })
         aapsLogger.debug(LTag.APS, "Autosens data:  $autosensData")
-        aapsLogger.debug(LTag.APS, "Eating Now:        " + enprofile.toString().also { profileParam = it })
         aapsLogger.debug(LTag.APS, "Reservoir data: " + "undefined")
         aapsLogger.debug(LTag.APS, "MicroBolusAllowed:  $microBolusAllowed")
         aapsLogger.debug(LTag.APS, "SMBAlwaysAllowed:  $smbAlwaysAllowed")
@@ -332,10 +330,10 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         // get the current EN TT info
         val activeTempTargetEnd = repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.end
-        this.enprofile.put("activeENTempTargetEnd",activeTempTargetEnd)
+        this.mealData.put("activeENTempTargetEnd",activeTempTargetEnd)
         val activeTempTargetDuration = repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.duration
         if (activeTempTargetDuration != null) {
-            this.enprofile.put("activeENTempTargetDuration",activeTempTargetDuration/60000)
+            this.mealData.put("activeENTempTargetDuration",activeTempTargetDuration/60000)
         }
 
         // get the LAST bolus time since EN activation
