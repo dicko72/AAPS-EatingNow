@@ -1070,10 +1070,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var sens_future = sens, sens_future_max = false, sens_future_bg = bg;
     // categorize the eventualBG prediction type for more accurate weighting
     // By default sens_future will remain as the current bg ie. sens with eBGweight = 0
-    var sens_predType = "BGL", sens_eBGweight = 0;
+    var sens_predType, sens_eBGweight = 0;
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
-    if (minDelta >=-2 && minDelta <=2) sens_predType = "BGL"; // small delta use current bg
+    //if (minDelta >=-2 && minDelta <=2) sens_predType = "BGL"; // small delta use current bg
 
     // evaluate prediction type and weighting
     if (sens_predType == "UAM") {
@@ -1083,9 +1083,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (sens_predType == "COB") {
         sens_eBGweight = 0.50;
         sens_eBGweight = (delta >=6 && DeltaPct > 1 ? 0.75 : sens_eBGweight); // rising faster
-    }
-    if (sens_predType == "BGL") {
-        sens_eBGweight = 0.50; // small delta
     }
 
     // if bg is falling and not slowly increase weighting to eventualBG
@@ -1363,7 +1360,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     if (eventualBG < min_bg) { // if eventual BG is below target:
-        rT.reason += "Eventual " + (sens_predType !="BGL" ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &lt; " + convert_bg(min_bg, profile);
+        rT.reason += "Eventual " + (sens_predType ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &lt; " + convert_bg(min_bg, profile);
         // if 5m or 30m avg BG is rising faster than expected delta
         if ( minDelta > expectedDelta && minDelta > 0 && !carbsReq ) {
             // if naive_eventualBG < 40, set a 30m zero temp (oref0-pump-loop will let any longer SMB zero temp run)
@@ -1444,9 +1441,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // if in SMB mode, don't cancel SMB zero temp
         if (! (microBolusAllowed && enableSMB)) {
             if (glucose_status.delta < minDelta) {
-                rT.reason += "Eventual " + (sens_predType !="BGL" ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &gt; " + convert_bg(min_bg, profile) + " but Delta " + convert_bg(tick, profile) + " &lt; Exp. Delta " + convert_bg(expectedDelta, profile);
+                rT.reason += "Eventual " + (sens_predType ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &gt; " + convert_bg(min_bg, profile) + " but Delta " + convert_bg(tick, profile) + " &lt; Exp. Delta " + convert_bg(expectedDelta, profile);
             } else {
-                rT.reason += "Eventual " + (sens_predType !="BGL" ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &gt; " + convert_bg(min_bg, profile) + " but Min. Delta " + minDelta.toFixed(2) + " &lt; Exp. Delta " + convert_bg(expectedDelta, profile);
+                rT.reason += "Eventual " + (sens_predType ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &gt; " + convert_bg(min_bg, profile) + " but Min. Delta " + minDelta.toFixed(2) + " &lt; Exp. Delta " + convert_bg(expectedDelta, profile);
             }
             if (currenttemp.duration > 15 && (round_basal(basal, profile) === round_basal(currenttemp.rate, profile))) {
                 rT.reason += ", temp " + round(currenttemp.rate,2) + " ~ req " + basal + "U/hr. ";
@@ -1475,7 +1472,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // eventual BG is at/above target
     // if iob is over max, just cancel any temps
     if ( eventualBG >= max_bg ) {
-        rT.reason += "Eventual " + (sens_predType !="BGL" ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &gt;= " +  convert_bg(max_bg, profile) + ", ";
+        rT.reason += "Eventual" + (" " + sens_predType ? sens_predType : "") + " BG " + convert_bg(eventualBG, profile) + " &gt;= " +  convert_bg(max_bg, profile) + ", ";
     }
     if (iob_data.iob > max_iob) {
         rT.reason += "IOB " + round(iob_data.iob,2) + " &gt; max_iob " + max_iob;
@@ -1504,9 +1501,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 minPredBGweight = 0.50;
                 //minPredBGweight = (delta >=6 && DeltaPct > 1 ? 0.50 : minPredBGweight); // rising faster and accelerating
             }
-//            if (sens_predType == "BGL") {
-//                minPredBGweight = 0.50; // small delta
-//            }
+
             minPredBGweight = (ENWindowOK ? minPredBGweight : minPredBGweight + 0.30);
         }
 
