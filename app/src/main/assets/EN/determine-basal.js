@@ -1569,7 +1569,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
             // START === if we are eating now and BGL prediction is higher than normal target ===
             if (ENactive && eventualBG > target_bg) {
-                ENReason = ""; //blank boost reason to prepare for boost info
+                ENReason = ", fISF: " + convert_bg(sens_future, profile) + ", fBG: " + convert_bg(sens_future_bg,profile);
 
                 // EN insulinReqPct is now used
                 insulinReqPct = ENinsulinReqPct;
