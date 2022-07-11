@@ -1507,8 +1507,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
 
 
-        // when high and delta is small or slowing use minPredBG for sens_future
-        if (bg > ISFbgMax && (minDelta >=-2 && minDelta <=2 || DeltaPct <1)) {
+        // when high and delta is small or slowing at anytime use minPredBG for sens_future_bg
+        if ((bg > ISFbgMax && minDelta >=-2 && minDelta <=2) || DeltaPct <1) {
             // calculate the prediction bg based on the weightings for eventualBG
             sens_future_bg = Math.max(minPredBG,40);
             // apply dynamic ISF scaling formula
