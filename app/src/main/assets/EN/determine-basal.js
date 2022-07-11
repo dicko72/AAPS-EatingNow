@@ -1066,47 +1066,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     console.error("UAM Impact:",uci,"mg/dL per 5m; UAM Duration:",UAMduration,"hours");
 
-    // Eventual BG based future sensitivity - sens_future
-    // sens_future is calculated using a percentage of eventualBG (sens_eBGweight) with the rest as current bg, to reduce the risk of overdosing.
-    var sens_future = sens, sens_future_max = false, sens_future_bg = bg;
-    // categorize the eventualBG prediction type for more accurate weighting
-    // By default sens_future will remain as the current bg ie. sens with eBGweight = 0
-    var sens_predType, sens_eBGweight = 0;
-    if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
-    if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
-
-    // evaluate prediction type and weighting
-    if (sens_predType == "UAM") {
-        sens_eBGweight = 0.25;
-        sens_eBGweight = (delta > 4 && DeltaPct > 1 && !COB ? 0.50 : sens_eBGweight); // rising and accelerating
-    }
-    if (sens_predType == "COB") {
-        sens_eBGweight = 0.50;
-        sens_eBGweight = (delta >=6 && DeltaPct > 1 ? 0.75 : sens_eBGweight); // rising faster
-    }
-
-    // if bg is falling and not slowly increase weighting to eventualBG
-    sens_eBGweight = (delta < 0 && eventualBG < target_bg ? 1 : sens_eBGweight);
-    sens_eBGweight = (bg > ISFbgMax && minDelta >=-2 && minDelta <=2 ? 0 : sens_eBGweight); // small delta use current bg
-
-    // calculate the prediction bg based on the weightings for eventualBG
-    sens_future_bg = (Math.max(eventualBG,40) * sens_eBGweight) + (bg * (1-sens_eBGweight));
-
-    // apply dynamic ISF scaling formula
-    var sens_future_scaler = Math.log(sens_future_bg/75)+1;
-    // at night or when EN disabled use sens unless using eatingnow override
-    if (!ENactive) sens_future_scaler = Math.log(sens_future_bg/target_bg)+1;
-
-    sens_future = sens_normalTarget/sens_future_scaler;
-
-    // if BG below target then take the max of the sens vars
-    sens_future = (bg < target_bg && !ENWindowOK ? Math.max(sens_profile, sens_normalTarget, sens_currentBG, sens_future) : sens_future);
-
-    sens_future = round(sens_future,1);
-    enlog += "* sens_eBGweight:\n";
-    enlog += "sens_predType: " + sens_predType+"\n";
-    enlog += "sens_eBGweight final result: " + sens_eBGweight +"\n";
-
 //    enlog += "*** TESTING FUTURE DELTA ***\n";
 //    var insulinPeak5m = 18, COBpredBGsDelta, UAMpredBGsDelta;
 //    enlog += "insulinPeak5m: "+insulinPeak5m+"\n";
@@ -1218,6 +1177,48 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if ( maxCOBPredBG > bg && !ignoreCOB ) { //MD#01 Only if we aren't using GhostCOB
         minPredBG = Math.min(minPredBG, maxCOBPredBG);
     }
+
+    // Eventual BG based future sensitivity - sens_future
+    // sens_future is calculated using a percentage of eventualBG (sens_eBGweight) with the rest as current bg, to reduce the risk of overdosing.
+    var sens_future = sens, sens_future_max = false, sens_future_bg = bg;
+    // categorize the eventualBG prediction type for more accurate weighting
+    // By default sens_future will remain as the current bg ie. sens with eBGweight = 0
+    var sens_predType, sens_eBGweight = 0;
+    if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
+    if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
+
+    // evaluate prediction type and weighting
+    if (sens_predType == "UAM") {
+        sens_eBGweight = 0.25;
+        sens_eBGweight = (delta > 4 && DeltaPct > 1 && !COB ? 0.50 : sens_eBGweight); // rising and accelerating
+    }
+    if (sens_predType == "COB") {
+        sens_eBGweight = 0.50;
+        sens_eBGweight = (delta >=6 && DeltaPct > 1 ? 0.75 : sens_eBGweight); // rising faster
+    }
+
+    // if bg is falling and not slowly increase weighting to eventualBG
+    sens_eBGweight = (delta < 0 && eventualBG < target_bg ? 1 : sens_eBGweight);
+    sens_eBGweight = (bg > ISFbgMax && minDelta >=-2 && minDelta <=2 ? 0 : sens_eBGweight); // small delta use current bg
+
+    // calculate the prediction bg based on the weightings for eventualBG
+    sens_future_bg = (Math.max(eventualBG,40) * sens_eBGweight) + (bg * (1-sens_eBGweight));
+
+    // apply dynamic ISF scaling formula
+    var sens_future_scaler = Math.log(sens_future_bg/75)+1;
+    // at night or when EN disabled use sens unless using eatingnow override
+    if (!ENactive) sens_future_scaler = Math.log(sens_future_bg/target_bg)+1;
+
+    sens_future = sens_normalTarget/sens_future_scaler;
+
+    // if BG below target then take the max of the sens vars
+    sens_future = (bg < target_bg && !ENWindowOK ? Math.max(sens_profile, sens_normalTarget, sens_currentBG, sens_future) : sens_future);
+
+    sens_future = round(sens_future,1);
+    enlog += "* sens_eBGweight:\n";
+    enlog += "sens_predType: " + sens_predType+"\n";
+    enlog += "sens_eBGweight final result: " + sens_eBGweight +"\n";
+    // END OF Eventual BG based future sensitivity - sens_future
 
     rT.COB=meal_data.mealCOB;
     rT.IOB=iob_data.iob;
@@ -1505,7 +1506,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
             minPredBGweight = (ENWindowOK ? minPredBGweight : minPredBGweight + 0.30);
         }
-
 
         // when high and delta is small or slowing at anytime use minPredBG for sens_future_bg
         if ((bg > ISFbgMax && minDelta >=-2 && minDelta <=2) || DeltaPct <1) {
