@@ -31,6 +31,7 @@ import info.nightscout.androidaps.Constants
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.data.ProfileSealed
 import info.nightscout.androidaps.database.AppRepository
+import info.nightscout.androidaps.database.entities.TemporaryTarget
 import info.nightscout.androidaps.database.entities.UserEntry.Action
 import info.nightscout.androidaps.database.entities.UserEntry.Sources
 import info.nightscout.androidaps.database.interfaces.end
@@ -39,6 +40,7 @@ import info.nightscout.androidaps.dialogs.*
 import info.nightscout.androidaps.events.*
 import info.nightscout.androidaps.extensions.directionToIcon
 import info.nightscout.androidaps.extensions.runOnUiThread
+import info.nightscout.androidaps.extensions.target
 import info.nightscout.androidaps.extensions.toVisibility
 import info.nightscout.androidaps.extensions.valueToUnitsString
 import info.nightscout.androidaps.interfaces.*
@@ -956,7 +958,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
     fun updateTemporaryTarget() {
         val units = profileFunction.getUnits()
         val tempTarget = overviewData.temporaryTarget
-        val ENTTtext = if (tempTarget?.highTarget == profileFunction.getProfile()!!.getTargetMgdl()) "EATING NOW " else ""
+        val ENTTtext = if (tempTarget?.reason == TemporaryTarget.Reason.EATING_NOW) "EATING NOW " else ""
 
         runOnUiThread {
             _binding ?: return@runOnUiThread
