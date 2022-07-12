@@ -1201,7 +1201,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             sens_eBGweight = 0.50;
             //sens_eBGweight = (delta >=6 && DeltaPct > 1 ? 0.50 : sens_eBGweight); // rising faster and accelerating
         }
-        sens_eBGweight = (ENWindowOK ? sens_eBGweight : sens_eBGweight - 0.30);
+        sens_eBGweight = (ENWindowOK ? sens_eBGweight : sens_eBGweight * 0.5);
     }
 
     // SAFETY: when high and delta is small OR if slowing at anytime use minPredBG for sens_future_bg
