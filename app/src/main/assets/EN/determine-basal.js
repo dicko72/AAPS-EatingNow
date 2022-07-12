@@ -473,7 +473,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // MaxISF is the user defined limit for sens_TDD based on a percentage of the current profile based ISF
     var MaxISF = sens_profile/(profile.MaxISFpct/100);
     // ISF based on TDD
-    var sens_TDD = 1800 / ( TDD * (Math.log(( Math.min(normalTarget,ISFbgMax) / ins_val ) + 1 ) ) );
+    //var sens_TDD = 1800 / ( TDD * (Math.log(( Math.min(normalTarget,ISFbgMax) / ins_val ) + 1 ) ) );
+    var sens_TDD = 1800 / ( TDD * (Math.log( normalTarget / ins_val ) + 1 ) );
     enlog += "sens_TDD:" + convert_bg(sens_TDD, profile) +"\n";
     sens_TDD = sens_TDD / (profile.sens_TDD_scale/100);
     sens_TDD = (sens_TDD > sens*3 ? sens : sens_TDD); // fresh install of v3
@@ -587,7 +588,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var sens_target_bg = ins_val;
     // only allow adjusted ISF target when eatingnow time is OK and bg below ISFbgMax, dont use at night
     sens_target_bg = (ENactive ? sens_target_bg : target_bg);
-    var sens_BGscaler = (Math.log(Math.min(bg,ISFbgMax)/sens_target_bg)+1);
+    //var sens_BGscaler = (Math.log(Math.min(bg,ISFbgMax)/sens_target_bg)+1);
+    var sens_BGscaler = Math.log(bg/sens_target_bg)+1;
 
     // Convert ISFBGscaler to %
     ISFBGscaler = (100-ISFBGscaler)/100;
