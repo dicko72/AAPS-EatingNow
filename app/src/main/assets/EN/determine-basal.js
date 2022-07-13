@@ -613,7 +613,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // sens is the current bg when EN active e.g. no TT
     sens = (ENactive ? sens_currentBG : sens_normalTarget);
     // at night use sens_currentBG without additional scaling
-    sens = (!ENactive && !ENtimeOK ? sens_currentBG : sens);
+    sens = (ENSleepMode ? sens_currentBG : sens);
     enlog += "sens final result:"+sens+"="+convert_bg(sens, profile)+"\n";
 
     // HypoPredBG - TS
