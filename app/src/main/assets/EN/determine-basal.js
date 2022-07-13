@@ -1221,8 +1221,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var sens_future_scaler = Math.log(sens_future_bg/sens_target_bg)+1;
     sens_future = sens_normalTarget/sens_future_scaler;
 
-    // SAFETY: if BG below target then take the max of the sens vars
-    sens_future = (bg < target_bg && !ENWindowOK ? Math.max(sens_profile, sens_normalTarget, sens_currentBG, sens_future) : sens_future);
+    // SAFETY: if sleeping then take the max of the sens vars
+    sens_future = (ENSleepMode ? Math.max(sens_profile, sens_normalTarget, sens_currentBG, sens_future) : sens_future);
+    //sens_future = (bg < target_bg && !ENWindowOK ? Math.max(sens_profile, sens_normalTarget, sens_currentBG, sens_future) : sens_future);
 
     sens_future = round(sens_future,1);
     enlog += "* sens_eBGweight:\n";
