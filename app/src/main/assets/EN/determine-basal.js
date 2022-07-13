@@ -1215,10 +1215,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     sens_future_bg = (Math.max(minPredBG,40) * (1-sens_eBGweight)) + (Math.max(eventualBG,40) * sens_eBGweight);
     //sens_future_bg = (Math.max(bg,40) * (1-sens_eBGweight)) + (Math.max(eventualBG,40) * sens_eBGweight);
 
-    // apply dynamic ISF scaling formula
-    var sens_future_scaler = Math.log(sens_future_bg/75)+1;
-    // at night or when EN disabled use sens unless using eatingnow override
-    if (!ENactive) sens_future_scaler = Math.log(sens_future_bg/target_bg)+1;
+    // apply dynamic ISF scaling for future ISF based on sens_target_bg
+    var sens_future_scaler = Math.log(sens_future_bg/sens_target_bg)+1;
     sens_future = sens_normalTarget/sens_future_scaler;
 
     // SAFETY: if BG below target then take the max of the sens vars
