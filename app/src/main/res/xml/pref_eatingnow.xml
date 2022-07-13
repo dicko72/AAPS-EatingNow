@@ -349,7 +349,7 @@
                 android:key="@string/key_eatingnow_uamboost_maxbolus"
                 android:title="UAM maxBolus"
                 android:dialogMessage="UAM maxBolus for all BGL rises without COB within the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing maxBolus limit"
-                validate:floatmaxNumber="120"
+                validate:floatmaxNumber="200"
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
@@ -359,7 +359,7 @@
                 android:key="@string/key_eatingnow_cobboost_maxbolus"
                 android:title="COB maxBolus"
                 android:dialogMessage="COB maxBolus for BGL rises within the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing maxBolus limit"
-                validate:floatmaxNumber="120"
+                validate:floatmaxNumber="200"
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
@@ -378,7 +378,7 @@
                 android:key="@string/key_eatingnow_uam_maxbolus"
                 android:title="UAM maxBolus"
                 android:dialogMessage="UAM maxBolus for all BGL rises without COB outside of the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing maxBolus limit and -1 will only disable SMB and use TBR only."
-                validate:floatmaxNumber="120"
+                validate:floatmaxNumber="200"
                 validate:floatminNumber="-1"
                 validate:testType="floatNumericRange"/>
 
@@ -388,7 +388,7 @@
                 android:key="@string/key_eatingnow_isfboost_maxbolus"
                 android:title="COB maxBolus"
                 android:dialogMessage="COB maxBolus for all BGL rises with COB outside of the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing maxBolus limit and -1 will only disable SMB and use TBR only."
-                validate:floatmaxNumber="120"
+                validate:floatmaxNumber="200"
                 validate:floatminNumber="-1"
                 validate:testType="floatNumericRange"/>
 
