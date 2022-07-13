@@ -1213,7 +1213,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // calculate the prediction bg based on the weightings for minPredBG and eventualBG
     sens_future_bg = (Math.max(minPredBG,40) * (1-sens_eBGweight)) + (Math.max(eventualBG,40) * sens_eBGweight);
-    //sens_future_bg = (Math.max(bg,40) * (1-sens_eBGweight)) + (Math.max(eventualBG,40) * sens_eBGweight);
+
+    //SAFETY: normal minPredBG overnight and in range
+    sens_future_bg = (ENSleepMode ? Math.min(minPredBG,eventualBG) : sens_future_bg);
 
     // apply dynamic ISF scaling for future ISF based on sens_target_bg
     var sens_future_scaler = Math.log(sens_future_bg/sens_target_bg)+1;
