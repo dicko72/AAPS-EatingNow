@@ -23,7 +23,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:importantForAccessibility="no"
-                app:srcCompat="@drawable/ic_temptarget_high" />
+                app:srcCompat="@drawable/ic_target_eatingsoon" />
 
             <TextView
                 android:layout_width="match_parent"
