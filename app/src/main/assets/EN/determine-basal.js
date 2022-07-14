@@ -454,18 +454,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (meal_data.TIRW4H > 10 && TIR_sens == 3) TIR_sens += 1; //25%
     TIR_sens = Math.min (1+(TIR_sens*0.05), profile.autosens_max);
 
-    /*
-    if ((meal_data.TIRW2 == 0 || meal_data.TIRW2 < meal_data.TIRW1)  && Math.max(meal_data.TIRW1L, meal_data.TIRW2L) == 0) { // if the 2nd hour TIR window is less in range and there are no lows
-        //TIR_sens = 1;
-        //ISFbgMax = Math.max(ISFbgMaxbg*0.9);
-        enlog += "Higher TIRW2 detected, ISFbgMax may adjust to higher current bg"+"\n";
-    } else if (meal_data.TIRW2 < meal_data.TIRW1 && meal_data.TIRW2L > meal_data.TIRW1L && !firstMealWindow) {
-        TIR_sens = -1;
-        ins_val = target_bg;
-        enlog += "Lower TIRW2 detected, ins_val adjusted to target_bg"+"\n";
-    }
-    */
-
     // ISF at normal target
     var sens_normalTarget = sens, sens_profile = sens; // use profile sens and keep profile sens with any SR
     enlog += "sens_normalTarget:" + convert_bg(sens_normalTarget, profile)+"\n";
@@ -1180,62 +1168,56 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         minPredBG = Math.min(minPredBG, maxCOBPredBG);
     }
 
-    // Eventual BG based future sensitivity - sens_future
-    // sens_future is calculated using a percentage of eventualBG (sens_eBGweight) with the rest as minPredBG, to reduce the risk of overdosing.
-    var sens_future = sens, sens_future_max = false, sens_future_bg = minPredBG;
+    // minPredBG and eventualBG based dosing - insulinReq_bg
+    // insulinReq_sens is calculated using a percentage of eventualBG (eBGweight) with the rest as minPredBG, to reduce the risk of overdosing.
+    var insulinReq_sens = sens, insulinReq_bg_orig = Math.min(minPredBG,eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType, eBGweight = 0;
     // categorize the eventualBG prediction type for more accurate weighting
-    // By default sens_future will remain as the current bg ie. sens with eBGweight = 0
-    var sens_predType, sens_eBGweight = 0;
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
 
     // evaluate prediction type and weighting
-    //if (ENtimeOK && bg < ISFbgMax) {
     if (ENtimeOK) {
         if (sens_predType == "UAM") {
-            sens_eBGweight = (!COB ? 0.50 : 0.35);
-            sens_eBGweight = (delta > 4 && DeltaPct > 1 && !COB ? 0.70 : sens_eBGweight); // rising and accelerating
-            //sens_eBGweight = (bg > 126 && delta > 4 && DeltaPct > 1 && !COB ? 0.65 : sens_eBGweight); // rising and accelerating
-            //sens_eBGweight = (bg <= 126 && delta > 4 && DeltaPct > 1 && !COB ? 0.85 : sens_eBGweight); // rising and accelerating
+            eBGweight = (!COB ? 0.50 : 0.35);
+            eBGweight = (delta > 4 && DeltaPct > 1 && !COB ? 0.70 : eBGweight); // rising and accelerating
+            //eBGweight = (bg > 126 && delta > 4 && DeltaPct > 1 && !COB ? 0.65 : eBGweight); // rising and accelerating
+            //eBGweight = (bg <= 126 && delta > 4 && DeltaPct > 1 && !COB ? 0.85 : eBGweight); // rising and accelerating
         }
         if (sens_predType == "COB") {
-            sens_eBGweight = 0.35;
-            //sens_eBGweight = (delta >=6 && DeltaPct > 1 ? 0.50 : sens_eBGweight); // rising faster and accelerating
+            eBGweight = 0.35;
+            //eBGweight = (delta >=6 && DeltaPct > 1 ? 0.50 : eBGweight); // rising faster and accelerating
         }
-        sens_eBGweight = (ENWindowOK ? sens_eBGweight : 0);
+        // EXPERIMENT: With no sens_future is there no present?
+        //eBGweight = (ENWindowOK ? eBGweight : 0);
     }
 
-    // SAFETY: when high and delta is small OR if slowing at anytime use minPredBG for sens_future_bg
-    sens_eBGweight = ((bg > ISFbgMax && minDelta >=-2 && minDelta <=2) || DeltaPct <1 ? 0 : sens_eBGweight);
+    // SAFETY: when high and delta is small OR if slowing at anytime use minPredBG for insulinReq_bg
+    eBGweight = ((bg > ISFbgMax && minDelta >=-2 && minDelta <=2) || DeltaPct <1 ? 0 : eBGweight);
 
     // calculate the prediction bg based on the weightings for minPredBG and eventualBG
-    sens_future_bg = (Math.max(minPredBG,40) * (1-sens_eBGweight)) + (Math.max(eventualBG,40) * sens_eBGweight);
+    insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
 
     // SAFETY: if bg is falling revert to normal minPredBG weighting
-    sens_future_bg = (delta < 0 && eventualBG < target_bg ? Math.min(minPredBG,eventualBG) : sens_future_bg);
+    insulinReq_bg = (delta < 0 && eventualBG < target_bg ? insulinReq_bg_orig : insulinReq_bg);
 
-    //SAFETY: normal minPredBG overnight and in range
-    sens_future_bg = (ENSleepMode ? Math.min(minPredBG,eventualBG) : sens_future_bg);
+    // SAFETY: normal minPredBG overnight and in range
+    insulinReq_bg = (ENSleepMode ? insulinReq_bg_orig : insulinReq_bg);
 
-    // apply dynamic ISF scaling formula
-    var sens_future_scaler = Math.log(sens_future_bg/75)+1;
-    // at night or when EN disabled use sens unless using eatingnow override
-    if (!ENactive) sens_future_scaler = Math.log(sens_future_bg/target_bg)+1;
-    sens_future = sens_normalTarget/sens_future_scaler;
+    // SAFETY: set insulinReq_sens to profile sens if bg falling or expected to
+    insulinReq_sens = (delta < 0 && eventualBG < target_bg ? profile_sens : sens);
 
     // SAFETY: if sleeping then take the max of the sens vars
-    sens_future = (ENSleepMode ? Math.max(sens_profile, sens_normalTarget, sens_currentBG, sens_future) : sens_future);
-    //sens_future = (bg < target_bg && !ENWindowOK ? Math.max(sens_profile, sens_normalTarget, sens_currentBG, sens_future) : sens_future);
+    insulinReq_sens = (ENSleepMode ? Math.max(sens_profile, sens_normalTarget, sens_currentBG, insulinReq_sens) : insulinReq_sens);
 
-    sens_future = round(sens_future,1);
-    enlog += "* sens_eBGweight:\n";
+    insulinReq_sens = round(insulinReq_sens,1);
+    enlog += "* eBGweight:\n";
     enlog += "sens_predType: " + sens_predType+"\n";
-    enlog += "sens_eBGweight final result: " + sens_eBGweight +"\n";
-    // END OF Eventual BG based future sensitivity - sens_future
+    enlog += "eBGweight final result: " + eBGweight +"\n";
+    // END OF Eventual BG based future sensitivity - insulinReq_sens
 
     rT.COB=meal_data.mealCOB;
     rT.IOB=iob_data.iob;
-    rT.reason="COB: " + round(meal_data.mealCOB, 1) + ", Dev: " + convert_bg(deviation, profile) + ", BGI: " + convert_bg(bgi, profile) + ", Delta: " + glucose_status.delta + "/" + glucose_status.short_avgdelta + (delta > 0 ? "=" + round(DeltaPct*100)+ "%" : "") + ", ISF: " + convert_bg(sens_normalTarget, profile) + (profile.use_sens_TDD && sens_normalTarget == MaxISF ? "*" : "") + "/" + convert_bg(sens, profile) + (bg >= ISFbgMax ? "*" : "") + "=" + convert_bg(sens_future, profile) + (sens_future_max ? "*" : "") + ", CR: " + round(carb_ratio, 2) + ", Target: " + convert_bg(target_bg, profile) + (target_bg !=normalTarget ? "(" +convert_bg(normalTarget, profile)+")" : "") + ", minPredBG " + convert_bg(minPredBG, profile) + "="+round((1-sens_eBGweight)*100) + "%, minGuardBG " + convert_bg(minGuardBG, profile) + ", IOBpredBG " + convert_bg(lastIOBpredBG, profile) + ", LGS: " + convert_bg(threshold, profile);
+    rT.reason="COB: " + round(meal_data.mealCOB, 1) + ", Dev: " + convert_bg(deviation, profile) + ", BGI: " + convert_bg(bgi, profile) + ", Delta: " + glucose_status.delta + "/" + glucose_status.short_avgdelta + (delta > 0 ? "=" + round(DeltaPct*100)+ "%" : "") + ", ISF: " + convert_bg(sens_normalTarget, profile) + (profile.use_sens_TDD && sens_normalTarget == MaxISF ? "*" : "") + "/" + convert_bg(sens, profile) +  "=" + convert_bg(insulinReq_sens, profile) + ", CR: " + round(carb_ratio, 2) + ", Target: " + convert_bg(target_bg, profile) + (target_bg !=normalTarget ? "(" +convert_bg(normalTarget, profile)+")" : "") + ", minPredBG " + convert_bg(minPredBG, profile) + "="+round((1-eBGweight)*100) + "%, minGuardBG " + convert_bg(minGuardBG, profile) + ", IOBpredBG " + convert_bg(lastIOBpredBG, profile) + ", LGS: " + convert_bg(threshold, profile);
 
     if (lastCOBpredBG > 0) {
         rT.reason += ", " + (ignoreCOB && !ENWindowOK ? "!" : "") + "COBpredBG " + convert_bg(lastCOBpredBG, profile);
@@ -1398,7 +1380,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // calculate 30m low-temp required to get projected BG up to target
         // multiply by 2 to low-temp faster for increased hypo safety
-        var insulinReq = 2 * Math.min(0, (eventualBG - target_bg) / sens_future);
+        var insulinReq = 2 * Math.min(0, (eventualBG - target_bg) / insulinReq_sens);
         insulinReq = round( insulinReq , 2);
         // calculate naiveInsulinReq based on naive_eventualBG
         var naiveInsulinReq = Math.min(0, (naive_eventualBG - target_bg) / sens);
@@ -1501,12 +1483,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // insulinReq is the additional insulin required to get minPredBG down to target_bg
         //console.error(minPredBG,eventualBG);
-        insulinReq = round( (Math.min(minPredBG,eventualBG) - target_bg) / sens_future, 2);
+        insulinReq = round( (Math.min(minPredBG,eventualBG) - target_bg) / sens_profile, 2);
         // keep the original insulinReq for reporting
         var insulinReqOrig = insulinReq;
 
-        // use sens_eBGweight for insulinReq
-        insulinReq = (sens_future_bg-target_bg) / sens_future;
+        // use eBGweight for insulinReq
+        insulinReq = (insulinReq_bg-target_bg) / insulinReq_sens;
         insulinReq = round(insulinReq,2);
 
         // if that would put us over max_iob, then reduce accordingly
