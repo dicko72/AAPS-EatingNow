@@ -1209,7 +1209,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     insulinReq_sens = (delta < 0 && eventualBG < target_bg ? profile_sens : sens);
 
     // SAFETY: if sleeping then take the max of the sens vars
-    insulinReq_sens = (ENSleepMode ? Math.max(sens_profile, sens_normalTarget, sens_currentBG, insulinReq_sens) : insulinReq_sens);
+    //insulinReq_sens = (ENSleepMode ? Math.max(sens_profile, sens_normalTarget, sens_currentBG, insulinReq_sens) : insulinReq_sens);
+    //sens_future = (bg < target_bg && !ENWindowOK ? Math.max(sens_profile, sens_normalTarget, sens_currentBG, sens_future) : sens_future);
+
 
     insulinReq_sens = round(insulinReq_sens,1);
     enlog += "* eBGweight:\n";
