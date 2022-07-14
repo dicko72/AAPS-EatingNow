@@ -561,49 +561,35 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // Allow user preferences to adjust the scaling of ISF as BG increases
     // Scaling is converted to a percentage, 0 is normal scaling (1), 5 is 5% stronger (0.95) and -5 is 5% weaker (1.05)
-    var ISFBGscaler = profile.ISFbgscaler;
-    enlog += "ISFBGscaler from profile:" + ISFBGscaler +"\n";
-    // At night when below SMB bg no additional scaling unless profile is weaker
-    ISFBGscaler = (!ENtimeOK && bg < SMBbgOffset? Math.min(ISFBGscaler,0) : ISFBGscaler);
-    // When eating now is not active during the day do not apply additional scaling unless weaker
-    ISFBGscaler = (!ENactive && ENtimeOK ? Math.min(ISFBGscaler,0) : ISFBGscaler);
+    // When eating now is not active during the day or at night do not apply additional scaling unless weaker
+    var ISFBGscaler = (ENSleepMode || !ENactive && ENtimeOK ? Math.min(ISFBGscaler,0) : profile.ISFbgscaler);
     enlog += "ISFBGscaler is now:" + ISFBGscaler +"\n";
-
-    // sens_target_bg is used like a target, when the number is lower the ISF scaling is stronger
-    // for delta > 4 and 105% change from short_avg or within COB window MAX 45 mins use lower target for ISF scaling
-    // for all times when EN time is OK use 20% higher target for less ISF scaling - TIR_sens replaces this
-    //var sens_target_bg = (ENWindowOK || bg > SMBbgOffset ? ins_val : ins_val * 1.2);
-    var sens_target_bg = ins_val;
-    // only allow adjusted ISF target when eatingnow time is OK and bg below ISFbgMax, dont use at night
-    sens_target_bg = (ENactive ? sens_target_bg : target_bg);
-    //var sens_BGscaler = (Math.log(Math.min(bg,ISFbgMax)/sens_target_bg)+1);
-    var sens_BGscaler = Math.log(bg/sens_target_bg)+1;
-
     // Convert ISFBGscaler to %
     ISFBGscaler = (100-ISFBGscaler)/100;
     enlog += "ISFBGscaler % is now:" + ISFBGscaler +"\n";
 
-    // Apply ISFBGscaler to sens_BGscaler
+    // sens_target_bg is used like a target, when the number is lower the ISF scaling is stronger
+    // only allow adjusted ISF target when eatingnow time is OK dont use at night
+    var sens_target_bg = (ENactive ?  ins_val : target_bg);
+
+    // define & apply ISFBGscaler as % to sens_BGscaler
+    var sens_BGscaler = Math.log(bg/sens_target_bg)+1;
     sens_BGscaler = sens_BGscaler/ISFBGscaler;
     enlog += "sens_BGscaler adjusted with ISFBGscaler:" + sens_BGscaler +"\n";
 
+    // define the sensitivity for the current bg using previously defined sens at normal target
     var sens_currentBG = sens_normalTarget/sens_BGscaler;
     enlog += "sens_currentBG after scaling:" + convert_bg(sens_currentBG, profile) +"\n";
 
-    // if above target allow scaling and profile ISF as the weakest, if below target use profile ISF as the strongest
+    // SAFETY: if above target allow scaling and profile ISF as the weakest, if below target use profile ISF as the strongest
     sens_currentBG = (bg > sens_target_bg ? Math.min(sens_currentBG,sens_normalTarget) : Math.max(sens_currentBG,sens_normalTarget));
-
-    // in the COB window allow normal ISF as minimum
-    //sens_currentBG = (ENWindowOK ? Math.min(sens_currentBG,sens_normalTarget) : sens_currentBG);
     sens_currentBG = round(sens_currentBG,1);
     enlog += "sens_currentBG final result:"+ convert_bg(sens_currentBG, profile) +"\n";
 
-    // sens is the current bg when EN active e.g. no TT
+    // sens is the current bg when EN active e.g. no TT otherwise use previously defined sens at normal target
     sens = (ENactive ? sens_currentBG : sens_normalTarget);
-    // at night use sens_currentBG without additional scaling
-    //sens = (ENSleepMode ? sens_currentBG : sens);
+    // at night use sens_currentBG, additional scaling from ISFBGscaler has been reduced earlier
     sens = (!ENactive && !ENtimeOK ? sens_currentBG : sens);
-
     enlog += "sens final result:"+sens+"="+convert_bg(sens, profile)+"\n";
 
     // HypoPredBG - TS
@@ -1202,16 +1188,15 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // SAFETY: if bg is falling revert to normal minPredBG weighting
     insulinReq_bg = (delta < 0 && eventualBG < target_bg ? insulinReq_bg_orig : insulinReq_bg);
 
-    // SAFETY: normal minPredBG overnight and in range
+    // SAFETY: normal minPredBG overnight and below smb bg offset
     insulinReq_bg = (ENSleepMode ? insulinReq_bg_orig : insulinReq_bg);
 
     // SAFETY: set insulinReq_sens to profile sens if bg falling or expected to
     insulinReq_sens = (delta < 0 && eventualBG < target_bg ? profile_sens : sens);
 
-    // SAFETY: if sleeping then take the max of the sens vars
+    // SAFETY: if sleeping then take the max of the sens vars - as not using sens_future this may not be required
     //insulinReq_sens = (ENSleepMode ? Math.max(sens_profile, sens_normalTarget, sens_currentBG, insulinReq_sens) : insulinReq_sens);
     //sens_future = (bg < target_bg && !ENWindowOK ? Math.max(sens_profile, sens_normalTarget, sens_currentBG, sens_future) : sens_future);
-
 
     insulinReq_sens = round(insulinReq_sens,1);
     enlog += "* eBGweight:\n";
