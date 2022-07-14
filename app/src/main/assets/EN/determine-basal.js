@@ -1202,7 +1202,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             sens_eBGweight = 0.35;
             //sens_eBGweight = (delta >=6 && DeltaPct > 1 ? 0.50 : sens_eBGweight); // rising faster and accelerating
         }
-        sens_eBGweight = (ENWindowOK ? sens_eBGweight : 0);
+        // EXPERIMENT: With no sens_future is there no present?
+        //sens_eBGweight = (ENWindowOK ? sens_eBGweight : 0);
     }
 
     // SAFETY: when high and delta is small OR if slowing at anytime use minPredBG for sens_future_bg
@@ -1222,6 +1223,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // at night or when EN disabled use sens unless using eatingnow override
     if (!ENactive) sens_future_scaler = Math.log(sens_future_bg/target_bg)+1;
     sens_future = sens_normalTarget/sens_future_scaler;
+
+    // EXPERIMENT: With no sens_future is there no present?
+    sens_future = (delta < 0 && eventualBG < target_bg ? profile_sens : sens);
 
     // SAFETY: if sleeping then take the max of the sens vars
     sens_future = (ENSleepMode ? Math.max(sens_profile, sens_normalTarget, sens_currentBG, sens_future) : sens_future);
