@@ -1208,11 +1208,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // SAFETY: when high and delta is small OR if slowing at anytime use minPredBG for sens_future_bg
     sens_eBGweight = ((bg > ISFbgMax && minDelta >=-2 && minDelta <=2) || DeltaPct <1 ? 0 : sens_eBGweight);
 
-    // SAFETY: if bg is falling increase weighting to minPredBG
-    sens_eBGweight = (delta < 0 && eventualBG < target_bg ? 0 : sens_eBGweight);
-
     // calculate the prediction bg based on the weightings for minPredBG and eventualBG
     sens_future_bg = (Math.max(minPredBG,40) * (1-sens_eBGweight)) + (Math.max(eventualBG,40) * sens_eBGweight);
+
+    // SAFETY: if bg is falling revert to normal minPredBG weighting
+    sens_future_bg = (delta < 0 && eventualBG < target_bg ? Math.min(minPredBG,eventualBG) : sens_future_bg);
 
     //SAFETY: normal minPredBG overnight and in range
     sens_future_bg = (ENSleepMode ? Math.min(minPredBG,eventualBG) : sens_future_bg);
