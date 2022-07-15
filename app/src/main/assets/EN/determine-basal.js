@@ -1167,7 +1167,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (ENtimeOK) {
         if (sens_predType == "UAM") {
             eBGweight = (!COB ? 0.50 : 0.35);
-            eBGweight = (delta > 4 && DeltaPct > 1 && !COB ? 0.70 : eBGweight); // rising and accelerating
+            eBGweight = (delta > 4 && DeltaPct > 1 && !COB ? 0.80 : eBGweight); // rising and accelerating
             //eBGweight = (bg > 126 && delta > 4 && DeltaPct > 1 && !COB ? 0.65 : eBGweight); // rising and accelerating
             //eBGweight = (bg <= 126 && delta > 4 && DeltaPct > 1 && !COB ? 0.85 : eBGweight); // rising and accelerating
         }
@@ -1472,7 +1472,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // insulinReq is the additional insulin required to get minPredBG down to target_bg
         //console.error(minPredBG,eventualBG);
-        insulinReq = round( (Math.min(minPredBG,eventualBG) - target_bg) / sens_profile, 2);
+        insulinReq = round( (Math.min(minPredBG,eventualBG) - target_bg) / insulinReq_sens, 2);
         // keep the original insulinReq for reporting
         var insulinReqOrig = insulinReq;
 
