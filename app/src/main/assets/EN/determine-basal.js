@@ -1159,13 +1159,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // minPredBG and eventualBG based dosing - insulinReq_bg
     // insulinReq_sens is calculated using a percentage of eventualBG (eBGweight) with the rest as minPredBG, to reduce the risk of overdosing.
-    var insulinReq_sens = sens, insulinReq_bg_orig = Math.min(minPredBG,eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight = 0;
+    var insulinReq_sens = sens_normalTarget, insulinReq_bg_orig = Math.min(minPredBG,eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight = 0;
     // categorize the eventualBG prediction type for more accurate weighting
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
 
-    // evaluate prediction type and weighting
-    if (ENtimeOK) {
+    // evaluate prediction type and weighting - dont use when sleeping and below SMB BG Offset
+    if (!ENSleepMode) {
         if (sens_predType == "UAM") {
             eBGweight = (!COB ? 0.50 : 0.35);
             eBGweight = (delta > 4 && DeltaPct > 1 && !COB ? 0.80 : eBGweight); // rising and accelerating
@@ -1177,25 +1177,25 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
         // EXPERIMENT: With no sens_future is there no present?
         //eBGweight = (ENWindowOK ? eBGweight : 0);
+
+        // SAFETY: when high and delta is small OR if slowing at anytime use minPredBG for insulinReq_bg
+        eBGweight = ((bg > ISFbgMax && minDelta >=-2 && minDelta <=2) || DeltaPct <1 ? 0 : eBGweight);
+
+        // calculate the prediction bg based on the weightings for minPredBG and eventualBG
+        insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
+
+        // SAFETY: if bg is falling revert to normal minPredBG weighting
+        insulinReq_bg = (delta < 0 && eventualBG < target_bg ? insulinReq_bg_orig : insulinReq_bg);
+
+        // SAFETY: set insulinReq_sens to profile sens if bg falling or expected to
+        insulinReq_sens = (delta < 0 && eventualBG < target_bg ? sens_normalTarget : sens);
     }
-
-    // SAFETY: when high and delta is small OR if slowing at anytime use minPredBG for insulinReq_bg
-    eBGweight = ((bg > ISFbgMax && minDelta >=-2 && minDelta <=2) || DeltaPct <1 ? 0 : eBGweight);
-
-    // calculate the prediction bg based on the weightings for minPredBG and eventualBG
-    insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
-
-    // SAFETY: if bg is falling revert to normal minPredBG weighting
-    insulinReq_bg = (delta < 0 && eventualBG < target_bg ? insulinReq_bg_orig : insulinReq_bg);
 
     // SAFETY: normal minPredBG overnight and below smb bg offset
     insulinReq_bg = (ENSleepMode ? insulinReq_bg_orig : insulinReq_bg);
 
-    // SAFETY: set insulinReq_sens to profile sens if bg falling or expected to
-    insulinReq_sens = (delta < 0 && eventualBG < target_bg ? profile_sens : sens);
-
-    // SAFETY: if sleeping then take the max of the sens vars - as not using sens_future this may not be required
-    insulinReq_sens = (ENSleepMode ? sens_normalTarget : sens);
+    // SAFETY: if sleeping then use sens at normal target
+    insulinReq_sens = (ENSleepMode ? sens_normalTarget : insulinReq_sens);
 
     insulinReq_sens = round(insulinReq_sens,1);
     enlog += "* eBGweight:\n";
