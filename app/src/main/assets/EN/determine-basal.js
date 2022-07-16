@@ -453,6 +453,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (meal_data.TIRW3H > 10 && TIR_sens == 3) TIR_sens += 1; //20%
     if (meal_data.TIRW4H > 10 && TIR_sens == 4) TIR_sens += 1; //25%
     TIR_sens = Math.min (1+(TIR_sens*0.05), profile.autosens_max);
+    TIR_sens = 1; // disabling as testing
 
     // ISF at normal target
     var sens_normalTarget = sens, sens_profile = sens; // use profile sens and keep profile sens with any SR
