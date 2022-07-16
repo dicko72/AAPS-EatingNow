@@ -1158,7 +1158,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // minPredBG and eventualBG based dosing - insulinReq_bg
     // insulinReq_sens is calculated using a percentage of eventualBG (eBGweight) with the rest as minPredBG, to reduce the risk of overdosing.
-    var insulinReq_sens = sens, insulinReq_bg_orig = Math.min(minPredBG,eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType, eBGweight = 0;
+    var insulinReq_sens = sens, insulinReq_bg_orig = Math.min(minPredBG,eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight = 0;
     // categorize the eventualBG prediction type for more accurate weighting
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
@@ -1168,8 +1168,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (sens_predType == "UAM") {
             eBGweight = (!COB ? 0.50 : 0.35);
             eBGweight = (delta > 4 && DeltaPct > 1 && !COB ? 0.80 : eBGweight); // rising and accelerating
-            //eBGweight = (bg > 126 && delta > 4 && DeltaPct > 1 && !COB ? 0.65 : eBGweight); // rising and accelerating
-            //eBGweight = (bg <= 126 && delta > 4 && DeltaPct > 1 && !COB ? 0.85 : eBGweight); // rising and accelerating
+            eBGweight = (delta > 4 && DeltaPct > 1 && !COB && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
         }
         if (sens_predType == "COB") {
             eBGweight = 0.35;
