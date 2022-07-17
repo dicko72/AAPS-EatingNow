@@ -466,8 +466,8 @@ import kotlin.math.roundToInt
             .subscribeOn(Schedulers.io())
 
     // Eating Now: Get the first bolus since EN Start
-    fun getBolusFromTimeOfType(timestamp: Long, ascending: Boolean, type: Bolus.Type): Single<List<Bolus>> =
-        database.bolusDao.getBolusesFromTimeOfType(type, timestamp)
+    fun getENBolusFromTimeOfType(timestamp: Long, ascending: Boolean, type: Bolus.Type, minbolus: Double): Single<List<Bolus>> =
+        database.bolusDao.getBolusesFromTimeOfType(type, timestamp, minbolus)
             .map { if (!ascending) it.reversed() else it }
             .subscribeOn(Schedulers.io())
 

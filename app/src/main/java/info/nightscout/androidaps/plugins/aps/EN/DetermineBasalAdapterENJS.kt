@@ -246,6 +246,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         // Within the EN Window ********************************************************************************
         this.profile.put("ENWindow", sp.getInt(R.string.key_eatingnow_enwindowminutes, 0))
         this.profile.put("ENWIOBTrigger", sp.getDouble(R.string.key_enwindowiob, 0.0))
+        val enwMinBolus = sp.getDouble(R.string.key_enwminbolus, 0.0)
+        this.profile.put("ENWMinBolus", enwMinBolus)
         this.profile.put("ENautostart", sp.getBoolean(R.string.key_enautostart, false))
 
         // Breakfast / first meal
@@ -318,8 +320,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.mealData.put("firstCarbTime",firstCarbTime)
 
         // get the FIRST bolus time since EN activation
-        val firstENBolusTime = repository.getBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL ).blockingGet().lastOrNull()?.timestamp
-        val firstENBolusUnits = repository.getBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL ).blockingGet().lastOrNull()?.amount
+        val firstENBolusTime = repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.timestamp
+        val firstENBolusUnits = repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.amount
         this.mealData.put("firstENBolusTime",firstENBolusTime)
         this.mealData.put("firstENBolusUnits",firstENBolusUnits)
 
@@ -336,8 +338,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         }
 
         // get the LAST bolus time since EN activation
-        val lastENBolusTime = repository.getBolusFromTimeOfType(ENStartTime,false, Bolus.Type.NORMAL ).blockingGet().lastOrNull()?.timestamp
-        val lastENBolusUnits = repository.getBolusFromTimeOfType(ENStartTime,false, Bolus.Type.NORMAL ).blockingGet().lastOrNull()?.amount
+        val lastENBolusTime = repository.getENBolusFromTimeOfType(ENStartTime,false, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.timestamp
+        val lastENBolusUnits = repository.getENBolusFromTimeOfType(ENStartTime,false, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.amount
         this.mealData.put("lastENBolusTime",lastENBolusTime)
         this.mealData.put("lastENBolusUnits",lastENBolusUnits)
 
