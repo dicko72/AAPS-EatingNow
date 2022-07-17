@@ -298,18 +298,6 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
-
-            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
-                android:defaultValue="0"
-                android:digits="0123456789"
-                android:inputType="number"
-                android:key="@string/key_eatingnow_enwindowminutes"
-                android:title="EN Window Duration"
-                android:dialogMessage="Window in minutes for increased maxBolus with COB or UAM.\n0 will disable and allow AAPS maxBolus limit."
-                validate:maxNumber="120"
-                validate:minNumber="0"
-                validate:testType="numericRange" />
-
 <!--            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference-->
 <!--                android:defaultValue="0"-->
 <!--                android:inputType="number"-->
@@ -321,6 +309,17 @@
 <!--                validate:testType="numericRange" />-->
 
             <Preference android:summary="The first manual bolus or carb entry is considered breakfast, or the first meal of the day.\nThe time of the first meal of the day may vary. ISF and CR scaling can be applied to a single ISF/CR profile entry allowing flexibility without profile shifts."></Preference>
+
+            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:digits="0123456789"
+                android:inputType="number"
+                android:key="@string/key_enbkfstwindowminutes"
+                android:title="EN Breakfast Window Duration"
+                android:dialogMessage="Window in minutes for increased maxBolus with COB or UAM.\n0 will disable and allow AAPS maxBolus limit."
+                validate:maxNumber="120"
+                validate:minNumber="0"
+                validate:testType="numericRange" />
 
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="100"
@@ -352,7 +351,18 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
-            <Preference android:summary="A larger COB and UAM maxBolus may also be defined within the EN Window for subsequent meals."></Preference>
+            <Preference android:summary="An ENW duration, larger COB and UAM maxBolus may also be defined within the EN Window for subsequent meals."></Preference>
+
+            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:digits="0123456789"
+                android:inputType="number"
+                android:key="@string/key_eatingnow_enwindowminutes"
+                android:title="EN Window Duration"
+                android:dialogMessage="Window in minutes for increased maxBolus with COB or UAM.\n0 will disable and allow AAPS maxBolus limit."
+                validate:maxNumber="120"
+                validate:minNumber="0"
+                validate:testType="numericRange" />
 
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"
