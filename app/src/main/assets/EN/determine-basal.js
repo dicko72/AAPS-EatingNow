@@ -1179,6 +1179,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = (!COB ? 0.50 : 0.35);
             eBGweight = (delta > 4 && DeltaPct > 1 && !COB ? 0.80 : eBGweight); // rising and accelerating
             eBGweight = (delta > 4 && DeltaPct > 1 && !COB && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
+            //eBGweight = (delta > 4 && DeltaPct > 1 && !COB && bg <= 144 && ENWindowOK ? 1 : eBGweight); // initial rising and accelerating
         }
         if (sens_predType == "COB") {
             eBGweight = 0.35;
