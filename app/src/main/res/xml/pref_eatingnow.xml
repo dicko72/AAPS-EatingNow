@@ -272,7 +272,7 @@
         </PreferenceCategory>
 
         <PreferenceCategory
-            android:title="Eating Now Window Active"
+            android:title="Within EN Window"
             android:summary="Settings for within the EN Window."
             app:initialExpandedChildrenCount="0">
 
@@ -387,7 +387,7 @@
         </PreferenceCategory>
 
         <PreferenceCategory
-            android:title="Eating Now Window Inactive"
+            android:title="Outside EN Window"
             android:summary="Settings for outside of the EN Window."
             app:initialExpandedChildrenCount="0">
 
