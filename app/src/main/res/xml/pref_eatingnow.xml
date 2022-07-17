@@ -44,7 +44,7 @@
         <SwitchPreference
             android:defaultValue="false"
             android:key="openapsama_useautosens"
-            android:summary="Restricted to maximum of 1 with advanced ISF"
+            android:summary="Restricted to maximum of 1 with dynamic ISF"
             android:title="@string/openapsama_useautosens" />
 
         <SwitchPreference
@@ -174,7 +174,7 @@
             android:singleLine="true"
             android:summary="@string/carbsReqThreshold_summary"
             android:title="@string/carbsReqThreshold"
-            validate:maxNumber="10"
+            validate:maxNumber="200"
             validate:minNumber="1"
             validate:testType="numericRange" />
 
@@ -419,6 +419,12 @@
             android:title="Eating Now ISF"
             android:summary="ISF related settings."
             app:initialExpandedChildrenCount="0">
+
+            <SwitchPreference
+                android:defaultValue="true"
+                android:key="key_use_dynamicISF"
+                android:title="Use dynamic ISF"
+                android:summary="As BG increases ISF will become stronger when enabled." />
 
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"

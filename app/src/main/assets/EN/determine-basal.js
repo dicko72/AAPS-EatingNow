@@ -584,7 +584,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // define & apply ISFBGscaler as % to sens_BGscaler
     var sens_BGscaler = Math.log(bg/sens_target_bg)+1;
-    sens_BGscaler = sens_BGscaler/ISFBGscaler;
+    sens_BGscaler = (profile.useDynISF ? sens_BGscaler/ISFBGscaler : 1);
     enlog += "sens_BGscaler adjusted with ISFBGscaler:" + sens_BGscaler +"\n";
 
     // define the sensitivity for the current bg using previously defined sens at normal target
