@@ -399,10 +399,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // set the ENW run and duration depending on meal type
     ENWindowRunTime = (firstMealWindow ? ENWindowRunTime : Math.min(cTime, bTime, ttTime));
     var ENWindowDuration = (firstMealWindow ? profile.ENBkfstWindow : profile.ENWindow);
-    ENWindowDuration = (!firstMealWindow && meal_data.activeENTempTargetDuration > ENWindowDuration - ENWindowRunTime ? meal_data.activeENTempTargetDuration : ENWindowDuration);
+    //ENWindowDuration = (!firstMealWindow && meal_data.activeENTempTargetDuration > ENWindowDuration - ENWindowRunTime ? meal_data.activeENTempTargetDuration : ENWindowDuration);
+    ENWindowDuration = (firstMealWindow ? ENWindowDuration : Math.max(meal_data.activeENTempTargetDuration,ENWindowDuration));
 
     // ENWindowOK is when there is a recent COB entry or manual bolus
-    ENWindowOK = (ENactive && ENWindowDuration > 0 && Math.min(c1Time, cTime ,bTime, b1Time) < ENWindowDuration || ENWTriggerOK);
+    ENWindowOK = (ENactive && ENWindowRunTime < ENWindowDuration || ENWTriggerOK);
     //if (!COB && (Math.min(b1Time,bTime) > profile.ENWindow) && !profile.temptargetSet && !ENWTriggerOK) ENWindowOK = false; // if theres no COB and no recent bolus or TT then close the EN window
 
     // stronger CR and ISF can be used when firstmeal is within 2h window
@@ -410,8 +411,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var carb_ratio = (firstMealScaling ? round(profile.carb_ratio_midnight/(profile.BreakfastPct/100),1) : profile.carb_ratio);
     sens = (firstMealScaling ? round(profile.sens_midnight/(profile.BreakfastPct/100),1) : sens);
 
-    enlog += "ENTime: " + ENTime + ", firstMealWindow: "+ firstMealWindow + ", firstMealScaling: "+ firstMealScaling + ", b1Time:" +b1Time+", c1Time:" +c1Time+ ", tt1Time:"+tt1Time+", bTime:" +bTime+ ", cTime:" +cTime+", ENWindowOK:" + ENWindowOK+"\n";
-    enlog += "ENWindowDuration: " + ENWindowDuration+"\n";
+    enlog += "ENTime: " + ENTime + ", firstMealWindow: "+ firstMealWindow + ", firstMealScaling: "+ firstMealScaling + ", b1Time:" +b1Time+", c1Time:" +c1Time+ ", tt1Time:"+tt1Time+", bTime:" +bTime+ ", cTime:" +cTime+ ", ttTime:"+ttTime+", ENWindowOK:" + ENWindowOK+"\n";
+    enlog += "ENWindowRunTime: " + ENWindowRunTime+", ENWindowDuration: " + ENWindowDuration+"\n";
 
     // If GhostCOB is enabled we will use COB when ENWindowOK but outside this window UAM will be used
     if (ignoreCOB && ENWindowOK && meal_data.mealCOB > 0 ) ignoreCOB = false;
