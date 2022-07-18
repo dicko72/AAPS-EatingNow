@@ -457,10 +457,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // TIR_sens - the amount of % like AS *** UNDER CONSTRUCTION ****
     var TIR_sens = 0;
     enlog += "* TIR_sens:\n";
-    if (meal_data.TIRW1H > 60 && TIR_sens == 0) TIR_sens += 2; //10%
-    if (meal_data.TIRW2H > 10 && TIR_sens == 2) TIR_sens += 1; //15%
-    if (meal_data.TIRW3H > 10 && TIR_sens == 3) TIR_sens += 1; //20%
-    if (meal_data.TIRW4H > 10 && TIR_sens == 4) TIR_sens += 1; //25%
+//    if (meal_data.TIRW1H > 60 && TIR_sens == 0) TIR_sens += 2; //10%
+//    if (meal_data.TIRW2H > 10 && TIR_sens == 2) TIR_sens += 1; //15%
+//    if (meal_data.TIRW3H > 10 && TIR_sens == 3) TIR_sens += 1; //20%
+//    if (meal_data.TIRW4H > 10 && TIR_sens == 4) TIR_sens += 1; //25%
     TIR_sens = Math.min (1+(TIR_sens*0.05), profile.autosens_max);
     TIR_sens = 1; // disabling as testing
 
@@ -1245,8 +1245,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // other EN stuff
     rT.reason += (sens_predType !="NA" ? ", eBGw: " + sens_predType + " " +  round(eBGweight*100) + "%" : "");
     rT.reason += ", TDD:" + round(TDD, 2) + " " + (profile.sens_TDD_scale !=100 ? profile.sens_TDD_scale + "% " : "") + "("+convert_bg(sens_TDD, profile)+")";
-    rT.reason += (TIR_sens >1 ? ", TIRH:" + round(meal_data.TIRW4H) + "/" + round(meal_data.TIRW3H) + "/" + round(meal_data.TIRW2H) +"/"+round(meal_data.TIRW1H) : "");
-    rT.reason += (TIR_sens <1 ? ", TIRL:" + round(meal_data.TIRW4L) + "/" + round(meal_data.TIRW3L) + "/" + round(meal_data.TIRW2L) +"/"+round(meal_data.TIRW1L) : "");
+//    rT.reason += (TIR_sens >1 ? ", TIRH:" + round(meal_data.TIRW4H) + "/" + round(meal_data.TIRW3H) + "/" + round(meal_data.TIRW2H) +"/"+round(meal_data.TIRW1H) : "");
+//    rT.reason += (TIR_sens <1 ? ", TIRL:" + round(meal_data.TIRW4L) + "/" + round(meal_data.TIRW3L) + "/" + round(meal_data.TIRW2L) +"/"+round(meal_data.TIRW1L) : "");
     rT.reason += ", TIRS: " + TIR_sens;
     rT.reason += (profile.enableSRTDD ? ", SR_TDD: " + round(SR_TDD,2) : "");
     rT.reason += ", SR: " + (typeof autosens_data !== 'undefined' && autosens_data ? round(autosens_data.ratio,2) + "=": "") + sensitivityRatio;
