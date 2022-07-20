@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.utils.stats
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Typeface
 import android.util.LongSparseArray
@@ -99,62 +98,30 @@ class TddCalculator @Inject constructor(
         return result
     }
 
+    fun calculateToday(): TotalDailyDose {
+        var startTime = MidnightTime.calc(dateUtil.now())
+        val endTime = dateUtil.now()
+        return calculate(startTime, endTime)
+    }
+
     fun calculateDaily(startHours: Long, endHours: Long): TotalDailyDose {
         val startTime = dateUtil.now() + T.hours(hour = startHours).msecs()
         val endTime = dateUtil.now() + T.hours(hour = endHours).msecs()
-        val tdd = TotalDailyDose(timestamp = startTime)
-        repository.getBolusesDataFromTimeToTime(startTime, endTime, true).blockingGet()
-            .filter { it.type != Bolus.Type.PRIMING }
-            .forEach { t ->
-                tdd.bolusAmount += t.amount
-            }
-        repository.getCarbsDataFromTimeToTimeExpanded(startTime, endTime, true).blockingGet().forEach { t ->
-            tdd.carbs += t.amount
-        }
-        val calculationStep = T.mins(5).msecs()
-        for (t in startTime until endTime step calculationStep) {
-            val tbr = iobCobCalculator.getTempBasalIncludingConvertedExtended(t)
-            val profile = profileFunction.getProfile(t) ?: continue
-            val absoluteRate = tbr?.convertedToAbsolute(t, profile) ?: profile.getBasal(t)
-            tdd.basalAmount += absoluteRate / 60.0 * 5.0
-
-            if (!activePlugin.activePump.isFakingTempsByExtendedBoluses) {
-                // they are not included in TBRs
-                val eb = iobCobCalculator.getExtendedBolus(t)
-                val absoluteEbRate = eb?.rate ?: 0.0
-                tdd.bolusAmount += absoluteEbRate / 60.0 * 5.0
-            }
-        }
-        tdd.totalAmount = tdd.bolusAmount + tdd.basalAmount
-        aapsLogger.debug(LTag.CORE, tdd.toString())
-        return tdd
+        return calculate(startTime, endTime)
     }
 
-    fun calculateHoursPrior(hrsPriorStart: Long, hrsPriorEnd: Long):TotalDailyDose {
-        val  startTime = dateUtil.now() - T.hours(hour = hrsPriorStart).msecs()
-        val  endTime = dateUtil.now() - T.hours(hour = hrsPriorEnd).msecs()
+    fun calculate(startTime: Long, endTime: Long): TotalDailyDose {
         val tdd = TotalDailyDose(timestamp = startTime)
-        //val result = TotalDailyDose()
         repository.getBolusesDataFromTimeToTime(startTime, endTime, true).blockingGet()
             .filter { it.type != Bolus.Type.PRIMING }
             .forEach { t ->
-                //val midnight = MidnightTime.calc(t.timestamp)
-                //val tdd = result[midnight] ?: TotalDailyDose(timestamp = midnight)
                 tdd.bolusAmount += t.amount
-                //result.put(midnight, tdd)
             }
         repository.getCarbsDataFromTimeToTimeExpanded(startTime, endTime, true).blockingGet().forEach { t ->
-            //val midnight = MidnightTime.calc(t.timestamp)
-            //val tdd = result[midnight] ?: TotalDailyDose(timestamp = midnight)
             tdd.carbs += t.amount
-            //result.put(midnight, tdd)
         }
         val calculationStep = T.mins(5).msecs()
-        val tempBasals = iobCobCalculator.getTempBasalIncludingConvertedExtendedForRange(startTime, endTime, calculationStep)
         for (t in startTime until endTime step calculationStep) {
-
-            //val midnight = MidnightTime.calc(t)
-            //val tdd = result[midnight] ?: TotalDailyDose(timestamp = midnight)
             val tbr = iobCobCalculator.getTempBasalIncludingConvertedExtended(t)
             val profile = profileFunction.getProfile(t) ?: continue
             val absoluteRate = tbr?.convertedToAbsolute(t, profile) ?: profile.getBasal(t)
@@ -166,14 +133,8 @@ class TddCalculator @Inject constructor(
                 val absoluteEbRate = eb?.rate ?: 0.0
                 tdd.bolusAmount += absoluteEbRate / 60.0 * 5.0
             }
-            //result.put(midnight, tdd)
         }
-        //for (i in 0 until tdd.size()) {
-        //val tdd = result.valueAt(i)
         tdd.totalAmount = tdd.bolusAmount + tdd.basalAmount
-        //}
-
-
         aapsLogger.debug(LTag.CORE, tdd.toString())
         return tdd
     }
@@ -195,10 +156,10 @@ class TddCalculator @Inject constructor(
         return totalTdd
     }
 
-    @SuppressLint("SetTextI18n")
     fun stats(context: Context): TableLayout {
         val tdds = calculate(7)
         val averageTdd = averageTDD(tdds)
+        val todayTdd = calculateToday()
         val lp = TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT)
         return TableLayout(context).also { layout ->
             layout.layoutParams = TableLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
@@ -220,6 +181,13 @@ class TddCalculator @Inject constructor(
                 })
                 layout.addView(averageTdd.toTableRow(context, rh, tdds.size(), includeCarbs = true))
             }
+            layout.addView(TextView(context).apply {
+                text = rh.gs(R.string.today)
+                setTypeface(typeface, Typeface.BOLD)
+                gravity = Gravity.CENTER_HORIZONTAL
+                setTextAppearance(android.R.style.TextAppearance_Material_Medium)
+            })
+            layout.addView(todayTdd.toTableRow(context, rh, dateUtil, includeCarbs = true))
         }
     }
 }
