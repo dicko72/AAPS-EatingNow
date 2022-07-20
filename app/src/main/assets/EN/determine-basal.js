@@ -1185,8 +1185,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
         if (sens_predType == "COB") {
             eBGweight = 0.50;
-            //eBGweight = 0.35;
-            //eBGweight = (delta >=6 && DeltaPct > 1 ? 0.50 : eBGweight); // rising faster and accelerating
+            eBGweight = (delta > 4 && DeltaPct > 1 && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
         }
         // EXPERIMENT: With no sens_future is there no present?
         //eBGweight = (ENWindowOK ? eBGweight : 0);
@@ -1197,11 +1196,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG
         insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
 
-        // SAFETY: if bg is falling revert to normal minPredBG weighting
-        insulinReq_bg = (delta < 0 && eventualBG < target_bg ? insulinReq_bg_orig : insulinReq_bg);
+        // SAFETY: if bg is falling or slowing revert to normal minPredBG weighting
+        insulinReq_bg = (delta < 0 && eventualBG < target_bg || DeltaPct <1 ? insulinReq_bg_orig : insulinReq_bg);
 
-        // SAFETY: set insulinReq_sens to profile sens if bg falling or expected to
-        insulinReq_sens = (delta < 0 && eventualBG < target_bg ? sens_normalTarget : sens);
+        // SAFETY: set insulinReq_sens to profile sens if bg falling or slowing
+        insulinReq_sens = (delta < 0 && eventualBG < target_bg  || DeltaPct <1 ? sens_normalTarget : sens);
     }
 
     // SAFETY: normal minPredBG overnight and below smb bg offset
