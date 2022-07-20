@@ -459,10 +459,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // TIR_sens - the amount of % like AS *** UNDER CONSTRUCTION ****
     var TIR_sens = 0;
     enlog += "* TIR_sens:\n";
-//    if (meal_data.TIRW1H > 60 && TIR_sens == 0) TIR_sens += 2; //10%
-//    if (meal_data.TIRW2H > 10 && TIR_sens == 2) TIR_sens += 1; //15%
-//    if (meal_data.TIRW3H > 10 && TIR_sens == 3) TIR_sens += 1; //20%
-//    if (meal_data.TIRW4H > 10 && TIR_sens == 4) TIR_sens += 1; //25%
+    if (meal_data.TIRW1H > 60 && TIR_sens == 0) TIR_sens += 2; //10%
+    if (meal_data.TIRW2H > 10 && TIR_sens == 2) TIR_sens += 1; //15%
+    if (meal_data.TIRW3H > 10 && TIR_sens == 3) TIR_sens += 1; //20%
+    if (meal_data.TIRW4H > 10 && TIR_sens == 4) TIR_sens += 1; //25%
     TIR_sens = Math.min (1+(TIR_sens*0.05), profile.autosens_max);
     TIR_sens = 1; // disabling as testing
 
@@ -1184,7 +1184,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //eBGweight = (delta > 4 && DeltaPct > 1 && !COB && bg <= 144 && ENWindowOK ? 1 : eBGweight); // initial rising and accelerating
         }
         if (sens_predType == "COB") {
-            eBGweight = 0.35;
+            eBGweight = 0.50;
+            //eBGweight = 0.35;
             //eBGweight = (delta >=6 && DeltaPct > 1 ? 0.50 : eBGweight); // rising faster and accelerating
         }
         // EXPERIMENT: With no sens_future is there no present?
@@ -1245,7 +1246,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += (ENWTriggerOK && !ENSleepMode ? " IOB&gt;" + round(ENWIOBThreshU,2) : "");
 
     // other EN stuff
-    rT.reason += (sens_predType !="NA" ? ", eBGw: " + sens_predType + " " +  round(eBGweight*100) + "%" : "");
+    rT.reason += (sens_predType !="NA" ? ", eBGw: " + sens_predType + " " +  round(eBGweight*100) + "% ("+convert_bg(insulinReq_bg,profile)+")" : "");
     rT.reason += ", TDD:" + round(TDD, 2) + " " + (profile.sens_TDD_scale !=100 ? profile.sens_TDD_scale + "% " : "") + "("+convert_bg(sens_TDD, profile)+")";
 //    rT.reason += (TIR_sens >1 ? ", TIRH:" + round(meal_data.TIRW4H) + "/" + round(meal_data.TIRW3H) + "/" + round(meal_data.TIRW2H) +"/"+round(meal_data.TIRW1H) : "");
 //    rT.reason += (TIR_sens <1 ? ", TIRL:" + round(meal_data.TIRW4L) + "/" + round(meal_data.TIRW3L) + "/" + round(meal_data.TIRW2L) +"/"+round(meal_data.TIRW1L) : "");
@@ -1571,18 +1572,19 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // ============== DELTA & IOB BASED RESTRICTIONS ==============
                 // if the delta is increasing allow larger SMB, COB predictions and COB window are always allowed larger SMB
                 // IOB should be positive to cater for unexpected sudden jumps relating to basal unless COB as above
-                var DeltaPctThreshold = 1.10;
-                if ((DeltaPct > DeltaPctThreshold && iob_data.iob > maxBolus * 0.75) || sens_predType == "COB" || ENWindowOK) {
-                    insulinReqPct = insulinReqPct;
-                    ENMaxSMB = ENMaxSMB;
-                    if (DeltaPct > DeltaPctThreshold && !ENWindowOK) ENReason += ", DeltaPct &gt; " + round(DeltaPctThreshold*100) + "% EN" + (ENWindowOK ? "W" : "") + "-SMB";
-                } else {
-                    // prevent SMB when below target for UAM rises Hypo Rebound Protection :)
-                    insulinReqPct = (bg < threshold && ENWIOBThreshU == 0 ? 0 : insulinReqPct); // disable SMB when below target and no intent to use auto EN window trigger
-                    ENReason += (insulinReqPct == 0 ? ", HypoSafety No SMB" : "");
-                    ENReason += (insulinReqPct != 0  && iob_data.iob < maxBolus * 0.75 ? ", Low IOB Restrict SMB" : "");
-                    ENMaxSMB = Math.min(maxBolus,ENMaxSMB); // use the most restrictive
-                }
+//                var DeltaPctThreshold = 1;
+//                //if ((DeltaPct > DeltaPctThreshold && iob_data.iob > maxBolus * 0.75) || sens_predType == "COB" || ENWindowOK) {
+//                if (DeltaPct > DeltaPctThreshold && ENWindowOK) {
+//                    insulinReqPct = insulinReqPct;
+//                    ENMaxSMB = ENMaxSMB;
+//                    //if (DeltaPct > DeltaPctThreshold && !ENWindowOK) ENReason += ", DeltaPct &gt; " + round(DeltaPctThreshold*100) + "% EN" + (ENWindowOK ? "W" : "") + "-SMB";
+//                } else {
+//                    // prevent SMB when below target for UAM rises Hypo Rebound Protection :)
+//                    insulinReqPct = (bg < threshold && !ENWindowOK ENWIOBThreshU == 0 ? 0 : insulinReqPct); // disable SMB when below target and no intent to use auto EN window trigger
+//                    ENReason += (insulinReqPct == 0 ? ", HypoSafety No SMB" : "");
+//                    ENReason += (insulinReqPct != 0  && iob_data.iob < maxBolus * 0.75 ? ", Low IOB Restrict SMB" : "");
+//                    ENMaxSMB = Math.min(maxBolus,ENMaxSMB); // use the most restrictive
+//                }
                 // ===================================================
 
                 if (ENtimeOK) {

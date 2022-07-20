@@ -47,6 +47,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
     @Inject lateinit var activePlugin: ActivePlugin
     @Inject lateinit var repository: AppRepository
     @Inject lateinit var dateUtil: DateUtil
+    @Inject lateinit var tddCalculator: TddCalculator
+    @Inject lateinit var tirCalculator: TirCalculator
 
     private var profile = JSONObject()
     private var mGlucoseStatus = JSONObject()
@@ -58,8 +60,6 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
     private var smbAlwaysAllowed = false
     private var currentTime: Long = 0
     private var saveCgmSource = false
-    private var tddAIMI: TddCalculator? = null
-    private var StatTIR: TirCalculator? = null
 
     override var currentTempParam: String? = null
     override var iobDataParam: String? = null
@@ -350,32 +350,31 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("BasalAt3PM", profile.getBasal(3600000*15+MidnightTime.calc(now)))
 
         // TDD
-        tddAIMI = TddCalculator(aapsLogger,rh,activePlugin,profileFunction,dateUtil,iobCobCalculator, repository)
-        this.mealData.put("TDDAvg1d", tddAIMI!!.averageTDD(tddAIMI!!.calculate(1))?.totalAmount)
-        this.mealData.put("TDDAvg7d", tddAIMI!!.averageTDD(tddAIMI!!.calculate(7))?.totalAmount)
-        this.mealData.put("TDDLast4h", tddAIMI!!.calculateHoursPrior(4, 0).totalAmount)
-        this.mealData.put("TDDLast8h", tddAIMI!!.calculateHoursPrior(8, 0).totalAmount)
-        this.mealData.put("TDDLast8hfor4h", tddAIMI!!.calculateHoursPrior(8,4).totalAmount)
+        this.mealData.put("TDDAvg1d", tddCalculator.averageTDD(tddCalculator.calculate(1))?.totalAmount)
+        this.mealData.put("TDDAvg7d", tddCalculator.averageTDD(tddCalculator.calculate(7))?.totalAmount)
+        this.mealData.put("TDDLast4h", tddCalculator.calculateDaily(-4, 0).totalAmount)
+        this.mealData.put("TDDLast8h", tddCalculator.calculateDaily(-8, 0).totalAmount)
+        this.mealData.put("TDDLast8hfor4h", tddCalculator.calculateDaily(-8,-4).totalAmount)
+
         // Override profile ISF with TDD ISF if selected in prefs
         this.profile.put("use_sens_TDD", sp.getBoolean(R.string.key_use_sens_tdd, false))
         this.profile.put("sens_TDD_scale",SafeParse.stringToDouble(sp.getString(R.string.key_sens_tdd_scale,"100")))
 
         // TIR Windows - 4 hours prior to current time // 4.0 - 10.0
-        StatTIR = TirCalculator(rh,profileFunction,dateUtil,repository)
-        // this.mealData.put("TIRW4H",StatTIR!!.averageTIR(StatTIR!!.calculateHoursPrior(4,3,72.0, 180.0)).abovePct())
-        // this.mealData.put("TIRW3H",StatTIR!!.averageTIR(StatTIR!!.calculateHoursPrior(3,2,72.0, 180.0)).abovePct())
-        // this.mealData.put("TIRW2H",StatTIR!!.averageTIR(StatTIR!!.calculateHoursPrior(2,1,72.0, 180.0)).abovePct())
-        // this.mealData.put("TIRW1H",StatTIR!!.averageTIR(StatTIR!!.calculateHoursPrior(1,0,72.0, 180.0)).abovePct())
-        //
-        // this.mealData.put("TIRW4",StatTIR!!.averageTIR(StatTIR!!.calculateHoursPrior(4,3,72.0, 180.0)).inRangePct())
-        // this.mealData.put("TIRW3",StatTIR!!.averageTIR(StatTIR!!.calculateHoursPrior(3,2,72.0, 180.0)).inRangePct())
-        // this.mealData.put("TIRW2",StatTIR!!.averageTIR(StatTIR!!.calculateHoursPrior(2,1,72.0, 180.0)).inRangePct())
-        // this.mealData.put("TIRW1",StatTIR!!.averageTIR(StatTIR!!.calculateHoursPrior(1,0,72.0, 180.0)).inRangePct())
-        //
-        // this.mealData.put("TIRW4L",StatTIR!!.averageTIR(StatTIR!!.calculateHoursPrior(4,3,72.0, 180.0)).belowPct())
-        // this.mealData.put("TIRW3L",StatTIR!!.averageTIR(StatTIR!!.calculateHoursPrior(3,2,72.0, 180.0)).belowPct())
-        // this.mealData.put("TIRW2L",StatTIR!!.averageTIR(StatTIR!!.calculateHoursPrior(2,1,72.0, 180.0)).belowPct())
-        // this.mealData.put("TIRW1L",StatTIR!!.averageTIR(StatTIR!!.calculateHoursPrior(1,0,72.0, 180.0)).belowPct())
+        this.mealData.put("TIRW4H",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4,3,72.0, 180.0)).abovePct())
+        this.mealData.put("TIRW3H",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3,2,72.0, 180.0)).abovePct())
+        this.mealData.put("TIRW2H",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2,1,72.0, 180.0)).abovePct())
+        this.mealData.put("TIRW1H",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1,0,72.0, 180.0)).abovePct())
+
+        this.mealData.put("TIRW4",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4,3,72.0, 180.0)).inRangePct())
+        this.mealData.put("TIRW3",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3,2,72.0, 180.0)).inRangePct())
+        this.mealData.put("TIRW2",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2,1,72.0, 180.0)).inRangePct())
+        this.mealData.put("TIRW1",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1,0,72.0, 180.0)).inRangePct())
+
+        this.mealData.put("TIRW4L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4,3,72.0, 180.0)).belowPct())
+        this.mealData.put("TIRW3L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3,2,72.0, 180.0)).belowPct())
+        this.mealData.put("TIRW2L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2,1,72.0, 180.0)).belowPct())
+        this.mealData.put("TIRW1L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1,0,72.0, 180.0)).belowPct())
 
         if (constraintChecker.isAutosensModeEnabled().value()) {
             autosensData.put("ratio", autosensDataRatio)
