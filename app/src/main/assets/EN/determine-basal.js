@@ -380,26 +380,28 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // breakfast/first meal related vars
     // firstMealWindow is when either c1Time or b1Time is less than EN Window
     var firstMealWindow = false;
+    // if breakfast window not set use ENW
+    var ENBkfstWindow = (profile.ENBkfstWindow == 0 ?  profile.ENWindow : profile.ENBkfstWindow);
     if (ENactive && c1Time < profile.ENBkfstWindow) { // first cob entry is active and within EN Window
         firstMealWindow = true;
-        if (b1Time != 9999 && b1Time > profile.ENBkfstWindow) firstMealWindow = false; // first bolus has also happened and is more than EN Window
-        if (tt1Time != 9999 && tt1Time > profile.ENBkfstWindow) firstMealWindow = false; // first TT has also happened and is more than EN Window
+        if (b1Time != 9999 && b1Time > ENBkfstWindow) firstMealWindow = false; // first bolus has also happened and is more than EN Window
+        if (tt1Time != 9999 && tt1Time > ENBkfstWindow) firstMealWindow = false; // first TT has also happened and is more than EN Window
         ENWindowRunTime = c1Time;
-    } else if (ENactive && b1Time < profile.ENBkfstWindow) { // first bolus entry is active and within EN Window
+    } else if (ENactive && b1Time < ENBkfstWindow) { // first bolus entry is active and within EN Window
         firstMealWindow = true;
-        if (c1Time != 9999 && c1Time > profile.ENBkfstWindow) firstMealWindow = false; // first COB entry has also happened and is more than EN Window
-        if (tt1Time != 9999 && tt1Time > profile.ENBkfstWindow) firstMealWindow = false; // first TT has also happened and is more than EN Window
+        if (c1Time != 9999 && c1Time > ENBkfstWindow) firstMealWindow = false; // first COB entry has also happened and is more than EN Window
+        if (tt1Time != 9999 && tt1Time > ENBkfstWindow) firstMealWindow = false; // first TT has also happened and is more than EN Window
         ENWindowRunTime = b1Time;
-    } else if (ENactive && profile.temptargetSet && tt1Time < profile.ENBkfstWindow) { // first bolus entry is active and within EN Window
+    } else if (ENactive && profile.temptargetSet && tt1Time < ENBkfstWindow) { // first bolus entry is active and within EN Window
         firstMealWindow = true;
-        if (b1Time != 9999 && b1Time > profile.ENBkfstWindow) firstMealWindow = false; // first bolus has also happened and is more than EN Window
-        if (c1Time != 9999 && c1Time > profile.ENBkfstWindow) firstMealWindow = false; // first COB entry has also happened and is more than EN Window
+        if (b1Time != 9999 && b1Time > ENBkfstWindow) firstMealWindow = false; // first bolus has also happened and is more than EN Window
+        if (c1Time != 9999 && c1Time > ENBkfstWindow) firstMealWindow = false; // first COB entry has also happened and is more than EN Window
         ENWindowRunTime = tt1Time;
     }
 
     // set the ENW run and duration depending on meal type
     ENWindowRunTime = (firstMealWindow ? ENWindowRunTime : Math.min(cTime, bTime, ttTime));
-    var ENWindowDuration = (firstMealWindow ? profile.ENBkfstWindow : profile.ENWindow);
+    var ENWindowDuration = (firstMealWindow ? ENBkfstWindow : profile.ENWindow);
     var ENWttDuration = (meal_data.activeENTempTargetDuration ? meal_data.activeENTempTargetDuration : 0);
     //ENWindowDuration = (!firstMealWindow && meal_data.activeENTempTargetDuration > ENWindowDuration - ENWindowRunTime ? meal_data.activeENTempTargetDuration : ENWindowDuration);
     ENWindowDuration = (firstMealWindow ? ENWindowDuration : Math.max(ENWttDuration,ENWindowDuration));
