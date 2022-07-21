@@ -1194,7 +1194,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // EXPERIMENT: With no sens_future is there no present?
         //eBGweight = (ENWindowOK ? eBGweight : 0);
 
-        // SAFETY: when high and delta is small OR if slowing at anytime use minPredBG for insulinReq_bg
+        // SAFETY: when high and delta is small OR if slowing use minPredBG for insulinReq_bg
         eBGweight = ((bg > ISFbgMax && (minDelta >=-2 && minDelta <=2) || DeltaPct <1) ? eBGweight_orig : eBGweight);
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG
