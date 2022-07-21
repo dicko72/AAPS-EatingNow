@@ -380,26 +380,28 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // breakfast/first meal related vars
     // firstMealWindow is when either c1Time or b1Time is less than EN Window
     var firstMealWindow = false;
+    // if breakfast window not set use ENW
+    var ENBkfstWindow = (profile.ENBkfstWindow == 0 ?  profile.ENWindow : profile.ENBkfstWindow);
     if (ENactive && c1Time < profile.ENBkfstWindow) { // first cob entry is active and within EN Window
         firstMealWindow = true;
-        if (b1Time != 9999 && b1Time > profile.ENBkfstWindow) firstMealWindow = false; // first bolus has also happened and is more than EN Window
-        if (tt1Time != 9999 && tt1Time > profile.ENBkfstWindow) firstMealWindow = false; // first TT has also happened and is more than EN Window
+        if (b1Time != 9999 && b1Time > ENBkfstWindow) firstMealWindow = false; // first bolus has also happened and is more than EN Window
+        if (tt1Time != 9999 && tt1Time > ENBkfstWindow) firstMealWindow = false; // first TT has also happened and is more than EN Window
         ENWindowRunTime = c1Time;
-    } else if (ENactive && b1Time < profile.ENBkfstWindow) { // first bolus entry is active and within EN Window
+    } else if (ENactive && b1Time < ENBkfstWindow) { // first bolus entry is active and within EN Window
         firstMealWindow = true;
-        if (c1Time != 9999 && c1Time > profile.ENBkfstWindow) firstMealWindow = false; // first COB entry has also happened and is more than EN Window
-        if (tt1Time != 9999 && tt1Time > profile.ENBkfstWindow) firstMealWindow = false; // first TT has also happened and is more than EN Window
+        if (c1Time != 9999 && c1Time > ENBkfstWindow) firstMealWindow = false; // first COB entry has also happened and is more than EN Window
+        if (tt1Time != 9999 && tt1Time > ENBkfstWindow) firstMealWindow = false; // first TT has also happened and is more than EN Window
         ENWindowRunTime = b1Time;
-    } else if (ENactive && profile.temptargetSet && tt1Time < profile.ENBkfstWindow) { // first bolus entry is active and within EN Window
+    } else if (ENactive && profile.temptargetSet && tt1Time < ENBkfstWindow) { // first bolus entry is active and within EN Window
         firstMealWindow = true;
-        if (b1Time != 9999 && b1Time > profile.ENBkfstWindow) firstMealWindow = false; // first bolus has also happened and is more than EN Window
-        if (c1Time != 9999 && c1Time > profile.ENBkfstWindow) firstMealWindow = false; // first COB entry has also happened and is more than EN Window
+        if (b1Time != 9999 && b1Time > ENBkfstWindow) firstMealWindow = false; // first bolus has also happened and is more than EN Window
+        if (c1Time != 9999 && c1Time > ENBkfstWindow) firstMealWindow = false; // first COB entry has also happened and is more than EN Window
         ENWindowRunTime = tt1Time;
     }
 
     // set the ENW run and duration depending on meal type
     ENWindowRunTime = (firstMealWindow ? ENWindowRunTime : Math.min(cTime, bTime, ttTime));
-    var ENWindowDuration = (firstMealWindow ? profile.ENBkfstWindow : profile.ENWindow);
+    var ENWindowDuration = (firstMealWindow ? ENBkfstWindow : profile.ENWindow);
     var ENWttDuration = (meal_data.activeENTempTargetDuration ? meal_data.activeENTempTargetDuration : 0);
     //ENWindowDuration = (!firstMealWindow && meal_data.activeENTempTargetDuration > ENWindowDuration - ENWindowRunTime ? meal_data.activeENTempTargetDuration : ENWindowDuration);
     ENWindowDuration = (firstMealWindow ? ENWindowDuration : Math.max(ENWttDuration,ENWindowDuration));
@@ -584,6 +586,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // sens_target_bg is used like a target, when the number is lower the ISF scaling is stronger
     // only allow adjusted ISF target when eatingnow time is OK dont use at night
     var sens_target_bg = (ENactive ?  ins_val : target_bg);
+    sens_target_bg = (ENWindowOK ? sens_target_bg : target_bg);
 
     // define & apply ISFBGscaler as % to sens_BGscaler
     var sens_BGscaler = Math.log(bg/sens_target_bg)+1;
@@ -1180,14 +1183,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (!ENSleepMode) {
         if (sens_predType == "UAM") {
             eBGweight = (!COB ? 0.50 : 0.35);
-            eBGweight = (delta > 4 && DeltaPct > 1 && !COB ? 0.80 : eBGweight); // rising and accelerating
-            eBGweight = (delta > 4 && DeltaPct > 1 && !COB && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
+            eBGweight = (delta > 4 && DeltaPct > 1.1 && !COB ? 0.75 : eBGweight); // rising and accelerating
+            eBGweight = (delta > 4 && DeltaPct > 1.0 && !COB && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
             //eBGweight = (delta > 4 && DeltaPct > 1 && !COB && bg <= 144 && ENWindowOK ? 1 : eBGweight); // initial rising and accelerating
         }
         if (sens_predType == "COB") {
             eBGweight = 0.50;
-            //eBGweight = 0.35;
-            //eBGweight = (delta >=6 && DeltaPct > 1 ? 0.50 : eBGweight); // rising faster and accelerating
+            eBGweight = (delta > 4 && DeltaPct > 1.0 && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
         }
         // EXPERIMENT: With no sens_future is there no present?
         //eBGweight = (ENWindowOK ? eBGweight : 0);
@@ -1198,11 +1200,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG
         insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
 
-        // SAFETY: if bg is falling revert to normal minPredBG weighting
-        insulinReq_bg = (delta < 0 && eventualBG < target_bg ? insulinReq_bg_orig : insulinReq_bg);
+        // SAFETY: if bg is falling or slowing revert to normal minPredBG weighting
+        insulinReq_bg = (delta < 0 && eventualBG < target_bg || DeltaPct <1 ? insulinReq_bg_orig : insulinReq_bg);
 
-        // SAFETY: set insulinReq_sens to profile sens if bg falling or expected to
-        insulinReq_sens = (delta < 0 && eventualBG < target_bg ? sens_normalTarget : sens);
+        // SAFETY: set insulinReq_sens to profile sens if bg falling or slowing
+        insulinReq_sens = (delta < 0 && eventualBG < target_bg  || DeltaPct <1 ? sens_normalTarget : sens);
     }
 
     // SAFETY: normal minPredBG overnight and below smb bg offset
