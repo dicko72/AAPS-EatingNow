@@ -1181,13 +1181,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (!ENSleepMode) {
         if (sens_predType == "UAM") {
             eBGweight = (!COB ? 0.50 : 0.35);
-            eBGweight = (delta > 4 && DeltaPct > 1 && !COB ? 0.75 : eBGweight); // rising and accelerating
-            eBGweight = (delta > 4 && DeltaPct > 1 && !COB && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
+            eBGweight = (delta > 4 && DeltaPct > 1.1 && !COB ? 0.75 : eBGweight); // rising and accelerating
+            eBGweight = (delta > 4 && DeltaPct > 1.0 && !COB && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
             //eBGweight = (delta > 4 && DeltaPct > 1 && !COB && bg <= 144 && ENWindowOK ? 1 : eBGweight); // initial rising and accelerating
         }
         if (sens_predType == "COB") {
             eBGweight = 0.50;
-            eBGweight = (delta > 4 && DeltaPct > 1 && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
+            eBGweight = (delta > 4 && DeltaPct > 1.0 && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
         }
         // EXPERIMENT: With no sens_future is there no present?
         //eBGweight = (ENWindowOK ? eBGweight : 0);
