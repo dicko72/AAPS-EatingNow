@@ -251,8 +251,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     enlog += "nowhrs: " + nowhrs + ", now: " + now +"\n";
     enlog += "ENStartOffset: " + ENStartOffset + ", ENEndOffset: " + ENEndOffset +"\n";
-    enlog += "ENStartTime: " + Date(ENStartTime) +"\n";
-    enlog += "ENEndTime: " + Date(ENEndTime) +"\n";
+    enlog += "ENStartTime: " + new Date(ENStartTime).toLocaleString() +"\n";
+    enlog += "ENEndTime: " + new Date(ENEndTime).toLocaleString() +"\n";
     enlog += "lastNormalCarbTime: " + meal_data.lastNormalCarbTime + ", lastENBolusTime: " + meal_data.lastENBolusTime +"\n";
     enlog += "lastNormalCarbAge: " + lastNormalCarbAge +"\n";
 
