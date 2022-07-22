@@ -1213,6 +1213,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // SAFETY: if sleeping then use sens at normal target
     insulinReq_sens = (ENSleepMode ? sens_normalTarget : insulinReq_sens);
 
+    //EXPERIMENT: keep sens as sens at normalTarget
+    insulinReq_sens = sens_normalTarget;
+
     insulinReq_sens = round(insulinReq_sens,1);
     enlog += "* eBGweight:\n";
     enlog += "sens_predType: " + sens_predType+"\n";
