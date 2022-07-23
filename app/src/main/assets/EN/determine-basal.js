@@ -1186,12 +1186,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // evaluate prediction type and weighting - dont use when sleeping and below SMB BG Offset
     if (!ENSleepMode) {
-        if (sens_predType == "UAM") {
-            eBGweight = (!COB ? 0.50 : 0.35);
-            eBGweight = (delta > 4 && DeltaPct > 1.1 && !COB ? 0.55 : eBGweight); // rising and accelerating
-            eBGweight = (delta > 4 && DeltaPct > 1.0 && !COB && bg <= 144 ? 0.55 : eBGweight); // initial rising and accelerating
-            eBGweight = (delta < 18 && DeltaPct > 1.0 && !COB && bg <= 144 ? 0.55 : eBGweight); // initial rising and accelerating
-            //eBGweight = (delta > 4 && DeltaPct > 1 && !COB && bg <= 144 && ENWindowOK ? 1 : eBGweight); // initial rising and accelerating
+        if (sens_predType == "UAM" && !COB) {
+            eBGweight = 0.50;
+            eBGweight = (delta > 4 && DeltaPct > 1.1 ? 0.55 : eBGweight); // rising and accelerating
+            eBGweight = (delta > 4 && DeltaPct > 1.0 && bg <= 144 ? 0.55 : eBGweight); // initial rising and accelerating
+            eBGweight = (delta > 8 && delta < 18 && DeltaPct > 1.0 && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
         }
         if (sens_predType == "COB") {
             eBGweight = 0.50;
