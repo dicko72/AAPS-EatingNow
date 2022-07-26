@@ -18,13 +18,13 @@ import info.nightscout.androidaps.plugins.aps.loop.APSResult
 import info.nightscout.androidaps.plugins.aps.loop.ScriptReader
 import info.nightscout.androidaps.plugins.configBuilder.ConstraintChecker
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.GlucoseStatus
-import info.nightscout.androidaps.utils.DateUtil
+// import info.nightscout.androidaps.utils.DateUtil
 import info.nightscout.androidaps.utils.MidnightTime
 import info.nightscout.shared.SafeParse
 import info.nightscout.androidaps.interfaces.ResourceHelper
 import info.nightscout.shared.sharedPreferences.SP
 import info.nightscout.androidaps.utils.stats.TddCalculator
-import info.nightscout.androidaps.utils.stats.TirCalculator
+// import info.nightscout.androidaps.utils.stats.TirCalculator
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -46,9 +46,9 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
     @Inject lateinit var iobCobCalculator: IobCobCalculator
     @Inject lateinit var activePlugin: ActivePlugin
     @Inject lateinit var repository: AppRepository
-    @Inject lateinit var dateUtil: DateUtil
+    // @Inject lateinit var dateUtil: DateUtil
     @Inject lateinit var tddCalculator: TddCalculator
-    @Inject lateinit var tirCalculator: TirCalculator
+    // @Inject lateinit var tirCalculator: TirCalculator
 
     private var profile = JSONObject()
     private var mGlucoseStatus = JSONObject()
