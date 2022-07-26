@@ -40,7 +40,6 @@ import info.nightscout.androidaps.dialogs.*
 import info.nightscout.androidaps.events.*
 import info.nightscout.androidaps.extensions.directionToIcon
 import info.nightscout.androidaps.extensions.runOnUiThread
-import info.nightscout.androidaps.extensions.target
 import info.nightscout.androidaps.extensions.toVisibility
 import info.nightscout.androidaps.extensions.valueToUnitsString
 import info.nightscout.androidaps.interfaces.*
