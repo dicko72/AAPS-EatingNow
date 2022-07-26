@@ -235,6 +235,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var ENStartOffset = (profile.EatingNowTimeEnd < profile.EatingNowTimeStart && nowhrs < profile.EatingNowTimeEnd ? 86400000 : 0), ENEndOffset = (profile.EatingNowTimeEnd < profile.EatingNowTimeStart && nowhrs > profile.EatingNowTimeStart ? 86400000 : 0);
     var ENStartTime = new Date().setHours(profile.EatingNowTimeStart,0,0,0)-ENStartOffset, ENEndTime = new Date().setHours(profile.EatingNowTimeEnd,0,0,0) + ENEndOffset;
     var COB = meal_data.mealCOB;
+    var ENTTActive =  meal_data.activeENTempTargetDuration > 0;
 
     // variables for deltas
     var delta = glucose_status.delta, deltaShortRise = 0, DeltaPct = 1;
@@ -323,8 +324,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // If there are COB enable eating now
         if (COB) ENactive = true;
         // no EN with a TT other than normal target
-        if (profile.temptargetSet) ENactive = false;
-        if (profile.temptargetSet && target_bg <= normalTarget) ENactive = true;
+        if (profile.temptargetSet && !ENTTActive) ENactive = false;
+        if (ENTTActive) ENactive = true;
     }
 
     //ENactive = false; //DEBUG
@@ -375,7 +376,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     //var lastBolusAge = round(( new Date(systemTime).getTime() - iob_data.lastBolusTime ) / 60000,1);
     // ENWTriggerOK if there is enough IOB to trigger the EN window or we had a recent SMB
     //var ENWIOBThreshU = profile.current_basal * profile.ENWIOBTrigger/60, ENWTriggerOK = (ENactive && ENWIOBThreshU > 0 && iob_data.iob > ENWIOBThreshU);
-    var ENWindowOK = false, ENWindowRunTime = 0, ENWIOBThreshU = profile.ENWIOBTrigger, ENWTriggerOK = (ENactive && ENWIOBThreshU > 0 && (iob_data.iob > ENWIOBThreshU)), ENTTActive =  meal_data.activeENTempTargetDuration > 0;
+    var ENWindowOK = false, ENWindowRunTime = 0, ENWIOBThreshU = profile.ENWIOBTrigger, ENWTriggerOK = (ENactive && ENWIOBThreshU > 0 && (iob_data.iob > ENWIOBThreshU));
 
     // breakfast/first meal related vars
     // firstMealWindow is when either c1Time or b1Time is less than EN Window
@@ -392,7 +393,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (c1Time != 9999 && c1Time > ENBkfstWindow) firstMealWindow = false; // first COB entry has also happened and is more than EN Window
         if (tt1Time != 9999 && tt1Time > ENBkfstWindow) firstMealWindow = false; // first TT has also happened and is more than EN Window
         ENWindowRunTime = b1Time;
-    } else if (ENactive && profile.temptargetSet && tt1Time < ENBkfstWindow) { // first bolus entry is active and within EN Window
+    } else if (ENactive && ENTTActive && tt1Time < ENBkfstWindow) { // first bolus entry is active and within EN Window
         firstMealWindow = true;
         if (b1Time != 9999 && b1Time > ENBkfstWindow) firstMealWindow = false; // first bolus has also happened and is more than EN Window
         if (c1Time != 9999 && c1Time > ENBkfstWindow) firstMealWindow = false; // first COB entry has also happened and is more than EN Window
@@ -1247,8 +1248,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (!ENSleepMode) rT.reason += (ENactive ? "On" : "Off");
     rT.reason += (ENSleepMode ? "Sleep" : "");
     rT.reason += (ENSleepMode ? " (SMB bg>" + convert_bg(SMBbgOffset,profile) + ")": "");
-    if (profile.temptargetSet && target_bg != normalTarget) rT.reason += " TT" + (target_bg >= normalTarget ? " &gt;" : " &lt;") + "=" +convert_bg(normalTarget, profile);
-    if (profile.temptargetSet && target_bg == normalTarget) rT.reason += " TT=" + convert_bg(normalTarget, profile);
+    if (profile.temptargetSet) rT.reason += (ENTTActive ? " EN-TT" :" TT") + "=" +convert_bg(target_bg, profile);
     rT.reason += (COB && !profile.temptargetSet && !ENWindowOK ? " COB&gt;0" : "");
 
     // EN window status
