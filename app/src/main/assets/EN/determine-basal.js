@@ -375,7 +375,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     //var lastBolusAge = round(( new Date(systemTime).getTime() - iob_data.lastBolusTime ) / 60000,1);
     // ENWTriggerOK if there is enough IOB to trigger the EN window or we had a recent SMB
     //var ENWIOBThreshU = profile.current_basal * profile.ENWIOBTrigger/60, ENWTriggerOK = (ENactive && ENWIOBThreshU > 0 && iob_data.iob > ENWIOBThreshU);
-    var ENWindowOK = false, ENWindowRunTime = 0, ENWIOBThreshU = profile.ENWIOBTrigger, ENWTriggerOK = (ENactive && ENWIOBThreshU > 0 && (iob_data.iob > ENWIOBThreshU));
+    var ENWindowOK = false, ENWindowRunTime = 0, ENWIOBThreshU = profile.ENWIOBTrigger, ENWTriggerOK = (ENactive && ENWIOBThreshU > 0 && (iob_data.iob > ENWIOBThreshU)), ENTTActive =  meal_data.activeENTempTargetDuration > 0;
 
     // breakfast/first meal related vars
     // firstMealWindow is when either c1Time or b1Time is less than EN Window
@@ -417,6 +417,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     enlog += "ENTime: " + ENTime + ", firstMealWindow: "+ firstMealWindow + ", firstMealScaling: "+ firstMealScaling + ", b1Time:" +b1Time+", c1Time:" +c1Time+ ", tt1Time:"+tt1Time+", bTime:" +bTime+ ", cTime:" +cTime+ ", ttTime:"+ttTime+", ENWindowOK:" + ENWindowOK+"\n";
     enlog += "ENWindowRunTime: " + ENWindowRunTime+", ENWindowDuration: " + ENWindowDuration+"\n";
+    enlog += "ENTTActive: " + ENTTActive+"\n";
 
     // If GhostCOB is enabled we will use COB when ENWindowOK but outside this window UAM will be used
     if (ignoreCOB && ENWindowOK && meal_data.mealCOB > 0 ) ignoreCOB = false;
@@ -601,8 +602,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     sens_currentBG = (bg > sens_target_bg ? Math.min(sens_currentBG,sens_normalTarget) : Math.max(sens_currentBG,sens_normalTarget));
 
     // SAFETY: if not rising and accelerating keep sens as normal unless ENW
-    sens_currentBG = (delta > 4 && DeltaPct > 1.0 ? sens_currentBG : sens_normalTarget);
-    //sens_currentBG = (delta > 4 && DeltaPct > 1.0 || ENWindowOK ? sens_currentBG : sens_normalTarget);
+    //sens_currentBG = (delta > 4 && DeltaPct > 1.0 ? sens_currentBG : sens_normalTarget);
+    sens_currentBG = (delta > 4 && DeltaPct > 1.0 || ENTTActive ? sens_currentBG : sens_normalTarget);
 
     sens_currentBG = round(sens_currentBG,1);
     enlog += "sens_currentBG final result:"+ convert_bg(sens_currentBG, profile) +"\n";
