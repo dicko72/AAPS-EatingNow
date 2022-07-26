@@ -602,9 +602,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // SAFETY: if above target allow scaling and profile ISF as the weakest, if below target use profile ISF as the strongest
     sens_currentBG = (bg > sens_target_bg ? Math.min(sens_currentBG,sens_normalTarget) : Math.max(sens_currentBG,sens_normalTarget));
 
-    // SAFETY: if not rising and accelerating keep sens as normal unless ENW
-    //sens_currentBG = (delta > 4 && DeltaPct > 1.0 ? sens_currentBG : sens_normalTarget);
-    sens_currentBG = (delta > 4 && DeltaPct > 1.0 || ENTTActive ? sens_currentBG : sens_normalTarget);
+    // SAFETY: if not rising and accelerating keep sens as normal
+    sens_currentBG = (delta > 4 && DeltaPct > 1.0 ? sens_currentBG : sens_normalTarget);
 
     sens_currentBG = round(sens_currentBG,1);
     enlog += "sens_currentBG final result:"+ convert_bg(sens_currentBG, profile) +"\n";
@@ -1212,8 +1211,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // SAFETY: if bg is falling or slowing revert to normal minPredBG weighting
         insulinReq_bg = (delta < 0 && eventualBG < target_bg || DeltaPct <1 ? insulinReq_bg_orig : insulinReq_bg);
 
+        // sens calculation for insulinReq can be stronger when the EN TT is active and in range
+        insulinReq_sens = (delta > 4 && delta < 18 && DeltaPct > 1.0 && ENTTActive && bg < 144 ? sens : sens_normalTarget);
+
         // SAFETY: set insulinReq_sens to profile sens if bg falling or slowing
-        insulinReq_sens = (delta < 0 && eventualBG < target_bg  || DeltaPct <1 ? sens_normalTarget : sens);
+        insulinReq_sens = (delta < 0 && eventualBG < target_bg  || DeltaPct <1 ? sens_normalTarget : insulinReq_sens);
     }
 
     // SAFETY: normal minPredBG overnight and below smb bg offset
@@ -1223,7 +1225,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     insulinReq_sens = (ENSleepMode ? sens_normalTarget : insulinReq_sens);
 
     //EXPERIMENT: keep sens as sens at normalTarget
-    insulinReq_sens = sens_normalTarget;
+    //insulinReq_sens = sens_normalTarget;
 
     insulinReq_sens = round(insulinReq_sens,1);
     enlog += "* eBGweight:\n";
