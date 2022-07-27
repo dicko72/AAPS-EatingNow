@@ -1199,8 +1199,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = (delta > 4 && delta < 18 && DeltaPct > 1.0 ? 1 : eBGweight); // initial rising and accelerating
             //eBGweight = (delta > 4 && DeltaPct > 1.0 && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
         }
-        // EXPERIMENT: With no sens_future is there no present?
-        //eBGweight = (ENWindowOK ? eBGweight : 0);
 
         // SAFETY: when high and delta is small OR if slowing use minPredBG for insulinReq_bg
         eBGweight = ((bg > ISFbgMax && minDelta >=-2 && minDelta <=2) || DeltaPct <1 ? eBGweight_orig : eBGweight);
@@ -1211,9 +1209,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG
         insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
 
-        // SAFETY: if bg is falling or slowing revert to normal minPredBG weighting
-        //insulinReq_bg = (delta < 0 && eventualBG < target_bg || DeltaPct <1 ? insulinReq_bg_orig : insulinReq_bg);
-
         // sens calculation for insulinReq can be stronger when the EN TT is active and in range
         insulinReq_sens = (delta > 4 && DeltaPct > 1.0 && ENTTActive && bg < 144 ? sens : sens_normalTarget);
         //insulinReq_sens = (delta > 4 && delta < 18 && DeltaPct > 1.0 && ENTTActive && bg < 144 ? sens : sens_normalTarget);
@@ -1223,13 +1218,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     // SAFETY: normal minPredBG overnight and below smb bg offset
-    insulinReq_bg = (ENSleepMode ? insulinReq_bg_orig : insulinReq_bg);
+    eBGweight = (ENSleepMode ? eBGweight_orig : eBGweight);
+
+    // calculate the prediction bg based on the weightings for minPredBG and eventualBG
+    insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
 
     // SAFETY: if sleeping then use sens at normal target
     insulinReq_sens = (ENSleepMode ? sens_normalTarget : insulinReq_sens);
-
-    //EXPERIMENT: keep sens as sens at normalTarget
-    //insulinReq_sens = sens_normalTarget;
 
     insulinReq_sens = round(insulinReq_sens,1);
     enlog += "* eBGweight:\n";
