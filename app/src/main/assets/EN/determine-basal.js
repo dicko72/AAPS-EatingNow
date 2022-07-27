@@ -1203,16 +1203,20 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         //eBGweight = (ENWindowOK ? eBGweight : 0);
 
         // SAFETY: when high and delta is small OR if slowing use minPredBG for insulinReq_bg
-        eBGweight = ((bg > ISFbgMax && (minDelta >=-2 && minDelta <=2) || DeltaPct <1) ? eBGweight_orig : eBGweight);
+        eBGweight = ((bg > ISFbgMax && minDelta >=-2 && minDelta <=2) || DeltaPct <1 ? eBGweight_orig : eBGweight);
+
+        // SAFETY: if bg is falling or slowing revert to normal minPredBG weighting
+        eBGweight = (delta < 0 && eventualBG < target_bg || DeltaPct <1 ? eBGweight_orig : eBGweight);
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG
         insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
 
         // SAFETY: if bg is falling or slowing revert to normal minPredBG weighting
-        insulinReq_bg = (delta < 0 && eventualBG < target_bg || DeltaPct <1 ? insulinReq_bg_orig : insulinReq_bg);
+        //insulinReq_bg = (delta < 0 && eventualBG < target_bg || DeltaPct <1 ? insulinReq_bg_orig : insulinReq_bg);
 
         // sens calculation for insulinReq can be stronger when the EN TT is active and in range
-        insulinReq_sens = (delta > 4 && delta < 18 && DeltaPct > 1.0 && ENTTActive && bg < 144 ? sens : sens_normalTarget);
+        insulinReq_sens = (delta > 4 && DeltaPct > 1.0 && ENTTActive && bg < 144 ? sens : sens_normalTarget);
+        //insulinReq_sens = (delta > 4 && delta < 18 && DeltaPct > 1.0 && ENTTActive && bg < 144 ? sens : sens_normalTarget);
 
         // SAFETY: set insulinReq_sens to profile sens if bg falling or slowing
         insulinReq_sens = (delta < 0 && eventualBG < target_bg  || DeltaPct <1 ? sens_normalTarget : insulinReq_sens);
