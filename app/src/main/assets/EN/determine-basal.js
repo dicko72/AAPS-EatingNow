@@ -1341,7 +1341,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     carbsReq = round(carbsReq);
     console.error("naive_eventualBG:",naive_eventualBG,"bgUndershoot:",bgUndershoot,"zeroTempDuration:",zeroTempDuration,"zeroTempEffect:",zeroTempEffect,"carbsReq:",carbsReq);
     console.log("=======================");
-    console.log("Eating Now");
+    console.log("Eating Now c423d998");
     console.log("=======================");
     console.log(enlog);
     console.log("=======================");
