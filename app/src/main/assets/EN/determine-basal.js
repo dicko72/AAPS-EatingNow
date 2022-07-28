@@ -1212,7 +1212,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         eBGweight = (delta < 0 && eventualBG < target_bg || DeltaPct <1 ? eBGweight_orig : eBGweight);
 
         // SAFETY: if sens/insulinReq_sens is stronger revert to 50% minPredBG weighting
-        eBGweight = (insulinReq_sens == sens ? 0.50 : eBGweight);
+        eBGweight = (insulinReq_sens < sens_normalTarget ? 0.50 : eBGweight);
     }
 
     // calculate the prediction bg based on the weightings for minPredBG and eventualBG
