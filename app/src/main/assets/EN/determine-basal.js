@@ -1213,8 +1213,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // SAFETY: if bg is falling or slowing revert to normal minPredBG weighting
         eBGweight = (delta < 0 && eventualBG < target_bg || DeltaPct <1 ? eBGweight_orig : eBGweight);
 
-        // SAFETY: if sens/insulinReq_sens is stronger revert to normal minPredBG weighting
-        eBGweight = (insulinReq_sens == sens ? eBGweight_orig : eBGweight);
+        // SAFETY: if sens/insulinReq_sens is stronger revert to 50% minPredBG weighting
+        eBGweight = (insulinReq_sens == sens ? 0.50 : eBGweight);
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG
         insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
@@ -1341,7 +1341,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     carbsReq = round(carbsReq);
     console.error("naive_eventualBG:",naive_eventualBG,"bgUndershoot:",bgUndershoot,"zeroTempDuration:",zeroTempDuration,"zeroTempEffect:",zeroTempEffect,"carbsReq:",carbsReq);
     console.log("=======================");
-    console.log("Eating Now c423d998");
+    console.log("Eating Now");
     console.log("=======================");
     console.log(enlog);
     console.log("=======================");
