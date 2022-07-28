@@ -1189,20 +1189,18 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (ENWindowOK) {
         if (sens_predType == "UAM" && !COB) {
             eBGweight = 0.50;
-//            eBGweight = (delta > 4 && DeltaPct > 1.1 ? 0.55 : eBGweight); // rising and accelerating
-//            eBGweight = (delta > 4 && DeltaPct > 1.0 && bg <= 144 ? 0.55 : eBGweight); // initial rising and accelerating
+            // eBGweight = (delta > 4 && DeltaPct > 1.1 ? 0.55 : eBGweight); // rising and accelerating
+            // eBGweight = (delta > 4 && DeltaPct > 1.0 && bg <= 144 ? 0.55 : eBGweight); // initial rising and accelerating
             // MAYBE? eBGweight = (delta > 4 && delta < 18 && DeltaPct > 1.0 ? 1 : eBGweight); // initial rising and accelerating
-//            eBGweight = (delta > 8 && delta < 18 && DeltaPct > 1.0 && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
+            // eBGweight = (delta > 8 && delta < 18 && DeltaPct > 1.0 && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
         }
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
             eBGweight = 0.50;
             // MAYBE? eBGweight = (delta > 4 && delta < 18 && DeltaPct > 1.0 ? 1 : eBGweight); // initial rising and accelerating
             //eBGweight = (delta > 4 && DeltaPct > 1.0 && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
         }
-
         // sens calculation for insulinReq can be stronger when the EN TT is active and in range
-        insulinReq_sens = (delta > 4 && DeltaPct > 1.0 && ENTTActive && bg < 144 ? sens : sens_normalTarget);
-        //insulinReq_sens = (delta > 4 && delta < 18 && DeltaPct > 1.0 && ENTTActive && bg < 144 ? sens : sens_normalTarget);
+        insulinReq_sens = (delta > 4 && DeltaPct > 1.0 && ENWindowOK && bg < 144 ? sens : sens_normalTarget);
 
         // SAFETY: set insulinReq_sens to profile sens if bg falling or slowing
         insulinReq_sens = (delta < 0 && eventualBG < target_bg  || DeltaPct <1 ? sens_normalTarget : insulinReq_sens);
@@ -1215,19 +1213,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // SAFETY: if sens/insulinReq_sens is stronger revert to 50% minPredBG weighting
         eBGweight = (insulinReq_sens == sens ? 0.50 : eBGweight);
-
-        // calculate the prediction bg based on the weightings for minPredBG and eventualBG
-        insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
     }
-
-    // SAFETY: normal minPredBG overnight and below smb bg offset
-    eBGweight = (ENSleepMode ? eBGweight_orig : eBGweight);
 
     // calculate the prediction bg based on the weightings for minPredBG and eventualBG
     insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
-
-    // SAFETY: if sleeping then use sens at normal target
-    insulinReq_sens = (ENSleepMode ? sens_normalTarget : insulinReq_sens);
 
     insulinReq_sens = round(insulinReq_sens,1);
     enlog += "* eBGweight:\n";
