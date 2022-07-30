@@ -1691,7 +1691,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         insulinScheduled = currenttemp.duration * (currenttemp.rate - basal) / 60;
         if (insulinScheduled >= rate) { // if current temp would deliver >2x more than the required insulin, lower the rate
-            rT.reason += currenttemp.duration + "m@" + (currenttemp.rate).toFixed(2) + " &gt;"+rate_reduced+". Setting temp basal of " + rate + "U/hr. ";
+            rT.reason += currenttemp.duration + "m@" + (currenttemp.rate).toFixed(2) + " &gt;"+rate+". Setting temp basal of " + rate + "U/hr. ";
             return tempBasalFunctions.setTempBasal(rate, 30, profile, rT, currenttemp);
         }
 
