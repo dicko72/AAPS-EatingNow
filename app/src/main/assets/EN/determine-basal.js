@@ -1679,7 +1679,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // if more insulin has been calculated and an SMB given reduce the temp rate
         if (insulinReq > insulinReqOrig && rT.units > 0) {
-            rate = basal + (2 * insulinReq) - rT.units;
+            rate = basal + insulinReq - rT.units;
             rate = round_basal(rate, profile);
             rT.reason += "rate reduced: "+round(rate, 2)+", ";
         }
