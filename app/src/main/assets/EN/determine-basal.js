@@ -1681,6 +1681,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (insulinReq > insulinReqOrig && rT.units > 0) {
             rate = basal + (2 * insulinReq) - rT.units;
             rate = round_basal(rate, profile);
+            rT.reason += "rate reduced: "+round(rate, 2)+", ";
         }
 
         if (rate > maxSafeBasal) {
