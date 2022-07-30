@@ -1678,9 +1678,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         var maxSafeBasal = tempBasalFunctions.getMaxSafeBasal(profile);
 
         // if more insulin has been calculated and an SMB given reduce the temp rate
+        var rate_reduced = insulinReq * 2;
         if (insulinReq > insulinReqOrig && rT.units > 0) {
             rate = basal + insulinReq - rT.units;
             rate = round_basal(rate, profile);
+            rate_reduced = rate;
             rT.reason += "rate reduced: "+round(rate, 2)+", ";
         }
 
@@ -1690,7 +1692,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
 
         insulinScheduled = currenttemp.duration * (currenttemp.rate - basal) / 60;
-        if (insulinScheduled >= insulinReq * 2) { // if current temp would deliver >2x more than the required insulin, lower the rate
+        if (insulinScheduled >= rate_reduced) { // if current temp would deliver >2x more than the required insulin, lower the rate
             rT.reason += currenttemp.duration + "m@" + (currenttemp.rate).toFixed(2) + " &gt; 2 * insulinReq. Setting temp basal of " + rate + "U/hr. ";
             return tempBasalFunctions.setTempBasal(rate, 30, profile, rT, currenttemp);
         }
