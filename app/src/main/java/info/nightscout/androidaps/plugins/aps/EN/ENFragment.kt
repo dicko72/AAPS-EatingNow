@@ -137,7 +137,7 @@ class ENFragment : DaggerFragment() {
 
             binding.profile.text = jsonFormatter.format(determineBasalAdapterENJS.profileParam)
             binding.mealdata.text = jsonFormatter.format(determineBasalAdapterENJS.mealDataParam)
-            binding.scriptdebugdata.text = determineBasalAdapterENJS.scriptDebug
+            binding.scriptdebugdata.text = determineBasalAdapterENJS.scriptDebug.replace("\\s+".toRegex(), " ")
             ENPlugin.lastAPSResult?.inputConstraints?.let {
                 binding.constraints.text = it.getReasons(aapsLogger)
             }

@@ -48,13 +48,13 @@ class ENPlugin @Inject constructor(
     private val glucoseStatusProvider: GlucoseStatusProvider
 ) : PluginBase(
     PluginDescription()
-    .mainType(PluginType.APS)
-    .fragmentClass(ENFragment::class.java.name)
-    .pluginIcon(R.drawable.ic_generic_icon)
-    .pluginName(R.string.EN)
-    .shortName(R.string.EN_shortname)
-    .preferencesId(R.xml.pref_eatingnow)
-    .description(R.string.description_EN),
+        .mainType(PluginType.APS)
+        .fragmentClass(ENFragment::class.java.name)
+        .pluginIcon(R.drawable.ic_generic_icon)
+        .pluginName(R.string.EN)
+        .shortName(R.string.EN_shortname)
+        .preferencesId(R.xml.pref_eatingnow)
+        .description(R.string.description_EN),
     aapsLogger, rh, injector
 ), APS, Constraints {
 
