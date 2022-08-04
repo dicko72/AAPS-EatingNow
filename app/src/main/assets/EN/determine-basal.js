@@ -1192,7 +1192,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //eBGweight = (delta > 4 && DeltaPct > 1.0 && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
         }
         // sens calculation for insulinReq can be stronger when the EN TT is active and in range
-        insulinReq_sens = (delta > 4 && DeltaPct > 1.0 && ENWindowOK && bg < 144 ? sens : sens_normalTarget);
+        insulinReq_sens = (delta > 4 && DeltaPct > 1.0 && ENWindowRunTime < ENWindowDuration ? sens : sens_normalTarget);
+        //insulinReq_sens = (delta > 4 && DeltaPct > 1.0 && ENWindowOK && bg < 144 ? sens : sens_normalTarget);
 
         // SAFETY: set insulinReq_sens to profile sens if bg falling or slowing
         insulinReq_sens = (delta < 0 && eventualBG < target_bg  || DeltaPct <1 ? sens_normalTarget : insulinReq_sens);
