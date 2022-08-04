@@ -1177,7 +1177,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
 
     // evaluate prediction type and weighting - Only use when ENWindow is active OR when its night and SMB enabled due to higher BG
-    if (ENWindowOK || !ENSleepMode && !ENtimeOK) {
+    if (ENactive || !ENSleepMode && !ENtimeOK) {
+    //if (ENWindowOK || !ENSleepMode && !ENtimeOK) {
         if (sens_predType == "UAM" && !COB) {
             eBGweight = 0.50;
             // eBGweight = (delta > 4 && DeltaPct > 1.1 ? 0.55 : eBGweight); // rising and accelerating
