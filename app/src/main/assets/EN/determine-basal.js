@@ -1181,21 +1181,15 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     //if (ENWindowOK || !ENSleepMode && !ENtimeOK) {
         if (sens_predType == "UAM" && !COB) {
             eBGweight = 0.50;
-            // sens calculation for insulinReq can be stronger when the EN TT is active and in range
-            insulinReq_sens = (delta > 4 && DeltaPct > 1.0 && ENWindowRunTime < ENWindowDuration ? sens : sens_normalTarget);
-            // eBGweight = (delta > 4 && DeltaPct > 1.1 ? 0.55 : eBGweight); // rising and accelerating
-            // eBGweight = (delta > 4 && DeltaPct > 1.0 && bg <= 144 ? 0.55 : eBGweight); // initial rising and accelerating
-            // MAYBE? eBGweight = (delta > 4 && delta < 18 && DeltaPct > 1.0 ? 1 : eBGweight); // initial rising and accelerating
-            // eBGweight = (delta > 8 && delta < 18 && DeltaPct > 1.0 && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
+            // sens calculation for insulinReq can be stronger when the EN TT and accelerating
+            insulinReq_sens = (delta > 0 && DeltaPct > 1.0 && ENWindowRunTime < ENWindowDuration ? sens : sens_normalTarget);
+            //insulinReq_sens = (delta > 4 && DeltaPct > 1.0 && ENWindowRunTime < ENWindowDuration ? sens : sens_normalTarget);
         }
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
             eBGweight = 0.50;
             // MAYBE? eBGweight = (delta > 4 && delta < 18 && DeltaPct > 1.0 ? 1 : eBGweight); // initial rising and accelerating
             //eBGweight = (delta > 4 && DeltaPct > 1.0 && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
         }
-        // sens calculation for insulinReq can be stronger when the EN TT is active and in range
-        //insulinReq_sens = (delta > 4 && DeltaPct > 1.0 && ENWindowRunTime < ENWindowDuration ? sens : sens_normalTarget);
-        //insulinReq_sens = (delta > 4 && DeltaPct > 1.0 && ENWindowOK && bg < 144 ? sens : sens_normalTarget);
 
         // SAFETY: set insulinReq_sens to profile sens if bg falling or slowing
         insulinReq_sens = (delta < 0 && eventualBG < target_bg  || DeltaPct <1 ? sens_normalTarget : insulinReq_sens);
@@ -1571,21 +1565,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 insulinReqPct = ( ENMaxSMB < 0 ? 0 : insulinReqPct );
 
                 // ============== DELTA & IOB BASED RESTRICTIONS ==============
-                // if the delta is increasing allow larger SMB, COB predictions and COB window are always allowed larger SMB
-                // IOB should be positive to cater for unexpected sudden jumps relating to basal unless COB as above
-//                var DeltaPctThreshold = 1;
-//                //if ((DeltaPct > DeltaPctThreshold && iob_data.iob > maxBolus * 0.75) || sens_predType == "COB" || ENWindowOK) {
-//                if (DeltaPct > DeltaPctThreshold && ENWindowOK) {
-//                    insulinReqPct = insulinReqPct;
-//                    ENMaxSMB = ENMaxSMB;
-//                    //if (DeltaPct > DeltaPctThreshold && !ENWindowOK) ENReason += ", DeltaPct &gt; " + round(DeltaPctThreshold*100) + "% EN" + (ENWindowOK ? "W" : "") + "-SMB";
-//                } else {
-//                    // prevent SMB when below target for UAM rises Hypo Rebound Protection :)
-//                    insulinReqPct = (bg < threshold && !ENWindowOK ENWIOBThreshU == 0 ? 0 : insulinReqPct); // disable SMB when below target and no intent to use auto EN window trigger
-//                    ENReason += (insulinReqPct == 0 ? ", HypoSafety No SMB" : "");
-//                    ENReason += (insulinReqPct != 0  && iob_data.iob < maxBolus * 0.75 ? ", Low IOB Restrict SMB" : "");
-//                    ENMaxSMB = Math.min(maxBolus,ENMaxSMB); // use the most restrictive
-//                }
+                // if the delta is less than 4 and insulinReq_sens is stronger restrict larger SMB
+                if (insulinReq_sens < sens_normalTarget && Delta <= 4) ENMaxSMB = Math.min(maxBolus,ENMaxSMB); // use the most restrictive
                 // ===================================================
 
                 if (ENtimeOK) {
