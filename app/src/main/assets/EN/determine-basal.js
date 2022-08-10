@@ -1174,9 +1174,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
 
-    // evaluate prediction type and weighting - Only use when ENWindow is active OR when its night and SMB enabled due to higher BG
-    if (ENactive || !ENSleepMode && !ENtimeOK) {
-    //if (ENWindowOK || !ENSleepMode && !ENtimeOK) {
+    // evaluate prediction type and weighting - Only use during day or when its night and TBR only
+    if (ENactive || ENSleepMode) {
         if (sens_predType == "UAM" && !COB) {
             eBGweight = 0.50;
             // sens calculation for insulinReq can be stronger when the EN TT and accelerating
