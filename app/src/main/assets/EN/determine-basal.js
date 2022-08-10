@@ -1559,9 +1559,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // if ENMaxSMB is more than AAPS safety maxbolus then consider the setting to be minutes
                 ENMaxSMB = ( ENMaxSMB > profile.safety_maxbolus ? profile.current_basal * ENMaxSMB / 60 : ENMaxSMB);
                 // if ENMaxSMB is more than 0 use ENMaxSMB else use AAPS max minutes
-                ENMaxSMB = ( ENMaxSMB > 0 ? ENMaxSMB : maxBolus );
-                // if ENMaxSMB is more than 0 use ENMaxSMB else use AAPS max minutes
-                insulinReqPct = ( ENMaxSMB < 0 ? 0 : insulinReqPct );
+                ENMaxSMB = ( ENMaxSMB == 0 ? maxBolus : ENMaxSMB);
+                // if ENMaxSMB is -1 use TBR
+                insulinReqPct = ( ENMaxSMB == -1 ? 0 : insulinReqPct );
+                ENMaxSMB = ( ENMaxSMB == -1 ? maxBolus : ENMaxSMB);
+
 
                 // ============== DELTA & IOB BASED RESTRICTIONS ==============
                 // if the delta is less than 4 and insulinReq_sens is stronger restrict larger SMB
