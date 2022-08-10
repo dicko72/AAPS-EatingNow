@@ -1185,8 +1185,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
             eBGweight = 0.50;
-            // MAYBE? eBGweight = (delta > 4 && delta < 18 && DeltaPct > 1.0 ? 1 : eBGweight); // initial rising and accelerating
-            //eBGweight = (delta > 4 && DeltaPct > 1.0 && bg <= 144 ? 1 : eBGweight); // initial rising and accelerating
+            // sens calculation for insulinReq can be stronger when the EN TT and accelerating
+            insulinReq_sens = (delta > 0 && DeltaPct > 1.0 ? sens : sens_normalTarget);
         }
 
         // SAFETY: set insulinReq_sens to profile sens if bg falling or slowing
@@ -1198,8 +1198,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // SAFETY: if bg is falling or slowing revert to normal minPredBG weighting
         eBGweight = (delta < 0 && eventualBG < target_bg || DeltaPct <1 ? eBGweight_orig : eBGweight);
 
-        // SAFETY: if insulinReq_sens is stronger and not breakfast within ENW inherit eBGw else default
-        if (insulinReq_sens < sens_normalTarget && !firstMealScaling) eBGweight = (ENWindowOK ? eBGweight : eBGweight_orig);
+        // SAFETY: if insulinReq_sens is stronger within ENW inherit eBGw else default
+        if (insulinReq_sens < sens_normalTarget) eBGweight = (ENWindowOK ? eBGweight : eBGweight_orig);
+        //if (insulinReq_sens < sens_normalTarget && !firstMealScaling) eBGweight = (ENWindowOK ? eBGweight : eBGweight_orig);
     }
 
     // calculate the prediction bg based on the weightings for minPredBG and eventualBG
