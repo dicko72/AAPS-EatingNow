@@ -1537,8 +1537,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // START === if we are eating now and BGL prediction is higher than normal target ===
             if (ENactive && eventualBG > target_bg) {
 
-                // EN insulinReqPct is now used
-                insulinReqPct = ENinsulinReqPct;
+                // EN insulinReqPct is now used, for TT use 100%
+                insulinReqPct = (ENTTActive ? 1 : ENinsulinReqPct);
 
                 // set EN SMB limit for COB or UAM
                 // ISFBooost maxBolus is COB outside of COB Window
