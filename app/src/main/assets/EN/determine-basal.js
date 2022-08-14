@@ -1180,11 +1180,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = 0.50;
             // sens calculation for insulinReq can be stronger when the EN TT and accelerating
             insulinReq_sens = (delta > 0 && DeltaPct > 1.0 ? sens : sens_normalTarget);
-            //insulinReq_sens = (delta > 0 && DeltaPct > 1.0 && ENWindowRunTime < ENWindowDuration ? sens : sens_normalTarget);
-            //insulinReq_sens = (delta > 4 && DeltaPct > 1.0 && ENWindowRunTime < ENWindowDuration ? sens : sens_normalTarget);
         }
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
-            eBGweight = 0.50;
+            eBGweight = (sens_predType == "COB" ? 0.50 : eBGweight);
             // sens calculation for insulinReq can be stronger when the EN TT and accelerating
             insulinReq_sens = (delta > 0 && DeltaPct > 1.0 && sens_predType == "COB" ? sens : sens_normalTarget);
         }
