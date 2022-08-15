@@ -1535,8 +1535,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // START === if we are eating now and BGL prediction is higher than normal target ===
             if (ENactive && eventualBG > target_bg) {
 
-                // EN insulinReqPct is now used, for ENW use 100%
-                insulinReqPct = (ENWindowOK ? 1 : ENinsulinReqPct);
+                // EN insulinReqPct is now used, for ENW use 100% excludes IOB trigger ensuring close proximity to treatment
+                insulinReqPct = (ENWindowRunTime < ENWindowDuration ? 1 : ENinsulinReqPct);
+                //insulinReqPct = (ENWindowOK ? 1 : ENinsulinReqPct);
                 //insulinReqPct = (ENTTActive ? 1 : ENinsulinReqPct);
 
                 // set EN SMB limit for COB or UAM
@@ -1566,7 +1567,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
                 // ============== DELTA & IOB BASED RESTRICTIONS ==============
                 // if the delta is less than 4 and insulinReq_sens is stronger restrict larger SMB
-                if (insulinReq_sens < sens_normalTarget && delta <= 4 && !firstMealScaling) ENMaxSMB = Math.min(maxBolus,ENMaxSMB); // use the most restrictive
+                //if (insulinReq_sens < sens_normalTarget && delta <= 4 && !firstMealScaling) ENMaxSMB = Math.min(maxBolus,ENMaxSMB); // use the most restrictive
                 // ===================================================
 
                 if (ENtimeOK) {
