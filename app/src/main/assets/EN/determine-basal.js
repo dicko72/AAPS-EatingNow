@@ -1190,8 +1190,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // SAFETY: set insulinReq_sens to profile sens if bg falling or slowing
         insulinReq_sens = (delta < 0 && eventualBG < target_bg  || DeltaPct <=1 ? sens_normalTarget : insulinReq_sens);
 
-        // SAFETY: when high and delta or delta is slowing use minPredBG
-        eBGweight = (bg > ISFbgMax || DeltaPct <=1 ? eBGweight_orig : eBGweight);
+        // SAFETY: when high and delta is faster use minPredBG, slow delta inherits eBGw in an attempt to reduce stubborn high
+        eBGweight = (bg > ISFbgMax && delta >= 9 ? eBGweight_orig : eBGweight);
 
         // SAFETY: if bg is falling or slowing revert to normal minPredBG weighting
         eBGweight = (delta < 0 && eventualBG < target_bg || DeltaPct <=1 ? eBGweight_orig : eBGweight);
