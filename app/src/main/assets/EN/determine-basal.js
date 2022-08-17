@@ -1204,6 +1204,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // calculate the prediction bg based on the weightings for minPredBG and eventualBG
     insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
 
+    // if 30 minutes into an ENW allow the eBGw to provide a stronger insulinReq_sens
+    insulinReq_sens = (ENWindowOK && ENWindowRunTime < 30 ? sens_normalTarget / (Math.log(insulinReq_bg/ins_val)+1) : insulinReq_sens);
+
+
     insulinReq_sens = round(insulinReq_sens,1);
     enlog += "* eBGweight:\n";
     enlog += "sens_predType: " + sens_predType+"\n";
