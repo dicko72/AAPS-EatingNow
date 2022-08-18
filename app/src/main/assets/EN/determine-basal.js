@@ -1204,9 +1204,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
 
 
-        // if 30 minutes into an ENW allow the eBGw to provide a stronger insulinReq_sens
+        // if within ENW allow the eBGw to provide a stronger insulinReq_sens, excludes first meal
         var sens_future = sens_normalTarget / (Math.log(insulinReq_bg/ins_val)+1);
-        insulinReq_sens = (ENWindowOK && ENWindowRunTime < ENWindowDuration && !firstMealWindow ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
+        insulinReq_sens = (ENWindowOK && !firstMealWindow ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
+        //insulinReq_sens = (ENWindowOK && ENWindowRunTime < ENWindowDuration && !firstMealWindow ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
     }
 
 
