@@ -1497,7 +1497,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq = (insulinReq_bg-target_bg) / insulinReq_sens;
 
         // If there is an EN TT active and no UAM sized SMB and no COB
-        if (insulinReq < profile.current_basal * profile.maxUAMSMBBasalMinutes / 60 && !ENTTSMB && !COB) {
+        if (insulinReq < profile.current_basal * profile.maxUAMSMBBasalMinutes / 60 && ENTTActive && !ENTTSMB && !COB) {
             // calculate insulinReq based on ISFbgMax
             insulinReq = (ISFbgMax-target_bg) / insulinReq_sens;
             // devliver as TBR only
