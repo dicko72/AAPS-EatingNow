@@ -1492,14 +1492,15 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // minutes since last bolus
         var lastBolusAge = round(( new Date(systemTime).getTime() - iob_data.lastBolusTime ) / 60000,1);
+        var ENTT_TBR = (ENTTActive && ttTime < 30 && lastBolusAge > ttTime && !COB && bg < ISFbgMax);
 
         // If there is an EN TT active within 30 minutes and no UAM sized SMB and no COB
-        if (ENTTActive && ttTime < 30 && lastBolusAge > ttTime && !COB && insulinReq < profile.current_basal * profile.maxUAMSMBBasalMinutes / 60) {
+        if (ENTT_TBR && insulinReq < profile.current_basal * profile.maxUAMSMBBasalMinutes / 60) {
             // calculate insulinReq based on ISFbgMax
             insulinReq = (ISFbgMax-target_bg) / insulinReq_sens;
             // deliver as TBR only
             enableSMB = false;
-            rT.reason += "!ENTTSMB, ";
+            rT.reason += "EN-TBR+, ";
         }
 
 
