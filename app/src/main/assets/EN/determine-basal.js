@@ -372,9 +372,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var tt1Time = (typeof meal_data.firstENTempTargetTime !== 'undefined' ? (( new Date(systemTime).getTime() - meal_data.firstENTempTargetTime) / 60000) : 9999); // first EN TT after EN start
     var ttTime = (typeof meal_data.activeENTempTargetStartTime !== 'undefined' ? (( new Date(systemTime).getTime() - meal_data.activeENTempTargetStartTime) / 60000) : 9999); // active EN TT
 
-
-    // minutes since last bolus - relocated
-    var lastBolusAge = round(( new Date(systemTime).getTime() - iob_data.lastBolusTime ) / 60000,1);
     // ENWTriggerOK if there is enough IOB to trigger the EN window or we had a recent SMB
     //var ENWIOBThreshU = profile.current_basal * profile.ENWIOBTrigger/60, ENWTriggerOK = (ENactive && ENWIOBThreshU > 0 && iob_data.iob > ENWIOBThreshU);
     var ENWindowOK = false, ENWindowRunTime = 0, ENWIOBThreshU = profile.ENWIOBTrigger, ENWTriggerOK = (ENactive && ENWIOBThreshU > 0 && (iob_data.iob > ENWIOBThreshU));
@@ -411,9 +408,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // ENWindowOK is when there is a recent COB entry or manual bolus
     ENWindowOK = (ENactive && ENWindowRunTime < ENWindowDuration || ENWTriggerOK);
     //if (!COB && (Math.min(b1Time,bTime) > profile.ENWindow) && !profile.temptargetSet && !ENWTriggerOK) ENWindowOK = false; // if theres no COB and no recent bolus or TT then close the EN window
-
-    // Has the ENTT had an SMB yet?
-    var ENTTSMB = (ENTTActive && lastBolusAge < ttTime);
 
     // stronger CR and ISF can be used when firstmeal is within 2h window
     var firstMealScaling = (firstMealWindow && !profile.use_sens_TDD && profile.sens == profile.sens_midnight && profile.carb_ratio == profile.carb_ratio_midnight);
@@ -1496,8 +1490,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // use eBGweight for insulinReq
         insulinReq = (insulinReq_bg-target_bg) / insulinReq_sens;
 
+        // minutes since last bolus
+        var lastBolusAge = round(( new Date(systemTime).getTime() - iob_data.lastBolusTime ) / 60000,1);
+
         // If there is an EN TT active and no UAM sized SMB and no COB
-        if (insulinReq < profile.current_basal * profile.maxUAMSMBBasalMinutes / 60 && ENTTActive && !ENTTSMB && !COB) {
+        if (ENTTActive && lastBolusAge > ttTime && !COB && insulinReq < profile.current_basal * profile.maxUAMSMBBasalMinutes / 60) {
             // calculate insulinReq based on ISFbgMax
             insulinReq = (ISFbgMax-target_bg) / insulinReq_sens;
             // devliver as TBR only
