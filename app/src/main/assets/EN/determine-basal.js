@@ -1207,6 +1207,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // add any initial insulinReq for first bolus
         insulinReq_bg += insulinReq_bg_boost;
+        // TBR only if we are boosting insulinReq_bg and dropping
+        if (insulinReq_bg_boost > 0 && delta <= 0) enableSMB = false;
 
         // if within ENW allow the eBGw to provide a stronger insulinReq_sens, excludes first meal
         var sens_future = sens_normalTarget / (Math.log(insulinReq_bg/ins_val)+1);
