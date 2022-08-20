@@ -1168,6 +1168,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // minPredBG and eventualBG based dosing - insulinReq_bg
     // insulinReq_sens is calculated using a percentage of eventualBG (eBGweight) with the rest as minPredBG, to reduce the risk of overdosing.
     var insulinReq_sens = sens_normalTarget, insulinReq_bg_orig = Math.min(minPredBG,eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), eBGweight = eBGweight_orig;
+
+    // EN TT active within 30 minutes and no bolus yet and no COB increase insulinReq_bg to provide initial insulinReq
+    var insulinReq_bg_boost = (ENTTActive && ttTime < 30 && lastBolusAge > ttTime && !COB ? 90 : 0);
+
     // categorize the eventualBG prediction type for more accurate weighting
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
@@ -1201,8 +1205,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG
         insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
 
-        // EN TT active within 30 minutes and no bolus yet and no COB increase insulinReq_bg to provide initial insulinReq
-        insulinReq_bg += (ENTTActive && ttTime < 30 && lastBolusAge > ttTime && !COB ? 90 : 0);
+        // add any initial insulinReq for first bolus
+        insulinReq_bg += insulinReq_bg_boost;
 
         // if within ENW allow the eBGw to provide a stronger insulinReq_sens, excludes first meal
         var sens_future = sens_normalTarget / (Math.log(insulinReq_bg/ins_val)+1);
@@ -1626,7 +1630,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 smbLowTempReq = round( basal * durationReq/30 ,2);
                 durationReq = 30;
             }
-            rT.reason += " insulinReq " + insulinReq + (insulinReq > insulinReqOrig ? "(" + insulinReqOrig + ")" : "") + "@"+round(insulinReqPct*100,0)+"%";
+            rT.reason += " insulinReq" + (insulinReq_bg_boost > 0  ? "+ " : " ") + insulinReq + (insulinReq > insulinReqOrig ? "(" + insulinReqOrig + ")" : "") + "@"+round(insulinReqPct*100,0)+"%";
 
             if (microBolus >= maxBolus) {
                 rT.reason +=  "; maxBolus" + (maxBolus > maxBolusOrig ? "^ ": " ") + maxBolus;
