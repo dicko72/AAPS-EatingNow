@@ -1202,13 +1202,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (insulinReq_sens < sens_normalTarget) eBGweight = (ENWindowOK ? eBGweight : eBGweight_orig);
         //if (insulinReq_sens < sens_normalTarget && !firstMealScaling) eBGweight = (ENWindowOK ? eBGweight : eBGweight_orig);
 
-        // calculate the prediction bg based on the weightings for minPredBG and eventualBG
-        insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
-
-        // add any initial insulinReq for first bolus
-        insulinReq_bg += insulinReq_bg_boost;
+        // exaggerate for first UAM bolus
+        minPredBG += insulinReq_bg_boost;
+        eventualBG += insulinReq_bg_boost;
         // TBR only if we are boosting insulinReq_bg and dropping
         if (insulinReq_bg_boost > 0 && delta <= 0) enableSMB = false;
+
+        // calculate the prediction bg based on the weightings for minPredBG and eventualBG
+        insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
 
         // within ENW allow the eBGw to provide a stronger insulinReq_sens for UAM
         var sens_future = sens_normalTarget / (Math.log(insulinReq_bg/ins_val)+1);
@@ -1341,7 +1342,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // don't low glucose suspend if IOB is already super negative and BG is rising faster than predicted
     if (bg < threshold && iob_data.iob < -profile.current_basal*20/60 && minDelta > 0 && minDelta > expectedDelta) {
-        rT.reason += "IOB "+iob_data.iob+" < " + round(-profile.current_basal*20/60,2);
+        rT.reason += "IOB "+iob_data.iob+" &lt; " + round(-profile.current_basal*20/60,2);
         rT.reason += " and minDelta " + convert_bg(minDelta, profile) + " &gt; " + "expectedDelta " + convert_bg(expectedDelta, profile) + "; ";
     // predictive low glucose suspend mode: BG is / is projected to be < threshold
     } else if ( bg < threshold || minGuardBG < threshold ) {
