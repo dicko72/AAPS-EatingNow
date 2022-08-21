@@ -250,7 +250,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (now >= ENStartTime && now < ENEndTime && profile.ENautostart) ENtimeOK = true;
     var lastNormalCarbAge = round(( new Date(systemTime).getTime() - meal_data.lastNormalCarbTime ) / 60000);
     // minutes since last bolus
-    var lastBolusAge = round(( new Date(systemTime).getTime() - iob_data.lastBolusTime ) / 60000,1);
+    var lastBolusAge = round(( new Date(systemTime).getTime() - meal_data.lastBolusTime ) / 60000,1);
 
 
     enlog += "nowhrs: " + nowhrs + ", now: " + now +"\n";
