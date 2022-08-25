@@ -263,6 +263,12 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange" />
 
+        <SwitchPreference
+                android:defaultValue="false"
+                android:key="key_use_enw_overnight"
+                android:title="Allow ENW Overnight"
+                android:summary="ENW will be active after EN End Time with COB or EN-TT." />
+
             <SwitchPreference
                 android:defaultValue="false"
                 android:key="key_use_ghostcob"
