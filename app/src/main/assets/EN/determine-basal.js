@@ -330,7 +330,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (profile.temptargetSet && !ENTTActive) ENactive = false;
         if (ENTTActive) ENactive = true;
         // allow ENW overnight when EN is active and allowed in prefs
-        ENtimeOK = (ENactive && profile.allowENWovernight);
+        if (ENactive && profile.allowENWovernight) ENtimeOK = true;
     }
 
     //ENactive = false; //DEBUG
