@@ -24,7 +24,7 @@
                 android:title="@string/treatments" />
 
             <SwitchPreference
-                android:defaultValue="false"
+                android:defaultValue="true"
                 android:key="@string/key_eatingnow_showbutton"
                 android:title="@string/en_eatingnow_showbutton" />
 
