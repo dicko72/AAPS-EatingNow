@@ -1180,7 +1180,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // insulinReq_sens is calculated using a percentage of eventualBG (eBGweight) with the rest as minPredBG, to reduce the risk of overdosing.
     var insulinReq_sens = sens_normalTarget, insulinReq_bg_orig = Math.min(minPredBG,eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), eBGweight = eBGweight_orig;
 
-    // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial insulinReq using 30 minutes of delta, max 90
+    // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial insulinReq to peak minutes of delta, max 90
     var insulinReq_bg_boost = (ENTTActive && lastBolusAge > ttTime && !COB ? Math.min(delta * ins_peak / 5, 90) : 0);
 
     // categorize the eventualBG prediction type for more accurate weighting
