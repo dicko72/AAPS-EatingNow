@@ -521,7 +521,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             sensitivityRatio = round(sensitivityRatio,2);
             enlog += "Sensitivity ratio <1 is now: "+sensitivityRatio+";\n";
         }
-        sens_normalTarget = (!profile.use_sens_TDD || !profile.enableSRTDD ? sens_normalTarget / sensitivityRatio : sens_normalTarget); // adjust ISF when not using sens_TDD
+
+        if (profile.enableSRTDD || profile.use_sens_TDD) {
+            sens_normalTarget = sens_normalTarget;
+        } else {
+            sens_normalTarget / sensitivityRatio;
+        }
     }
     //enlog +="****** DEBUG ******\n"+"TDD/tdd24h = "+TDD+"/"+tdd24h+"="+TDD/tdd24h+"\n****** DEBUG ******\n";
 
