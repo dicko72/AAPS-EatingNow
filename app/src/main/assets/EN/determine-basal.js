@@ -1181,7 +1181,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var insulinReq_sens = sens_normalTarget, insulinReq_bg_orig = Math.min(minPredBG,eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), eBGweight = eBGweight_orig;
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial insulinReq using 30 minutes of delta, max 90
-    var insulinReq_bg_boost = (ENTTActive && lastBolusAge > ttTime && !COB ? Math.min(delta * 6, 90) : 0);
+    var insulinReq_bg_boost = (ENTTActive && lastBolusAge > ttTime && !COB ? Math.min(delta * ins_peak / 5, 90) : 0);
 
     // categorize the eventualBG prediction type for more accurate weighting
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
