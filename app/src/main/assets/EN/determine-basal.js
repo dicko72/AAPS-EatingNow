@@ -521,22 +521,20 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             sensitivityRatio = round(sensitivityRatio,2);
             enlog += "Sensitivity ratio <1 is now: "+sensitivityRatio+";\n";
         }
+    }
 
-        // adjust base ISF
+    // adjust profile basal and ISF based on prefs and sensitivityRatio
+    if (sensitivityRatio && profile.use_autosens === true) {
         if (profile.use_sens_TDD) {
             sens_normalTarget = sens_normalTarget;
-        } else if (profile.enableSRTDD) {
-            //sens_normalTarget = (ENtimeOK ? sens_normalTarget / sensitivityRatio : sens_normalTarget) ; //testing SR for ISF and basal during the day
-            sens_normalTarget = sens_normalTarget;
+        } else if (profile.enableSRTDD && ENtimeOK) {
+            sens_normalTarget = sens_normalTarget / sensitivityRatio;
+            basal = profile.current_basal * sensitivityRatio;
         } else {
             sens_normalTarget = sens_normalTarget / sensitivityRatio;
+            basal = profile.current_basal * sensitivityRatio;
         }
-    }
-    //enlog +="****** DEBUG ******\n"+"TDD/tdd24h = "+TDD+"/"+tdd24h+"="+TDD/tdd24h+"\n****** DEBUG ******\n";
 
-
-    if (sensitivityRatio && profile.use_autosens === true) {
-        basal = profile.current_basal * sensitivityRatio;
         basal = round_basal(basal, profile);
         if (basal !== profile_current_basal) {
             enlog += "Adjusting basal from "+profile_current_basal+" to "+basal+"; ";
