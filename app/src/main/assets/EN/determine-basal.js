@@ -527,7 +527,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (sensitivityRatio && profile.use_autosens === true) {
         if (profile.use_sens_TDD) {
             sens_normalTarget = sens_normalTarget;
-        } else if (profile.enableSRTDD && ENtimeOK) {
+        } else if (profile.enableSRTDD) {
             sens_normalTarget = sens_normalTarget / sensitivityRatio;
             basal = profile.current_basal * sensitivityRatio;
         } else {
