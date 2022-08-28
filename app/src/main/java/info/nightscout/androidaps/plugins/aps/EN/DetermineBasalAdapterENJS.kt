@@ -274,7 +274,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         this.profile.put("insulinType", activePlugin.activeInsulin.friendlyName)
         this.profile.put("insulinPeak", activePlugin.activeInsulin.insulinConfiguration.peak/60000)
-        this.profile.put("cAge", repository.getLastTherapyRecordUpToNow(TherapyEvent.Type.CANNULA_CHANGE))
+        this.profile.put("cAge", repository.getLastTherapyRecordUpToNow(TherapyEvent.Type.CANNULA_CHANGE).blockingGet())
 
         // patches ==== END
 //**********************************************************************************************************************************************
