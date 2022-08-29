@@ -274,10 +274,12 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         this.profile.put("insulinType", activePlugin.activeInsulin.friendlyName)
         this.profile.put("insulinPeak", activePlugin.activeInsulin.insulinConfiguration.peak/60000)
-        val lastCannulaChange = repository.getLastTherapyRecordUpToNow(TherapyEvent.Type.CANNULA_CHANGE).blockingGet()
-        val lastCannulaChangeTime = if (lastCannulaChange is ValueWrapper.Existing) lastCannulaChange.value.timestamp else 0L
-        this.profile.put("lastCannulaTime", lastCannulaChangeTime)
-
+        val lastCannula = repository.getLastTherapyRecordUpToNow(TherapyEvent.Type.CANNULA_CHANGE).blockingGet()
+        val lastCannulaTime = if (lastCannula is ValueWrapper.Existing) lastCannula.value.timestamp else 0L
+        this.profile.put("lastCannulaTime", lastCannulaTime)
+        val prevCannula = repository.getLastTherapyRecordUpToTime(TherapyEvent.Type.CANNULA_CHANGE,lastCannulaTime).blockingGet()
+        val prevCannulaTime = if (prevCannula is ValueWrapper.Existing) prevCannula.value.timestamp else 0L
+        this.profile.put("prevCannulaTime", prevCannulaTime)
         // patches ==== END
 //**********************************************************************************************************************************************
         if (profileFunction.getUnits() == GlucoseUnit.MMOL) {
@@ -355,8 +357,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.mealData.put("TDDLast4h", tddCalculator.calculateDaily(-4, 0).totalAmount)
         this.mealData.put("TDDLast8h", tddCalculator.calculateDaily(-8, 0).totalAmount)
         this.mealData.put("TDDLast8hfor4h", tddCalculator.calculateDaily(-8,-4).totalAmount)
-        this.mealData.put("TDDLastCannula", tddCalculator.calculate(lastCannulaChangeTime,now).totalAmount)
-        this.mealData.put("TDDBeforeCannula", tddCalculator.calculate(lastCannulaChangeTime-3600000*72,lastCannulaChangeTime).totalAmount)
+        this.mealData.put("TDDLastCannula", tddCalculator.calculate(lastCannulaTime,now).totalAmount)
+        this.mealData.put("TDDBeforeCannula", tddCalculator.calculate(prevCannulaTime,lastCannulaTime).totalAmount)
 
         // Override profile ISF with TDD ISF if selected in prefs
         this.profile.put("use_sens_TDD", sp.getBoolean(R.string.key_use_sens_tdd, false))
