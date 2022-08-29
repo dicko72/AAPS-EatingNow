@@ -437,7 +437,18 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     var TDD = ( tdd_last8_wt * 0.33 ) + ( tdd7 * 0.34 ) + (tdd1 * 0.33);
     console.log("TDD = " +TDD+ " using rolling 8h Total extrapolation + TDD7 (60/40); ");
-    //var TDD = (tdd7 * 0.4) + (tdd_24 * 0.6);
+
+    // SR_TDD ********************************
+    var lastCannAge = round ((new Date(systemTime).getTime() - profile.lastCannulaTime) / 60000,1);
+    var prevCannAge = round ((new Date(systemTime).getTime() - profile.prevCannulaTime) / 60000,1);
+    tdd_lastCannula = (lastCannAge > 1440 ? meal_data.TDDLastCannula / (lastCannAge / 1440) : tdd8_exp);
+    tdd_prevCannula = (prevCannAge > 1440 ? meal_data.TDDPrevCannula / (lastCannAge / 1440) : tdd7);
+    var SR_TDD = tdd8_exp / tdd7;
+    var SR_TDD_new = tdd_lastCannula / tdd_prevCannula;
+    console.log("lastCannula: Age: " + lastCannAge + ", TDD: " + tdd_lastCannula);
+    console.log("prevCannula: Age: " + prevCannAge + ", TDD: " + tdd_prevCannula);
+    console.log("SR_TDD: " + SR_TDD + ", SR_TDD_NEW: " + SR_TDD_new);
+
 
    console.error("                                 ");
    //console.error("7-day average TDD is: " +tdd7+ "; ");
@@ -492,7 +503,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
      //NEW SR CODE
     // SensitivityRatio code relocated for sens_TDD
-    var SR_TDD = tdd8_exp / tdd7;
+    // var SR_TDD = tdd8_exp / tdd7;
     if ( high_temptarget_raises_sensitivity && profile.temptargetSet && target_bg > normalTarget || profile.low_temptarget_lowers_sensitivity && profile.temptargetSet && target_bg < normalTarget ) {
         // w/ target 100, temp target 110 = .89, 120 = 0.8, 140 = 0.67, 160 = .57, and 200 = .44
         // e.g.: Sensitivity ratio set to 0.8 based on temp target of 120; Adjusting basal from 1.65 to 1.35; ISF from 58.9 to 73.6
