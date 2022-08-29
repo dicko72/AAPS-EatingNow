@@ -443,11 +443,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var prevCannAge = round ((new Date(systemTime).getTime() - profile.prevCannulaTime) / 60000,1);
     tdd_lastCannula = (lastCannAge > 1440 ? meal_data.TDDLastCannula / (lastCannAge / 1440) : tdd8_exp);
     tdd_prevCannula = (prevCannAge > 1440 ? meal_data.TDDPrevCannula / (prevCannAge / 1440) : tdd7);
-    var SR_TDD = tdd8_exp / tdd7;
-    var SR_TDDC = tdd_lastCannula / tdd7;
+    //var SR_TDD = tdd8_exp / tdd7;
+    var SR_TDD = tdd_lastCannula / tdd7;
     console.log("lastCannula: Age: " + lastCannAge + ", TDD: " + tdd_lastCannula + ", tdd8_exp: " + tdd8_exp);
     //console.log("prevCannula: Age: " + prevCannAge + ", TDD: " + tdd_prevCannula + ", tdd7: " + tdd7);
-    console.log("SR_TDD: " + round(SR_TDD,2) + ", SR_TDDC: " + round(SR_TDDC,2));
+    //console.log("SR_TDD: " + round(SR_TDD,2) + ", SR_TDDC: " + round(SR_TDDC,2));
 
 
    console.error("                                 ");
@@ -1280,7 +1280,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //    rT.reason += (TIR_sens <1 ? ", TIRL:" + round(meal_data.TIRW4L) + "/" + round(meal_data.TIRW3L) + "/" + round(meal_data.TIRW2L) +"/"+round(meal_data.TIRW1L) : "");
     rT.reason += ", TIRS: " + TIR_sens;
     rT.reason += (profile.enableSRTDD ? ", SR_TDD: " + round(SR_TDD,2) : "");
-    rT.reason += (profile.enableSRTDD ? ", SR_TDDC: " + round(SR_TDDC,2) : "");
+//    rT.reason += (profile.enableSRTDD ? ", SR_TDDC: " + round(SR_TDDC,2) : "");
     rT.reason += ", SR: " + (typeof autosens_data !== 'undefined' && autosens_data ? round(autosens_data.ratio,2) + "=": "") + sensitivityRatio;
     rT.reason += "; ";
 
