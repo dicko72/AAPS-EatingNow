@@ -275,8 +275,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("insulinType", activePlugin.activeInsulin.friendlyName)
         this.profile.put("insulinPeak", activePlugin.activeInsulin.insulinConfiguration.peak/60000)
         val lastCannulaChange = repository.getLastTherapyRecordUpToNow(TherapyEvent.Type.CANNULA_CHANGE).blockingGet()
-        val CannulaChangeTime = if (lastCannulaChange is ValueWrapper.Existing) lastCannulaChange.value.timestamp else 0L
-        this.profile.put("lastCannulaTime", CannulaChangeTime)
+        val lastCannulaChangeTime = if (lastCannulaChange is ValueWrapper.Existing) lastCannulaChange.value.timestamp else 0L
+        this.profile.put("lastCannulaTime", lastCannulaChangeTime)
 
         // patches ==== END
 //**********************************************************************************************************************************************
@@ -355,6 +355,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.mealData.put("TDDLast4h", tddCalculator.calculateDaily(-4, 0).totalAmount)
         this.mealData.put("TDDLast8h", tddCalculator.calculateDaily(-8, 0).totalAmount)
         this.mealData.put("TDDLast8hfor4h", tddCalculator.calculateDaily(-8,-4).totalAmount)
+        this.mealData.put("TDDLastCannula", tddCalculator.calculate(lastCannulaChangeTime,now).totalAmount)
+        this.mealData.put("TDDBeforeCannula", tddCalculator.calculate(lastCannulaChangeTime-3600000*72,lastCannulaChangeTime).totalAmount)
 
         // Override profile ISF with TDD ISF if selected in prefs
         this.profile.put("use_sens_TDD", sp.getBoolean(R.string.key_use_sens_tdd, false))
