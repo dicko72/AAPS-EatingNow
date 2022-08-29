@@ -536,8 +536,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (profile.use_sens_TDD) {
             sens_normalTarget = sens_normalTarget;
         } else if (profile.enableSRTDD) {
-            sens_normalTarget = sens_normalTarget / sensitivityRatio;
-            basal = profile.current_basal * sensitivityRatio;
+            sens_normalTarget = sens_normalTarget;
+            //sens_normalTarget = sens_normalTarget / sensitivityRatio;
+            //basal = profile.current_basal * sensitivityRatio;
         } else {
             sens_normalTarget = sens_normalTarget / sensitivityRatio;
             basal = profile.current_basal * sensitivityRatio;
@@ -1232,6 +1233,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // within ENW allow the eBGw to provide a stronger insulinReq_sens for UAM
         var sens_future = sens_normalTarget / (Math.log(insulinReq_bg/ins_val)+1);
+        if (profile.enableSRTDD) sens_future = sens_future / sensitivityRatio;
         insulinReq_sens = (ENWindowOK && !COB ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
         //insulinReq_sens = (ENWindowOK && ENWindowRunTime < ENWindowDuration && !firstMealWindow ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
     }
