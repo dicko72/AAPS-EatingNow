@@ -445,8 +445,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     tdd_prevCannula = (prevCannAge > 1440 ? meal_data.TDDPrevCannula / (prevCannAge / 1440) : tdd7);
     var SR_TDD = tdd8_exp / tdd7;
     var SR_TDD_new = tdd_lastCannula / tdd_prevCannula;
-    console.log("lastCannula: Age: " + lastCannAge + ", TDD: " + tdd_lastCannula);
-    console.log("prevCannula: Age: " + prevCannAge + ", TDD: " + tdd_prevCannula);
+    console.log("lastCannula: Age: " + lastCannAge + ", TDD: " + tdd_lastCannula + ", tdd8_exp: " + tdd8_exp);
+    console.log("prevCannula: Age: " + prevCannAge + ", TDD: " + tdd_prevCannula + ", tdd7: " + tdd7);
     console.log("SR_TDD: " + round(SR_TDD,2) + ", SR_TDD_NEW: " + round(SR_TDD_new,2));
 
 
