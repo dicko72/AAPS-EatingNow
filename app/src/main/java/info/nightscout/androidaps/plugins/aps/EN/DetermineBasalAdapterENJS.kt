@@ -358,7 +358,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.mealData.put("TDDLast8h", tddCalculator.calculateDaily(-8, 0).totalAmount)
         this.mealData.put("TDDLast8hfor4h", tddCalculator.calculateDaily(-8,-4).totalAmount)
         this.mealData.put("TDDLastCannula", tddCalculator.calculate(lastCannulaTime,now).totalAmount)
-        this.mealData.put("TDDBeforeCannula", tddCalculator.calculate(prevCannulaTime,lastCannulaTime).totalAmount)
+        this.mealData.put("TDDPrevCannula", tddCalculator.calculate(prevCannulaTime,lastCannulaTime).totalAmount)
 
         // Override profile ISF with TDD ISF if selected in prefs
         this.profile.put("use_sens_TDD", sp.getBoolean(R.string.key_use_sens_tdd, false))
