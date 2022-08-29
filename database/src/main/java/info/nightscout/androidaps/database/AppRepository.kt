@@ -369,7 +369,7 @@ import kotlin.math.roundToInt
 
     // EN - for getting the previous treatment
     fun getLastTherapyRecordUpToTime(type: TherapyEvent.Type, timestamp: Long): Single<ValueWrapper<TherapyEvent>> =
-        database.therapyEventDao.getLastTherapyRecord(type, timestamp).toWrappedSingle()
+        database.therapyEventDao.getLastTherapyRecord(type, timestamp-1).toWrappedSingle()
             .subscribeOn(Schedulers.io())
 
     fun getTherapyEventByTimestamp(type: TherapyEvent.Type, timestamp: Long): TherapyEvent? =
