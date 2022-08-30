@@ -472,7 +472,7 @@
                 android:defaultValue="false"
                 android:key="key_use_sr_tdd"
                 android:title="Use TDD based SensitivityRatio"
-                android:summary="Use recent TDD averages to calculate current SensitivityRatio. Only basal rate will be adjusted ISF and CR will remain unchanged. This can be used without TDD ISF. Min/Max Autosens values will be respected."/>
+                android:summary="Use recent TDD history to calculate current SensitivityRatio. Used for UAM prediction ISF. Min/Max Autosens values will be respected."/>
 
         </PreferenceCategory>
 
