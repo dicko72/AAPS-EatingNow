@@ -1221,7 +1221,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         eBGweight = (delta < 0 && eventualBG < target_bg || DeltaPct <=1 && !firstMealWindow ? eBGweight_orig : eBGweight);
 
         // SAFETY: if insulinReq_sens is stronger within ENW inherit eBGw else default
-        if (insulinReq_sens == sens) eBGweight = (ENWindowOK ? eBGweight : eBGweight_orig);
+        if (insulinReq_sens < insulinReq_sens_orig) eBGweight = (ENWindowOK ? eBGweight : eBGweight_orig);
         //if (insulinReq_sens < sens_normalTarget && !firstMealScaling) eBGweight = (ENWindowOK ? eBGweight : eBGweight_orig);
 
         // exaggerate for first UAM bolus
