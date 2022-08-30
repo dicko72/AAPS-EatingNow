@@ -1185,7 +1185,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // minPredBG and eventualBG based dosing - insulinReq_bg
     // insulinReq_sens is calculated using a percentage of eventualBG (eBGweight) with the rest as minPredBG, to reduce the risk of overdosing.
-    var insulinReq_sens = sens_normalTarget, insulinReq_bg_orig = Math.min(minPredBG,eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), eBGweight = eBGweight_orig;
+    var insulinReq_bg_orig = Math.min(minPredBG,eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), eBGweight = eBGweight_orig;
+    // SRTDD
+    var insulinReq_sens_orig = (profile.enableSRTDD ? sens_normalTarget / sensitivityRatio : sens_normalTarget), insulinReq_sens = insulinReq_sens_orig;
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial insulinReq to peak minutes of delta, max 90
     var insulinReq_boost = (ENTTActive && lastBolusAge > ttTime && !COB);
@@ -1200,13 +1202,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (sens_predType == "UAM" && !COB) {
             eBGweight = 0.50;
             // sens calculation for insulinReq can be stronger when the EN TT and accelerating
-            insulinReq_sens = (delta > 0 && DeltaPct > 1.0 ? sens : sens_normalTarget);
+            insulinReq_sens = (delta > 0 && DeltaPct > 1.0 ? sens : insulinReq_sens);
         }
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
             eBGweight = 0.50;
             //eBGweight = (sens_predType == "COB" ? 0.50 : eBGweight);
             // sens calculation for insulinReq can be stronger when the EN TT and accelerating
-            insulinReq_sens = (delta > 0 && DeltaPct > 1.0 && sens_predType == "COB" ? sens : sens_normalTarget);
+            insulinReq_sens = (delta > 0 && DeltaPct > 1.0 && sens_predType == "COB" ? sens : insulinReq_sens);
         }
 
         // SAFETY: set insulinReq_sens to profile sens if bg falling or slowing
@@ -1219,7 +1221,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         eBGweight = (delta < 0 && eventualBG < target_bg || DeltaPct <=1 && !firstMealWindow ? eBGweight_orig : eBGweight);
 
         // SAFETY: if insulinReq_sens is stronger within ENW inherit eBGw else default
-        if (insulinReq_sens < sens_normalTarget) eBGweight = (ENWindowOK ? eBGweight : eBGweight_orig);
+        if (insulinReq_sens == sens) eBGweight = (ENWindowOK ? eBGweight : eBGweight_orig);
         //if (insulinReq_sens < sens_normalTarget && !firstMealScaling) eBGweight = (ENWindowOK ? eBGweight : eBGweight_orig);
 
         // exaggerate for first UAM bolus
@@ -1232,8 +1234,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
 
         // within ENW allow the eBGw to provide a stronger insulinReq_sens for UAM
-        var sens_future = sens_normalTarget / (Math.log(insulinReq_bg/ins_val)+1);
-        if (profile.enableSRTDD) sens_future = sens_future / sensitivityRatio;
+        var sens_future = insulinReq_sens_orig / (Math.log(insulinReq_bg/ins_val)+1);
         insulinReq_sens = (ENWindowOK && !COB ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
         //insulinReq_sens = (ENWindowOK && ENWindowRunTime < ENWindowDuration && !firstMealWindow ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
     }
