@@ -1232,8 +1232,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // exaggerate for first UAM bolus
         minPredBG += insulinReq_bg_boost;
         eventualBG += insulinReq_bg_boost;
-        // TBR only if we are boosting insulinReq_bg and dropping only run on loop iteration
-        if (insulinReq_boost && (delta <= 0 || minAgo > 0)) enableSMB = false;
+        // TBR only if we are boosting insulinReq_bg and dropping
+        if (insulinReq_boost && delta <= 0) enableSMB = false;
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG
         insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
