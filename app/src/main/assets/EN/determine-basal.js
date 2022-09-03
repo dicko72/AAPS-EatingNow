@@ -1193,10 +1193,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var insulinReq_bg_orig = Math.min(minPredBG,eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), eBGweight = eBGweight_orig;
     var insulinReq_sens = sens_normalTarget;
 
-    // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial insulinReq to peak minutes of delta, max 90
+    // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial insulinReq to 50% peak minutes of delta, max 90
     var insulinReq_boost = (ENTTActive && lastBolusAge > ttTime && !COB);
     var endebug = "DEBUG: "+ttTime+", "+lastBolusAge+";";
-    var insulinReq_bg_boost = (insulinReq_boost ? Math.min(delta * ins_peak / 5, 90) : 0);
+    var insulinReq_bg_boost = (insulinReq_boost ? Math.min(ins_peak/2/5 * delta, 90) : 0);
 
     // categorize the eventualBG prediction type for more accurate weighting
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
@@ -1582,7 +1582,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (ENactive && eventualBG > target_bg) {
 
                 // EN insulinReqPct is now used, for ENW use 100% excludes IOB trigger ensuring close proximity to treatment
-                insulinReqPct = ENinsulinReqPct;
+                insulinReqPct = (ENWindowRunTime < ENWindowDuration ? 1 : ENinsulinReqPct);
                 //insulinReqPct = (ENWindowOK ? 1 : ENinsulinReqPct);
                 //insulinReqPct = (ENTTActive ? 1 : ENinsulinReqPct);
 
