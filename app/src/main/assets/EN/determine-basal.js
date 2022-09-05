@@ -1199,7 +1199,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial insulinReq to 50% peak minutes of delta, max 90
     var insulinReq_boost = (ENTTActive && lastBolusAge > ttTime && !COB);
     //var endebug = "DEBUG: "+ttTime+", "+lastBolusAge+", "+minAgo+";";
-    var insulinReq_bg_boost = (insulinReq_boost ? Math.min(ins_peak/2/5 * delta, 90) : 0);
+    var insulinReq_bg_boost = (insulinReq_boost && delta >= 0 ? Math.min(ins_peak/2/5 * delta, 90) : 0);
 
     // categorize the eventualBG prediction type for more accurate weighting
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
