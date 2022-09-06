@@ -339,6 +339,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val activeENTempTargetDuration = repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.duration
         if (activeENTempTargetDuration != null) {
             this.mealData.put("activeENTempTargetDuration",activeENTempTargetDuration/60000)
+        } else {
+            this.mealData.put("activeENTempTargetDuration", 0)
         }
 
         // get the LAST bolus time since EN activation
