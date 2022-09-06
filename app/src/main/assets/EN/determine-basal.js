@@ -1243,7 +1243,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
 
         // TBR only if not significant boost
-        if (insulinReq_boost && insulinReq_bg <= target_bg) enableSMB = false;
+        //if (insulinReq_boost && insulinReq_bg <= target_bg) enableSMB = false; // meh
 
         // within ENW allow the eBGw to provide a stronger insulinReq_sens for UAM
         var sens_future = sens_normalTarget / (Math.log(insulinReq_bg/ins_val)+1);
