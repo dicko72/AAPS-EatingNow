@@ -444,15 +444,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     //var SR_TDD = tdd8_exp / tdd7;
     var SR_TDD = tdd_lastCannula / tdd7;
     console.log("lastCannula: Age: " + lastCannAge + ", TDD: " + tdd_lastCannula + ", tdd8_exp: " + tdd8_exp);
-    //console.log("SR_TDD: " + round(SR_TDD,2) + ", SR_TDDC: " + round(SR_TDDC,2));
 
-
-   console.error("                                 ");
-   //console.error("7-day average TDD is: " +tdd7+ "; ");
-   console.error("Rolling 8 hours weight average: "+tdd_last8_wt+"; ");
-   console.error("Calculated TDD: "+TDD+"; ");
-   console.error("1-day average TDD is: "+tdd1+"; ");
-   console.error("7-day average TDD is: " +tdd7+ "; ");
+    console.error("                                 ");
+    //console.error("7-day average TDD is: " +tdd7+ "; ");
+    console.error("Rolling 8 hours weight average: "+tdd_last8_wt+"; ");
+    console.error("Calculated TDD: "+TDD+"; ");
+    console.error("1-day average TDD is: "+tdd1+"; ");
+    console.error("7-day average TDD is: " +tdd7+ "; ");
 
     // just after midnight there is a big spike in TDD this will use the 3d avg during this time
 //    var TDD = (nowhrs >=2 ? (tdd24h+tdd3d+tdd_pump_now_ms)/3 : tdd3d);
@@ -471,15 +469,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var ISFbgMax = 180;
     enlog += "ISFbgMax:"+convert_bg(ISFbgMax, profile)+"\n";
 
-    // TIR_sens - the amount of % like AS *** UNDER CONSTRUCTION ****
+    // TIR_sens - a very simple implementation of autoISF 5% per hour
     var TIR_sens = 0;
     enlog += "* TIR_sens:\n";
-//    if (meal_data.TIRW1H > 60 && TIR_sens == 0) TIR_sens += 2; //10%
-//    if (meal_data.TIRW2H > 10 && TIR_sens == 2) TIR_sens += 1; //15%
-//    if (meal_data.TIRW3H > 10 && TIR_sens == 3) TIR_sens += 1; //20%
-//    if (meal_data.TIRW4H > 10 && TIR_sens == 4) TIR_sens += 1; //25%
-    TIR_sens = Math.min (1+(TIR_sens*0.05), profile.autosens_max);
-    TIR_sens = 1; // disabling as testing
+    if (meal_data.TIRW1H > 50) TIR_sens = meal_data.TIRW1H/100;
+    if (meal_data.TIRW2H > 0 && TIR_sens == 1) TIR_sens += meal_data.TIRW2H/100;
+    if (meal_data.TIRW3H > 0 && TIR_sens == 2) TIR_sens += meal_data.TIRW3H/100;
+    if (meal_data.TIRW4H > 0 && TIR_sens == 3) TIR_sens += meal_data.TIRW4H/100;
+
+    TIR_sens = Math.min (TIR_sens * 0.05 + 1 , profile.autosens_max);
+    //TIR_sens = 1; // disabling as testing
 
     // ISF at normal target
     var sens_normalTarget = sens, sens_profile = sens; // use profile sens and keep profile sens with any SR
@@ -1289,11 +1288,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // other EN stuff
     rT.reason += (sens_predType !="NA" ? ", eBGw: " + sens_predType + " " +  round(eBGweight*100) + "% ("+convert_bg(insulinReq_bg,profile)+")" : "");
     rT.reason += ", TDD:" + round(TDD, 2) + " " + (profile.sens_TDD_scale !=100 ? profile.sens_TDD_scale + "% " : "") + "("+convert_bg(sens_TDD, profile)+")";
-//    rT.reason += (TIR_sens >1 ? ", TIRH:" + round(meal_data.TIRW4H) + "/" + round(meal_data.TIRW3H) + "/" + round(meal_data.TIRW2H) +"/"+round(meal_data.TIRW1H) : "");
+    rT.reason += (TIR_sens > 1 ? ", TIRH:" + round(meal_data.TIRW4H) + "/" + round(meal_data.TIRW3H) + "/" + round(meal_data.TIRW2H) +"/"+round(meal_data.TIRW1H) : "");
 //    rT.reason += (TIR_sens <1 ? ", TIRL:" + round(meal_data.TIRW4L) + "/" + round(meal_data.TIRW3L) + "/" + round(meal_data.TIRW2L) +"/"+round(meal_data.TIRW1L) : "");
     rT.reason += ", TIRS: " + TIR_sens;
     rT.reason += (profile.enableSRTDD ? ", SR_TDD: " + round(SR_TDD,2) : "");
-//    rT.reason += (profile.enableSRTDD ? ", SR_TDDC: " + round(SR_TDDC,2) : "");
     rT.reason += ", SR: " + (typeof autosens_data !== 'undefined' && autosens_data ? round(autosens_data.ratio,2) + "=": "") + sensitivityRatio;
     rT.reason += "; ";
     rT.reason += (typeof endebug !== 'undefined' ? endebug : "");

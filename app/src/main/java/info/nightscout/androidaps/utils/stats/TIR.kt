@@ -24,7 +24,7 @@ class TIR(val date: Long, val lowThreshold: Double, val highThreshold: Double) {
 
     private fun belowPct() = if (count > 0) below.toDouble() / count * 100.0 else 0.0
     private fun inRangePct() = if (count > 0) 100 - belowPct() - abovePct() else 0.0
-    private fun abovePct() = if (count > 0) above.toDouble() / count * 100.0 else 0.0
+    fun abovePct() = if (count > 0) above.toDouble() / count * 100.0 else 0.0
 
     companion object {
 
