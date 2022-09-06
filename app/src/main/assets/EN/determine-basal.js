@@ -1210,17 +1210,20 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (sens_predType == "UAM" && !COB) {
             eBGweight = 0.50;
             // sens calculation for insulinReq can be stronger when the EN TT and accelerating
-            insulinReq_sens = (delta > 0 && DeltaPct > 1.0 ? sens : insulinReq_sens);
+            //insulinReq_sens = (delta > 0 && DeltaPct > 1.0 ? sens : insulinReq_sens);
+            insulinReq_sens = (DeltaPct > 1.0 ? sens : insulinReq_sens);
         }
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
             eBGweight = 0.50;
             //eBGweight = (sens_predType == "COB" ? 0.50 : eBGweight);
             // sens calculation for insulinReq can be stronger when the EN TT and accelerating
-            insulinReq_sens = (delta > 0 && DeltaPct > 1.0 && sens_predType == "COB" ? sens : insulinReq_sens);
+            //insulinReq_sens = (delta > 0 && DeltaPct > 1.0 && sens_predType == "COB" ? sens : insulinReq_sens);
+            insulinReq_sens = (DeltaPct > 1.0 && sens_predType == "COB" ? sens : insulinReq_sens);
         }
 
         // SAFETY: set insulinReq_sens to profile sens if bg falling or slowing
-        insulinReq_sens = (delta < 0 && eventualBG < target_bg  || DeltaPct <=1 ? sens_normalTarget : insulinReq_sens);
+        //insulinReq_sens = (delta < 0 && eventualBG < target_bg  || DeltaPct <=1 ? sens_normalTarget : insulinReq_sens);
+        insulinReq_sens = (DeltaPct <= 1 ? sens_normalTarget : insulinReq_sens);
 
         // SAFETY: when high and delta is faster use minPredBG, slow delta inherits eBGw in an attempt to reduce stubborn high
         eBGweight = (bg > ISFbgMax && delta >= 9 ? eBGweight_orig : eBGweight);
