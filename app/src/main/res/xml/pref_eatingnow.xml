@@ -480,7 +480,7 @@
                 android:title="TIRS % resistance per hour"
                 android:key="@string/en_resistance_per_hour"
                 android:dialogMessage="ISF will become stronger every loop iteration when bg is high. This will set Maximum resistance per hour in percentage. Autosens max is also respected."
-                validate:maxNumber="125"
+                validate:maxNumber="25"
                 validate:minNumber="0"
                 validate:testType="numericRange" />
 
