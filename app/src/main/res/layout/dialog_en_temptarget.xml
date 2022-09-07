@@ -196,7 +196,11 @@
                 android:visibility="gone" />
 
         </LinearLayout>
-        
+
+        <include
+            android:id="@+id/notes_layout"
+            layout="@layout/notes" />
+
         <include
             android:id="@+id/datetime"
             layout="@layout/datetime" />

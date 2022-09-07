@@ -185,6 +185,11 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
             actions.add(rh.gs(R.string.stoptemptarget))
             reason = rh.gs(R.string.stoptemptarget)
         }
+
+        val notes = binding.notesLayout.notes.text.toString()
+        if (notes.isNotEmpty())
+            actions.add(rh.gs(R.string.notes_label) + ": " + notes)
+
         if (eventTimeChanged)
             actions.add(rh.gs(R.string.time) + ": " + dateUtil.dateAndTimeString(eventTime))
 
@@ -226,6 +231,10 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
                         aapsLogger.error(LTag.DATABASE, "Error while saving temporary target", it)
                     })
                 }
+
+                // attempt to log a notes entry also
+                //uel.log(Action.CAREPORTAL, CareDialog.EventType.NOTE, notes, ValueWithUnit.Timestamp(eventTime).takeIf { eventTimeChanged })
+                uel.log(Action.CAREPORTAL, Sources.Note, notes, ValueWithUnit.Timestamp(eventTime).takeIf { eventTimeChanged }, ValueWithUnit.TherapyEventTTReason(TemporaryTarget.Reason.EATING_NOW), ValueWithUnit.fromGlucoseUnit(target, units.asText), ValueWithUnit.Minute(duration))
 
                 if (duration == 10) sp.putBoolean(R.string.key_objectiveusetemptarget, true)
             })
