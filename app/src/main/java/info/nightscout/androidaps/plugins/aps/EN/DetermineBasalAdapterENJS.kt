@@ -269,7 +269,6 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("SMBbgOffset", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset, 0.0),profileFunction.getUnits()))
         this.profile.put("ISFbgscaler", sp.getDouble(R.string.key_eatingnow_isfbgscaler, 0.0))
         this.profile.put("MaxISFpct", sp.getInt(R.string.key_eatingnow_maxisfpct, 100))
-        this.profile.put("enableSRTDD", sp.getBoolean(R.string.key_use_sr_tdd, false))
         this.profile.put("useDynISF", sp.getBoolean(R.string.key_use_dynamicISF, true))
 
         this.profile.put("insulinType", activePlugin.activeInsulin.friendlyName)
@@ -353,18 +352,22 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("enableBasalAt3PM", sp.getBoolean(R.string.key_use_3pm_basal, false))
         this.profile.put("BasalAt3PM", profile.getBasal(3600000*15+MidnightTime.calc(now)))
 
-        // TDD
-        this.mealData.put("TDDAvg1d", tddCalculator.averageTDD(tddCalculator.calculate(1))?.totalAmount)
-        this.mealData.put("TDDAvg7d", tddCalculator.averageTDD(tddCalculator.calculate(7))?.totalAmount)
-        this.mealData.put("TDDLast4h", tddCalculator.calculateDaily(-4, 0).totalAmount)
-        this.mealData.put("TDDLast8h", tddCalculator.calculateDaily(-8, 0).totalAmount)
-        this.mealData.put("TDDLast8hfor4h", tddCalculator.calculateDaily(-8,-4).totalAmount)
-        this.mealData.put("TDDLastCannula", tddCalculator.calculate(lastCannulaTime,now).totalAmount)
-        // this.mealData.put("TDDPrevCannula", tddCalculator.calculate(prevCannulaTime,lastCannulaTime).totalAmount)
-
-        // Override profile ISF with TDD ISF if selected in prefs
-        this.profile.put("use_sens_TDD", sp.getBoolean(R.string.key_use_sens_tdd, false))
+        // TDD related functions
+        val enableSensTDD = sp.getBoolean(R.string.key_use_sens_tdd, false)
+        this.profile.put("use_sens_TDD", enableSensTDD) // Override profile ISF with TDD ISF if selected in prefs
         this.profile.put("sens_TDD_scale",SafeParse.stringToDouble(sp.getString(R.string.key_sens_tdd_scale,"100")))
+        val enableSRTDD = sp.getBoolean(R.string.key_use_sr_tdd, false)
+        this.profile.put("enableSRTDD", enableSRTDD)
+
+        if (enableSensTDD || enableSRTDD) { // only do TDD if we have to
+            this.mealData.put("TDDAvg1d", tddCalculator.averageTDD(tddCalculator.calculate(1))?.totalAmount)
+            this.mealData.put("TDDAvg7d", tddCalculator.averageTDD(tddCalculator.calculate(7))?.totalAmount)
+            this.mealData.put("TDDLast4h", tddCalculator.calculateDaily(-4, 0).totalAmount)
+            this.mealData.put("TDDLast8h", tddCalculator.calculateDaily(-8, 0).totalAmount)
+            this.mealData.put("TDDLast8hfor4h", tddCalculator.calculateDaily(-8, -4).totalAmount)
+            this.mealData.put("TDDLastCannula", tddCalculator.calculate(lastCannulaTime, now).totalAmount)
+            // this.mealData.put("TDDPrevCannula", tddCalculator.calculate(prevCannulaTime,lastCannulaTime).totalAmount)
+        }
 
         // TIR Windows - 4 hours prior to current time // 4.0 - 10.0
         this.mealData.put("TIRW4H",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4,3,72.0, 170.0)).abovePct())
