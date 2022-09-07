@@ -446,7 +446,7 @@
                 android:defaultValue="false"
                 android:key="key_use_sens_tdd"
                 android:title="Use TDD for ISF"
-                android:summary="Use TDD as the basis for calulating the current ISF. This will override the profile ISF." />
+                android:summary="Use TDD as the basis for calculating the current ISF. This will override the profile ISF." />
 
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="100"
@@ -473,6 +473,16 @@
                 android:key="key_use_sr_tdd"
                 android:title="Use TDD based SensitivityRatio"
                 android:summary="Use recent TDD history to calculate current SensitivityRatio. Used for UAM prediction ISF. Min/Max Autosens values will be respected."/>
+
+            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:inputType="number"
+                android:title="TIRS % resistance per hour"
+                android:key="@string/en_resistance_per_hour"
+                android:dialogMessage="ISF will become stronger every loop iteration when bg is high. This will set Maximum resistance per hour in percentage. Autosens max is also respected."
+                validate:maxNumber="125"
+                validate:minNumber="0"
+                validate:testType="numericRange" />
 
         </PreferenceCategory>
 
