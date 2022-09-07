@@ -477,7 +477,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "ISFbgMax:"+convert_bg(ISFbgMax, profile)+"\n";
 
     // TIR_sens - a very simple implementation of autoISF 5% per hour
-    var TIR_sens = 0, TIRH_percent = profile.resistancePerHr/100;
+    var TIR_sens = 1, TIRH_percent = profile.resistancePerHr/100;
     if (TIRH_percent) {
         enlog += "* TIR_sens:\n";
         if (meal_data.TIRW1H > 50) TIR_sens = meal_data.TIRW1H/100;
