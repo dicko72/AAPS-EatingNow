@@ -11,7 +11,6 @@ import info.nightscout.androidaps.database.entities.TherapyEvent
 import info.nightscout.androidaps.extensions.convertedToAbsolute
 import info.nightscout.androidaps.extensions.getPassedDurationToTimeInMinutes
 import info.nightscout.androidaps.extensions.plannedRemainingMinutes
-import info.nightscout.androidaps.extensions.therapyEventFromNsMbg
 import info.nightscout.androidaps.interfaces.*
 import info.nightscout.shared.logging.AAPSLogger
 import info.nightscout.shared.logging.LTag
@@ -359,14 +358,68 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val enableSRTDD = sp.getBoolean(R.string.key_use_sr_tdd, false)
         this.profile.put("enableSRTDD", enableSRTDD)
 
+
+        // storing TDD values in prefs, terrible but hopefully effective
         if (enableSensTDD || enableSRTDD) { // only do TDD if we have to
-            this.mealData.put("TDDAvg1d", tddCalculator.averageTDD(tddCalculator.calculate(1))?.totalAmount)
-            this.mealData.put("TDDAvg7d", tddCalculator.averageTDD(tddCalculator.calculate(7))?.totalAmount)
-            this.mealData.put("TDDLast4h", tddCalculator.calculateDaily(-4, 0).totalAmount)
-            this.mealData.put("TDDLast8h", tddCalculator.calculateDaily(-8, 0).totalAmount)
-            this.mealData.put("TDDLast8hfor4h", tddCalculator.calculateDaily(-8, -4).totalAmount)
-            this.mealData.put("TDDLastCannula", tddCalculator.calculate(lastCannulaTime, now).totalAmount)
-            // this.mealData.put("TDDPrevCannula", tddCalculator.calculate(prevCannulaTime,lastCannulaTime).totalAmount)
+
+            // check when TDD last updated
+            val TDDLastUpdate =  sp.getLong("TDDLastUpdate",0)
+            val TDDHrSinceUpdate = (now - TDDLastUpdate) / 3600000
+
+            if (TDDLastUpdate == 0L || TDDHrSinceUpdate > 0.24) { // test 15 minutes
+                // Generate the data for the larger datasets infrequently
+
+                val TDDAvg7d = tddCalculator.averageTDD(tddCalculator.calculate(7))?.totalAmount
+                this.mealData.put("TDDAvg7d", TDDAvg7d)
+                TDDAvg7d?.let { sp.putDouble("TDDAvg7d", it) }
+
+                // val TDDAvg1d = tddCalculator.averageTDD(tddCalculator.calculate(1))?.totalAmount
+                // this.mealData.put("TDDAvg1d", TDDAvg1d)
+                // TDDAvg1d?.let { sp.putDouble("TDDAvg1d", it) }
+
+                // val TDDLast4h = tddCalculator.calculateDaily(-4, 0).totalAmount
+                // this.mealData.put("TDDLast4h", TDDLast4h)
+                // sp.putDouble("TDDLast4h", TDDLast4h)
+
+                // val TDDLast8h = tddCalculator.calculateDaily(-8, 0).totalAmount
+                // this.mealData.put("TDDLast8h", TDDLast8h)
+                // sp.putDouble("TDDLast8h", TDDLast8h)
+
+                // val TDDLast8hfor4h = TDDLast8h - TDDLast4h
+                // this.mealData.put("TDDLast8hfor4h", TDDLast8hfor4h)
+                // // this.mealData.put("TDDLast8hfor4h", tddCalculator.calculateDaily(-8, -4).totalAmount)
+                // sp.putDouble("TDDLast8hfor4h", TDDLast8hfor4h)
+
+                // val TDDLastCannula = tddCalculator.calculate(lastCannulaTime, now).totalAmount
+                // this.mealData.put("TDDLastCannula", TDDLastCannula)
+                // sp.putDouble("TDDLastCannula", TDDLastCannula)
+
+                sp.putLong("TDDLastUpdate", now)
+                this.mealData.put("TDDLastUpdate", sp.getLong("TDDLastUpdate", 0))
+
+            } else {
+                // use stored value where appropriate
+                this.mealData.put("TDDAvg7d", sp.getDouble("TDDAvg7d", 0.0))
+            }
+
+            // calculate the rest of the TDD data
+            val TDDAvg1d = tddCalculator.averageTDD(tddCalculator.calculate(1))?.totalAmount
+            this.mealData.put("TDDAvg1d", TDDAvg1d)
+
+            val TDDLast4h = tddCalculator.calculateDaily(-4, 0).totalAmount
+            this.mealData.put("TDDLast4h", TDDLast4h)
+
+            val TDDLast8h = tddCalculator.calculateDaily(-8, 0).totalAmount
+            this.mealData.put("TDDLast8h", TDDLast8h)
+
+            val TDDLast8hfor4h = TDDLast8h - TDDLast4h
+            this.mealData.put("TDDLast8hfor4h", TDDLast8hfor4h)
+            // this.mealData.put("TDDLast8hfor4h", tddCalculator.calculateDaily(-8, -4).totalAmount)
+
+            val TDDLastCannula = tddCalculator.calculate(lastCannulaTime, now).totalAmount
+            this.mealData.put("TDDLastCannula", TDDLastCannula)
+
+            this.mealData.put("TDDLastUpdate", sp.getLong("TDDLastUpdate", 0))
         }
 
         // TIR Windows - 4 hours prior to current time // 4.0 - 10.0
