@@ -371,8 +371,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
                 var TDDAvg7d = tddCalculator.averageTDD(tddCalculator.calculate(7))?.totalAmount
                 this.mealData.put("TDDAvg7d", TDDAvg7d)
-                if (TDDAvg7d == 0.0) TDDAvg7d = ((basalRate * 12)*100)/21
-                TDDAvg7d?.let { sp.putDouble("TDDAvg7d", it) }
+                if (TDDAvg7d == 0.0 || TDDAvg7d == null ) TDDAvg7d = ((basalRate * 12)*100)/21
+                sp.putDouble("TDDAvg7d", TDDAvg7d)
 
                 // val TDDAvg1d = tddCalculator.averageTDD(tddCalculator.calculate(1))?.totalAmount
                 // this.mealData.put("TDDAvg1d", TDDAvg1d)
