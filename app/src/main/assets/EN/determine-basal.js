@@ -438,7 +438,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var SR_TDD = 1, sens_TDD = sens, TDD = 0;
     if (profile.use_sens_TDD || profile.enableSRTDD) {
         var tdd7 = (meal_data.TDDAvg7d ? meal_data.TDDAvg7d : ((basal * 12)*100)/21);
-        var tdd1 = meal_data.TDDAvg1d;
+        var tdd1 = (meal_data.TDDAvg1d ? meal_data.TDDAvg1d : ((basal * 12)*100)/21);
         var tdd_4 = meal_data.TDDLast4h;
         var tdd_8 = meal_data.TDDLast8h;
         var tdd8to4 = meal_data.TDDLast8hfor4h;
