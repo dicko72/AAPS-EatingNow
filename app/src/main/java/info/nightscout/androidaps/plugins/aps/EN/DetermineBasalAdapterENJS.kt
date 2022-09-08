@@ -365,6 +365,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             // check when TDD last updated
             val TDDLastUpdate =  sp.getLong("TDDLastUpdate",0)
             val TDDHrSinceUpdate = (now - TDDLastUpdate) / 3600000
+            this.mealData.put("TDDHrSinceUpdate", TDDHrSinceUpdate)
 
             if (TDDLastUpdate == 0L || TDDHrSinceUpdate > 0.24) { // test 15 minutes
                 // Generate the data for the larger datasets infrequently
