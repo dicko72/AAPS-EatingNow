@@ -1257,7 +1257,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // within ENW allow the eBGw to provide a stronger insulinReq_sens for UAM
         var sens_future = sens_normalTarget / (Math.log(insulinReq_bg/ins_val)+1);
-        insulinReq_sens = (!COB && !ENSleepMode ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
+        insulinReq_sens = (!COB && ENtimeOK ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
         //insulinReq_sens = (ENWindowOK && !COB ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
         // If we have SRTDD enabled
         insulinReq_sens = (profile.enableSRTDD ? insulinReq_sens / sensitivityRatio : insulinReq_sens);
