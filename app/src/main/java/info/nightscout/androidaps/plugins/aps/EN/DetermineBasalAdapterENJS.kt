@@ -369,8 +369,9 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             if (TDDLastUpdate == 0L || TDDHrSinceUpdate > 0.24) { // test 15 minutes
                 // Generate the data for the larger datasets infrequently
 
-                val TDDAvg7d = tddCalculator.averageTDD(tddCalculator.calculate(7))?.totalAmount
+                var TDDAvg7d = tddCalculator.averageTDD(tddCalculator.calculate(7))?.totalAmount
                 this.mealData.put("TDDAvg7d", TDDAvg7d)
+                if (TDDAvg7d == 0.0) TDDAvg7d = ((basalRate * 12)*100)/21
                 TDDAvg7d?.let { sp.putDouble("TDDAvg7d", it) }
 
                 // val TDDAvg1d = tddCalculator.averageTDD(tddCalculator.calculate(1))?.totalAmount
@@ -399,11 +400,12 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
             } else {
                 // use stored value where appropriate
-                this.mealData.put("TDDAvg7d", sp.getDouble("TDDAvg7d", 0.0))
+                this.mealData.put("TDDAvg7d", sp.getDouble("TDDAvg7d", ((basalRate * 12)*100)/21))
             }
 
             // calculate the rest of the TDD data
-            val TDDAvg1d = tddCalculator.averageTDD(tddCalculator.calculate(1))?.totalAmount
+            var TDDAvg1d = tddCalculator.averageTDD(tddCalculator.calculate(1))?.totalAmount
+            if (TDDAvg1d == 0.0) TDDAvg1d = ((basalRate * 12)*100)/21
             this.mealData.put("TDDAvg1d", TDDAvg1d)
 
             val TDDLast4h = tddCalculator.calculateDaily(-4, 0).totalAmount
