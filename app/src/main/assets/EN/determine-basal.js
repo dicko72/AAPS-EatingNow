@@ -1595,8 +1595,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (ENactive && eventualBG > target_bg) {
 
                 // EN insulinReqPct is now used, for ENW use 100% excludes IOB trigger ensuring close proximity to treatment
-                insulinReqPct = (ENWindowRunTime < ENWindowDuration ? 1 : ENinsulinReqPct);
-                //insulinReqPct = (ENWindowOK ? 1 : ENinsulinReqPct);
+                //insulinReqPct = (ENWindowRunTime < ENWindowDuration ? 1 : ENinsulinReqPct);
+                insulinReqPct = (ENWindowOK ? 1 : ENinsulinReqPct);
                 //insulinReqPct = (ENTTActive ? 1 : ENinsulinReqPct);
 
                 // set EN SMB limit for COB or UAM
