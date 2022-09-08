@@ -364,6 +364,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
             // check when TDD last updated
             val TDDLastUpdate =  sp.getLong("TDDLastUpdate",0)
+            this.mealData.put("TDDLastUpdate2", TDDLastUpdate)
             val TDDHrSinceUpdate = (now - TDDLastUpdate) / 3600000
             this.mealData.put("TDDHrSinceUpdate", TDDHrSinceUpdate)
 
