@@ -405,7 +405,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
             // calculate the rest of the TDD data
             var TDDAvg1d = tddCalculator.averageTDD(tddCalculator.calculate(1))?.totalAmount
-            if (TDDAvg1d == 0.0) TDDAvg1d = ((basalRate * 12)*100)/21
+            if (TDDAvg1d == 0.0 || TDDAvg1d == null) TDDAvg1d = ((basalRate * 12)*100)/21
             this.mealData.put("TDDAvg1d", TDDAvg1d)
 
             val TDDLast4h = tddCalculator.calculateDaily(-4, 0).totalAmount
