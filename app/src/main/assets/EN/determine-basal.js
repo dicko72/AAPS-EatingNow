@@ -478,7 +478,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // TIR_sens - a very simple implementation of autoISF configurable % per hour
     var TIR_sens = 0, TIRH_percent = profile.resistancePerHr/100;
-    if (TIRH_percent && delta >= -3 && delta <= 3) {
+    if (TIRH_percent && delta >= -4 && delta <= 4) {
         enlog += "* TIR_sens:\n";
         if (meal_data.TIRW1H > 50) TIR_sens = meal_data.TIRW1H/100;
         if (meal_data.TIRW2H > 0 && TIR_sens == 1) TIR_sens += meal_data.TIRW2H/100;
