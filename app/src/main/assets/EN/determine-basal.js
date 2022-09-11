@@ -1259,7 +1259,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         //if (insulinReq_boost && insulinReq_bg <= target_bg) enableSMB = false; // meh
 
         // sens_future determines the sens used for insulinReq
-        ins_val = (ENtimeOK ?  ins_val : target_bg); // weaken sens_future overnight
+        ins_val = (ENtimeOK ?  ins_val : ins_val * 1.25); // weaken sens_future overnight
         var sens_future = sens_normalTarget / (insulinReq_boost ? (Math.log(eventualBG/ins_val)+1) : (Math.log(insulinReq_bg/ins_val)+1) );
         insulinReq_sens = (!firstMealWindow && !COB ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
 
