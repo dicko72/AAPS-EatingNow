@@ -1260,7 +1260,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // sens_future allowed outside ENW but not overnight or with COB - when boosting use eventualBG
         var sens_future = sens_normalTarget / (insulinReq_boost ? (Math.log(eventualBG/ins_val)+1) : (Math.log(insulinReq_bg/ins_val)+1) );
-        insulinReq_sens = (!COB && ENtimeOK || ENSleepMode ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens); //testing sleepmode inclusion
+        insulinReq_sens = Math.min(insulinReq_sens,sens_future);
+        //insulinReq_sens = (!COB && ENtimeOK || ENSleepMode ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens); //testing sleepmode inclusion
         //insulinReq_sens = (ENWindowOK && !COB ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
         // If we have SRTDD enabled
         insulinReq_sens = (profile.enableSRTDD ? insulinReq_sens / sensitivityRatio : insulinReq_sens);
