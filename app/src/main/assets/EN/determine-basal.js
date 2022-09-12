@@ -1544,7 +1544,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // insulinReq is the additional insulin required to get minPredBG down to target_bg
         //console.error(minPredBG,eventualBG);
         //insulinReq = round( (Math.min(minPredBG,eventualBG) - target_bg) / insulinReq_sens, 3);
-        insulinReq = round( (insulinReq_bg_orig - target_bg) / insulinReq_sens, 3);
+        insulinReq = round( (insulinReq_bg_orig - target_bg) / sens_profile, 3);
 
         // keep the original insulinReq for reporting
         var insulinReqOrig = insulinReq;
