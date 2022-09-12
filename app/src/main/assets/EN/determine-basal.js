@@ -1217,14 +1217,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
     if (ENactive || ENSleepMode) {
         if (sens_predType == "UAM" && !COB) {
-            eBGweight = 0.50;
+            //eBGweight = 0.50;
             // sens calculation for insulinReq can be stronger when the EN TT and accelerating
             //insulinReq_sens = (delta > 0 && DeltaPct > 1.0 ? sens : insulinReq_sens);
             insulinReq_sens = (DeltaPct > 1.0 ? sens : insulinReq_sens);
             insulinReq_sens = (bg > target_bg && eventualBG > target_bg ? sens : insulinReq_sens);
         }
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
-            eBGweight = 0.50;
+            //eBGweight = 0.50;
             //eBGweight = (sens_predType == "COB" ? 0.50 : eBGweight);
             // sens calculation for insulinReq can be stronger when the EN TT and accelerating
             //insulinReq_sens = (delta > 0 && DeltaPct > 1.0 && sens_predType == "COB" ? sens : insulinReq_sens);
