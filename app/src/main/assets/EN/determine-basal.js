@@ -1255,9 +1255,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG
         insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
 
-        // TBR only if not significant boost
-        //if (insulinReq_boost && insulinReq_bg <= target_bg) enableSMB = false; // meh
-
         // sens_future determines the sens used for insulinReq
         ins_val = (ENtimeOK ?  ins_val : ins_val * 1.25); // weaken sens_future overnight
         var sens_future = sens_normalTarget / (insulinReq_boost ? (Math.log(eventualBG/ins_val)+1) : (Math.log(insulinReq_bg/ins_val)+1) );
@@ -1648,6 +1645,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     // default SMB
                     maxBolus = round(maxBolus,1);
                 }
+
+                // ============== BOOST BASED RESTRICTIONS ==============
+                // TBR only if not significant boost
+                if (insulinReq_boost && insulinReq_bg <= bg) insulinReqPct = 0;
 
                 // ============== IOB RESTRICTION  ==============
                 if (insulinReq > max_iob-iob_data.iob) {
