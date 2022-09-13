@@ -260,6 +260,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         // other meals
         this.profile.put("Win_COB_maxBolus", sp.getDouble(R.string.key_eatingnow_cobboost_maxbolus, 0.0))
         this.profile.put("Win_UAM_maxBolus", sp.getDouble(R.string.key_eatingnow_uamboost_maxbolus, 0.0))
+        this.profile.put("UAMbgBoost", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_uambgboost, 0.0),profileFunction.getUnits()))
 
         // Outside of the EN Window ********************************************************************************
         this.profile.put("COB_maxBolus", sp.getDouble(R.string.key_eatingnow_isfboost_maxbolus, 0.0))
@@ -278,7 +279,6 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         // val prevCannula = repository.getLastTherapyRecordUpToTime(TherapyEvent.Type.CANNULA_CHANGE,lastCannulaTime).blockingGet()
         // val prevCannulaTime = if (prevCannula is ValueWrapper.Existing) prevCannula.value.timestamp else 0L
         // this.profile.put("prevCannulaTime", prevCannulaTime)
-        this.profile.put("percentage", profile.percentage)
         // patches ==== END
 //**********************************************************************************************************************************************
         if (profileFunction.getUnits() == GlucoseUnit.MMOL) {

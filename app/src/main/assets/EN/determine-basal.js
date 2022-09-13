@@ -1206,7 +1206,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial insulinReq to 50% peak minutes of delta, max 90
     var insulinReq_boost = (ENTTActive && lastBolusAge > ttTime && !COB);
     //var endebug = "DEBUG: "+ttTime+", "+lastBolusAge+", "+minAgo+";";
-    var insulinReq_bg_boost = (insulinReq_boost && delta >= 0 ? Math.min(ins_peak/2/5 * delta, 90) : 0);
+    var insulinReq_bg_boost = (insulinReq_boost && delta >= 0 ? profile.UAMbgBoost : 0);
 
     // categorize the eventualBG prediction type for more accurate weighting
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
@@ -1258,6 +1258,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         ins_val = (ENtimeOK ?  ins_val : ins_val * 1.25); // weaken sens_future overnight
         var sens_future = sens_normalTarget / (insulinReq_boost ? (Math.log(eventualBG/ins_val)+1) : (Math.log(insulinReq_bg/ins_val)+1) );
         insulinReq_sens = (!firstMealWindow && !COB ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
+
+        // TBR only if not significant boost
+        if (insulinReq_boost && insulinReq_bg <= bg) insulinReqPct = 0;
 
         // If we have SRTDD enabled
         //insulinReq_sens = (profile.enableSRTDD ? insulinReq_sens / sensitivityRatio : insulinReq_sens);
@@ -1644,10 +1647,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     // default SMB
                     maxBolus = round(maxBolus,1);
                 }
-
-                // ============== BOOST BASED RESTRICTIONS ==============
-                // TBR only if not significant boost
-                if (insulinReq_boost && insulinReq_bg <= bg) insulinReqPct = 0;
 
                 // ============== IOB RESTRICTION  ==============
                 if (insulinReq > max_iob-iob_data.iob) {

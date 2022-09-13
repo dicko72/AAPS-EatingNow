@@ -1273,6 +1273,7 @@
     <string name="key_eatingnow_cobboost_maxbolus">key_eatingnow_cobboost_maxbolus</string>
     <string name="key_eatingnow_uamboost_maxbolus">key_eatingnow_uamboost_maxbolus</string>
     <string name="key_eatingnow_uam_maxbolus">key_eatingnow_uam_maxbolus</string>
+    <string name="key_eatingnow_uambgboost">key_eatingnow_uambgboost</string>
     <string name="key_eatingnow_isfboost_maxbolus">key_eatingnow_isfboost_maxbolus</string>
     <string name="key_use_dynamicISF">key_use_dynamicISF</string>
     <string name="key_eatingnow_isfbgscaler">key_eatingnow_isfbgscaler</string>
