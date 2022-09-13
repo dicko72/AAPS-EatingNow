@@ -278,6 +278,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         // val prevCannula = repository.getLastTherapyRecordUpToTime(TherapyEvent.Type.CANNULA_CHANGE,lastCannulaTime).blockingGet()
         // val prevCannulaTime = if (prevCannula is ValueWrapper.Existing) prevCannula.value.timestamp else 0L
         // this.profile.put("prevCannulaTime", prevCannulaTime)
+        this.profile.put("percentage", profile.percentage)
         // patches ==== END
 //**********************************************************************************************************************************************
         if (profileFunction.getUnits() == GlucoseUnit.MMOL) {
