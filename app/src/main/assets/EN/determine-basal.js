@@ -546,11 +546,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // dont adjust sens_normalTarget
             sens_normalTarget = sens_normalTarget;
         } else if (profile.enableSRTDD) {
-            // insulinReq_sens adjusted in later code
-            // dont adjust sens_normalTarget
-            sens_normalTarget = sens_normalTarget;
-            // adjust basal during day
-            basal = (ENactive ? profile.current_basal * sensitivityRatio : profile.current_basal) ;
+            sens_normalTarget = sens_normalTarget / sensitivityRatio;
+            // adjust basal
+            basal = profile.current_basal * sensitivityRatio;
         } else {
             // adjust sens_normalTarget
             sens_normalTarget = sens_normalTarget / sensitivityRatio;
@@ -1262,7 +1260,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq_sens = (!firstMealWindow && !COB ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
 
         // If we have SRTDD enabled
-        insulinReq_sens = (profile.enableSRTDD ? insulinReq_sens / sensitivityRatio : insulinReq_sens);
+        //insulinReq_sens = (profile.enableSRTDD ? insulinReq_sens / sensitivityRatio : insulinReq_sens);
     }
 
     insulinReq_sens = round(insulinReq_sens,1);
