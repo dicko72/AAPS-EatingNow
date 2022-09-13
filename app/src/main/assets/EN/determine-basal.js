@@ -1260,7 +1260,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq_sens = (!firstMealWindow && !COB ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
 
         // TBR only if not significant boost
-        if (insulinReq_boost && insulinReq_bg <= bg) insulinReqPct = 0;
+        //if (insulinReq_boost && insulinReq_bg <= bg) insulinReqPct = 0;
 
         // If we have SRTDD enabled
         //insulinReq_sens = (profile.enableSRTDD ? insulinReq_sens / sensitivityRatio : insulinReq_sens);
