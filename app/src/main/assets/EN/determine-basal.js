@@ -451,7 +451,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // SR_TDD ********************************
         var lastCannAge = round ((new Date(systemTime).getTime() - profile.lastCannulaTime) / 60000,1);
-        tdd_lastCannula = (lastCannAge > 1440 ? meal_data.TDDLastCannula / (lastCannAge / 1440) : tdd8_exp);
+        tdd_lastCannula = (lastCannAge > 1440 ? meal_data.TDDLastCannula / (lastCannAge / 1440) : tdd1);
+        //tdd_lastCannula = (lastCannAge > 1440 ? meal_data.TDDLastCannula / (lastCannAge / 1440) : tdd8_exp);
         //var SR_TDD = tdd8_exp / tdd7;
         var SR_TDD = tdd_lastCannula / tdd7;
         console.log("lastCannula: Age: " + lastCannAge + ", TDD: " + tdd_lastCannula + ", tdd8_exp: " + tdd8_exp);
