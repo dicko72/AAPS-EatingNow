@@ -1222,7 +1222,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // sens calculation for insulinReq can be stronger when the EN TT and accelerating
             //insulinReq_sens = (delta > 0 && DeltaPct > 1.0 ? sens : insulinReq_sens);
             insulinReq_sens = (DeltaPct > 1.0 ? sens : insulinReq_sens);
-            insulinReq_sens = (bg > target_bg && eventualBG > target_bg ? sens : insulinReq_sens);
+            insulinReq_sens = (bg > target_bg && eventualBG > bg ? sens : insulinReq_sens);
         }
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
             eBGweight = (sens_predType == "COB" ? 0.50 : 0.25); // 25% eBGw for UAM with COB
