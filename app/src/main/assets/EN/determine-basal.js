@@ -617,13 +617,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     ISFBGscaler = (100-ISFBGscaler)/100;
     enlog += "ISFBGscaler % is now:" + ISFBGscaler +"\n";
 
-    // sens_target_bg is used like a target, when the number is lower the ISF scaling is stronger
-    // only allow adjusted ISF target when eatingnow time is OK dont use at night
-    //var sens_target_bg = (ENactive ?  ins_val : target_bg);
-    var sens_target_bg = ins_val;
-
     // define & apply ISFBGscaler as % to sens_BGscaler
-    var sens_BGscaler = Math.log( (bg/sens_target_bg)+1 );
+    var sens_BGscaler = Math.log( (bg/ins_val)+1 );
     sens_BGscaler = (profile.useDynISF ? sens_BGscaler/ISFBGscaler : 1);
     enlog += "sens_BGscaler adjusted with ISFBGscaler:" + sens_BGscaler +"\n";
 
