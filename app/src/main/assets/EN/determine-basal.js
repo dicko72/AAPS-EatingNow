@@ -496,13 +496,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // MaxISF is the user defined limit for sens_TDD based on a percentage of the current profile based ISF
     var MaxISF = sens_profile/(profile.MaxISFpct/100);
-//    // ISF based on TDD
-//    var sens_TDD = 1800 / ( TDD * (Math.log( normalTarget / ins_val ) + 1 ) );
-//    enlog += "sens_TDD:" + convert_bg(sens_TDD, profile) +"\n";
-//    sens_TDD = sens_TDD / (profile.sens_TDD_scale/100);
-//    sens_TDD = (sens_TDD > sens*3 ? sens : sens_TDD); // fresh install of v3
-//
-//    enlog += "sens_TDD scaled by "+profile.sens_TDD_scale+"%:" + convert_bg(sens_TDD, profile) +"\n";
+
     // If Use TDD ISF is enabled in profile restrict by MaxISF also adjust for when a high TT using SR if applicable
     sens_normalTarget = (profile.use_sens_TDD && ENactive ? Math.max(MaxISF, sens_TDD) : sens_normalTarget);
 
@@ -1177,19 +1171,15 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (sens_predType == "UAM" && !COB) {
             eBGweight = (DeltaPct > 1.0 ? 0.50 : eBGweight);
             //eBGweight = (bg > target_bg && eventualBG > bg ? 0.50 : eBGweight);
-            //eBGweight = 0.50;
-            //eBGweight = 90/ins_val-1;
-            // sens calculation for insulinReq can be stronger when the EN TT and accelerating
-            //insulinReq_sens = (DeltaPct > 1.0 ? sens : insulinReq_sens);
-            //insulinReq_sens = (bg > target_bg && eventualBG > bg ? sens : insulinReq_sens);
+            // when not accelerating
+            sens_predType = (DeltaPct <= 1.0 && !insulinReq_bg_boost && eventualBG > bg ? "BG" : sens_predType);
         }
+
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
             eBGweight = (DeltaPct > 1.0 && sens_predType == "COB" ? 0.50 : eBGweight);
             eBGweight = (DeltaPct > 1.0 && sens_predType == "UAM" ? 0.35 : eBGweight);
-            //eBGweight = (sens_predType == "COB" ? 0.50 : 0.25); // 25% eBGw for UAM with COB
-            //eBGweight = (sens_predType == "COB" ? 0.50 : eBGweight);
-            // sens calculation for insulinReq can be stronger when the EN TT and accelerating
-            //insulinReq_sens = (DeltaPct > 1.0 && sens_predType == "COB" ? sens : insulinReq_sens);
+            // when not accelerating
+            // sens_predType = (DeltaPct <= 1.0 && !insulinReq_bg_boost && eventualBG > bg ? "BG" : sens_predType);
         }
 
         // SAFETY: set insulinReq_sens to profile sens if bg falling or slowing
@@ -1215,10 +1205,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG
         insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
+        // when not accelerating NOT USING JUST YET
+        // insulinReq_bg = (sens_predType == "BG" ? bg * 0.75 : insulinReq_bg);
 
         // should the eBGw not be adjusted use current bg if not boosting
         //insulinReq_bg = (eBGweight == eBGweight_orig && !insulinReq_bg_boost && bg < ISFbgMax ? bg : insulinReq_bg);
-        //sens_predType = (eBGweight == eBGweight_orig && !insulinReq_bg_boost && bg < ISFbgMax ? "BG" : sens_predType);
+
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
         //ins_val = (ENtimeOK ?  ins_val : ins_val * 1.25); // weaken overnight
