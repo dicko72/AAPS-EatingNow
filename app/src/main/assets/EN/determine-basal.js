@@ -1260,8 +1260,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
 
         // should the eBGw not be adjusted use current bg if not boosting
-        insulinReq_bg = (eBGweight == eBGweight_orig && !insulinReq_bg_boost ? bg : insulinReq_bg);
-        sens_predType = (eBGweight == eBGweight_orig && !insulinReq_bg_boost ? "BG" : sens_predType);
+        //insulinReq_bg = (eBGweight == eBGweight_orig && !insulinReq_bg_boost && bg < ISFbgMax ? bg : insulinReq_bg);
+        //sens_predType = (eBGweight == eBGweight_orig && !insulinReq_bg_boost && bg < ISFbgMax ? "BG" : sens_predType);
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
         ins_val = (ENtimeOK ?  ins_val : ins_val * 1.25); // weaken overnight
