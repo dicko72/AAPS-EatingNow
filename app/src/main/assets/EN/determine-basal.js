@@ -1216,6 +1216,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
     if (ENactive || ENSleepMode) {
+
         if (sens_predType == "UAM" && !COB) {
             eBGweight = (DeltaPct > 1.0 ? 0.50 : eBGweight);
             eBGweight = (bg > target_bg && eventualBG > bg ? 0.50 : eBGweight);
@@ -1257,6 +1258,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG
         insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
+
+        // should the eBGw not be adjusted use current bg if not boosting
+        insulinReq_bg = (eBGweight == eBGweight_orig && !insulinReq_bg_boost ? bg : insulinReq_bg);
+        sens_predType = (eBGweight == eBGweight_orig && !insulinReq_bg_boost ? "BG" : sens_predType);
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
         ins_val = (ENtimeOK ?  ins_val : ins_val * 1.25); // weaken overnight
