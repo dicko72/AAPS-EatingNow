@@ -1176,9 +1176,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
 
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
-            eBGweight = 0.25;
             //eBGweight = 90/ins_val-1;
-            eBGweight = (DeltaPct > 1.0 && sens_predType == "COB" ? 0.50 : eBGweight);
+            eBGweight = (DeltaPct > 1.0 && sens_predType == "COB" ? 0.50 : 0.25);
             //eBGweight = (DeltaPct > 1.0 && sens_predType == "UAM" ? 0.35 : eBGweight);
             // when not accelerating
             // sens_predType = (DeltaPct <= 1.0 && !insulinReq_bg_boost && eventualBG > bg ? "BG" : sens_predType);
