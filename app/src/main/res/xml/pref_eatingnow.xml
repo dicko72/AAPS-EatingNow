@@ -386,7 +386,7 @@
                 android:title="UAM BG Boost"
                 android:key="@string/key_eatingnow_uambgboost"
                 android:dialogMessage="Initial UAM BG boost for EN-TT."
-                validate:floatmaxNumber="90"
+                validate:floatmaxNumber="125"
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange" />
 
