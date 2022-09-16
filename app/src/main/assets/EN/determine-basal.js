@@ -250,7 +250,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (now >= ENStartTime && now < ENEndTime && profile.ENautostart) ENtimeOK = true;
     var lastNormalCarbAge = round(( new Date(systemTime).getTime() - meal_data.lastNormalCarbTime ) / 60000);
     // minutes since last bolus
-    var lastBolusAge = round(( new Date(systemTime).getTime() - meal_data.lastBolusTime ) / 60000,2);
+    var lastBolusAge = ( new Date(systemTime).getTime() - meal_data.lastBolusTime ) / 60000;
 
 
     enlog += "nowhrs: " + nowhrs + ", now: " + now +"\n";
@@ -1157,7 +1157,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var insulinReq_sens = sens_normalTarget;
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial insulinReq to 50% peak minutes of delta, max 90
-    var insulinReq_boost = (ENTTActive && lastBolusAge > ttTime && !COB);
+    var insulinReq_boost = (ENTTActive && lastBolusAge >= ttTime && !COB);
     //var endebug = "DEBUG: "+ttTime+", "+lastBolusAge+", "+minAgo+";";
     var insulinReq_bg_boost = (insulinReq_boost && delta >= 0 ? profile.UAMbgBoost : 0);
 
