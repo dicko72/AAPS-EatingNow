@@ -1691,7 +1691,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // SAFETY: if ENactive and an SMB given reduce the temp rate
         if (ENactive && rT.units > 0) {
-            rate = Math.max(basal + insulinReqOrig - rT.units,0);
+            //rate = Math.max(basal + insulinReqOrig - rT.units,0);
+            rate = Math.max(basal + insulinReq - rT.units,0);
             rate = round_basal(rate, profile);
             rT.reason += " TBR reduced: "+round(rate, 3)+", ";
         }
