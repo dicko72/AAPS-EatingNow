@@ -1173,6 +1173,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //eBGweight = (bg > target_bg && eventualBG > bg ? 0.50 : eBGweight);
             // when not accelerating
             // sens_predType = (DeltaPct <= 1.0 && eventualBG > bg ? "BG" : sens_predType);
+            sens_predType = (bg > ISFbgMax && delta >= 9 ? "BG" : sens_predType);
         }
 
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
@@ -1188,7 +1189,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // insulinReq_sens = (DeltaPct <= 1 ? sens_normalTarget : insulinReq_sens);
 
         // SAFETY: when high and delta is faster use minPredBG, slow delta inherits eBGw in an attempt to reduce stubborn high
-        eBGweight = (bg > ISFbgMax && delta >= 9 ? eBGweight_orig : eBGweight);
+        // eBGweight = (bg > ISFbgMax && delta >= 9 ? eBGweight_orig : eBGweight);
 
         // SAFETY: when sleeping use original eBGw - negative IOB overnight can cause high predictions
         //eBGweight = (ENSleepMode ? eBGweight_orig : eBGweight);
@@ -1206,8 +1207,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG
         insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
-        // when not accelerating NOT USING JUST YET
-        // insulinReq_bg = (sens_predType == "BG" && !insulinReq_bg_boost ? bg * 0.75 : insulinReq_bg);
+        // use current bg for insulinReq_bg and ISF
+        insulinReq_bg = (sens_predType == "BG" && !insulinReq_bg_boost ? bg : insulinReq_bg);
 
         // should the eBGw not be adjusted use current bg if not boosting
         //insulinReq_bg = (eBGweight == eBGweight_orig && !insulinReq_bg_boost && bg < ISFbgMax ? bg : insulinReq_bg);
