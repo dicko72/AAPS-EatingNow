@@ -1217,7 +1217,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // insulinReq_sens determines the ISF used for final insulinReq calc
         //ins_val = (ENtimeOK ?  ins_val : ins_val * 1.25); // weaken overnight
         insulinReq_sens = sens_normalTarget / (insulinReq_boost ? Math.log( (eventualBG/ins_val)+1 ) : Math.log( (insulinReq_bg/ins_val)+1 ) );
-        //insulinReq_sens = (!firstMealWindow && !COB ? Math.min(insulinReq_sens,sens_future) : insulinReq_sens);
+        // use the strongest ISF when ENW active
+        insulinReq_sens = (!firstMealWindow && !COB && ENWindowRunTime <= ENWindowDuration ? Math.min(insulinReq_sens,sens) : insulinReq_sens);
 
         // TBR only if not significant boost
         //if (insulinReq_boost && insulinReq_bg <= bg) insulinReqPct = 0;
