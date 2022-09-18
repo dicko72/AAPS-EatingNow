@@ -1205,8 +1205,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         minPredBG += insulinReq_bg_boost;
         eventualBG += insulinReq_bg_boost;
 
-        // calculate the prediction bg based on the weightings for minPredBG and eventualBG
-        insulinReq_bg = (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight);
+        // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
+        insulinReq_bg = (insulinReq_bg_boost ? eventualBG : (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight));
         // use current bg for insulinReq_bg and ISF
         //insulinReq_bg = (sens_predType == "BG" && !insulinReq_bg_boost ? bg : insulinReq_bg);
         insulinReq_bg = (sens_predType == "BG" && !insulinReq_bg_boost ? (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(bg,40) * eBGweight) : insulinReq_bg);
@@ -1217,7 +1217,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
         //ins_val = (ENtimeOK ?  ins_val : ins_val * 1.25); // weaken overnight
-        insulinReq_sens = sens_normalTarget / (insulinReq_boost ? Math.log( (eventualBG/ins_val)+1 ) : Math.log( (insulinReq_bg/ins_val)+1 ) );
+        insulinReq_sens = sens_normalTarget / Math.log( (insulinReq_bg/ins_val)+1 ) ;
         // use the strongest ISF when ENW active
         insulinReq_sens = (!firstMealWindow && !COB && ENWindowRunTime <= ENWindowDuration ? Math.min(insulinReq_sens,sens) : insulinReq_sens);
 
