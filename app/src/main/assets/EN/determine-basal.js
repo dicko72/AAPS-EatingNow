@@ -1168,7 +1168,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
     if (ENactive || ENSleepMode || TIR_sens > 1) {
 
-        if (sens_predType == "UAM" && !COB) {
+        if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
             eBGweight = (DeltaPct > 1.0 ? 0.50 : 0.25);
             //eBGweight = (bg > target_bg && eventualBG > bg ? 0.50 : eBGweight);
             // when not accelerating
