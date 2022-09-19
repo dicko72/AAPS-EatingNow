@@ -1591,6 +1591,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // if ENMaxSMB is -1 use TBR
                 insulinReqPct = ( ENMaxSMB == -1 ? 0 : insulinReqPct );
                 ENMaxSMB = ( ENMaxSMB == -1 ? maxBolus : ENMaxSMB);
+                // if bg numbers resumed after sensor errors dont allow a large SMB
+                ENMaxSMB = ( minAgo < 1 && delta == 0 && glucose_status.short_avgdelta == 0 ? maxBolus : ENMaxSMB );
 
 
                 // ============== DELTA & IOB BASED RESTRICTIONS ==============
