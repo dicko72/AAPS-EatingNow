@@ -1572,8 +1572,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // ISFBooost maxBolus is COB outside of COB Window
                 // UAMBoost maxBolus is for predictions that are UAM with or without COB
                 ENMaxSMB = (sens_predType == "COB" ? profile.COB_maxBolus : profile.UAM_maxBolus);
-                // EXPERIMENT: Restrict UAM SMB when not ENW to original insulinReq
-                ENMaxSMB = (sens_predType == "UAM" ? Math.min(insulinReqOrig, profile.UAM_maxBolus) : ENMaxSMB);
+
 
                 // if ENWindowOK allow further increase max of SMB within the window
                 if (ENWindowOK) {
@@ -1590,6 +1589,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 ENMaxSMB = ( ENMaxSMB > profile.safety_maxbolus ? profile.current_basal * ENMaxSMB / 60 : ENMaxSMB);
                 // if ENMaxSMB is more than 0 use ENMaxSMB else use AAPS max minutes
                 ENMaxSMB = ( ENMaxSMB == 0 ? maxBolus : ENMaxSMB);
+
+                // EXPERIMENT: Restrict UAM SMB when not ENW to original insulinReq
+                ENMaxSMB = (sens_predType == "UAM" && !ENWindowOK ? Math.min(insulinReqOrig, ENMaxSMB) : ENMaxSMB);
+
                 // if ENMaxSMB is -1 use TBR
                 insulinReqPct = ( ENMaxSMB == -1 ? 0 : insulinReqPct );
                 ENMaxSMB = ( ENMaxSMB == -1 ? maxBolus : ENMaxSMB);
