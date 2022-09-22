@@ -541,7 +541,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // dont adjust sens_normalTarget
             sens_normalTarget = sens_normalTarget;
         } else if (profile.enableSRTDD) {
-            sens_normalTarget = sens_normalTarget / sensitivityRatio;
+            // sens_normalTarget = sens_normalTarget / sensitivityRatio;
             // adjust basal
             basal = profile.current_basal * sensitivityRatio;
         } else {
