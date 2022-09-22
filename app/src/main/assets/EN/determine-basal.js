@@ -1152,7 +1152,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial insulinReq to 50% peak minutes of delta, max 90, only run on loop iteration
     var insulinReq_boost = (ENTTActive && lastBolusAge >= ttTime && minAgo <1 &&!COB);
-    var endebug = "DEBUG: "+ttTime+", "+lastBolusAge+", "+minAgo+";";
+    //var endebug = "DEBUG: "+ttTime+", "+lastBolusAge+", "+minAgo+";";
     var insulinReq_bg_boost = (insulinReq_boost && delta >= 0 ? profile.UAMbgBoost : 0);
 
     // categorize the eventualBG prediction type for more accurate weighting
@@ -1266,6 +1266,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += ", TIRS: " + round(TIR_sens,2);
     if (profile.enableSRTDD) rT.reason += ", SR_TDD: " + round(SR_TDD,2);
     rT.reason += ", SR: " + (typeof autosens_data !== 'undefined' && autosens_data ? round(autosens_data.ratio,2) + "=": "") + sensitivityRatio;
+    rT.reason += "LRT: " + round(60 * minAgo);
     rT.reason += "; ";
     rT.reason += (typeof endebug !== 'undefined' ? endebug : "");
 
