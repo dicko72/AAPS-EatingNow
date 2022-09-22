@@ -1587,8 +1587,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // if ENMaxSMB is more than 0 use ENMaxSMB else use AAPS max minutes
                 ENMaxSMB = ( ENMaxSMB == 0 ? maxBolus : ENMaxSMB);
 
-                // EXPERIMENT: Restrict UAM SMB when not ENW to original insulinReq
-                ENMaxSMB = (sens_predType == "UAM" && !ENWindowOK ? Math.min(insulinReqOrig, ENMaxSMB) : ENMaxSMB);
+                // EXPERIMENT: Restrict SMB when not ENW to original insulinReq, prepare to remove outside ENW SMB settings
+                ENMaxSMB = (!ENWindowOK ? Math.min(insulinReqOrig, ENMaxSMB) : ENMaxSMB);
 
                 // if ENMaxSMB is -1 use TBR
                 insulinReqPct = ( ENMaxSMB == -1 ? 0 : insulinReqPct );
