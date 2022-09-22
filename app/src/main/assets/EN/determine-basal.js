@@ -450,12 +450,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         console.log("TDD = " +TDD+ " using rolling 8h Total extrapolation + TDD7 (60/40); ");
 
         // SR_TDD ********************************
-        var lastCannAge = (new Date(systemTime).getTime() - meal_data.lastCannulaTime) / 60000;
-        tdd_lastCannula = (lastCannAge > 1440 ? meal_data.TDDLastCannula / (lastCannAge / 1440) : tdd1);
+        //var lastCannAge = (new Date(systemTime).getTime() - meal_data.lastCannulaTime) / 60000;
+        // tdd_lastCannula = (lastCannAge > 1440 ? meal_data.TDDLastCannula / (lastCannAge / 1440) : tdd1);
         //tdd_lastCannula = (lastCannAge > 1440 ? meal_data.TDDLastCannula / (lastCannAge / 1440) : tdd8_exp);
         //var SR_TDD = tdd8_exp / tdd7;
-        var SR_TDD = tdd_lastCannula / tdd7;
-        console.log("lastCannula: Age: " + lastCannAge + ", TDD: " + tdd_lastCannula + ", tdd8_exp: " + tdd8_exp);
+        var SR_TDD = meal_data.TDDLastCannula / tdd7;
 
         console.error("                                 ");
         //console.error("7-day average TDD is: " +tdd7+ "; ");
