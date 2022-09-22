@@ -1568,7 +1568,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // set EN SMB limit for COB or UAM
                 // ISFBooost maxBolus is COB outside of COB Window
                 // UAMBoost maxBolus is for predictions that are UAM with or without COB
-                ENMaxSMB = (sens_predType == "COB" ? profile.COB_maxBolus : profile.UAM_maxBolus);
+                // ENMaxSMB = (sens_predType == "COB" ? profile.COB_maxBolus : profile.UAM_maxBolus);
+                ENMaxSMB = (sens_predType == "COB" ? profile.Win_COB_maxBolus : profile.Win_UAM_maxBolus);
 
 
                 // if ENWindowOK allow further increase max of SMB within the window
