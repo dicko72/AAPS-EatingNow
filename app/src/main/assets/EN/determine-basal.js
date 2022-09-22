@@ -1174,6 +1174,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // when not accelerating
             sens_predType = (DeltaPct <= 1.0 && eventualBG > bg ? "BG" : sens_predType);
             sens_predType = (bg > ISFbgMax && delta >= 9 ? "BG" : sens_predType);
+            sens_predType = (DeltaPct > 1.0 && eventualBG < bg ? "TBR" : sens_predType);
         }
 
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
@@ -1210,6 +1211,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // use current bg for insulinReq_bg and ISF
         //insulinReq_bg = (sens_predType == "BG" && !insulinReq_bg_boost ? bg : insulinReq_bg);
         insulinReq_bg = (sens_predType == "BG" && !insulinReq_bg_boost ? (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(bg,40) * eBGweight) : insulinReq_bg);
+        insulinReq_bg = (sens_predType == "TBR" && !insulinReq_bg_boost ? bg : insulinReq_bg);
 
         // should the eBGw not be adjusted use current bg if not boosting
         //insulinReq_bg = (eBGweight == eBGweight_orig && !insulinReq_bg_boost && bg < ISFbgMax ? bg : insulinReq_bg);
@@ -1596,6 +1598,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // if ENMaxSMB is -1 use TBR
                 insulinReqPct = ( ENMaxSMB == -1 ? 0 : insulinReqPct );
                 ENMaxSMB = ( ENMaxSMB == -1 ? maxBolus : ENMaxSMB);
+                // TBR only TEST
+                insulinReqPct = ( sens_predType == "TBR" ? 0 : insulinReqPct );
+
                 // if bg numbers resumed after sensor errors dont allow a large SMB
                 ENMaxSMB = ( minAgo < 1 && delta == 0 && glucose_status.short_avgdelta == 0 ? maxBolus : ENMaxSMB );
 
