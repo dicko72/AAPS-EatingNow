@@ -418,11 +418,9 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             val lastCannula = repository.getLastTherapyRecordUpToNow(TherapyEvent.Type.CANNULA_CHANGE).blockingGet()
             val lastCannulaTime = if (lastCannula is ValueWrapper.Existing) lastCannula.value.timestamp else 0L
             this.mealData.put("lastCannulaTime", lastCannulaTime)
-
-            // val TDDLastCannula = tddCalculator.calculate(lastCannulaTime, now).totalAmount
-            val lastCannAge = (now - lastCannulaTime) / 60000
-            this.mealData.put("lastCannAge", lastCannAge)
-            val TDDLastCannula = if (lastCannAge > 1440) tddCalculator.calculate(lastCannulaTime, now).totalAmount / (lastCannAge / 1440) else TDDAvg1d
+            val lastCannAgeMins = ((now - lastCannulaTime) / 60000).toDouble()
+            // this.mealData.put("lastCannAgeMins", lastCannAgeMins)
+            val TDDLastCannula = if (lastCannAgeMins > 1440) tddCalculator.calculate(lastCannulaTime, now).totalAmount / (lastCannAgeMins/1440) else TDDAvg1d
             this.mealData.put("TDDLastCannula", TDDLastCannula)
 
             this.mealData.put("TDDLastUpdate", sp.getLong("TDDLastUpdate", 0))
