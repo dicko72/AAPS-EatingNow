@@ -533,7 +533,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     // send determined SR value out to loop
-    rT.sensitivityRatio = sensitivityRatio;
+    // rT.sensitivityRatio = sensitivityRatio;
 
     // adjust profile basal and ISF based on prefs and sensitivityRatio
     if (sensitivityRatio && profile.use_autosens === true) {
@@ -544,6 +544,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // sens_normalTarget = sens_normalTarget / sensitivityRatio;
             // adjust basal
             basal = profile.current_basal * sensitivityRatio;
+            sens_normalTarget = sens_normalTarget / TIR_sens;
         } else {
             // adjust sens_normalTarget
             sens_normalTarget = sens_normalTarget / sensitivityRatio;
