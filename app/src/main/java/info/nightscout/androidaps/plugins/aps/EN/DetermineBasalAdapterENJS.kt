@@ -1,5 +1,6 @@
 package info.nightscout.androidaps.plugins.aps.EN
 
+// import info.nightscout.androidaps.utils.DateUtil
 import dagger.android.HasAndroidInjector
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.data.IobTotal
@@ -12,20 +13,18 @@ import info.nightscout.androidaps.extensions.convertedToAbsolute
 import info.nightscout.androidaps.extensions.getPassedDurationToTimeInMinutes
 import info.nightscout.androidaps.extensions.plannedRemainingMinutes
 import info.nightscout.androidaps.interfaces.*
-import info.nightscout.shared.logging.AAPSLogger
-import info.nightscout.shared.logging.LTag
 import info.nightscout.androidaps.plugins.aps.logger.LoggerCallback
 import info.nightscout.androidaps.plugins.aps.loop.APSResult
 import info.nightscout.androidaps.plugins.aps.loop.ScriptReader
 import info.nightscout.androidaps.plugins.configBuilder.ConstraintChecker
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.GlucoseStatus
-// import info.nightscout.androidaps.utils.DateUtil
 import info.nightscout.androidaps.utils.MidnightTime
-import info.nightscout.shared.SafeParse
-import info.nightscout.androidaps.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
 import info.nightscout.androidaps.utils.stats.TddCalculator
 import info.nightscout.androidaps.utils.stats.TirCalculator
+import info.nightscout.shared.SafeParse
+import info.nightscout.shared.logging.AAPSLogger
+import info.nightscout.shared.logging.LTag
+import info.nightscout.shared.sharedPreferences.SP
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -420,7 +419,9 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             val lastCannulaTime = if (lastCannula is ValueWrapper.Existing) lastCannula.value.timestamp else 0L
             this.mealData.put("lastCannulaTime", lastCannulaTime)
 
-            val TDDLastCannula = tddCalculator.calculate(lastCannulaTime, now).totalAmount
+            // val TDDLastCannula = tddCalculator.calculate(lastCannulaTime, now).totalAmount
+            val lastCannAge = (now - lastCannulaTime) / 60000
+            val TDDLastCannula = if (lastCannAge > 1440) tddCalculator.calculate(lastCannulaTime, now).totalAmount / (lastCannAge / 1440) else TDDAvg1d
             this.mealData.put("TDDLastCannula", TDDLastCannula)
 
             this.mealData.put("TDDLastUpdate", sp.getLong("TDDLastUpdate", 0))
