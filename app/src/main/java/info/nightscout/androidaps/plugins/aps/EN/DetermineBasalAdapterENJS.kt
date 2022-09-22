@@ -273,9 +273,6 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         this.profile.put("insulinType", activePlugin.activeInsulin.friendlyName)
         this.profile.put("insulinPeak", activePlugin.activeInsulin.insulinConfiguration.peak/60000)
-        val lastCannula = repository.getLastTherapyRecordUpToNow(TherapyEvent.Type.CANNULA_CHANGE).blockingGet()
-        val lastCannulaTime = if (lastCannula is ValueWrapper.Existing) lastCannula.value.timestamp else 0L
-        this.profile.put("lastCannulaTime", lastCannulaTime)
         // val prevCannula = repository.getLastTherapyRecordUpToTime(TherapyEvent.Type.CANNULA_CHANGE,lastCannulaTime).blockingGet()
         // val prevCannulaTime = if (prevCannula is ValueWrapper.Existing) prevCannula.value.timestamp else 0L
         // this.profile.put("prevCannulaTime", prevCannulaTime)
@@ -418,6 +415,10 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             val TDDLast8hfor4h = TDDLast8h - TDDLast4h
             this.mealData.put("TDDLast8hfor4h", TDDLast8hfor4h)
             // this.mealData.put("TDDLast8hfor4h", tddCalculator.calculateDaily(-8, -4).totalAmount)
+
+            val lastCannula = repository.getLastTherapyRecordUpToNow(TherapyEvent.Type.CANNULA_CHANGE).blockingGet()
+            val lastCannulaTime = if (lastCannula is ValueWrapper.Existing) lastCannula.value.timestamp else 0L
+            this.mealData.put("lastCannulaTime", lastCannulaTime)
 
             val TDDLastCannula = tddCalculator.calculate(lastCannulaTime, now).totalAmount
             this.mealData.put("TDDLastCannula", TDDLastCannula)
