@@ -486,7 +486,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (meal_data.TIRW3H > 0 && TIR_sens == 2) TIR_sens += meal_data.TIRW3H/100;
         if (meal_data.TIRW4H > 0 && TIR_sens == 3) TIR_sens += meal_data.TIRW4H/100;
     }
-    TIR_sens = Math.min (TIR_sens * TIRH_percent + 1 , profile.autosens_max);
+    TIR_sens = TIR_sens * TIRH_percent + 1;
     //TIR_sens = 1; // disabling as testing
 
     // ISF at normal target
@@ -517,23 +517,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         sens_normalTarget = round(sens_normalTarget, 1);
         enlog += "sens_normalTarget now "+sens_normalTarget+ "due to temp target; ";
     } else {
-        sensitivityRatio = (profile.enableSRTDD ? SR_TDD : 1);
-        sensitivityRatio = (!profile.enableSRTDD && typeof autosens_data !== 'undefined' && autosens_data ? autosens_data.ratio : sensitivityRatio);
-        sensitivityRatio *= TIR_sens; // apply TIRS if applicable
-        if (sensitivityRatio > 1) {
-            sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
-            //sensitivityRatio = (!profile.enableSRTDD ? TIR_sens : sensitivityRatio);
-            sensitivityRatio = round(sensitivityRatio,2);
-            enlog += "Sensitivity ratio >1 is now: "+sensitivityRatio+";\n";
-        } else if (sensitivityRatio < 1) {
-            sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
-            sensitivityRatio = round(sensitivityRatio,2);
-            enlog += "Sensitivity ratio <1 is now: "+sensitivityRatio+";\n";
-        }
+        sensitivityRatio = 1;
+        sensitivityRatio = (typeof autosens_data !== 'undefined' && autosens_data ? autosens_data.ratio : sensitivityRatio);
     }
-
-    // send determined SR value out to loop
-    // rT.sensitivityRatio = sensitivityRatio;
 
     // adjust profile basal and ISF based on prefs and sensitivityRatio
     if (sensitivityRatio && profile.use_autosens === true) {
@@ -541,16 +527,24 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // dont adjust sens_normalTarget
             sens_normalTarget = sens_normalTarget;
         } else if (profile.enableSRTDD) {
-            // sens_normalTarget = sens_normalTarget / sensitivityRatio;
+            // apply autosens limits
+            SR_TDD = Math.min(SR_TDD, profile.autosens_max);
+            SR_TDD = Math.max(SR_TDD, profile.autosens_min);
             // adjust basal
-            basal = profile.current_basal * sensitivityRatio;
-            sens_normalTarget = sens_normalTarget / TIR_sens;
+            basal = profile.current_basal * SR_TDD;
         } else {
+            // apply autosens limits
+            sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
+            sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
             // adjust sens_normalTarget
             sens_normalTarget = sens_normalTarget / sensitivityRatio;
             // adjust basal
             basal = profile.current_basal * sensitivityRatio;
         }
+
+        // apply TIRS to ISF, TIRS will be 1 if not enabled, limit to autosens_max
+        TIR_sens = Math.min(TIR_sens, profile.autosens_max);
+        sens_normalTarget = sens_normalTarget / TIR_sens;
 
         basal = round_basal(basal, profile);
         if (basal !== profile_current_basal) {
