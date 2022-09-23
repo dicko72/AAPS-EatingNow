@@ -1170,9 +1170,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight += (DeltaPct > 1.0 && bg < ISFbgMax && eventualBG > ISFbgMax ? 0.25 : 0); // initial delta accelerating
             //eBGweight = (bg > target_bg && eventualBG > bg ? 0.50 : eBGweight);
             // when not accelerating
-            sens_predType = (DeltaPct <= 1.0 && eventualBG > bg ? "BG" : sens_predType);
-            sens_predType = (bg > ISFbgMax && delta >= 9 ? "BG" : sens_predType);
-            sens_predType = (DeltaPct > 1.0 && eventualBG < bg ? "TBR" : sens_predType);
+            sens_predType = (DeltaPct <= 1.0 && eventualBG > bg ? "TBR" : sens_predType); // delta slowing uses TBR
+            sens_predType = (bg > ISFbgMax && delta >= 9 ? "BG" : sens_predType); // high bg with high delta uses current bg
+            sens_predType = (DeltaPct > 1.0 && eventualBG < bg ? "TBR" : sens_predType); // positive or negative delta with lower eBG uses TBR
         }
 
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
@@ -1209,9 +1209,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
         insulinReq_bg = (insulinReq_bg_boost ? eventualBG : (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(eventualBG,40) * eBGweight));
         // use current bg for insulinReq_bg and ISF
-        //insulinReq_bg = (sens_predType == "BG" && !insulinReq_bg_boost ? bg : insulinReq_bg);
-        insulinReq_bg = (sens_predType == "BG" && !insulinReq_bg_boost ? (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(bg,40) * eBGweight) : insulinReq_bg);
+        insulinReq_bg = (sens_predType == "BG" && !insulinReq_bg_boost ? bg : insulinReq_bg);
+        //insulinReq_bg = (sens_predType == "BG" && !insulinReq_bg_boost ? (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(bg,40) * eBGweight) : insulinReq_bg);
         insulinReq_bg = (sens_predType == "TBR" && !insulinReq_bg_boost ? bg : insulinReq_bg);
+        eBGweight (sens_predType == "TBR" || sens_predType == "BG" ? 1 : eBGweight);
 
         // should the eBGw not be adjusted use current bg if not boosting
         //insulinReq_bg = (eBGweight == eBGweight_orig && !insulinReq_bg_boost && bg < ISFbgMax ? bg : insulinReq_bg);
