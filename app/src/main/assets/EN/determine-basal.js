@@ -1172,7 +1172,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // when not accelerating
             sens_predType = (DeltaPct <= 1.0 && eventualBG > bg ? "TBR" : sens_predType); // delta slowing uses TBR
             sens_predType = (bg > ISFbgMax && delta >= 9 ? "BG" : sens_predType); // high bg with high delta uses current bg
-            sens_predType = (DeltaPct > 1.0 && eventualBG < bg ? "TBR" : sens_predType); // positive or negative delta with lower eBG uses TBR
+            sens_predType = (DeltaPct > 1.0 && eventualBG < bg && insulinReq_boost ? "TBR" : sens_predType); // positive or negative delta with lower eBG uses TBR for more effective insulinReq_bg_boost
+            sens_predType = (DeltaPct > 1.0 && eventualBG < bg && !insulinReq_boost ? "BG" : sens_predType); // positive or negative delta with lower eBG uses TBR - generally for stubborn bg
         }
 
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
