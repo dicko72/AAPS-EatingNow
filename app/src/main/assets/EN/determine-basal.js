@@ -1161,7 +1161,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
             eBGweight = (DeltaPct > 1.0 ? 0.50 : 0.25);
-            eBGweight += (DeltaPct > 1.0 && bg < ISFbgMax && eventualBG > ISFbgMax ? 0.25 : 0); // initial delta accelerating
+            eBGweight += (DeltaPct > 1.0 && bg < ISFbgMax && eventualBG > ISFbgMax && ENWindowOK ? 0.25 : 0); // initial delta accelerating
             //eBGweight = (bg > target_bg && eventualBG > bg ? 0.50 : eBGweight);
             // when not accelerating
             sens_predType = (DeltaPct <= 1.0 && eventualBG > bg ? "TBR" : sens_predType); // delta slowing uses TBR
