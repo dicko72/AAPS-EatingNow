@@ -317,15 +317,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // If we have UAM enabled with IOB less than max enable eating now mode
     if (profile.enableUAM && ENmaxIOBOK) {
-        // enable eatingnow if no TT and within safe hours
-        if (ENtimeOK) ENactive = true;
-        // If there are COB enable eating now
-        if (COB) ENactive = true;
+        // If there are COB or ENTT enable eating now
+        if (COB || ENTTActive) ENactive = true;
         // no EN with a TT other than normal target
         if (profile.temptargetSet && !ENTTActive) ENactive = false;
-        if (ENTTActive) ENactive = true;
         // allow ENW overnight when EN is active and allowed in prefs
-        if (ENactive && profile.allowENWovernight) ENtimeOK = true;
+        if (!ENtimeOK && ENactive && profile.allowENWovernight) ENtimeOK = true;
+        // enable eatingnow if no TT and within safe hours
+        if (ENtimeOK) ENactive = true;
     }
 
     //ENactive = false; //DEBUG
