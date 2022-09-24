@@ -383,9 +383,9 @@
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
-                android:title="UAM BG Boost"
+                android:title="UAM+ BG Boost"
                 android:key="@string/key_eatingnow_uambgboost"
-                android:dialogMessage="Initial UAM BG boost for EN-TT."
+                android:dialogMessage="Initial UAM BG boost for start of EN-TT. eventualBG will be increased from current BG using this amount."
                 validate:floatmaxNumber="125"
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange" />
