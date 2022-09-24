@@ -1159,45 +1159,30 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
     if (ENactive || ENSleepMode || TIR_sens > 1) {
 
+        // UAM predictions, no COB or GhostCOB
         if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
+            // positive or negative delta with acceleration and default
             eBGweight = (DeltaPct > 1.0 ? 0.50 : 0.25);
-            eBGweight += (DeltaPct > 1.0 && bg < ISFbgMax && eventualBG > ISFbgMax && ENWindowOK ? 0.25 : 0); // initial delta accelerating
-            //eBGweight = (bg > target_bg && eventualBG > bg ? 0.50 : eBGweight);
-            // when not accelerating
-            sens_predType = (DeltaPct <= 1.0 && eventualBG > bg ? "TBR" : sens_predType); // delta slowing uses TBR
-            sens_predType = (bg > ISFbgMax && delta >= 9 ? "BG" : sens_predType); // high bg with high delta uses current bg
-            //sens_predType = (DeltaPct > 1.0 && eventualBG < bg && insulinReq_boost ? "TBR" : sens_predType); // positive or negative delta with lower eBG uses TBR for more effective insulinReq_bg_boost
-            sens_predType = (DeltaPct > 1.0 && eventualBG < bg && !insulinReq_boost ? "BG" : sens_predType); // positive or negative delta with lower eBG uses TBR - generally for stubborn bg
+            // initial delta accelerating UAM+ when in range
+            eBGweight += (DeltaPct > 1.0 && bg < ISFbgMax && eventualBG > ISFbgMax && ENWindowOK ? 0.25 : 0);
+            // positive or negative delta with acceleration and lower eBG uses current BG - generally for stubborn high bg
+            sens_predType = (DeltaPct > 1.0 && eventualBG < bg ? "BG" : sens_predType);
+
+            // SAFETY: when not accelerating and predicted bg is higher use TBR
+            sens_predType = (DeltaPct <= 1.0 && eventualBG > bg ? "TBR" : sens_predType);
+            // SAFETY: high bg with high delta uses current bg, attempts to reduce overcorrection with fast acting carbs
+            sens_predType = (bg > ISFbgMax && delta >= 9 ? "BG" : sens_predType);
         }
 
+        // COB predictions or UAM with COB
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
-            //eBGweight = 90/ins_val-1;
+            // positive or negative delta with acceleration and UAM default
             eBGweight = (DeltaPct > 1.0 && sens_predType == "COB" ? 0.50 : 0.35);
-            //eBGweight += (DeltaPct > 1.0 && sens_predType == "COB" && bg < ISFbgMax ? 0.25 : 0);
+            // positive or negative delta with acceleration and lower eBG uses current BG - generally for stubborn high bg
             sens_predType = (DeltaPct > 1.0 && eventualBG < bg ? "TBR" : sens_predType);
-            //eBGweight = (DeltaPct > 1.0 && sens_predType == "UAM" ? 0.35 : eBGweight);
-            // when not accelerating
-            // sens_predType = (DeltaPct <= 1.0 && !insulinReq_bg_boost && eventualBG > bg ? "BG" : sens_predType);
         }
 
-        // SAFETY: set insulinReq_sens to profile sens if bg falling or slowing
-        //insulinReq_sens = (delta < 0 && eventualBG < target_bg  || DeltaPct <=1 ? sens_normalTarget : insulinReq_sens);
-        // insulinReq_sens = (DeltaPct <= 1 ? sens_normalTarget : insulinReq_sens);
-
-        // SAFETY: when high and delta is faster use minPredBG, slow delta inherits eBGw in an attempt to reduce stubborn high
-        // eBGweight = (bg > ISFbgMax && delta >= 9 ? eBGweight_orig : eBGweight);
-
-        // SAFETY: when sleeping use original eBGw - negative IOB overnight can cause high predictions
-        //eBGweight = (ENSleepMode ? eBGweight_orig : eBGweight);
-
-        // SAFETY: if bg is falling or slowing revert to normal minPredBG weighting, excludes first meal
-        //eBGweight = (delta < 0 && eventualBG < target_bg || DeltaPct <=1 && !firstMealWindow ? eBGweight_orig : eBGweight);
-
-        // SAFETY: if insulinReq_sens is stronger within ENW inherit eBGw else default
-        //if (insulinReq_sens < sens_normalTarget) eBGweight = (ENWindowOK ? eBGweight : eBGweight_orig);
-        //if (insulinReq_sens < sens_normalTarget && !firstMealScaling) eBGweight = (ENWindowOK ? eBGweight : eBGweight_orig);
-
-        // exaggerate for first UAM bolus
+        // exaggerate for first UAM bolus within EN TT Window - UAM+
         if (insulinReq_bg_boost) {
             //minPredBG += insulinReq_bg_boost;
             //eventualBG += insulinReq_bg_boost;
@@ -1210,27 +1195,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
         insulinReq_bg = (Math.max(minPredBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight);
-        // use current bg for insulinReq_bg and ISF
-        insulinReq_bg = (sens_predType == "BG" ? bg : insulinReq_bg);
-        //insulinReq_bg = (sens_predType == "BG" && !insulinReq_bg_boost ? (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(bg,40) * eBGweight) : insulinReq_bg);
-        insulinReq_bg = (sens_predType == "TBR" ? bg : insulinReq_bg);
+
+        // override and use current bg for insulinReq_bg with TBR and BG predType
+        insulinReq_bg = (sens_predType == "TBR" || sens_predType == "BG" ? bg : insulinReq_bg);
         eBGweight = (sens_predType == "TBR" || sens_predType == "BG" ? 1 : eBGweight);
 
-        // should the eBGw not be adjusted use current bg if not boosting
-        //insulinReq_bg = (eBGweight == eBGweight_orig && !insulinReq_bg_boost && bg < ISFbgMax ? bg : insulinReq_bg);
-
-
         // insulinReq_sens determines the ISF used for final insulinReq calc
-        //ins_val = (ENtimeOK ?  ins_val : ins_val * 1.25); // weaken overnight
         insulinReq_sens = sens_normalTarget / Math.log((insulinReq_bg / ins_val) + 1);
         // use the strongest ISF when ENW active
         insulinReq_sens = (!firstMealWindow && !COB && ENWindowRunTime <= ENWindowDuration ? Math.min(insulinReq_sens, sens) : insulinReq_sens);
 
-        // TBR only if not significant boost
-        //if (insulinReq_boost && insulinReq_bg <= bg) insulinReqPct = 0;
-
-        // If we have SRTDD enabled
-        //insulinReq_sens = (profile.enableSRTDD ? insulinReq_sens / sensitivityRatio : insulinReq_sens);
     }
 
     insulinReq_sens = round(insulinReq_sens, 1);
