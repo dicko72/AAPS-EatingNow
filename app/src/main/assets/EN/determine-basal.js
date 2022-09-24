@@ -1198,11 +1198,17 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         //if (insulinReq_sens < sens_normalTarget && !firstMealScaling) eBGweight = (ENWindowOK ? eBGweight : eBGweight_orig);
 
         // exaggerate for first UAM bolus
-        minPredBG += insulinReq_bg_boost;
-        eventualBG += insulinReq_bg_boost;
+        if (insulinReq_bg_boost) {
+            //minPredBG += insulinReq_bg_boost;
+            //eventualBG += insulinReq_bg_boost;
+            // use current bg plus boost?
+            minPredBG = bg + insulinReq_bg_boost;
+            eventualBG = bg + insulinReq_bg_boost;
+            eBGweight = 1;
+        }
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
-        insulinReq_bg = (insulinReq_bg_boost ? eventualBG : (Math.max(minPredBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight));
+        insulinReq_bg = (Math.max(minPredBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight);
         // use current bg for insulinReq_bg and ISF
         insulinReq_bg = (sens_predType == "BG" && !insulinReq_bg_boost ? bg : insulinReq_bg);
         //insulinReq_bg = (sens_predType == "BG" && !insulinReq_bg_boost ? (Math.max(minPredBG,40) * (1-eBGweight)) + (Math.max(bg,40) * eBGweight) : insulinReq_bg);
