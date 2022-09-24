@@ -1600,11 +1600,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // EXPERIMENT: Restrict SMB when not ENW to original insulinReq, prepare to remove outside ENW SMB settings
                 ENMaxSMB = (!ENWindowOK ? Math.min(insulinReqOrig, ENMaxSMB) : ENMaxSMB);
 
-                // if ENMaxSMB is -1 use TBR
-                insulinReqPct = (ENMaxSMB == -1 ? 0 : insulinReqPct);
-                ENMaxSMB = (ENMaxSMB == -1 ? maxBolus : ENMaxSMB);
+                // if ENMaxSMB is -1 no SMB
+                ENMaxSMB = (ENMaxSMB == -1 ? 0 : ENMaxSMB);
+                //insulinReqPct = (ENMaxSMB == -1 ? 0 : insulinReqPct);
+                // ENMaxSMB = (ENMaxSMB == -1 ? maxBolus : ENMaxSMB);
                 // TBR only TEST
-                insulinReqPct = (sens_predType == "TBR" ? 0 : insulinReqPct);
+                ENMaxSMB = (sens_predType == "TBR" ? 0 : ENMaxSMB);
+                //insulinReqPct = (sens_predType == "TBR" ? 0 : insulinReqPct);
 
                 // if bg numbers resumed after sensor errors dont allow a large SMB
                 ENMaxSMB = (minAgo < 1 && delta == 0 && glucose_status.short_avgdelta == 0 ? maxBolus : ENMaxSMB);
