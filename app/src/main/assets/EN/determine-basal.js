@@ -1552,7 +1552,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (ENactive && eventualBG > target_bg) {
 
                 // EN insulinReqPct is now used, for ENW use 100% excludes IOB trigger ensuring close proximity to treatment
-                insulinReqPct = (ENWindowOK ? 1 : ENinsulinReqPct);
+                // insulinReqPct = (ENWindowOK ? 1 : ENinsulinReqPct);
+
+                // SAFETY: Restrict SMB when not ENW to original insulinReq
+                insulinReqPct = (ENWindowOK ? ENinsulinReqPct : Math.max(insulinReqOrig/insulinReq,0) );
+                insulinReqPct = Math.min(insulinReqPct,ENinsulinReqPct);
 
                 // set EN SMB limit for COB or UAM
                 ENMaxSMB = (sens_predType == "COB" ? profile.EN_COB_maxBolus : profile.EN_UAM_maxBolus);
@@ -1575,10 +1579,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
                 // if ENMaxSMB is -1 no SMB
                 ENMaxSMB = (ENMaxSMB == -1 ? 0 : ENMaxSMB);
-
-                // SAFETY: Restrict SMB when not ENW to original insulinReq
-                insulinReqPct = (!ENWindowOK ? Math.max(insulinReqOrig/insulinReq,0) : insulinReqPct);
-                insulinReqPct = Math.min(insulinReqPct,1);
 
                 // TBR only
                 ENMaxSMB = (sens_predType == "TBR" ? 0 : ENMaxSMB);
