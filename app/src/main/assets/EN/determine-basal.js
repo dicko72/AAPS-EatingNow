@@ -1536,7 +1536,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             var insulinReqPctDefault = 0.65; // this is the default insulinReqPct and maxBolus is respected outside of eating now
             var insulinReqPct = insulinReqPctDefault; // this is the default insulinReqPct and maxBolus is respected outside of eating now
             var ENReason = "";
-            var ENMaxSMB = maxBolus; // inherit AAPS maxBolus
+            var ENMaxSMB = maxBolus, ENMaxSMBOrig = ENMaxSMB; // inherit AAPS maxBolus
             var maxBolusOrig = maxBolus;
             var ENinsulinReqPct = 0.75; // EN insulinReqPct is 75%
 
@@ -1571,20 +1571,18 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // if ENMaxSMB is more than 0 use ENMaxSMB else use AAPS max minutes
                 ENMaxSMB = (ENMaxSMB == 0 ? maxBolus : ENMaxSMB);
 
-                // EXPERIMENT: Restrict SMB when not ENW to original insulinReq, prepare to remove outside ENW SMB settings
-                ENMaxSMB = (!ENWindowOK ? Math.min(insulinReqOrig, ENMaxSMB) : ENMaxSMB);
-
                 // if ENMaxSMB is -1 no SMB
                 ENMaxSMB = (ENMaxSMB == -1 ? 0 : ENMaxSMB);
-                //insulinReqPct = (ENMaxSMB == -1 ? 0 : insulinReqPct);
-                // ENMaxSMB = (ENMaxSMB == -1 ? maxBolus : ENMaxSMB);
-                // TBR only TEST
+
+                // SAFETY: Restrict SMB when not ENW to original insulinReq
+                ENMaxSMBOrig = ENMaxSMB;
+                ENMaxSMB = (!ENWindowOK ? Math.min(insulinReqOrig, ENMaxSMB) : ENMaxSMB);
+
+                // TBR only
                 ENMaxSMB = (sens_predType == "TBR" ? 0 : ENMaxSMB);
-                //insulinReqPct = (sens_predType == "TBR" ? 0 : insulinReqPct);
 
                 // if bg numbers resumed after sensor errors dont allow a large SMB
                 ENMaxSMB = (minAgo < 1 && delta == 0 && glucose_status.short_avgdelta == 0 ? maxBolus : ENMaxSMB);
-
 
                 // ============== DELTA & IOB BASED RESTRICTIONS ==============
                 // if the delta is less than 4 and insulinReq_sens is stronger restrict larger SMB
@@ -1644,7 +1642,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             rT.reason += " insulinReq" + (insulinReq_bg_boost > 0 ? "+ " : " ") + insulinReq + (insulinReq != insulinReqOrig ? "(" + insulinReqOrig + ")" : "") + "@" + round(insulinReqPct * 100, 0) + "%";
 
             if (microBolus >= maxBolus) {
-                rT.reason += "; maxBolus" + (maxBolus > maxBolusOrig ? "^ " : " ") + maxBolus;
+                rT.reason += "; maxBolus" + (maxBolus < ENMaxSMBOrig ? + " reduced " + ENMaxSMBOrig + "=" : "") + maxBolus;
             }
             if (durationReq > 0) {
                 rT.reason += "; setting " + durationReq + "m low temp of " + smbLowTempReq + "U/h";
