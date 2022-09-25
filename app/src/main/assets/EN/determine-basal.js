@@ -1642,7 +1642,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             rT.reason += " insulinReq" + (insulinReq_bg_boost > 0 ? "+ " : " ") + insulinReq + (insulinReq != insulinReqOrig ? "(" + insulinReqOrig + ")" : "") + "@" + round(insulinReqPct * 100, 0) + "%";
 
             if (microBolus >= maxBolus) {
-                rT.reason += "; maxBolus" + (maxBolus < ENMaxSMBOrig ? + " reduced " + ENMaxSMBOrig + "=" : "") + maxBolus;
+                rT.reason += "; maxBolus " + (maxBolus < ENMaxSMBOrig ? + "reduced " + ENMaxSMBOrig + "=" : "") + maxBolus;
             }
             if (durationReq > 0) {
                 rT.reason += "; setting " + durationReq + "m low temp of " + smbLowTempReq + "U/h";
