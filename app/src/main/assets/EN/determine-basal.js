@@ -1551,16 +1551,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (ENactive && eventualBG > target_bg) {
 
                 // EN insulinReqPct is now used, for ENW use 100% excludes IOB trigger ensuring close proximity to treatment
-                //insulinReqPct = (ENWindowRunTime < ENWindowDuration ? 1 : ENinsulinReqPct);
                 insulinReqPct = (ENWindowOK ? 1 : ENinsulinReqPct);
-                //insulinReqPct = (ENTTActive ? 1 : ENinsulinReqPct);
 
                 // set EN SMB limit for COB or UAM
-                // ISFBooost maxBolus is COB outside of COB Window
-                // UAMBoost maxBolus is for predictions that are UAM with or without COB
-                // ENMaxSMB = (sens_predType == "COB" ? profile.COB_maxBolus : profile.UAM_maxBolus);
                 ENMaxSMB = (sens_predType == "COB" ? profile.EN_COB_maxBolus : profile.EN_UAM_maxBolus);
-
 
                 // if ENWindowOK allow further increase max of SMB within the window
                 if (ENWindowOK) {
@@ -1649,7 +1643,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             rT.reason += " insulinReq" + (insulinReq_bg_boost > 0 ? "+ " : " ") + insulinReq + (insulinReq != insulinReqOrig ? "(" + insulinReqOrig + ")" : "") + "@" + round(insulinReqPct * 100, 0) + "%";
 
             if (microBolus >= maxBolus) {
-                rT.reason += "; maxBolus " + (maxBolus < ENMaxSMBOrig ? + "reduced " + ENMaxSMBOrig + "=" : "") + maxBolus;
+                rT.reason += "; maxBolus " + maxBolus;
             }
             if (durationReq > 0) {
                 rT.reason += "; setting " + durationReq + "m low temp of " + smbLowTempReq + "U/h";
