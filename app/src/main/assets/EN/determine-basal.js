@@ -1543,7 +1543,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             var insulinReqPctDefault = 0.65; // this is the default insulinReqPct and maxBolus is respected outside of eating now
             var insulinReqPct = insulinReqPctDefault; // this is the default insulinReqPct and maxBolus is respected outside of eating now
             var ENReason = "";
-            var ENMaxSMB = maxBolus, ENMaxSMBOrig = ENMaxSMB; // inherit AAPS maxBolus
+            var ENMaxSMB = maxBolus; // inherit AAPS maxBolus
             var maxBolusOrig = maxBolus;
             var ENinsulinReqPct = 0.75; // EN insulinReqPct is 75%
 
@@ -1576,8 +1576,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 ENMaxSMB = (ENMaxSMB == -1 ? 0 : ENMaxSMB);
 
                 // SAFETY: Restrict SMB when not ENW to original insulinReq
-                ENMaxSMBOrig = ENMaxSMB;
-                ENMaxSMB = (!ENWindowOK ? Math.min(insulinReqOrig, ENMaxSMB) : ENMaxSMB);
+                insulinReqPct = (!ENWindowOK ? Math.max(insulinReqOrig/insulinReq,0) : insulinReqPct);
+                insulinReqPct = Math.max(insulinReqPct,1);
 
                 // TBR only
                 ENMaxSMB = (sens_predType == "TBR" ? 0 : ENMaxSMB);
