@@ -1577,7 +1577,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
                 // SAFETY: Restrict SMB when not ENW to original insulinReq
                 insulinReqPct = (!ENWindowOK ? Math.max(insulinReqOrig/insulinReq,0) : insulinReqPct);
-                insulinReqPct = Math.max(insulinReqPct,1);
+                insulinReqPct = Math.min(insulinReqPct,1);
 
                 // TBR only
                 ENMaxSMB = (sens_predType == "TBR" ? 0 : ENMaxSMB);
