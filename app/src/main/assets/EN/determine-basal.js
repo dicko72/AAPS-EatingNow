@@ -1205,6 +1205,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // use the strongest ISF when ENW active
         insulinReq_sens = (!firstMealWindow && !COB && ENWindowRunTime <= ENWindowDuration ? Math.min(insulinReq_sens, sens) : insulinReq_sens);
 
+        // EXPERIMENTAL FOR DEBUG ONLY
+        // insulinReq_sens_ebg = sens_normalTarget / Math.log((eventualBG / ins_val) + 1);
     }
 
     insulinReq_sens = round(insulinReq_sens, 1);
@@ -1492,6 +1494,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // use eBGweight for insulinReq
         insulinReq = (insulinReq_bg - target_bg) / insulinReq_sens;
 
+        // EXPERIMENT DEBUG ONLY - insulinReqTBR is the delta of full insulinReq up to eventualBG
+        var insulinReqTBR = (ENWindowOK ? ((eventualBG - target_bg) / insulinReq_sens) - insulinReq : 0);
+        var endebug = "DEBUG: "+insulinReqTBR+";";
+        insulinReqTBR = 0;
+
         // if that would put us over max_iob, then reduce accordingly
         if (insulinReq > max_iob - iob_data.iob) {
             rT.reason += "max_iob " + max_iob + ", ";
@@ -1684,10 +1691,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // SAFETY: if ENactive and an SMB given reduce the temp rate
         if (ENactive && rT.units > 0) {
-            //rate = Math.max(basal + insulinReqOrig - rT.units,0);
             rate = Math.max(basal + insulinReq - rT.units, 0);
+            rate += insulinReqTBR;
             rate = round_basal(rate, profile);
-            rT.reason += " TBR reduced: " + round(rate, 3) + ", ";
+            rT.reason += (insulinReqTBR ? " TBR+ " + round(insulinReqTBR, 3) + ", " : "");
         }
 
         if (rate > maxSafeBasal) {
