@@ -530,11 +530,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             basal = profile.current_basal * SR_TDD;
             // adjust sens_normalTarget
             var SR_TDD_trust = 0.9;
-            sensitivityRatio = (sensitivityRatio > 1 ? sensitivityRatio * SR_TDD_trust : sensitivityRatio / SR_TDD_trust);
+            SR_TDD_trust = (SR_TDD > 1 ? SR_TDD * SR_TDD_trust : SR_TDD / SR_TDD_trust);
             // dont allow resistance to be sensitive or sensitivity to resistant
-            sensitivityRatio = Math.max(sensitivityRatio,1);
+            SR_TDD_trust = Math.max(SR_TDD_trust,1);
             // adjust ISF using SR_TDD_trust
-            sens_normalTarget = sens_normalTarget / sensitivityRatio;
+            sens_normalTarget = sens_normalTarget / SR_TDD_trust;
         } else {
             // apply autosens limits
             sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
