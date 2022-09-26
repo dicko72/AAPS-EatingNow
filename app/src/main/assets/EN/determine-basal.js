@@ -1498,7 +1498,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // EXPERIMENT DEBUG ONLY - insulinReqTBR is the delta of full insulinReq up to eventualBG
         var insulinReqTBR = (ENWindowOK ? ((eventualBG - target_bg) / insulinReq_sens) - insulinReq : 0);
-        //var endebug = "DEBUG: "+insulinReqTBR+";";
+        var endebug = "DEBUG: "+insulinReqTBR+";";
         // insulinReqTBR = 0;
 
         // if that would put us over max_iob, then reduce accordingly
@@ -1653,6 +1653,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             rT.reason += ". ";
             rT.reason += ENReason;
             rT.reason += ". ";
+            rT.reason += (typeof endebug !== 'undefined' ? endebug : "");
 
             //allow SMBs every 3 minutes by default
             var SMBInterval = 3;
