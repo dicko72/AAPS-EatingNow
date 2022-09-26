@@ -375,7 +375,7 @@
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_uamboost_maxbolus"
                 android:title="UAM maxBolus"
-                android:dialogMessage="UAM maxBolus for all BGL rises without COB within the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing maxBolus limit and -1 will only disable SMB and use TBR only."
+                android:dialogMessage="UAM maxBolus for all BGL rises without COB within the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing AAPS maxBolus limit and -1 will only disable SMB and use TBR only."
                 validate:floatmaxNumber="200"
                 validate:floatminNumber="-1"
                 validate:testType="floatNumericRange"/>
@@ -393,9 +393,19 @@
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
+                android:key="@string/key_eatingnow_uambgboost_maxbolus"
+                android:title="UAM+ maxBolus"
+                android:dialogMessage="UAM+ maxBolus for initial UAM BG rise within the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing AAPS maxBolus limit."
+                validate:floatmaxNumber="200"
+                validate:floatminNumber="0"
+                validate:testType="floatNumericRange"/>
+
+            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_cobboost_maxbolus"
                 android:title="COB maxBolus"
-                android:dialogMessage="COB maxBolus for BGL rises within the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing maxBolus limit and -1 will only disable SMB and use TBR only."
+                android:dialogMessage="COB maxBolus for BGL rises within the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing AAPS maxBolus limit and -1 will only disable SMB and use TBR only."
                 validate:floatmaxNumber="200"
                 validate:floatminNumber="-1"
                 validate:testType="floatNumericRange"/>
