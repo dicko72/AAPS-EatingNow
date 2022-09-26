@@ -1497,7 +1497,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq = (insulinReq_bg - target_bg) / insulinReq_sens;
 
         // EXPERIMENT DEBUG ONLY - insulinReqTBR is the delta of full insulinReq up to eventualBG
-        var insulinReqTBR = (ENactive ? ((eventualBG - target_bg) / insulinReq_sens) - insulinReq : 0);
+        var insulinReqTBR = (ENactive && eventualBG > insulinReq_bg ? ((eventualBG - target_bg) / insulinReq_sens) - insulinReq : 0);
         var endebug = "DEBUG: "+insulinReqTBR+";";
         // insulinReqTBR = 0;
 
