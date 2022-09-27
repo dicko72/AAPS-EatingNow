@@ -1507,7 +1507,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // EXPERIMENT DEBUG ONLY - insulinReqTBR is the delta of full insulinReq up to eventualBG
         var insulinReqTBR = Math.max((ENWindowOK ? ((eventualBG - target_bg) / insulinReq_sens) - insulinReq : 0),0);
-        var endebug = "DEBUG: "+insulinReqTBR+";";
+        //var endebug = "DEBUG: "+insulinReqTBR+";";
         // insulinReqTBR = 0;
 
         // if that would put us over max_iob, then reduce accordingly
