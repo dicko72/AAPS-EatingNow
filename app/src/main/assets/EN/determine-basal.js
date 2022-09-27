@@ -448,7 +448,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // tdd_lastCannula = (lastCannAge > 1440 ? meal_data.TDDLastCannula / (lastCannAge / 1440) : tdd1);
         //tdd_lastCannula = (lastCannAge > 1440 ? meal_data.TDDLastCannula / (lastCannAge / 1440) : tdd8_exp);
         //var SR_TDD = tdd8_exp / tdd7;
-        var SR_TDD = meal_data.TDDLastCannula / tdd7;
+        var SR_TDD = (!profile.temptargetSet && profile.percent == 100 ?  meal_data.TDDLastCannula / tdd7 : 1);
 
         console.error("                                 ");
         //console.error("7-day average TDD is: " +tdd7+ "; ");
@@ -521,7 +521,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // dont adjust sens_normalTarget
             sens_normalTarget = sens_normalTarget;
             sensitivityRatio = 1;
-        } else if (profile.enableSRTDD && !profile.temptargetSet && profile.percent == 100) {
+        } else if (profile.enableSRTDD && SR_TDD !=1) {
             // apply autosens limits
             SR_TDD = Math.min(SR_TDD, profile.autosens_max);
             SR_TDD = Math.max(SR_TDD, profile.autosens_min);
