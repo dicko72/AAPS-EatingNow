@@ -1173,7 +1173,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // positive or negative delta with acceleration and default
             eBGweight = (DeltaPct > 1.0 ? 0.50 : 0.25);
             // initial delta accelerating UAM+ when in range
-            eBGweight += (DeltaPct > 1.0 && bg < ISFbgMax && eventualBG > ISFbgMax && ENWindowOK ? 0.25 : 0);
+            eBGweight += (DeltaPct > 1.0 && bg < ISFbgMax && eventualBG > bg && ENWindowOK ? 0.25 : 0);
             // positive or negative delta with acceleration and lower eBG uses TBR - generally for stubborn high bg
             // sens_predType = (DeltaPct > 1.0 && eventualBG < bg ? "TBR" : sens_predType);
 
