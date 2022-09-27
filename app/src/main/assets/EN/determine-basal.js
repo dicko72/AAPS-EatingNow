@@ -1506,7 +1506,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq = (insulinReq_bg - target_bg) / insulinReq_sens;
 
         // EXPERIMENT DEBUG ONLY - insulinReqTBR is the delta of full insulinReq up to eventualBG
-        var insulinReqTBR = Math.max((ENactive ? ((eventualBG - target_bg) / insulinReq_sens) - insulinReq : 0),0);
+        var insulinReqTBR = Math.max((ENWindowOK ? ((eventualBG - target_bg) / insulinReq_sens) - insulinReq : 0),0);
         var endebug = "DEBUG: "+insulinReqTBR+";";
         // insulinReqTBR = 0;
 
@@ -1660,7 +1660,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (microBolus >= maxBolus) {
                 rT.reason += "; maxBolus " + maxBolus;
             }
-            if (durationReq > 0) {
+            if (durationReq > 0 && insulinReqTBR == 0) {
                 rT.reason += "; setting " + durationReq + "m low temp of " + smbLowTempReq + "U/h";
             }
             rT.reason += ". ";
@@ -1689,7 +1689,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //rT.reason += ". ";
 
             // if no zero temp is required, don't return yet; allow later code to set a high temp
-            if (durationReq > 0) {
+            if (durationReq > 0 && insulinReqTBR == 0) {
                 rT.rate = smbLowTempReq;
                 rT.duration = durationReq;
                 return rT;
