@@ -521,7 +521,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // dont adjust sens_normalTarget
             sens_normalTarget = sens_normalTarget;
             sensitivityRatio = 1;
-        } else if (profile.enableSRTDD) {
+        } else if (profile.enableSRTDD && !profile.temptargetSet && profile.percentage == 100) {
             // apply autosens limits
             SR_TDD = Math.min(SR_TDD, profile.autosens_max);
             SR_TDD = Math.max(SR_TDD, profile.autosens_min);
