@@ -599,7 +599,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // Threshold for SMB at night
     var SMBbgOffset = (profile.SMBbgOffset > 0 ? target_bg + profile.SMBbgOffset : target_bg);
-    var ENSleepMode = !ENactive && !ENtimeOK && bg < SMBbgOffset && !COB;
+    var ENSleepMode = !ENactive && !ENtimeOK && bg < SMBbgOffset;
     enlog += "SMBbgOffset:" + SMBbgOffset + "\n";
 
     // Allow user preferences to adjust the scaling of ISF as BG increases
