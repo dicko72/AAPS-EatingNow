@@ -114,6 +114,11 @@ function enable_smb(
 
 // return ISF for current bg using normalTarget ISF
 function dynISF(bg, normalTarget, sens_normalTarget, ins_val) {
+    // default established vars if nothing provided
+    if (!bg) { bg = bg; }
+    if (!normalTarget) { normalTarget = normalTarget; }
+    if (!sens_normalTarget) { sens_normalTarget = sens_normalTarget; }
+    if (!ins_val) { ins_val = ins_val; }
     // define scaling variables with reference point as normalTarget
     var sens_BGscaler = Math.log((bg / ins_val) + 1);
     var sens_normalTarget_scaler = Math.log((normalTarget / ins_val) + 1);
