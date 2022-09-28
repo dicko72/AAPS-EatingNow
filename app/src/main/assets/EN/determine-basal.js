@@ -1191,6 +1191,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = (DeltaPct > 1.0 && sens_predType == "UAM" ? 0.50 : 0.25);
             // positive or negative delta with acceleration and lower eBG uses current BG - generally for stubborn high bg
             sens_predType = (DeltaPct > 1.0 && eventualBG < bg ? "TBR" : sens_predType);
+
+            // SAFETY: when not accelerating use TBR
+            sens_predType = (DeltaPct <= 1.0 ? "TBR" : sens_predType);
+            //sens_predType = (DeltaPct <= 1.0 && eventualBG > bg ? "TBR" : sens_predType);
+            // SAFETY: high bg with high delta uses current bg, attempts to reduce overcorrection with fast acting carbs
+            // sens_predType = (bg > ISFbgMax && delta >= 9 && eventualBG > bg? "BG" : sens_predType);
         }
 
         // exaggerate for first UAM bolus within EN TT Window - UAM+
