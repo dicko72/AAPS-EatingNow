@@ -629,9 +629,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // var sens_currentBG = sens_normalTarget / sens_BGscaler * sens_normalTarget_scaler;
     //function dynISF(bg, normalTarget, sens_normalTarget, ins_val) {
     var sens_currentBG = dynISF(bg, normalTarget, sens_normalTarget, ins_val);
+    //var sens_currentBG = dynISF();
     enlog += "sens_currentBG:" + convert_bg(sens_currentBG, profile) + "\n";
     sens_currentBG = sens_currentBG * (profile.useDynISF ? ISFBGscaler : 1);
     enlog += "sens_currentBG with ISFBGscaler:" + sens_currentBG + "\n";
+    enlog += "dynISF@90:" + dynISF(90) + "\n";
+    enlog += "dynISF@100:" + dynISF(100) + "\n";
+    enlog += "dynISF@target:" + dynISF(normalTarget) + "\n";
 
 
     // SAFETY: if below normal target at night use normal ISF otherwise use dynamic ISF
