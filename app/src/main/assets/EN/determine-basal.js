@@ -122,7 +122,6 @@ function dynISF(bg, normalTarget, sens_normalTarget, ins_val) {
     return (sens_currentBG);
 }
 
-
 var determine_basal = function determine_basal(glucose_status, currenttemp, iob_data, profile, autosens_data, meal_data, tempBasalFunctions, microBolusAllowed, reservoir_data, currentTime, isSaveCgmSource) {
     var rT = {}; //short for requestedTemp
 
