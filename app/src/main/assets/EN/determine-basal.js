@@ -611,14 +611,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     ISFBGscaler = (100 - ISFBGscaler) / 100;
     enlog += "ISFBGscaler % is now:" + ISFBGscaler + "\n";
 
-    // define & apply ISFBGscaler as % to sens_BGscaler
+    // define scaling variables with reference point as normalTarget
     var sens_BGscaler = Math.log((bg / ins_val) + 1);
-    sens_BGscaler = (profile.useDynISF ? sens_BGscaler / ISFBGscaler : 1);
-    enlog += "sens_BGscaler adjusted with ISFBGscaler:" + sens_BGscaler + "\n";
+    var sens_normalTarget_scaler = Math.log((normalTarget / ins_val) + 1);
 
-    // define the sensitivity for the current bg using previously defined sens at normal target
-    var sens_currentBG = sens_normalTarget / sens_BGscaler;
-    enlog += "sens_currentBG after scaling:" + convert_bg(sens_currentBG, profile) + "\n";
+    // scale the current bg ISF using previously defined sens at normal target
+    var sens_currentBG = sens_normalTarget / sens_BGscaler * sens_normalTarget_scaler;
+    enlog += "sens_currentBG:" + convert_bg(sens_currentBG, profile) + "\n";
+    sens_currentBG = sens_currentBG * (profile.useDynISF ? ISFBGscaler : 1);
+    enlog += "sens_currentBG with ISFBGscaler:" + sens_currentBG + "\n";
+
 
     // SAFETY: if below normal target at night use normal ISF otherwise use dynamic ISF
     sens_currentBG = (bg < normalTarget && ENSleepMode ? sens_normalTarget : sens_currentBG);
