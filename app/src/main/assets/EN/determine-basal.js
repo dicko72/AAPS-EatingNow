@@ -1667,7 +1667,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (microBolus >= maxBolus) {
                 rT.reason += "; maxBolus " + maxBolus;
             }
-            if (durationReq > 0 && insulinReqTBR == 0) {
+            if (durationReq > 0) {
                 rT.reason += "; setting " + durationReq + "m low temp of " + smbLowTempReq + "U/h";
             }
             rT.reason += ". ";
@@ -1696,7 +1696,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //rT.reason += ". ";
 
             // if no zero temp is required, don't return yet; allow later code to set a high temp
-            if (durationReq > 0 && insulinReqTBR == 0) {
+            if (durationReq > 0) {
                 rT.rate = smbLowTempReq;
                 rT.duration = durationReq;
                 return rT;
