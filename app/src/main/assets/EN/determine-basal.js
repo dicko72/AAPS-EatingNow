@@ -1221,7 +1221,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         eBGweight = (sens_predType == "TBR" || sens_predType == "BG" ? 1 : eBGweight);
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
-        insulinReq_sens = sens_normalTarget / Math.log((insulinReq_bg / ins_val) + 1);
+        insulinReq_sens = sens_normalTarget / Math.log((insulinReq_bg / ins_val) + 1) * sens_normalTarget_scaler;
+
         // use the strongest ISF when ENW active
         insulinReq_sens = (!firstMealWindow && !COB && ENWindowRunTime <= ENWindowDuration ? Math.min(insulinReq_sens, sens) : insulinReq_sens);
 
