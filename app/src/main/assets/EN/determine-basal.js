@@ -1729,9 +1729,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         var maxSafeBasal = tempBasalFunctions.getMaxSafeBasal(profile);
 
         // SAFETY: if ENactive and an SMB given reduce the temp rate
-        if (ENactive) {
+        if (ENactive && microBolus) {
             rate = Math.max(basal + insulinReq - microBolus, 0);
-            rate += (microBolus == 0 ? insulinReqTBR : 0);
+            rate += insulinReqTBR;
             rate = round_basal(rate, profile);
             rT.reason += (insulinReqTBR ? " TBR+ " + round(insulinReqTBR, 3) + ", " : "");
         }
