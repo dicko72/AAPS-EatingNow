@@ -1215,11 +1215,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // exaggerate for first UAM bolus within EN TT Window - UAM+
         if (insulinReq_bg_boost) {
-            //minPredBG += insulinReq_bg_boost;
-            //eventualBG += insulinReq_bg_boost;
-            // use current bg plus boost?
-            minPredBG = bg + insulinReq_bg_boost;
-            eventualBG = bg + insulinReq_bg_boost;
+            // use the largest boost addition
+            minPredBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
+            eventualBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
             eBGweight = 1;
             sens_predType = "UAM+";
         }
