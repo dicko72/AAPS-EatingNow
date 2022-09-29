@@ -634,7 +634,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "sens_currentBG:" + convert_bg(sens_currentBG, profile) + "\n";
     sens_currentBG = sens_currentBG * (profile.useDynISF ? ISFBGscaler : 1);
     enlog += "sens_currentBG with ISFBGscaler:" + sens_currentBG + "\n";
-    var test = dynISF();
+    var bg=90,normalTarget=99, sens_normalTarget=144, ins_val=65;
+    var test = dynISF(bg);
     enlog += "test:" + test + "\n";
 //    enlog += "dynISF@90:" + dynISF() + "\n";
 //    enlog += "dynISF@100:" + dynISF(100) + "\n";
