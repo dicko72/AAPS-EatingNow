@@ -51,6 +51,7 @@ function convert_bg(value, profile) {
 
 // return ISF for current bg using normalTarget ISF
 function dynISF(currentBG) {
+    var bg;
 //    // default established vars if nothing provided
 //    if (!currentBG) { currentBG = bg; }
 //    // define scaling variables with reference point as normalTarget
