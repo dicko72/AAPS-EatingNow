@@ -113,16 +113,16 @@ function enable_smb(
 }
 
 // return ISF for current bg using normalTarget ISF
-function dynISF(currentBG) {
-    // default established vars if nothing provided
-    if (!currentBG) { currentBG = bg; }
-    // define scaling variables with reference point as normalTarget
-    var sens_BGscaler = Math.log((bg / ins_val) + 1);
-    var sens_normalTarget_scaler = Math.log((normalTarget / ins_val) + 1);
-    // scale the current bg ISF using previously defined sens at normal target
-    var sens_currentBG = sens_normalTarget / sens_BGscaler * sens_normalTarget_scaler;
-    return (sens_currentBG);
-}
+//function dynISF(currentBG) {
+//    // default established vars if nothing provided
+//    if (!currentBG) { currentBG = bg; }
+//    // define scaling variables with reference point as normalTarget
+//    var sens_BGscaler = Math.log((bg / ins_val) + 1);
+//    var sens_normalTarget_scaler = Math.log((normalTarget / ins_val) + 1);
+//    // scale the current bg ISF using previously defined sens at normal target
+//    var sens_currentBG = sens_normalTarget / sens_BGscaler * sens_normalTarget_scaler;
+//    return (sens_currentBG);
+//}
 
 var determine_basal = function determine_basal(glucose_status, currenttemp, iob_data, profile, autosens_data, meal_data, tempBasalFunctions, microBolusAllowed, reservoir_data, currentTime, isSaveCgmSource) {
     var rT = {}; //short for requestedTemp
@@ -630,14 +630,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // scale the current bg ISF using previously defined sens at normal target
     // var sens_currentBG = sens_normalTarget / sens_BGscaler * sens_normalTarget_scaler;
     //function dynISF(bg, normalTarget, sens_normalTarget, ins_val) {
-    var sens_currentBG = dynISF();
-    //var sens_currentBG = dynISF();
+    var sens_currentBG = 144; //dynISF();
     enlog += "sens_currentBG:" + convert_bg(sens_currentBG, profile) + "\n";
     sens_currentBG = sens_currentBG * (profile.useDynISF ? ISFBGscaler : 1);
     enlog += "sens_currentBG with ISFBGscaler:" + sens_currentBG + "\n";
-    enlog += "dynISF@90:" + dynISF(90) + "\n";
-    enlog += "dynISF@100:" + dynISF(100) + "\n";
-    enlog += "dynISF@target:" + dynISF(normalTarget) + "\n";
+//    enlog += "dynISF@90:" + dynISF(90) + "\n";
+//    enlog += "dynISF@100:" + dynISF(100) + "\n";
+//    enlog += "dynISF@target:" + dynISF(normalTarget) + "\n";
 
 
     // SAFETY: if below normal target at night use normal ISF otherwise use dynamic ISF
@@ -1240,7 +1239,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         eBGweight = (sens_predType == "TBR" || sens_predType == "BG" ? 1 : eBGweight);
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
-        insulinReq_sens = dynISF(insulinReq_bg);
+        insulinReq_sens = 144; //dynISF(insulinReq_bg);
 
         // use the strongest ISF when ENW active
         insulinReq_sens = (!firstMealWindow && !COB && ENWindowRunTime <= ENWindowDuration ? Math.min(insulinReq_sens, sens) : insulinReq_sens);
