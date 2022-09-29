@@ -59,7 +59,7 @@ function dynISF(currentBG) {
 //    // scale the current bg ISF using previously defined sens at normal target
 //    var sens_currentBG = sens_normalTarget / sens_BGscaler * sens_normalTarget_scaler;
 //    return (sens_currentBG);
-    return (100);
+    return (bg);
 }
 
 function enable_smb(
