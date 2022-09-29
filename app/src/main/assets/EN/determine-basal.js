@@ -117,7 +117,7 @@ function dynISF(currentBG) {
     // default established vars if nothing provided
     if (!currentBG) { currentBG = bg; }
     // define scaling variables with reference point as normalTarget
-    var sens_BGscaler = Math.log((bg / ins_val) + 1);
+    var sens_BGscaler = Math.log((currentBG / ins_val) + 1);
     var sens_normalTarget_scaler = Math.log((normalTarget / ins_val) + 1);
     // scale the current bg ISF using previously defined sens at normal target
     var sens_currentBG = sens_normalTarget / sens_BGscaler * sens_normalTarget_scaler;
