@@ -1192,7 +1192,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             sens_predType = (DeltaPct > 1.0 && eventualBG < bg ? "TBR" : sens_predType);
 
             // SAFETY: when not accelerating use TBR
-            sens_predType = (DeltaPct <= 1.0 ? "TBR" : sens_predType);
+            sens_predType = (DeltaPct <= 1.0 ? "BG" : sens_predType);
             //sens_predType = (DeltaPct <= 1.0 && eventualBG > bg ? "TBR" : sens_predType);
             // SAFETY: high bg with high delta uses current bg, attempts to reduce overcorrection with fast acting carbs
             sens_predType = (bg > ISFbgMax && delta >= 9 && eventualBG > bg? "BG" : sens_predType);
@@ -1207,7 +1207,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             sens_predType = (DeltaPct > 1.0 && eventualBG < bg ? "TBR" : sens_predType);
 
             // SAFETY: when not accelerating use TBR
-            sens_predType = (DeltaPct <= 1.0 ? "TBR" : sens_predType);
+            //sens_predType = (DeltaPct <= 1.0 ? "TBR" : sens_predType);
             //sens_predType = (DeltaPct <= 1.0 && eventualBG > bg ? "TBR" : sens_predType);
             // SAFETY: high bg with high delta uses current bg, attempts to reduce overcorrection with fast acting carbs
             // sens_predType = (bg > ISFbgMax && delta >= 9 && eventualBG > bg? "BG" : sens_predType);
