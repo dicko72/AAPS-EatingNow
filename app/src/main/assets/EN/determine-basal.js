@@ -1602,7 +1602,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                         //ENReason += ", Recent COB " + (profile.temptargetSet && target_bg == normalTarget ? " + TT" : "") + " ENW-SMB";
                     } else {
                         ENMaxSMB = (firstMealWindow ? profile.EN_UAM_maxBolus_breakfast : profile.EN_UAM_maxBolus);
-                        ENMaxSMB = (sens_predType == "UAM+" ? profile.EN_UAMbgBoost_maxBolus : ENMaxSMB)
+                        ENMaxSMB = (sens_predType == "UAM+" ? profile.EN_UAMbgBoost_maxBolus : ENMaxSMB);
                     }
                 }
 
