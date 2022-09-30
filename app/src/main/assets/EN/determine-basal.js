@@ -1166,21 +1166,22 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial insulinReq to 50% peak minutes of delta, max 90, only run on loop iteration
     var insulinReq_boost = (ENTTActive && lastBolusAge >= ttTime && minAgo < 1 && !COB);
-    var insulinReq_bg_boost = (insulinReq_boost && delta >= 0 ? profile.UAMbgBoost : 0);
+    var insulinReq_bg_boost = (insulinReq_boost ? profile.UAMbgBoost : 0);
 
     // categorize the eventualBG prediction type for more accurate weighting
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
+    if (insulinReq_boost) sens_predType = "UAM+"; // force UAM+ when appropriate
 
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
     if (ENactive || ENSleepMode || TIR_sens > 1) {
 
         // UAM predictions, no COB or GhostCOB
-        if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
+        if (sens_predType == "UAM" || sens_predType == "UAM+" && (!COB || ignoreCOB)) {
             // positive or negative delta with acceleration and default
             eBGweight = (DeltaPctS > 1.0 || eventualBG > bg ? 0.50 : 0.25);
             // initial delta accelerating UAM+ when in range
-            eBGweight += (DeltaPctS > 1.0 && bg < ISFbgMax && eventualBG > bg && ENWindowOK ? 0.25 : 0);
+            eBGweight += (DeltaPctS > 1.0 && bg < ISFbgMax && eventualBG > threshold && ENWindowOK ? 0.25 : 0);
             // positive or negative delta with acceleration and lower eBG uses TBR - generally for stubborn high bg
             sens_predType = (DeltaPctS > 1.0 && eventualBG < bg && TIR_sens > 1 ? "BG" : sens_predType);
 
@@ -1204,12 +1205,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
 
         // exaggerate for first UAM bolus within EN TT Window - UAM+
-        if (insulinReq_bg_boost) {
-            // use the largest boost addition
+        if (sens_predType = "UAM+") {
+            // use the largest starting bg for boost addition
             minPredBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
             eventualBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
             eBGweight = 1;
-            sens_predType = "UAM+";
         }
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
