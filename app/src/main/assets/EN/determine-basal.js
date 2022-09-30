@@ -1186,7 +1186,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // UAM predictions, no COB or GhostCOB
         if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
             // positive or negative delta with acceleration and default
-            eBGweight = (DeltaPct > 1.0 ? 0.50 : 0.25);
+            eBGweight = (DeltaPct > 1.0 || eventualBG > bg ? 0.50 : 0.25);
             // initial delta accelerating UAM+ when in range
             eBGweight += (DeltaPct > 1.0 && bg < ISFbgMax && eventualBG > bg && ENWindowOK ? 0.25 : 0);
             // positive or negative delta with acceleration and lower eBG uses TBR - generally for stubborn high bg
@@ -1202,14 +1202,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // COB predictions or UAM with COB
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
             // positive or negative delta with acceleration and UAM default
-            eBGweight = (DeltaPct > 1.0 && sens_predType == "COB" ? 0.50 : 0.25);
-            eBGweight = (DeltaPct > 1.0 && sens_predType == "UAM" ? 0.50 : eBGweight);
+            eBGweight = (DeltaPct > 1.0 && sens_predType == "COB" || eventualBG > bg ? 0.50 : 0.25);
+            eBGweight = (DeltaPct > 1.0 && sens_predType == "UAM" || eventualBG > bg ? 0.50 : eBGweight);
             // positive or negative delta with acceleration and lower eBG uses current BG - generally for stubborn high bg
             sens_predType = (DeltaPct > 1.0 && eventualBG < bg ? "TBR" : sens_predType);
 
-            // SAFETY: when not accelerating use TBR
-            //sens_predType = (DeltaPct <= 1.0 ? "TBR" : sens_predType);
-            //sens_predType = (DeltaPct <= 1.0 && eventualBG > bg ? "TBR" : sens_predType);
             // SAFETY: high bg with high delta uses current bg, attempts to reduce overcorrection with fast acting carbs
             // sens_predType = (bg > ISFbgMax && delta >= 9 && eventualBG > bg? "BG" : sens_predType);
         }
@@ -1228,8 +1225,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // override and use current bg for insulinReq_bg with TBR and BG predType
         insulinReq_bg = (sens_predType == "BG" ? bg : insulinReq_bg);
-        insulinReq_bg = (sens_predType == "TBR" ? Math.max(bg,insulinReq_bg,eventualBG) : insulinReq_bg);
-        eBGweight = (sens_predType == "TBR" || sens_predType == "BG" ? 1 : eBGweight);
+        insulinReq_bg = (sens_predType == "TBR" || sens_predType == "TBR+" ? Math.max(bg,insulinReq_bg,eventualBG) : insulinReq_bg);
+        eBGweight = (sens_predType == "TBR" || sens_predType == "TBR+" || sens_predType == "BG"  ? 1 : eBGweight);
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
         insulinReq_sens = dynISF(insulinReq_bg,normalTarget,sens_normalTarget,ins_val); // dynISF
@@ -1528,8 +1525,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // EXPERIMENT DEBUG ONLY - insulinReqTBR is the delta of full insulinReq up to eventualBG
         var insulinReqTBR = Math.max((ENactive ? ((eventualBG - target_bg) / insulinReq_sens) - insulinReq : 0),0);
+        insulinReqTBR = (sens_predType == "TBR" || sens_predType == "TBR+" ? Math.max((((eventualBG - target_bg) / insulinReq_sens) - insulinReq),0) : 0);
         //var endebug = "DEBUG: "+insulinReqTBR+";";
-         insulinReqTBR = 0;
+        //insulinReqTBR = 0;
 
         // if that would put us over max_iob, then reduce accordingly
         if (insulinReq > max_iob - iob_data.iob) {
