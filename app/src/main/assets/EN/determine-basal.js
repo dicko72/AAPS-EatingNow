@@ -244,11 +244,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var ENTTActive = meal_data.activeENTempTargetDuration > 0;
 
     // variables for deltas
-    var delta = glucose_status.delta, deltaShortRise = 0, DeltaPct = 1;
+    var delta = glucose_status.delta, DeltaPctS = 1, DeltaPctL = 1;
     // Calculate percentage change in delta, short to now
-    if (glucose_status.short_avgdelta != 0) deltaShortRise = round((glucose_status.delta - glucose_status.short_avgdelta) / Math.abs(glucose_status.short_avgdelta), 2);
-    // set the DeltaPct factor that is the deltaShortRise combined minimum of zero + 1 to allow multiply
-    DeltaPct = round(1 + deltaShortRise, 2);
+    if (glucose_status.short_avgdelta != 0) DeltaPctS = round(1 + ((glucose_status.delta - glucose_status.short_avgdelta) / Math.abs(glucose_status.short_avgdelta)),2);
+    if (glucose_status.long_avgdelta != 0) DeltaPctL = round(1 + ((glucose_status.delta - glucose_status.long_avgdelta) / Math.abs(glucose_status.long_avgdelta)),2);
 
     // eating now time can be delayed if there is no first bolus or carbs
     if (now >= ENStartTime && now < ENEndTime && (meal_data.lastNormalCarbTime >= ENStartTime || meal_data.lastENBolusTime >= ENStartTime || meal_data.firstENTempTargetTime >= ENStartTime)) ENtimeOK = true;
@@ -1186,15 +1185,15 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // UAM predictions, no COB or GhostCOB
         if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
             // positive or negative delta with acceleration and default
-            eBGweight = (DeltaPct > 1.0 || eventualBG > bg ? 0.50 : 0.25);
+            eBGweight = (DeltaPctS > 1.0 || eventualBG > bg ? 0.50 : 0.25);
             // initial delta accelerating UAM+ when in range
-            eBGweight += (DeltaPct > 1.0 && bg < ISFbgMax && eventualBG > bg && ENWindowOK ? 0.25 : 0);
+            eBGweight += (DeltaPctS > 1.0 && bg < ISFbgMax && eventualBG > bg && ENWindowOK ? 0.25 : 0);
             // positive or negative delta with acceleration and lower eBG uses TBR - generally for stubborn high bg
-            sens_predType = (DeltaPct > 1.0 && eventualBG < bg && TIR_sens > 1 ? "BG" : sens_predType);
+            sens_predType = (DeltaPctS > 1.0 && eventualBG < bg && TIR_sens > 1 ? "BG" : sens_predType);
 
             // SAFETY: when not accelerating use TBR
-            // sens_predType = (DeltaPct <= 1.0 ? "BG" : sens_predType);
-            //sens_predType = (DeltaPct <= 1.0 && eventualBG > bg ? "TBR" : sens_predType);
+            // sens_predType = (DeltaPctS <= 1.0 ? "BG" : sens_predType);
+            //sens_predType = (DeltaPctS <= 1.0 && eventualBG > bg ? "TBR" : sens_predType);
             // SAFETY: high bg with high delta uses current bg, attempts to reduce overcorrection with fast acting carbs
             sens_predType = (bg > ISFbgMax && delta >= 9 && eventualBG > bg? "BG" : sens_predType);
         }
@@ -1202,10 +1201,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // COB predictions or UAM with COB
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
             // positive or negative delta with acceleration and UAM default
-            eBGweight = (DeltaPct > 1.0 && sens_predType == "COB" || eventualBG > bg ? 0.50 : 0.25);
-            eBGweight = (DeltaPct > 1.0 && sens_predType == "UAM" || eventualBG > bg ? 0.50 : eBGweight);
+            eBGweight = (DeltaPctS > 1.0 && sens_predType == "COB" || eventualBG > bg ? 0.50 : 0.25);
+            eBGweight = (DeltaPctS > 1.0 && sens_predType == "UAM" || eventualBG > bg ? 0.50 : eBGweight);
             // positive or negative delta with acceleration and lower eBG uses current BG - generally for stubborn high bg
-            // sens_predType = (DeltaPct > 1.0 && eventualBG < bg ? "TBR" : sens_predType);
+            // sens_predType = (DeltaPctS > 1.0 && eventualBG < bg ? "TBR" : sens_predType);
 
             // SAFETY: high bg with high delta uses current bg, attempts to reduce overcorrection with fast acting carbs
             // sens_predType = (bg > ISFbgMax && delta >= 9 && eventualBG > bg? "BG" : sens_predType);
@@ -1246,7 +1245,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     rT.COB = meal_data.mealCOB;
     rT.IOB = iob_data.iob;
-    rT.reason = "COB: " + round(meal_data.mealCOB, 1) + ", Dev: " + convert_bg(deviation, profile) + ", BGI: " + convert_bg(bgi, profile) + ", Delta: " + glucose_status.delta + "/" + glucose_status.short_avgdelta + "=" + round(DeltaPct * 100) + "%" + ", ISF: " + convert_bg(sens_normalTarget, profile) + (profile.use_sens_TDD && sens_normalTarget == MaxISF ? "*" : "") + "/" + convert_bg(sens, profile) + "=" + convert_bg(insulinReq_sens, profile) + ", CR: " + round(carb_ratio, 2) + ", Target: " + convert_bg(target_bg, profile) + (target_bg != normalTarget ? "(" + convert_bg(normalTarget, profile) + ")" : "") + ", minPredBG " + convert_bg(minPredBG, profile) + ", minGuardBG " + convert_bg(minGuardBG, profile) + ", IOBpredBG " + convert_bg(lastIOBpredBG, profile) + ", LGS: " + convert_bg(threshold, profile);
+    rT.reason = "COB: " + round(meal_data.mealCOB, 1) + ", Dev: " + convert_bg(deviation, profile) + ", BGI: " + convert_bg(bgi, profile) + ", Delta: " + glucose_status.delta + "/" + glucose_status.short_avgdelta + "/" + glucose_status.long_avgdelta + "=" + round(DeltaPctS * 100) + "/" + round(DeltaPctL * 100) + "%" + ", ISF: " + convert_bg(sens_normalTarget, profile) + (profile.use_sens_TDD && sens_normalTarget == MaxISF ? "*" : "") + "/" + convert_bg(sens, profile) + "=" + convert_bg(insulinReq_sens, profile) + ", CR: " + round(carb_ratio, 2) + ", Target: " + convert_bg(target_bg, profile) + (target_bg != normalTarget ? "(" + convert_bg(normalTarget, profile) + ")" : "") + ", minPredBG " + convert_bg(minPredBG, profile) + ", minGuardBG " + convert_bg(minGuardBG, profile) + ", IOBpredBG " + convert_bg(lastIOBpredBG, profile) + ", LGS: " + convert_bg(threshold, profile);
 
     if (lastCOBpredBG > 0) {
         rT.reason += ", " + (ignoreCOB && !ENWindowOK ? "!" : "") + "COBpredBG " + convert_bg(lastCOBpredBG, profile);
@@ -1282,7 +1281,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += ", SR: " + (typeof autosens_data !== 'undefined' && autosens_data ? round(autosens_data.ratio, 2) + "=" : "") + sensitivityRatio;
     rT.reason += ", LRT: " + round(60 * minAgo);
     rT.reason += "; ";
-    rT.reason += (typeof endebug !== 'undefined' ? endebug : "");
+    rT.reason += (typeof endebug !== 'undefined' ? "DEBUG:" + endebug : "");
 
     // use naive_eventualBG if above 40, but switch to minGuardBG if both eventualBGs hit floor of 39
     var carbsReqBG = naive_eventualBG;
@@ -1526,7 +1525,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // EXPERIMENT DEBUG ONLY - insulinReqTBR is the delta of full insulinReq up to eventualBG
         var insulinReqTBR = Math.max((ENactive ? ((eventualBG - target_bg) / insulinReq_sens) - insulinReq : 0),0);
         insulinReqTBR = (sens_predType == "TBR" || sens_predType == "TBR+" ? Math.max((((eventualBG - target_bg) / insulinReq_sens) - insulinReq),0) : 0);
-        //var endebug = "DEBUG: "+insulinReqTBR+";";
         //insulinReqTBR = 0;
 
         // if that would put us over max_iob, then reduce accordingly
@@ -1580,6 +1578,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
             // START === if we are eating now and BGL prediction is higher than normal target ===
             if (ENactive && eventualBG > target_bg) {
+
+                var endebug = (ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && DeltaPctS > 1.2 && DeltaPctL > 2  && eBGweight > eBGweight_orig);
 
                 // EN insulinReqPct is now used, for ENW use 100% excludes IOB trigger ensuring close proximity to treatment
                 // insulinReqPct = (ENWindowOK ? 1 : ENinsulinReqPct);
@@ -1686,7 +1686,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             rT.reason += ". ";
             rT.reason += ENReason;
             rT.reason += ". ";
-            rT.reason += (typeof endebug !== 'undefined' ? endebug : "");
+            rT.reason += (typeof endebug !== 'undefined' ? "DEBUG:" + endebug : "");
 
             //allow SMBs every 3 minutes by default
             var SMBInterval = 3;
