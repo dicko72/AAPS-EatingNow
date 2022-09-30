@@ -414,8 +414,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // ENWindowOK is when there is a recent COB entry or manual bolus
     ENWindowOK = (ENactive && ENWindowRunTime < ENWindowDuration || ENWTriggerOK);
-     // else if (glucose_status.delta >= 5 && glucose_status.short_avgdelta >= 3 && uamBoost1 > 1.2 && uamBoost2 > 2 && now1 >= boost_start && now1 < boost_end && iob_data.iob < boostMaxIOB && boost_scale < 3 && eventualBG > target_bg && bg > 80 && insulinReq > 0 ) {
-    //if (!COB && (Math.min(b1Time,bTime) > profile.ENWindow) && !profile.temptargetSet && !ENWTriggerOK) ENWindowOK = false; // if theres no COB and no recent bolus or TT then close the EN window
 
     // stronger CR and ISF can be used when firstmeal is within 2h window
     var firstMealScaling = (firstMealWindow && !profile.use_sens_TDD && profile.sens == profile.sens_midnight && profile.carb_ratio == profile.carb_ratio_midnight);
@@ -454,10 +452,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         console.log("TDD = " + TDD + " using rolling 8h Total extrapolation + TDD7 (60/40); ");
 
         // SR_TDD ********************************
-        //var lastCannAge = (new Date(systemTime).getTime() - meal_data.lastCannulaTime) / 60000;
-        // tdd_lastCannula = (lastCannAge > 1440 ? meal_data.TDDLastCannula / (lastCannAge / 1440) : tdd1);
-        //tdd_lastCannula = (lastCannAge > 1440 ? meal_data.TDDLastCannula / (lastCannAge / 1440) : tdd8_exp);
-        //var SR_TDD = tdd8_exp / tdd7;
         var SR_TDD = (!profile.temptargetSet && profile.percent == 100 ?  meal_data.TDDLastCannula / tdd7 : 1);
 
         console.error("                                 ");
@@ -1172,7 +1166,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial insulinReq to 50% peak minutes of delta, max 90, only run on loop iteration
     var insulinReq_boost = (ENTTActive && lastBolusAge >= ttTime && minAgo < 1 && !COB);
-    //var endebug = "DEBUG: "+ttTime+", "+lastBolusAge+", "+minAgo+";";
     var insulinReq_bg_boost = (insulinReq_boost && delta >= 0 ? profile.UAMbgBoost : 0);
 
     // categorize the eventualBG prediction type for more accurate weighting

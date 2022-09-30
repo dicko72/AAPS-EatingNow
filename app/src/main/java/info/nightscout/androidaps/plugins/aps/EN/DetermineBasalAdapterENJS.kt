@@ -275,9 +275,6 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("insulinType", activePlugin.activeInsulin.friendlyName)
         this.profile.put("insulinPeak", activePlugin.activeInsulin.insulinConfiguration.peak/60000)
         this.profile.put("percent", if (profile is ProfileSealed.EPS) profile.value.originalPercentage else 100)
-        // val prevCannula = repository.getLastTherapyRecordUpToTime(TherapyEvent.Type.CANNULA_CHANGE,lastCannulaTime).blockingGet()
-        // val prevCannulaTime = if (prevCannula is ValueWrapper.Existing) prevCannula.value.timestamp else 0L
-        // this.profile.put("prevCannulaTime", prevCannulaTime)
         // patches ==== END
 //**********************************************************************************************************************************************
         if (profileFunction.getUnits() == GlucoseUnit.MMOL) {
