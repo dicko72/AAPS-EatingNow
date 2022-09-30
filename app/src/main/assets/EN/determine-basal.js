@@ -415,6 +415,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // ENWindowOK is when there is a recent COB entry or manual bolus
     ENWindowOK = (ENactive && ENWindowRunTime < ENWindowDuration || ENWTriggerOK);
+     // else if (glucose_status.delta >= 5 && glucose_status.short_avgdelta >= 3 && uamBoost1 > 1.2 && uamBoost2 > 2 && now1 >= boost_start && now1 < boost_end && iob_data.iob < boostMaxIOB && boost_scale < 3 && eventualBG > target_bg && bg > 80 && insulinReq > 0 ) {
     //if (!COB && (Math.min(b1Time,bTime) > profile.ENWindow) && !profile.temptargetSet && !ENWTriggerOK) ENWindowOK = false; // if theres no COB and no recent bolus or TT then close the EN window
 
     // stronger CR and ISF can be used when firstmeal is within 2h window
