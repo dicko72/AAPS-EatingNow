@@ -6,6 +6,14 @@
     <PreferenceCategory
         android:title="Eating Now Preferences"
         app:initialExpandedChildrenCount="0">
+
+        <info.nightscout.androidaps.plugins.aps.EN.ENVariantPreference
+            android:title="@string/en_variant_title"
+            android:key="@string/key_en_variant"
+            android:defaultValue="default"
+            android:selectable="true"
+            />
+
     </PreferenceCategory>
 
     <PreferenceCategory
