@@ -1587,7 +1587,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 insulinReqPct = (ENWindowOK ? ENinsulinReqPct : Math.max(insulinReqOrig/insulinReq,0) );
                 insulinReqPct = Math.min(insulinReqPct,ENinsulinReqPct);
 
-                // UAM+ gets 100% insulinReqPct
+                // UAM+ gets 100% insulinReqPct, overrides outside ENW
                 insulinReqPct = (sens_predType == "UAM+" ? 1 : insulinReqPct);
 
                 // set EN SMB limit for COB or UAM
@@ -1618,6 +1618,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
                 // if bg numbers resumed after sensor errors dont allow a large SMB
                 ENMaxSMB = (minAgo < 1 && delta == 0 && glucose_status.short_avgdelta == 0 ? maxBolus : ENMaxSMB);
+
+                // if loop ran again without a new bg dont allow a large SMB, use insulinReqOrig, allow 90 seconds
+                ENMaxSMB = (minAgo > 1.5 && !ENTTActive ? Math.max(insulinReqOrig, 0) : ENMaxSMB);
 
                 // ============== DELTA & IOB BASED RESTRICTIONS ==============
                 // if the delta is less than 4 and insulinReq_sens is stronger restrict larger SMB
