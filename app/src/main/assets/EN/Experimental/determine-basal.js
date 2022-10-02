@@ -1169,8 +1169,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var insulinReq_sens = sens_normalTarget;
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial insulinReq to 50% peak minutes of delta, max 90, only run on loop iteration
-    var UAMPreBolus = (ENTTActive && ttTime < lastBolusAge && minAgo < 1 && !COB);
-    //var UAMPreBolus = (ENTTActive && lastBolusAge >= ttTime && minAgo < 1 && !COB);
+    var UAMPreBolus = (profile.UAMbgBoost > 0 && ENTTActive && lastBolusAge >= ttTime && minAgo < 1 && !COB);
     var insulinReq_bg_boost = (UAMPreBolus ? profile.UAMbgBoost : 0);
 
     // categorize the eventualBG prediction type for more accurate weighting
@@ -1178,8 +1177,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
     if (UAMPreBolus) sens_predType = "UAM+"; // force UAM+ when appropriate
     // UAM+ predtype when sufficient delta and acceleration
-    if (ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && DeltaPctS > 1 && DeltaPctL > 2 && !COB) sens_predType = "UAM+";
-    if (ENtimeOK && !COB) sens_predType = "UAM+";
+    if (profile.EN_UAMPlus_NoENW && ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && DeltaPctS > 1 && DeltaPctL > 2 && !COB) sens_predType = "UAM+";
 
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
     if (ENactive || ENSleepMode || TIR_sens > 1) {
@@ -1590,8 +1588,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 insulinReqPct = (ENWindowOK ? ENinsulinReqPct : Math.max(insulinReqOrig/insulinReq,0) );
                 insulinReqPct = Math.min(insulinReqPct,ENinsulinReqPct);
 
-                // UAM+ gets 100% insulinReqPct, overrides outside ENW
-                insulinReqPct = (sens_predType == "UAM+" ? 1 : insulinReqPct);
+                // UAM+ allows normal ENinsulinReqPct
+                insulinReqPct = (sens_predType == "UAM+" ? ENinsulinReqPct : insulinReqPct);
+
+                // UAM+ PreBolus gets 100% insulinReqPct, overrides outside ENW
+                insulinReqPct = (sens_predType == "UAM+" && UAMPreBolus ? 1 : insulinReqPct);
 
                 // set EN SMB limit for COB or UAM
                 ENMaxSMB = (sens_predType == "COB" ? profile.EN_COB_maxBolus : profile.EN_UAM_maxBolus);
