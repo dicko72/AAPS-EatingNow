@@ -1178,6 +1178,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (UAMPreBolus) sens_predType = "UAM+"; // force UAM+ when appropriate
     // UAM+ predtype when sufficient delta and acceleration
     if (ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && DeltaPctS > 1 && DeltaPctL > 2 && !COB) sens_predType = "UAM+";
+    if (ENtimeOK && !COB) sens_predType = "UAM+";
 
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
     if (ENactive || ENSleepMode || TIR_sens > 1) {
