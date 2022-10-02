@@ -557,7 +557,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // apply TIRS to ISF, TIRS will be 1 if not enabled, limit to autosens_max
         TIR_sens = Math.min(TIR_sens, profile.autosens_max);
+
         sensitivityRatio = sensitivityRatio * TIR_sens;
+        // apply final autosens limits
+        sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
+        sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
         sensitivityRatio = round(sensitivityRatio, 2);
         sens_normalTarget = sens_normalTarget / sensitivityRatio;
 
