@@ -554,11 +554,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // adjust basal
             basal = profile.current_basal * sensitivityRatio;
         }
-        sensitivityRatio = round(sensitivityRatio, 2);
 
         // apply TIRS to ISF, TIRS will be 1 if not enabled, limit to autosens_max
         TIR_sens = Math.min(TIR_sens, profile.autosens_max);
-        sens_normalTarget = sens_normalTarget / TIR_sens;
+
+        sensitivityRatio = sensitivityRatio * TIR_sens;
+        // apply final autosens limits
+        sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
+        sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
+        sensitivityRatio = round(sensitivityRatio, 2);
+        sens_normalTarget = sens_normalTarget / sensitivityRatio;
 
         basal = round_basal(basal, profile);
         if (basal !== profile_current_basal) {
@@ -1168,8 +1173,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var insulinReq_bg_orig = Math.min(minPredBG, eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), eBGweight = eBGweight_orig;
     var insulinReq_sens = sens_normalTarget;
 
-    // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial insulinReq to 50% peak minutes of delta, max 90, only run on loop iteration
-    var UAMPreBolus = (profile.UAMbgBoost > 0 && ENTTActive && lastBolusAge >= ttTime && minAgo < 1 && !COB);
+    // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
+    var UAMPreBolus = (ENTTActive && ttTime < lastBolusAge && !COB);
     var insulinReq_bg_boost = (UAMPreBolus ? profile.UAMbgBoost : 0);
 
     // categorize the eventualBG prediction type for more accurate weighting
@@ -1255,7 +1260,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     // main EN status
-    rT.reason += ", EN: ";
+    rT.reason += ", EN-" + profile.variant.substring(0,3) + ":";
     if (!ENSleepMode) rT.reason += (ENactive ? "On" : "Off");
     rT.reason += (ENSleepMode ? "Sleep" : "");
     rT.reason += (ENSleepMode ? " (SMB bg>" + convert_bg(SMBbgOffset, profile) + ")" : "");
