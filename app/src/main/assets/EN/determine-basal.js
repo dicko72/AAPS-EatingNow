@@ -554,11 +554,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // adjust basal
             basal = profile.current_basal * sensitivityRatio;
         }
-        sensitivityRatio = round(sensitivityRatio, 2);
 
         // apply TIRS to ISF, TIRS will be 1 if not enabled, limit to autosens_max
         TIR_sens = Math.min(TIR_sens, profile.autosens_max);
-        sens_normalTarget = sens_normalTarget / TIR_sens;
+        sensitivityRatio = sensitivityRatio * TIR_sens;
+        sensitivityRatio = round(sensitivityRatio, 2);
+        sens_normalTarget = sens_normalTarget / sensitivityRatio;
 
         basal = round_basal(basal, profile);
         if (basal !== profile_current_basal) {
