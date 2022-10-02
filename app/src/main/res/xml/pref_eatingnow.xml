@@ -391,26 +391,6 @@
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
-                android:title="UAM+ BG Boost"
-                android:key="@string/key_eatingnow_uambgboost"
-                android:dialogMessage="Initial UAM BG boost for start of EN-TT. eventualBG will be increased from current BG using this amount."
-                validate:floatmaxNumber="125"
-                validate:floatminNumber="0"
-                validate:testType="floatNumericRange" />
-
-            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
-                android:defaultValue="0"
-                android:inputType="numberDecimal"
-                android:key="@string/key_eatingnow_uambgboost_maxbolus"
-                android:title="UAM+ maxBolus"
-                android:dialogMessage="UAM+ maxBolus for initial UAM BG rise within the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing AAPS maxBolus limit."
-                validate:floatmaxNumber="200"
-                validate:floatminNumber="0"
-                validate:testType="floatNumericRange"/>
-
-            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
-                android:defaultValue="0"
-                android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_cobboost_maxbolus"
                 android:title="COB maxBolus"
                 android:dialogMessage="COB maxBolus for BGL rises within the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing AAPS maxBolus limit and -1 will only disable SMB and use TBR only."
@@ -420,6 +400,40 @@
 
         </PreferenceCategory>
 
+        <PreferenceCategory
+            android:title="Eating Now: UAM+"
+            android:summary="Settings related to UAM+"
+            app:initialExpandedChildrenCount="0">
+
+            <Preference android:summary="UAM+ is similar to the Boost plugin. UAM+ PreBolus can boost the BG to trigger an initial bolus for UAM. UAM+ can also be used outside the ENW to provide larger UAM boluses."></Preference>
+
+            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:inputType="numberDecimal"
+                android:title="UAM+ PreBolus Boost"
+                android:key="@string/key_eatingnow_uambgboost"
+                android:dialogMessage="Initial UAM PreBolus Boost for start of EN-TT.\neventualBG will be increased from current BG or eventualBG using this amount.\n0 will leave this option disabled."
+                validate:floatmaxNumber="125"
+                validate:floatminNumber="0"
+                validate:testType="floatNumericRange" />
+
+            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:inputType="numberDecimal"
+                android:key="@string/key_eatingnow_uambgboost_maxbolus"
+                android:title="UAM+ PreBolus maxBolus"
+                android:dialogMessage="UAM+ PreBolus maxBolus for initial UAM BG rise within the EN-TT Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing EN UAM maxBolus limit."
+                validate:floatmaxNumber="200"
+                validate:floatminNumber="0"
+                validate:testType="floatNumericRange"/>
+
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="key_use_uamplus_noenw"
+                android:title="Enable UAM+ outside ENW"
+                android:summary="Allow UAM+ to provide an EN UAM maxBolus when not within ENW.\nSimilar to Boost plugin this will activate with sufficient delta and acceleration." />
+
+        </PreferenceCategory>
 <!--        <PreferenceCategory-->
 <!--            android:title="Outside EN Window"-->
 <!--            android:summary="Settings for outside of the EN Window."-->
