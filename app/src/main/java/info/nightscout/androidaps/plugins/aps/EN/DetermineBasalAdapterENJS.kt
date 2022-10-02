@@ -103,6 +103,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
             //generate functions "determine_basal" and "setTempBasal"
             val enVariant = sp.getString(R.string.key_en_variant, ENDefaults.variant)
+            this.profile.put("variant", enVariant);
             if (enVariant == ENDefaults.variant)
                 rhino.evaluateString(scope, readFile("EN/determine-basal.js"), "JavaScript", 0, null)
             else
