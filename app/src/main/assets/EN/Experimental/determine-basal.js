@@ -1169,7 +1169,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var insulinReq_sens = sens_normalTarget;
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial insulinReq to 50% peak minutes of delta, max 90, only run on loop iteration
-    var UAMPreBolus = (ENTTActive && lastBolusAge >= ttTime && minAgo < 1 && !COB);
+    var UAMPreBolus = (ENTTActive && ttTime < lastBolusAge && minAgo < 1 && !COB);
+    //var UAMPreBolus = (ENTTActive && lastBolusAge >= ttTime && minAgo < 1 && !COB);
     var insulinReq_bg_boost = (UAMPreBolus ? profile.UAMbgBoost : 0);
 
     // categorize the eventualBG prediction type for more accurate weighting
