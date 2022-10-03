@@ -535,7 +535,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             SR_TDD = Math.max(SR_TDD, profile.autosens_min);
             sensitivityRatio = (profile.temptargetSet && !ENTTActive || profile.percent != 100 ?  1 : SR_TDD);
             // adjust basal
-            basal = profile.current_basal * SR_TDD;
+            basal = profile.current_basal * sensitivityRatio;
             // adjust sens_normalTarget
             var SR_TDD_wt = 1.0;
             var SR_TDD_ISF = (SR_TDD > 1 ? SR_TDD * SR_TDD_wt : SR_TDD / SR_TDD_wt);
