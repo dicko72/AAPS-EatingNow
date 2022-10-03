@@ -430,7 +430,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // get the starting COB from prefs
         var UAM_COB = (firstMealWindow ? profile.UAM_COB_Bkfst : profile.UAM_COB);
         // current IOB would cover how many carbs
-        var COB_IOB = iob_data.iob * carb_ratio;
+        var COB_IOB = Math.max(iob_data.iob, 0) * carb_ratio;
         // remove the COB already covered by IOB restrict to 0
         UAM_COB = Math.max(UAM_COB - COB_IOB, 0);
         // bring the remaining COB into the loop
