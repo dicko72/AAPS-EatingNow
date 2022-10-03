@@ -538,9 +538,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             basal = profile.current_basal * sensitivityRatio;
             // adjust sens_normalTarget
             var SR_TDD_wt = 1.0;
-            var SR_TDD_ISF = (SR_TDD > 1 ? SR_TDD * SR_TDD_wt : SR_TDD / SR_TDD_wt);
+            var SR_TDD_ISF = (sensitivityRatio > 1 ? sensitivityRatio * SR_TDD_wt : sensitivityRatio / SR_TDD_wt);
             // when resistant and below target, or sensitive and above target dont adjust ISF
-            if (SR_TDD > 1 & bg < target_bg || SR_TDD < 1 & bg > target_bg) SR_TDD_ISF = 1;
+            if (sensitivityRatio > 1 & bg < target_bg || sensitivityRatio < 1 & bg > target_bg) SR_TDD_ISF = 1;
             // dont allow resistance to be sensitive or sensitivity to resistant
             SR_TDD_ISF = Math.max(SR_TDD_ISF,1);
             // adjust ISF using SR_TDD_ISF
