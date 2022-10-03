@@ -427,7 +427,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // UAM+ uses COB defined from prefs as prebolus within 30 minutes
     var UAMPreBolus = (ENactive && ENTTActive && !meal_data.mealCOB && ENWindowRunTime < 30);
     if (UAMPreBolus) {
-        enlog += "\n* UAM COB PreBolus";
+        enlog += "\n* UAM COB PreBolus\n";
         // get the starting COB from prefs
         var UAM_COB = (firstMealWindow ? profile.UAM_COB_Bkfst : profile.UAM_COB);
         enlog += "UAM_COB from preferences: " + UAM_COB + "\n";
@@ -439,6 +439,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         enlog += "UAM_COB now: " + UAM_COB + "\n";
         // bring the remaining COB into the loop
         meal_data.mealCOB = round(UAM_COB,1);
+        enlog += "meal_data.mealCOB now: " + meal_data.mealCOB + "\n";
     }
 
     var COB = meal_data.mealCOB;
