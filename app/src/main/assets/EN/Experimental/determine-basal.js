@@ -379,10 +379,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var tt1Time = (typeof meal_data.firstENTempTargetTime !== 'undefined' ? ((new Date(systemTime).getTime() - meal_data.firstENTempTargetTime) / 60000) : 9999); // first EN TT after EN start
     var ttTime = (typeof meal_data.activeENTempTargetStartTime !== 'undefined' ? ((new Date(systemTime).getTime() - meal_data.activeENTempTargetStartTime) / 60000) : 9999); // active EN TT
 
-    // EXPERIMENT FOR UAM+
-    //meal_data.mealCOB = (ENTTActive && lastBolusAge >= ttTime && minAgo < 1 && !meal_data.mealCOB ? 50 : meal_data.mealCOB);
-    var COB = meal_data.mealCOB;
-
     // ENWTriggerOK if there is enough IOB to trigger the EN window or we had a recent SMB
     //var ENWIOBThreshU = profile.current_basal * profile.ENWIOBTrigger/60, ENWTriggerOK = (ENactive && ENWIOBThreshU > 0 && iob_data.iob > ENWIOBThreshU);
     var ENWindowOK = false, ENWindowRunTime = 0, ENWIOBThreshU = profile.ENWIOBTrigger, ENWTriggerOK = (ENactive && ENWIOBThreshU > 0 && (iob_data.iob > ENWIOBThreshU));
@@ -427,6 +423,21 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "ENTime: " + ENTime + ", firstMealWindow: " + firstMealWindow + ", firstMealScaling: " + firstMealScaling + ", b1Time:" + b1Time + ", c1Time:" + c1Time + ", tt1Time:" + tt1Time + ", bTime:" + bTime + ", cTime:" + cTime + ", ttTime:" + ttTime + ", ENWindowOK:" + ENWindowOK + "\n";
     enlog += "ENWindowRunTime: " + ENWindowRunTime + ", ENWindowDuration: " + ENWindowDuration + "\n";
     enlog += "ENTTActive: " + ENTTActive + "\n";
+
+    // UAM+ uses COB defined from prefs as prebolus within 30 minutes
+    var UAMPreBolus = (ENTTActive && ttTime < lastBolusAge && !meal_data.mealCOB && minAgo < 1 && ENWindowRunTime < 30);
+    if (UAMPreBolus) {
+        // get the starting COB from prefs
+        var UAM_COB = (firstMealWindow ? profile.UAM_COB_Bkfst : profile.UAM_COB);
+        // current IOB would cover how many carbs
+        var COB_IOB = iob_data.iob * carb_ratio;
+        // remove the COB already covered by IOB restrict to 0
+        UAM_COB = Math.max(UAM_COB - COB_IOB, 0);
+        // bring the remaining COB into the loop
+        meal_data.mealCOB = round(UAM_COB,1);
+    }
+
+    var COB = meal_data.mealCOB;
 
     // If GhostCOB is enabled we will use COB when ENWindowOK but outside this window UAM will be used
     if (ignoreCOB && ENWindowOK && meal_data.mealCOB > 0) ignoreCOB = false;
@@ -1167,7 +1178,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var insulinReq_sens = sens_normalTarget;
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
-    var UAMPreBolus = (ENTTActive && ttTime < lastBolusAge && !COB && minAgo < 1);
+    UAMPreBolus = (ENTTActive && ttTime < lastBolusAge && !COB && minAgo < 1);
     var insulinReq_bg_boost = (UAMPreBolus ? profile.UAMbgBoost : 0);
 
     // categorize the eventualBG prediction type for more accurate weighting

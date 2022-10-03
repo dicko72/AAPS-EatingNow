@@ -538,6 +538,26 @@
                 android:title="Use 3PM Basal ISF Variance"
                 android:summary="Use 3PM Basal as the basis for ISF changes. The basal at 3PM is taken as the basis for baseline ISF.\nBasal variation from this point is used to scale the ISF, stronger basal will make ISF weaker.\nOnly use when the profile uses a single ISF for 24 hours and the basal profile is fully populated." />
 
+            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:inputType="number"
+                android:title="UAM+ COB Breakfast PreBolus"
+                android:key="key_UAM_COB_Bkfst"
+                android:dialogMessage="Initial UAM PreBolus for start of EN-TT with breakfast.\nCOB will be used to increase the insulinReq.\n0 will leave this option disabled."
+                validate:maxNumber="100"
+                validate:minNumber="0"
+                validate:testType="numericRange" />
+
+            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:inputType="number"
+                android:title="UAM+ COB PreBolus"
+                android:key="key_UAM_COB"
+                android:dialogMessage="Initial UAM PreBolus for start of EN-TT with other meals.\nCOB will be used to increase the insulinReq.\n0 will leave this option disabled."
+                validate:maxNumber="100"
+                validate:minNumber="0"
+                validate:testType="numericRange" />
+
         </PreferenceCategory>
 
 </androidx.preference.PreferenceScreen>

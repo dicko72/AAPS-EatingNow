@@ -269,6 +269,9 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("UAMbgBoost", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_uambgboost, 0.0),profileFunction.getUnits()))
         this.profile.put("EN_UAMbgBoost_maxBolus", sp.getDouble(R.string.key_eatingnow_uambgboost_maxbolus, 0.0))
         this.profile.put("EN_UAMPlus_NoENW", sp.getBoolean(R.string.key_use_uamplus_noenw, false))
+        this.profile.put("UAM_COB_Bkfst", sp.getInt(R.string.key_UAM_COB_Bkfst, 0))
+        this.profile.put("UAM_COB", sp.getInt(R.string.key_UAM_COB, 0))
+
 
         // Outside of the EN Window ********************************************************************************
         // this.profile.put("COB_maxBolus", sp.getDouble(R.string.key_eatingnow_isfboost_maxbolus, 0.0))
