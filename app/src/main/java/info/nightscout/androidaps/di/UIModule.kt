@@ -12,7 +12,7 @@ import info.nightscout.androidaps.widget.Widget
 abstract class UIModule {
 
     @ContributesAndroidInjector abstract fun skinListPreferenceInjector(): SkinListPreference
-    @ContributesAndroidInjector abstract fun boostVariantPreferenceInjector(): ENVariantPreference
+    @ContributesAndroidInjector abstract fun enVariantPreferenceInjector(): ENVariantPreference
     @ContributesAndroidInjector abstract fun aapsWidgetInjector(): Widget
     @ContributesAndroidInjector abstract fun contributesWidgetConfigureActivity(): WidgetConfigureActivity
 
