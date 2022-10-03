@@ -536,14 +536,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             sensitivityRatio = (profile.temptargetSet && !ENTTActive || profile.percent != 100 ?  1 : SR_TDD);
             // adjust basal
             basal = profile.current_basal * sensitivityRatio;
-            // adjust sens_normalTarget
-            sens_normalTarget = sens_normalTarget / sensitivityRatio;
+            // adjust sens_normalTarget below with TIR_sens
+            // sens_normalTarget = sens_normalTarget / sensitivityRatio;
         } else {
             // apply autosens limits
             sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
             sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
-            // adjust sens_normalTarget
-            sens_normalTarget = sens_normalTarget / sensitivityRatio;
+            // adjust sens_normalTarget below with TIR_sens
+            // sens_normalTarget = sens_normalTarget / sensitivityRatio;
             // adjust basal
             basal = profile.current_basal * sensitivityRatio;
         }
