@@ -456,7 +456,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         console.log("TDD = " + TDD + " using rolling 8h Total extrapolation + TDD7 (60/40); ");
 
         // SR_TDD ********************************
-        var SR_TDD = (profile.temptargetSet && !ENTTActive && profile.percent != 100 ?  1 : meal_data.TDDLastCannula / tdd7);
+        var SR_TDD = meal_data.TDDLastCannula / tdd7;
 
         console.error("                                 ");
         //console.error("7-day average TDD is: " +tdd7+ "; ");
@@ -533,7 +533,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // apply autosens limits
             SR_TDD = Math.min(SR_TDD, profile.autosens_max);
             SR_TDD = Math.max(SR_TDD, profile.autosens_min);
-            sensitivityRatio = SR_TDD;
+            sensitivityRatio = (profile.temptargetSet && !ENTTActive || profile.percent != 100 ?  1 : SR_TDD);
             // adjust basal
             basal = profile.current_basal * SR_TDD;
             // adjust sens_normalTarget
