@@ -427,12 +427,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // UAM+ uses COB defined from prefs as prebolus within 30 minutes
     var UAMPreBolus = (ENTTActive && ttTime < lastBolusAge && !meal_data.mealCOB && minAgo < 1 && ENWindowRunTime < 30);
     if (UAMPreBolus) {
+        enlog += "* UAM COB PreBolus";
         // get the starting COB from prefs
         var UAM_COB = (firstMealWindow ? profile.UAM_COB_Bkfst : profile.UAM_COB);
+        enlog += "UAM_COB from preferences: " + UAM_COB;
         // current IOB would cover how many carbs
         var COB_IOB = Math.max(iob_data.iob, 0) * carb_ratio;
+        enlog += "COB_IOB to remove: " + COB_IOB;
         // remove the COB already covered by IOB restrict to 0
         UAM_COB = Math.max(UAM_COB - COB_IOB, 0);
+        enlog += "UAM_COB now: " + UAM_COB;
         // bring the remaining COB into the loop
         meal_data.mealCOB = round(UAM_COB,1);
     }
