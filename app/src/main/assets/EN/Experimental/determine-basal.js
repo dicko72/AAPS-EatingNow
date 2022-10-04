@@ -1192,7 +1192,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (UAMPreBolus) sens_predType = "UAM+"; // force UAM+ when appropriate
 
     // UAM+ predtype when sufficient delta and no COB
-    if (profile.EN_UAMPlus_NoENW && ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && !COB) {
+    if ((profile.EN_UAMPlus_NoENW || ENWindowOK) && ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && !COB) {
         if (DeltaPctS > 1 && DeltaPctL > 1.5) sens_predType = "UAM+"; // with acceleration
         if (eventualBG > ISFbgMax) sens_predType = "UAM+";    // when predicted high
     }
