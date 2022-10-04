@@ -1182,6 +1182,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
     if (ENactive || ENSleepMode || TIR_sens > 1) {
 
+        // when a TT starts some treatments will be processed before it starts causing issues later
+        if (ENWindowRunTime == 0) sens_predType == "TBR";
+
         // UAM predictions, no COB or GhostCOB
         if (sens_predType == "UAM+") {
             // increase minPredBG only when a prebolus is OK
