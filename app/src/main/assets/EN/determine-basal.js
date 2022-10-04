@@ -1183,7 +1183,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (ENactive || ENSleepMode || TIR_sens > 1) {
 
         // when a TT starts some treatments will be processed before it starts causing issues later
-        if (ENWindowRunTime == 0) sens_predType == "TBR";
+        if (ENWindowRunTime < 1) sens_predType == "TBR";
 
         // UAM predictions, no COB or GhostCOB
         if (sens_predType == "UAM+") {
