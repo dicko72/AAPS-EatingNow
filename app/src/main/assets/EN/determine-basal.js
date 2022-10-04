@@ -1243,8 +1243,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // override and use current bg for insulinReq_bg with TBR and BG predType
         insulinReq_bg = (sens_predType == "BG" ? bg : insulinReq_bg);
-        insulinReq_bg = (sens_predType == "TBR" || sens_predType == "TBR+" ? Math.max(bg,insulinReq_bg,eventualBG) : insulinReq_bg);
-        eBGweight = (sens_predType == "TBR" || sens_predType == "TBR+" || sens_predType == "BG"  ? 1 : eBGweight);
+        insulinReq_bg = (sens_predType == "TBR" ? Math.max(bg,insulinReq_bg,eventualBG) : insulinReq_bg);
+        eBGweight = (sens_predType == "TBR" || sens_predType == "BG"  ? 1 : eBGweight);
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
         insulinReq_sens = dynISF(insulinReq_bg,normalTarget,sens_normalTarget,ins_val); // dynISF
@@ -1542,8 +1542,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq = (insulinReq_bg - target_bg) / insulinReq_sens;
 
         // EXPERIMENT DEBUG ONLY - insulinReqTBR is the delta of full insulinReq up to eventualBG
-        var insulinReqTBR = Math.max((ENactive ? ((eventualBG - target_bg) / insulinReq_sens) - insulinReq : 0),0);
-        insulinReqTBR = (sens_predType == "TBR" || sens_predType == "TBR+" ? Math.max((((eventualBG - target_bg) / insulinReq_sens) - insulinReq),0) : 0);
+        var insulinReqTBR = (sens_predType == "UAM+" ? Math.max((((eventualBG - target_bg) / insulinReq_sens) - insulinReq),0) : 0);
+        insulinReqTBR = (sens_predType == "TBR" ? Math.max((((eventualBG - target_bg) / insulinReq_sens) - insulinReq),0) : 0);
         //insulinReqTBR = 0;
 
         // if that would put us over max_iob, then reduce accordingly
