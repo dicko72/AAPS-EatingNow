@@ -429,18 +429,17 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (UAMPreBolus) {
         enlog += "\n* UAM COB PreBolus\n";
         // get the starting COB from prefs
-        var UAM_COB = (firstMealWindow ? profile.UAM_COB_Bkfst : profile.UAM_COB);
-        enlog += "UAM_COB from preferences: " + UAM_COB + "\n";
+        var UAM_carbs = (firstMealWindow ? profile.UAM_COB_Bkfst : profile.UAM_COB);
+        enlog += "UAM_carbs from preferences: " + UAM_carbs + "\n";
         // current IOB would cover how many carbs
         var COB_IOB = Math.max(iob_data.iob, 0) * carb_ratio;
         enlog += "COB_IOB to remove: " + COB_IOB + "\n";
         // remove the COB already covered by IOB restrict to 0
-        UAM_COB = Math.max(UAM_COB - COB_IOB, 0);
-        enlog += "UAM_COB now: " + UAM_COB + "\n";
+        var UAM_mealCOB = Math.max(UAM_carbs - COB_IOB, 0);
+        enlog += "UAM_mealCOB now: " + UAM_mealCOB + "\n";
         // bring the remaining COB into the loop
-        meal_data.mealCOB = round(UAM_COB,1);
-        meal_data.carbs = round(UAM_COB,1);
-        enlog += "meal_data.mealCOB now: " + meal_data.mealCOB + "\n";
+        meal_data.carbs = round(UAM_carbs,1);
+        meal_data.mealCOB = round(UAM_mealCOB,1);
     }
 
     var COB = meal_data.mealCOB;
