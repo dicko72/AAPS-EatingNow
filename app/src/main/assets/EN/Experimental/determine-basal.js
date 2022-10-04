@@ -439,13 +439,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         enlog += "UAM_COB now: " + UAM_COB + "\n";
         // bring the remaining COB into the loop
         meal_data.mealCOB = round(UAM_COB,1);
+        meal_data.carbs = round(UAM_COB,1);
         enlog += "meal_data.mealCOB now: " + meal_data.mealCOB + "\n";
     }
 
     var COB = meal_data.mealCOB;
 
     // If GhostCOB is enabled we will use COB when ENWindowOK but outside this window UAM will be used
-    if (ignoreCOB && ENWindowOK && meal_data.mealCOB > 0) ignoreCOB = false;
+    if (ignoreCOB && ENWindowOK && COB > 0) ignoreCOB = false;
 
     // ins_val used as the divisor for ISF scaling
     var insulinType = profile.insulinType, ins_val = 90, ins_peak = 75;
