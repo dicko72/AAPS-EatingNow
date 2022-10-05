@@ -433,7 +433,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         var UAM_carbs = (firstMealWindow ? profile.UAM_COB_Bkfst : profile.UAM_COB);
         enlog += "UAM_carbs from preferences: " + UAM_carbs + "\n";
         // current IOB would cover how many carbs, first 15m COB stay constant
-        var COB_IOB = (ENWindowRunTime < 30 ? 0 : Math.max(iob_data.iob, 0) * carb_ratio);
+        var COB_IOB = (ENWindowRunTime < 15 ? 0 : Math.max(iob_data.iob, 0) * carb_ratio);
         enlog += "COB_IOB to remove: " + COB_IOB + "\n";
         // remove the COB already covered by IOB restrict to 0
         var UAM_mealCOB = Math.max(UAM_carbs - COB_IOB, 0);
