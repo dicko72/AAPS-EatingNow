@@ -441,6 +441,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // bring the remaining COB into the loop
         meal_data.carbs = round(UAM_carbs,1);
         meal_data.mealCOB = round(UAM_mealCOB,1);
+        UAMCOBPreBolus = (meal_data.mealCOB !=0);
     }
 
     var COB = meal_data.mealCOB;
