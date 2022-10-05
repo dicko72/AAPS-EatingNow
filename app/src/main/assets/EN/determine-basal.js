@@ -1592,24 +1592,22 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             var ENMaxSMB = maxBolus; // inherit AAPS maxBolus
             var maxBolusOrig = maxBolus;
             var ENinsulinReqPct = 0.75; // EN insulinReqPct is 75%
+            var ENWinsulinReqPct = 0.85; // ENW insulinReqPct is 85%
 
             // START === if we are eating now and BGL prediction is higher than normal target ===
             if (ENactive && eventualBG > target_bg) {
 
-                //var endebug = (ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && DeltaPctS > 1.2 && DeltaPctL > 2  && eBGweight > eBGweight_orig);
+                // ============== INSULINREQPCT RESTRICTIONS ==============
 
-                // EN insulinReqPct is now used, for ENW use 100% excludes IOB trigger ensuring close proximity to treatment
-                // insulinReqPct = (ENWindowOK ? 1 : ENinsulinReqPct);
-
-                // SAFETY: Restrict SMB when not ENW to original insulinReq
-                insulinReqPct = (ENWindowOK ? ENinsulinReqPct : Math.max(insulinReqOrig/insulinReq,0) );
+                // SAFETY: Restrict SMB when not ENW to lower insulinReq
+                insulinReqPct = (ENWindowOK ? ENWinsulinReqPct : Math.max(insulinReqOrig/insulinReq,0) );
                 insulinReqPct = Math.min(insulinReqPct,ENinsulinReqPct);
 
-                // UAM+ allows extra insulinReqPct
-                insulinReqPct = (sens_predType == "UAM+" ? 0.85 : insulinReqPct);
+                // UAM+ gets higher % when outside ENW if allowed
+                insulinReqPct = (!ENWindowOK && EN_UAMPlus_NoENW && sens_predType == "UAM+" ? ENinsulinReqPct : insulinReqPct);
 
-                // UAM+ PreBolus gets 100% insulinReqPct, overrides outside ENW
-                insulinReqPct = (sens_predType == "UAM+" && UAMBGPreBolus ? 1 : insulinReqPct);
+                // UAM+ PreBolus gets 100% insulinReqPct
+                insulinReqPct = (UAMBGPreBolus || UAMCOBPreBolus ? 1 : insulinReqPct);
 
                 // set EN SMB limit for COB or UAM
                 ENMaxSMB = (sens_predType == "COB" ? profile.EN_COB_maxBolus : profile.EN_UAM_maxBolus);
@@ -1621,7 +1619,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                         //ENReason += ", Recent COB " + (profile.temptargetSet && target_bg == normalTarget ? " + TT" : "") + " ENW-SMB";
                     } else {
                         ENMaxSMB = (firstMealWindow ? profile.EN_UAM_maxBolus_breakfast : profile.EN_UAM_maxBolus);
-                        if ((sens_predType == "UAM+" && UAMBGPreBolus) || UAMBGPreBolus) ENMaxSMB = (!profile.EN_UAMbgBoost_maxBolus ? ENMaxSMB : profile.EN_UAMbgBoost_maxBolus);
+                        if (UAMBGPreBolus || UAMCOBPreBolus) ENMaxSMB = (!profile.EN_UAMbgBoost_maxBolus ? ENMaxSMB : profile.EN_UAMbgBoost_maxBolus);
                     }
                 }
 
