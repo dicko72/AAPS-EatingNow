@@ -1600,9 +1600,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
                 // ============== INSULINREQPCT RESTRICTIONS ==============
 
-                // SAFETY: Restrict SMB when not ENW to lower insulinReq
-                insulinReqPct = (ENWindowOK ? ENWinsulinReqPct : Math.max(insulinReqOrig/insulinReq,0) );
-                insulinReqPct = Math.min(insulinReqPct,ENinsulinReqPct);
+                // ENW gets 85%
+                if (ENWindowOK) insulinReqPct = ENWinsulinReqPct;
+                // SAFETY: Restrict insulinReq when not ENW to lower dynamic insulinReq
+                if (!ENWindowOK) {
+                    insulinReqPct = insulinReqOrig/insulinReq;
+                    insulinReqPct = Math.max(insulinReqPct,0); // minimum 0% when original insulinReq is much lower
+                    insulinReqPct = Math.min(insulinReqPct,1); // maximum 100% when original insulinReq is much higher
+                }
 
                 // UAM+ gets higher % when outside ENW if allowed
                 insulinReqPct = (!ENWindowOK && profile.EN_UAMPlus_NoENW && sens_predType == "UAM+" ? ENinsulinReqPct : insulinReqPct);
