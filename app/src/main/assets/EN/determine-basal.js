@@ -1604,7 +1604,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 insulinReqPct = Math.min(insulinReqPct,ENinsulinReqPct);
 
                 // UAM+ gets higher % when outside ENW if allowed
-                insulinReqPct = (!ENWindowOK && EN_UAMPlus_NoENW && sens_predType == "UAM+" ? ENinsulinReqPct : insulinReqPct);
+                insulinReqPct = (!ENWindowOK && profile.EN_UAMPlus_NoENW && sens_predType == "UAM+" ? ENinsulinReqPct : insulinReqPct);
 
                 // UAM+ PreBolus gets 100% insulinReqPct
                 insulinReqPct = (UAMBGPreBolus || UAMCOBPreBolus ? 1 : insulinReqPct);
