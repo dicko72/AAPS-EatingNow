@@ -1190,7 +1190,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // categorize the eventualBG prediction type for more accurate weighting
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
-    if (UAMBGPreBolus) sens_predType = "UAM+"; // force UAM+ when appropriate
+    if (UAMBGPreBolus || UAMCOBPreBolus) sens_predType = "UAM+"; // force UAM+ when appropriate
 
     // UAM+ predtype when sufficient delta and no COB
     if ((profile.EN_UAMPlus_NoENW || ENWindowOK) && ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && !COB) {
@@ -1207,7 +1207,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // UAM predictions, no COB or GhostCOB
         if (sens_predType == "UAM+") {
             // increase minPredBG only when a prebolus is OK
-            minPredBG = (UAMBGPreBolus ? Math.max(bg,eventualBG) + insulinReq_bg_boost : minPredBG);
+            minPredBG = (UAMBGPreBolus || UAMCOBPreBolus ? Math.max(bg,eventualBG) + insulinReq_bg_boost : minPredBG);
             // use the largest starting bg for eBG and trust it
             eventualBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
             eBGweight = 1;
