@@ -1604,7 +1604,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (ENWindowOK) insulinReqPct = ENWinsulinReqPct;
                 // SAFETY: Restrict insulinReq when not ENW to lower dynamic insulinReq
                 if (!ENWindowOK) {
-                    insulinReqPct = insulinReqOrig/insulinReq;
+                    insulinReqPct = Math.max(insulinReqOrig/insulinReq,maxBolusOrig/insulinReq); // minimum SMB is maxBolusOrig
                     insulinReqPct = Math.max(insulinReqPct,0); // minimum 0% when original insulinReq is much lower
                     insulinReqPct = Math.min(insulinReqPct,1); // maximum 100% when original insulinReq is much higher
                 }
