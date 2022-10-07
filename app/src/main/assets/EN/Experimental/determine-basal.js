@@ -426,7 +426,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // UAM+ uses COB defined from prefs as prebolus within 30 minutes
     //var UAMPreBolus = (ENactive && ENTTActive && !meal_data.mealCOB && ENWindowRunTime < 30);
-    var UAMCOBPreBolus = (ENactive && ENTTActive && !meal_data.mealCOB);
+    var UAMCOBPreBolus = (ENactive && ENWindowOK && !meal_data.mealCOB);
     if (UAMCOBPreBolus) {
         enlog += "\n* UAM COB PreBolus\n";
         // get the starting COB from prefs
@@ -1190,7 +1190,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var insulinReq_sens = sens_normalTarget;
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
-    var UAMBGPreBolus = (!UAMCOBPreBolus && ENTTActive && ttTime < lastBolusAge && !COB && minAgo < 1);
+    var UAMBGPreBolus = (!UAMCOBPreBolus && ENWindowOK && ENWindowRunTime < lastBolusAge && !COB && minAgo < 1);
     var insulinReq_bg_boost = (UAMBGPreBolus ? profile.UAMbgBoost : 0);
 
     // categorize the eventualBG prediction type for more accurate weighting
