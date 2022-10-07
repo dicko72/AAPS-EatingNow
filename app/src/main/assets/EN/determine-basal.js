@@ -548,12 +548,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             sens_normalTarget = sens_normalTarget;
             sensitivityRatio = 1;
         } else if (profile.enableSRTDD && SR_TDD !=1) {
-            // apply autosens limits
-            SR_TDD = Math.min(SR_TDD, profile.autosens_max);
-            SR_TDD = Math.max(SR_TDD, profile.autosens_min);
+            // dont apply autosens limits to show SR_TDD full potential
+            //SR_TDD = Math.min(SR_TDD, profile.autosens_max);
+            //SR_TDD = Math.max(SR_TDD, profile.autosens_min);
             sensitivityRatio = (profile.temptargetSet && !ENTTActive || profile.percent != 100 ?  1 : SR_TDD);
-            // adjust basal
-            basal = profile.current_basal * sensitivityRatio;
+            // adjust basal later
+            // basal = profile.current_basal * sensitivityRatio;
             // adjust sens_normalTarget below with TIR_sens
             // sens_normalTarget = sens_normalTarget / sensitivityRatio;
         } else {
@@ -562,19 +562,24 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
             // adjust sens_normalTarget below with TIR_sens
             // sens_normalTarget = sens_normalTarget / sensitivityRatio;
-            // adjust basal
-            basal = profile.current_basal * sensitivityRatio;
+            // adjust basal later
+            //basal = profile.current_basal * sensitivityRatio;
         }
 
         // apply TIRS to ISF, TIRS will be 1 if not enabled, limit to autosens_max
-        TIR_sens = Math.min(TIR_sens, profile.autosens_max);
-
+        //TIR_sens = Math.min(TIR_sens, profile.autosens_max);
         sensitivityRatio = sensitivityRatio * TIR_sens;
+
         // apply final autosens limits
         sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
         sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
         sensitivityRatio = round(sensitivityRatio, 2);
+
+        // adjust ISF
         sens_normalTarget = sens_normalTarget / sensitivityRatio;
+
+        // adjust basal
+        basal = profile.current_basal * sensitivityRatio;
 
         basal = round_basal(basal, profile);
         if (basal !== profile_current_basal) {
