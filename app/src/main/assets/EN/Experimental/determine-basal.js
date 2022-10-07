@@ -420,9 +420,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var carb_ratio = (firstMealScaling ? round(profile.carb_ratio_midnight / (profile.BreakfastPct / 100), 1) : profile.carb_ratio);
     sens = (firstMealScaling ? round(profile.sens_midnight / (profile.BreakfastPct / 100), 1) : sens);
 
-    enlog += "ENTime: " + ENTime + ", firstMealWindow: " + firstMealWindow + ", firstMealScaling: " + firstMealScaling + ", b1Time:" + b1Time + ", c1Time:" + c1Time + ", tt1Time:" + tt1Time + ", bTime:" + bTime + ", cTime:" + cTime + ", ttTime:" + ttTime + ", ENWindowOK:" + ENWindowOK + "\n";
-    enlog += "ENWindowRunTime: " + ENWindowRunTime + ", ENWindowDuration: " + ENWindowDuration + "\n";
-    enlog += "ENTTActive: " + ENTTActive + "\n";
+    enlog += "ENTime: " + ENTime + "\n";
+    enlog += "------ ENWindow ------" + "\n";
+    enlog += "ENWindowOK:" + ENWindowOK + ", ENWindowRunTime:" + ENWindowRunTime + ", ENWindowDuration:" + ENWindowDuration + "\n";
+    enlog += "ENWIOBThreshU:" + ENWIOBThreshU + ", IOB:" + iob_data.iob + "\n";
+    enlog += "ENTTActive:" + ENTTActive + ", tt1Time:" + tt1Time ", ttTime:" + ttTime + "\n";
+    enlog += "b1Time:" + b1Time + ", c1Time:" + c1Time + ", bTime:" + bTime + ", cTime:" + cTime + "\n";
+    enlog += "firstMealWindow:" + firstMealWindow + ", firstMealScaling:" + firstMealScaling + "\n";
+    enlog += "-----------------------" + "\n";
 
     // UAM+ uses COB defined from prefs as prebolus within 30 minutes
     //var UAMPreBolus = (ENactive && ENTTActive && !meal_data.mealCOB && ENWindowRunTime < 30);
