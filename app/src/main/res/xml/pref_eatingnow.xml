@@ -10,7 +10,7 @@
         <info.nightscout.androidaps.plugins.aps.EN.ENVariantPreference
             android:title="@string/en_variant_title"
             android:key="@string/key_en_variant"
-            android:defaultValue="default"
+            android:defaultValue="stable"
             android:selectable="true"
             />
 
