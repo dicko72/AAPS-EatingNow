@@ -1255,13 +1255,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // sens_predType = (bg > ISFbgMax && delta >= 9 && eventualBG > bg? "BG" : sens_predType);
         }
 
+        eBGweight = (sens_predType == "TBR" || sens_predType == "BG"  ? 1 : eBGweight);
+
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
         insulinReq_bg = (Math.max(minPredBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight);
 
         // override and use current bg for insulinReq_bg with TBR and BG predType
         insulinReq_bg = (sens_predType == "BG" ? bg : insulinReq_bg);
         //insulinReq_bg = (sens_predType == "TBR" ? Math.max(bg,insulinReq_bg,eventualBG) : insulinReq_bg);
-        eBGweight = (sens_predType == "TBR" || sens_predType == "BG"  ? 1 : eBGweight);
 
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
