@@ -1231,13 +1231,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // initial delta accelerating UAM+ when in range
             eBGweight += (DeltaPctS > 1.0 && bg < ISFbgMax && eventualBG > threshold && ENWindowOK ? 0.25 : 0);
             // positive or negative delta with acceleration and lower eBG uses TBR - generally for stubborn high bg
-            sens_predType = (DeltaPctS > 1.0 && eventualBG < bg && TIR_sens > 1 ? "BG" : sens_predType);
+            sens_predType = (DeltaPctS > 1.0 && eventualBG < bg && TIR_sens > 1 ? "TBR" : sens_predType);
+            // For TBR predtype when stuck high set a higher eventualBG
+            eventualBG = (sens_predType == "TBR" ? Math.max(bg,eventualBG) : eventualBG);
 
             // SAFETY: when not accelerating use TBR
             // sens_predType = (DeltaPctS <= 1.0 ? "BG" : sens_predType);
             //sens_predType = (DeltaPctS <= 1.0 && eventualBG > bg ? "TBR" : sens_predType);
             // SAFETY: high bg with high delta uses current bg, attempts to reduce overcorrection with fast acting carbs
             sens_predType = (bg > ISFbgMax && delta >= 9 && eventualBG > bg? "BG" : sens_predType);
+            //sens_predType = (bg > ISFbgMax && delta >= 9 && eventualBG > bg? "BG" : sens_predType);
         }
 
         // COB predictions or UAM with COB
@@ -1257,8 +1260,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // override and use current bg for insulinReq_bg with TBR and BG predType
         insulinReq_bg = (sens_predType == "BG" ? bg : insulinReq_bg);
-        insulinReq_bg = (sens_predType == "TBR" ? Math.max(bg,insulinReq_bg,eventualBG) : insulinReq_bg);
+        //insulinReq_bg = (sens_predType == "TBR" ? Math.max(bg,insulinReq_bg,eventualBG) : insulinReq_bg);
         eBGweight = (sens_predType == "TBR" || sens_predType == "BG"  ? 1 : eBGweight);
+
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
         insulinReq_sens = dynISF(insulinReq_bg,normalTarget,sens_normalTarget,ins_val); // dynISF
