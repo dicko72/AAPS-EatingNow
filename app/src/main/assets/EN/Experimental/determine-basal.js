@@ -465,7 +465,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // TDD ********************************
     // define default vars
     var SR_TDD = 1, sens_TDD = sens, TDD = 0;
-    if (profile.use_sens_TDD || profile.enableSRTDD) {
+    //if (profile.use_sens_TDD || profile.enableSRTDD) {
         var tdd7 = meal_data.TDDAvg7d;
         var tdd1 = meal_data.TDDAvg1d;
         var tdd_4 = meal_data.TDDLast4h;
@@ -495,7 +495,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         sens_TDD = sens_TDD / (profile.sens_TDD_scale / 100);
         sens_TDD = (sens_TDD > sens * 3 ? sens : sens_TDD); // fresh install of v3
         enlog += "sens_TDD scaled by " + profile.sens_TDD_scale + "%:" + convert_bg(sens_TDD, profile) + "\n";
-    }
+  //  }
 
     enlog += "* advanced ISF:\n";
     // Limit ISF increase for sens_currentBG at 10mmol / 180mgdl
@@ -1311,11 +1311,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // other EN stuff
     rT.reason += ", eBGw: " + (sens_predType != "NA" ? sens_predType + " " : "") + convert_bg(insulinReq_bg, profile) + " " + round(eBGweight * 100) + "%";
     //rT.reason += (sens_predType !="NA" ? ", eBGw: " + sens_predType + " " +  round(eBGweight*100) + "% ("+convert_bg(insulinReq_bg,profile)+")" : "");
-    if (profile.use_sens_TDD) rT.reason += ", TDD:" + round(TDD, 2) + " " + (profile.sens_TDD_scale != 100 ? profile.sens_TDD_scale + "% " : "") + "(" + convert_bg(sens_TDD, profile) + ")";
+    rT.reason += ", TDD:" + round(TDD, 2) + " " + (profile.sens_TDD_scale != 100 ? profile.sens_TDD_scale + "% " : "") + "(" + convert_bg(sens_TDD, profile) + ")";
     rT.reason += (TIR_sens > 1 ? ", TIRH:" + round(meal_data.TIRW4H) + "/" + round(meal_data.TIRW3H) + "/" + round(meal_data.TIRW2H) + "/" + round(meal_data.TIRW1H) : "");
     //    rT.reason += (TIR_sens <1 ? ", TIRL:" + round(meal_data.TIRW4L) + "/" + round(meal_data.TIRW3L) + "/" + round(meal_data.TIRW2L) +"/"+round(meal_data.TIRW1L) : "");
     rT.reason += ", TIRS: " + round(TIR_sens, 2);
-    if (profile.enableSRTDD) rT.reason += ", SR_TDD: " + round(SR_TDD, 2);
+    rT.reason += ", SR_TDD: " + round(SR_TDD, 2);
     rT.reason += ", SR: " + (typeof autosens_data !== 'undefined' && autosens_data ? round(autosens_data.ratio, 2) + "=" : "") + sensitivityRatio;
     rT.reason += ", LRT: " + round(60 * minAgo);
     rT.reason += "; ";

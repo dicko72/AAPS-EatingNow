@@ -367,7 +367,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
 
         // storing TDD values in prefs, terrible but hopefully effective
-        if (enableSensTDD || enableSRTDD) { // only do TDD if we have to
+        // if (enableSensTDD || enableSRTDD) { // only do TDD if we have to
 
             // check when TDD last updated
             val TDDLastUpdate =  sp.getLong("TDDLastUpdate",0)
@@ -438,7 +438,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             this.mealData.put("TDDLastCannula", TDDLastCannula)
 
             this.mealData.put("TDDLastUpdate", sp.getLong("TDDLastUpdate", 0))
-        }
+        // }
 
         // TIR Windows - 4 hours prior to current time // 4.0 - 10.0
         val resistancePerHr = sp.getDouble(R.string.en_resistance_per_hour, 0.0)
