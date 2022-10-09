@@ -438,7 +438,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             this.mealData.put("TDDLastCannula", TDDLastCannula)
 
             val daysPrior = 3
-            var TDDAvgtoCannula = tddCalculator.calculate(lastCannulaTime - 86400000*daysPrior, lastCannulaTime)?.totalAmount
+            var TDDAvgtoCannula = tddCalculator.calculate(lastCannulaTime - 86400000*daysPrior, lastCannulaTime).totalAmount
             if (TDDAvgtoCannula != null) TDDAvgtoCannula /= daysPrior
             this.mealData.put("TDDAvgtoCannula", TDDAvgtoCannula)
 
