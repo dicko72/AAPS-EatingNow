@@ -480,8 +480,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // SR_TDD ********************************
         var SR_TDD = meal_data.TDDLastCannula / tdd7;
-        var SR_TDD2 = meal_data.TDDLastCannula / meal_data.TDDAvgtoCannula;
-        var endebug += SR_TDD2;
+        var SR_TDD_NEW = meal_data.TDDLastCannula / meal_data.TDDAvgtoCannula;
 
         console.error("                                 ");
         //console.error("7-day average TDD is: " +tdd7+ "; ");
@@ -1318,6 +1317,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     //    rT.reason += (TIR_sens <1 ? ", TIRL:" + round(meal_data.TIRW4L) + "/" + round(meal_data.TIRW3L) + "/" + round(meal_data.TIRW2L) +"/"+round(meal_data.TIRW1L) : "");
     rT.reason += ", TIRS: " + round(TIR_sens, 2);
     rT.reason += ", SR_TDD: " + round(SR_TDD, 2);
+    rT.reason += ", SR_TDD_NEW: " + round(SR_TDD_NEW, 2);
     rT.reason += ", SR: " + (typeof autosens_data !== 'undefined' && autosens_data ? round(autosens_data.ratio, 2) + "=" : "") + sensitivityRatio;
     rT.reason += ", LRT: " + round(60 * minAgo);
     rT.reason += "; ";

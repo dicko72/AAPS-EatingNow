@@ -437,11 +437,18 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             val TDDLastCannula = if (lastCannAgeMins > 1440) tddCalculator.calculate(lastCannulaTime, now).totalAmount / (lastCannAgeMins/1440) else TDDAvg1d
             this.mealData.put("TDDLastCannula", TDDLastCannula)
 
-            val daysPrior = 3
-            var TDDAvgtoCannula = tddCalculator.calculate(lastCannulaTime - 86400000*daysPrior, lastCannulaTime).totalAmount / daysPrior
+            this.mealData.put("TDDAvg7d", sp.getDouble("TDDAvg7d", ((basalRate * 12)*100)/21))
+
+            var TDDAvgtoCannula = sp.getDouble("TDDAvgtoCannula", 0.0)
+            if (lastCannAgeMins <= 5 || TDDAvgtoCannula == 0.0) {
+                val daysPrior = 3
+                var TDDAvgtoCannula = tddCalculator.calculate(lastCannulaTime - 86400000 * daysPrior, lastCannulaTime).totalAmount / daysPrior
+                sp.putDouble("TDDAvgtoCannula", TDDAvgtoCannula)
+            }
             this.mealData.put("TDDAvgtoCannula", TDDAvgtoCannula)
 
             this.mealData.put("TDDLastUpdate", sp.getLong("TDDLastUpdate", 0))
+
         // }
 
         // TIR Windows - 4 hours prior to current time // 4.0 - 10.0
