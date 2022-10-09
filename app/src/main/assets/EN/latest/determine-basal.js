@@ -480,6 +480,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // SR_TDD ********************************
         var SR_TDD = meal_data.TDDLastCannula / tdd7;
+        var SR_TDD2 = meal_data.TDDLastCannula / meal_data.TDDAvgtoCannula;
+        var endebug += SR_TDD2;
 
         console.error("                                 ");
         //console.error("7-day average TDD is: " +tdd7+ "; ");
