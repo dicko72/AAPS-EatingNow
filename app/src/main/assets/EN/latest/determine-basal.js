@@ -547,58 +547,56 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     // adjust profile basal and ISF based on prefs and sensitivityRatio
-    if (sensitivityRatio && profile.use_autosens === true) {
-        if (profile.use_sens_TDD) {
-            // dont adjust sens_normalTarget
-            sens_normalTarget = sens_normalTarget;
-            sensitivityRatio = 1;
-        } else if (profile.enableSRTDD && SR_TDD !=1) {
-            // dont apply autosens limits to show SR_TDD full potential
-            //SR_TDD = Math.min(SR_TDD, profile.autosens_max);
-            //SR_TDD = Math.max(SR_TDD, profile.autosens_min);
-            sensitivityRatio = (profile.temptargetSet && !ENTTActive || profile.percent != 100 ?  1 : SR_TDD);
-            // adjust basal later
-            // basal = profile.current_basal * sensitivityRatio;
-            // adjust sens_normalTarget below with TIR_sens
-            // sens_normalTarget = sens_normalTarget / sensitivityRatio;
-        } else {
-            // apply autosens limits
-            sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
-            sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
-            // adjust sens_normalTarget below with TIR_sens
-            // sens_normalTarget = sens_normalTarget / sensitivityRatio;
-            // adjust basal later
-            //basal = profile.current_basal * sensitivityRatio;
-        }
-
-        // apply TIRS to ISF, TIRS will be 1 if not enabled, limit to autosens_max
-        //TIR_sens = Math.min(TIR_sens, profile.autosens_max);
-        sensitivityRatio = sensitivityRatio * TIR_sens;
-
-        // apply final autosens limits
+    if (profile.use_sens_TDD) {
+        // dont adjust sens_normalTarget
+        sens_normalTarget = sens_normalTarget;
+        sensitivityRatio = 1;
+    } else if (profile.enableSRTDD && SR_TDD !=1) {
+        // dont apply autosens limits to show SR_TDD full potential
+        //SR_TDD = Math.min(SR_TDD, profile.autosens_max);
+        //SR_TDD = Math.max(SR_TDD, profile.autosens_min);
+        sensitivityRatio = (profile.temptargetSet && !ENTTActive || profile.percent != 100 ?  1 : SR_TDD);
+        // adjust basal later
+        // basal = profile.current_basal * sensitivityRatio;
+        // adjust sens_normalTarget below with TIR_sens
+        // sens_normalTarget = sens_normalTarget / sensitivityRatio;
+    } else {
+        // apply autosens limits
         sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
         sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
-        sensitivityRatio = round(sensitivityRatio, 2);
+        // adjust sens_normalTarget below with TIR_sens
+        // sens_normalTarget = sens_normalTarget / sensitivityRatio;
+        // adjust basal later
+        //basal = profile.current_basal * sensitivityRatio;
+    }
 
-        // adjust ISF
-        sens_normalTarget = sens_normalTarget / sensitivityRatio;
+    // apply TIRS to ISF, TIRS will be 1 if not enabled, limit to autosens_max
+    //TIR_sens = Math.min(TIR_sens, profile.autosens_max);
+    sensitivityRatio = sensitivityRatio * TIR_sens;
 
-        // adjust basal
-        basal = profile.current_basal * sensitivityRatio;
+    // apply final autosens limits
+    sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
+    sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
+    sensitivityRatio = round(sensitivityRatio, 2);
 
-        basal = round_basal(basal, profile);
-        if (basal !== profile_current_basal) {
-            enlog += "Adjusting basal from " + profile_current_basal + " to " + basal + "; ";
-        } else {
-            enlog += "Basal unchanged: " + basal + "; ";
-        }
+    // adjust ISF
+    sens_normalTarget = sens_normalTarget / sensitivityRatio;
+
+    // adjust basal
+    basal = profile.current_basal * sensitivityRatio;
+
+    basal = round_basal(basal, profile);
+    if (basal !== profile_current_basal) {
+        enlog += "Adjusting basal from " + profile_current_basal + " to " + basal + "; ";
+    } else {
+        enlog += "Basal unchanged: " + basal + "; ";
     }
 
     // adjust min, max, and target BG for sensitivity, such that 50% increase in ISF raises target from 100 to 120
     if (profile.temptargetSet) {
         //console.log("Temp Target set, not adjusting with autosens; ");
     } else {
-        if (profile.use_autosens === true && (profile.sensitivity_raises_target && sensitivityRatio < 1 || profile.resistance_lowers_target && sensitivityRatio > 1)) {
+        if (profile.sensitivity_raises_target && sensitivityRatio < 1 || profile.resistance_lowers_target && sensitivityRatio > 1) {
             // with a target of 100, default 0.7-1.2 autosens min/max range would allow a 93-117 target range
             min_bg = round((min_bg - 60) / sensitivityRatio) + 60;
             max_bg = round((max_bg - 60) / sensitivityRatio) + 60;
@@ -1314,9 +1312,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += ", TDD:" + round(TDD, 2) + " " + (profile.sens_TDD_scale != 100 ? profile.sens_TDD_scale + "% " : "") + "(" + convert_bg(sens_TDD, profile) + ")";
     rT.reason += (TIR_sens > 1 ? ", TIRH:" + round(meal_data.TIRW4H) + "/" + round(meal_data.TIRW3H) + "/" + round(meal_data.TIRW2H) + "/" + round(meal_data.TIRW1H) : "");
     //    rT.reason += (TIR_sens <1 ? ", TIRL:" + round(meal_data.TIRW4L) + "/" + round(meal_data.TIRW3L) + "/" + round(meal_data.TIRW2L) +"/"+round(meal_data.TIRW1L) : "");
+    if (profile.use_autosens) rT.reason += ", AS: " + round(autosens_data.ratio, 2);
     rT.reason += ", TIRS: " + round(TIR_sens, 2);
     rT.reason += ", SR_TDD: " + round(SR_TDD, 2);
-    rT.reason += ", SR: " + (typeof autosens_data !== 'undefined' && autosens_data ? round(autosens_data.ratio, 2) + "=" : "") + sensitivityRatio;
+    rT.reason += ", SR: " + sensitivityRatio;
     rT.reason += ", LRT: " + round(60 * minAgo);
     rT.reason += "; ";
     rT.reason += (typeof endebug !== 'undefined' ? "** DEBUG:" + endebug + "** ": "");
