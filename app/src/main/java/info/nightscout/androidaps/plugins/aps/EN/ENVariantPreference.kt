@@ -18,8 +18,6 @@ class ENVariantPreference(context: Context, attrs: AttributeSet?)
         (context.applicationContext as HasAndroidInjector).androidInjector().inject(this)
 
         val entries = Vector<CharSequence>()
-        // entries.add(ENDefaults.variant)
-
         val list = context.assets.list("EN/")
         list?.forEach {
             if (!it.equals("determine-basal.js"))
