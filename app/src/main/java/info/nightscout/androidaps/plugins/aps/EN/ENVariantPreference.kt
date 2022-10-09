@@ -22,7 +22,7 @@ class ENVariantPreference(context: Context, attrs: AttributeSet?)
 
         val list = context.assets.list("EN/")
         list?.forEach {
-            if (!it.endsWith("-basal.js"))
+            if (!it.equals("determine-basal.js"))
                 entries.add(it)
         }
 
