@@ -432,7 +432,6 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             this.mealData.put("lastCannulaTime", lastCannulaTime)
             val lastCannAgeMins = ((now - lastCannulaTime) / 60000).toDouble()
             // this.mealData.put("lastCannAgeMins", lastCannAgeMins)
-            var TDDLastCannula = if (lastCannAgeMins > 1440) tddCalculator.calculate(lastCannulaTime, now).totalAmount / (lastCannAgeMins/1440) else 0
 
             var TDDAvgtoCannula = sp.getDouble("TDDAvgtoCannula", 0.0)
             if (lastCannAgeMins <= 5 || TDDAvgtoCannula == 0.0) {
@@ -441,7 +440,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
                 sp.putDouble("TDDAvgtoCannula", TDDAvgtoCannula)
             }
             this.mealData.put("TDDAvgtoCannula", TDDAvgtoCannula)
-            if (TDDLastCannula==0) TDDLastCannula = TDDAvgtoCannula
+            var TDDLastCannula = if (lastCannAgeMins > 1440) tddCalculator.calculate(lastCannulaTime, now).totalAmount / (lastCannAgeMins/1440) else TDDAvgtoCannula
             this.mealData.put("TDDLastCannula", TDDLastCannula)
 
         this.mealData.put("TDDAvg7d", sp.getDouble("TDDAvg7d", ((basalRate * 12)*100)/21))
