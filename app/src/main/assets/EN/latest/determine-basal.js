@@ -480,7 +480,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // SR_TDD ********************************
         var SR_TDD = meal_data.TDDLastCannula / meal_data.TDDAvgtoCannula;
-        var endebug = "AtoC:" + meal_data.TDDAvgtoCannula + " LC:" + meal_data.TDDLastCannula;
+        var endebug = "AtoC=" + round(meal_data.TDDAvgtoCannula,2) + " LC=" + round(meal_data.TDDLastCannula,2);
 
         console.error("                                 ");
         //console.error("7-day average TDD is: " +tdd7+ "; ");
@@ -1319,7 +1319,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += ", SR: " + sensitivityRatio;
     rT.reason += ", LRT: " + round(60 * minAgo);
     rT.reason += "; ";
-    rT.reason += (typeof endebug !== 'undefined' ? "** DEBUG:" + endebug + "** ": "");
+    rT.reason += (typeof endebug !== 'undefined' ? "** DEBUG: " + endebug + "** ": "");
 
     // use naive_eventualBG if above 40, but switch to minGuardBG if both eventualBGs hit floor of 39
     var carbsReqBG = naive_eventualBG;
@@ -1729,7 +1729,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             rT.reason += ". ";
             rT.reason += ENReason;
             rT.reason += ". ";
-            rT.reason += (typeof endebug !== 'undefined' ? "** DEBUG:" + endebug + "** ": "");
+            rT.reason += (typeof endebug !== 'undefined' ? "** DEBUG: " + endebug + "** ": "");
 
             //allow SMBs every 3 minutes by default
             var SMBInterval = 3;
