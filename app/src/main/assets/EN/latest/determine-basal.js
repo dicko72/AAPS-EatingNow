@@ -1219,7 +1219,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             minPredBG = (UAMBGPreBolus || UAMCOBPreBolus ? Math.max(bg,eventualBG) + insulinReq_bg_boost : minPredBG);
             // use the largest starting bg for eBG and trust it
             eventualBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
-            eBGweight = (ENWindowOK ? 1 : 0.75);
+            eBGweight = 0.75;
         }
 
         // UAM predictions, no COB or GhostCOB
