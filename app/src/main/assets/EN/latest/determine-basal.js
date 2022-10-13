@@ -464,39 +464,19 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // TDD ********************************
     // define default vars
-    var SR_TDD = 1, sens_TDD = sens, TDD = 0;
-    //if (profile.use_sens_TDD || profile.enableSRTDD) {
-        var tdd7 = meal_data.TDDAvg7d;
-        var tdd1 = meal_data.TDDAvg1d;
-        var tdd_4 = meal_data.TDDLast4h;
-        var tdd_8 = meal_data.TDDLast8h;
-        var tdd8to4 = meal_data.TDDLast8hfor4h;
-        var tdd_last8_wt = (((1.4 * tdd_4) + (0.6 * tdd8to4)) * 3);
-        var tdd8_exp = (3 * tdd_8);
-        console.log("8 hour extrapolated = " + tdd8_exp + "; ");
+    var SR_TDD = 1, sens_TDD = sens;
+    var TDD = meal_data.TDD;
 
-        var TDD = (tdd_last8_wt * 0.33) + (tdd7 * 0.34) + (tdd1 * 0.33);
-        console.log("TDD = " + TDD + " using rolling 8h Total extrapolation + TDD7 (60/40); ");
+    // SR_TDD ********************************
+    var SR_TDD = meal_data.TDDLastCannula / meal_data.TDDAvgtoCannula;
+    var endebug = "AtoC=" + round(meal_data.TDDAvgtoCannula,2) + " LC=" + round(meal_data.TDDLastCannula,2);
 
-        // SR_TDD ********************************
-        var SR_TDD = meal_data.TDDLastCannula / meal_data.TDDAvgtoCannula;
-        var endebug = "AtoC=" + round(meal_data.TDDAvgtoCannula,2) + " LC=" + round(meal_data.TDDLastCannula,2);
-
-        console.error("                                 ");
-        //console.error("7-day average TDD is: " +tdd7+ "; ");
-        console.error("Rolling 8 hours weight average: " + tdd_last8_wt + "; ");
-        console.error("Calculated TDD: " + TDD + "; ");
-        console.error("1-day average TDD is: " + tdd1 + "; ");
-        console.error("7-day average TDD is: " + tdd7 + "; ");
-
-        // ISF based on TDD
-        var sens_TDD = 1800 / (TDD * (Math.log((normalTarget / ins_val) + 1)));
-
-        enlog += "sens_TDD:" + convert_bg(sens_TDD, profile) + "\n";
-        sens_TDD = sens_TDD / (profile.sens_TDD_scale / 100);
-        sens_TDD = (sens_TDD > sens * 3 ? sens : sens_TDD); // fresh install of v3
-        enlog += "sens_TDD scaled by " + profile.sens_TDD_scale + "%:" + convert_bg(sens_TDD, profile) + "\n";
-  //  }
+    // ISF based on TDD
+    var sens_TDD = 1800 / (TDD * (Math.log((normalTarget / ins_val) + 1)));
+    enlog += "sens_TDD:" + convert_bg(sens_TDD, profile) + "\n";
+    sens_TDD = sens_TDD / (profile.sens_TDD_scale / 100);
+    sens_TDD = (sens_TDD > sens * 3 ? sens : sens_TDD); // fresh install of v3
+    enlog += "sens_TDD scaled by " + profile.sens_TDD_scale + "%:" + convert_bg(sens_TDD, profile) + "\n";
 
     enlog += "* advanced ISF:\n";
     // Limit ISF increase for sens_currentBG at 10mmol / 180mgdl
@@ -527,7 +507,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     //NEW SR CODE
     // SensitivityRatio code relocated for sens_TDD
-    // var SR_TDD = tdd8_exp / tdd7;
     if (high_temptarget_raises_sensitivity && profile.temptargetSet && target_bg > normalTarget || profile.low_temptarget_lowers_sensitivity && profile.temptargetSet && target_bg < normalTarget) {
         // w/ target 100, temp target 110 = .89, 120 = 0.8, 140 = 0.67, 160 = .57, and 200 = .44
         // e.g.: Sensitivity ratio set to 0.8 based on temp target of 120; Adjusting basal from 1.65 to 1.35; ISF from 58.9 to 73.6
