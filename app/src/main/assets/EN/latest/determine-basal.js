@@ -1184,7 +1184,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // UAM+ predtype when sufficient delta and no COB
     if ((profile.EN_UAMPlus_NoENW || ENWindowOK) && ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && !COB) {
         if (DeltaPctS > 1 && DeltaPctL > 1.5) sens_predType = "UAM+"; // with acceleration
-        if (eventualBG > ISFbgMax && bg < ISFbgMax) sens_predType = "UAM+";    // when predicted high and bg is lower
+        if (eventualBG > ISFbgMax && bg < ISFbgMax) sens_predType = "UAM+"; // when predicted high and bg is lower
     }
 
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
@@ -1198,38 +1198,24 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // increase minPredBG and eventualBG only when a prebolus is OK
             minPredBG = (UAMBGPreBolus || UAMCOBPreBolus ? Math.max(bg,eventualBG) + insulinReq_bg_boost : minPredBG);
             eventualBG = (UAMBGPreBolus || UAMCOBPreBolus ? Math.max(bg,eventualBG) + insulinReq_bg_boost : eventualBG);
-            eBGweight = 0.75;
+            // set initial eBGw at 50% unless bg is in range and accelerating or preBolus
+            eBGweight = (bg < ISFbgMax && eventualBG > bg || UAMBGPreBolus || UAMCOBPreBolus ? 0.75 : 0.50);
         }
 
         // UAM predictions, no COB or GhostCOB
         if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
             // positive or negative delta with acceleration and default
-            eBGweight = (DeltaPctS > 1.0 || eventualBG > bg ? 0.50 : 0.25);
-            // initial delta accelerating UAM+ when in range
-            eBGweight += (DeltaPctS > 1.0 && bg < ISFbgMax && eventualBG > threshold && ENWindowOK ? 0.25 : 0);
-            // positive or negative delta with acceleration and lower eBG uses TBR - generally for stubborn high bg
+            eBGweight = (DeltaPctS > 1.0 || eventualBG > bg ? 0.50 : eBGweight);
+            // TBR predtype when stuck high set a higher eventualBG
             sens_predType = (DeltaPctS > 1.0 && eventualBG < bg && TIR_sens > 1 ? "TBR" : sens_predType);
-            // For TBR predtype when stuck high set a higher eventualBG
             eventualBG = (sens_predType == "TBR" ? Math.max(bg,eventualBG) : eventualBG);
-
-            // SAFETY: when not accelerating use TBR
-            // sens_predType = (DeltaPctS <= 1.0 ? "BG" : sens_predType);
-            //sens_predType = (DeltaPctS <= 1.0 && eventualBG > bg ? "TBR" : sens_predType);
-            // SAFETY: high bg with high delta uses current bg, attempts to reduce overcorrection with fast acting carbs
-            //sens_predType = (bg > ISFbgMax && delta >= 9 && eventualBG > bg ? "BG" : sens_predType);
-            //sens_predType = (bg > ISFbgMax && delta >= 9 && eventualBG > bg? "BG" : sens_predType);
         }
 
         // COB predictions or UAM with COB
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
             // positive or negative delta with acceleration and UAM default
-            eBGweight = (DeltaPctS > 1.0 && sens_predType == "COB" || eventualBG > bg ? 0.50 : 0.25);
-            eBGweight = (DeltaPctS > 1.0 && sens_predType == "UAM" || eventualBG > bg ? 0.50 : eBGweight);
-            // positive or negative delta with acceleration and lower eBG uses current BG - generally for stubborn high bg
-            // sens_predType = (DeltaPctS > 1.0 && eventualBG < bg ? "TBR" : sens_predType);
-
-            // SAFETY: high bg with high delta uses current bg, attempts to reduce overcorrection with fast acting carbs
-            // sens_predType = (bg > ISFbgMax && delta >= 9 && eventualBG > bg? "BG" : sens_predType);
+            eBGweight = (DeltaPctS > 1.0 && sens_predType == "COB" ? 0.75 : eBGweight);
+            eBGweight = (DeltaPctS > 1.0 && sens_predType == "UAM" ? 0.50 : eBGweight);
         }
 
         eBGweight = (sens_predType == "TBR" || sens_predType == "BG"  ? 1 : eBGweight);
