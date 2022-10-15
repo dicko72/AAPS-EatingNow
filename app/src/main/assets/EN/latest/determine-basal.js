@@ -1220,8 +1220,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // COB predictions or UAM with COB
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
             // positive or negative delta with acceleration and UAM default
-            eBGweight = (DeltaPctS > 1.0 && sens_predType == "COB" ? 0.75 : eBGweight);
-            eBGweight = (DeltaPctS > 1.0 && sens_predType == "UAM" ? 0.50 : eBGweight);
+            eBGweight = (DeltaPctS > 1.0 && sens_predType == "COB" && bg > threshold ? 0.75 : eBGweight);
+            eBGweight = (DeltaPctS > 1.0 && sens_predType == "UAM" && bg > threshold ? 0.50 : eBGweight);
         }
 
         eBGweight = (sens_predType == "TBR" || sens_predType == "BG"  ? 1 : eBGweight);
@@ -1522,7 +1522,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // insulinReq is the additional insulin required to get minPredBG down to target_bg
         //console.error(minPredBG,eventualBG);
         //insulinReq = round( (Math.min(minPredBG,eventualBG) - target_bg) / insulinReq_sens, 3);
-        insulinReq = round((insulinReq_bg_orig - target_bg) / sens_profile, 3);
+        //insulinReq = round((insulinReq_bg_orig - target_bg) / sens_profile, 3);
+        insulinReq = round((insulinReq_bg_orig - target_bg) / Math.max(sens_profile, sens_normalTarget), 3);
 
         // keep the original insulinReq for reporting
         var insulinReqOrig = insulinReq;
