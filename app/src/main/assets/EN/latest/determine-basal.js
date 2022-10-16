@@ -469,7 +469,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // SR_TDD ********************************
     var SR_TDD = meal_data.TDDLastCannula / meal_data.TDDAvgtoCannula;
-    var endebug = "AtoC=" + round(meal_data.TDDAvgtoCannula,2) + " LC=" + round(meal_data.TDDLastCannula,2);
+    //var endebug = "AtoC=" + round(meal_data.TDDAvgtoCannula,2) + " LC=" + round(meal_data.TDDLastCannula,2);
 
     // ISF based on TDD
     var sens_TDD = 1800 / (TDD * (Math.log((normalTarget / ins_val) + 1)));
