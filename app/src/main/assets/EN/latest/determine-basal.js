@@ -1111,6 +1111,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
     if (ignoreCOB && enableUAM) minGuardBG = minUAMGuardBG; //MD#01: if we are ignoring COB and have UAM just use minUAMGuardBG as above
     minGuardBG = round(minGuardBG);
+    var minGuardBG_orig = minGuardBG;
     //console.error(minCOBGuardBG, minUAMGuardBG, minIOBGuardBG, minGuardBG);
 
     var minZTUAMPredBG = minUAMPredBG;
@@ -1195,15 +1196,21 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
     if (ENactive || ENSleepMode || TIR_sens > 1) {
+        // prebolus exaggerated bg
+        var preBolusBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
 
         // when a TT starts some treatments will be processed before it starts causing issues later
         if (ENWindowRunTime < 1) sens_predType = "TBR";
 
         // UAM predictions, no COB or GhostCOB
         if (sens_predType == "UAM+") {
-            // increase minPredBG and eventualBG only when a prebolus is OK
-            minPredBG = (UAMBGPreBolus || UAMCOBPreBolus ? Math.max(bg,eventualBG) + insulinReq_bg_boost : minPredBG);
-            eventualBG = (UAMBGPreBolus || UAMCOBPreBolus ? Math.max(bg,eventualBG) + insulinReq_bg_boost : eventualBG);
+            // increase predictions to force a prebolus when allowed
+            if (UAMBGPreBolus || UAMCOBPreBolus) {
+                minPredBG = preBolusBG;
+                eventualBG = preBolusBG;
+                // EXPERIMENT: minGuardBG prevents early prebolus with UAM force higher until SMB given
+                minGuardBG = (UAMBGPreBolus && minGuardBG < threshold ? preBolusBG: minGuardBG);
+            }
             // set initial eBGw at 50% unless bg is in range and accelerating or preBolus
             eBGweight = (bg < ISFbgMax && eventualBG > bg || UAMBGPreBolus || UAMCOBPreBolus ? 0.75 : 0.50);
         }
@@ -1214,7 +1221,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = (DeltaPctS > 1.0 || eventualBG > bg ? 0.50 : eBGweight);
             // TBR predtype when stuck high set a higher eventualBG
             sens_predType = (DeltaPctS > 1.0 && eventualBG < bg && TIR_sens > 1 ? "TBR" : sens_predType);
-            eventualBG = (sens_predType == "TBR" ? Math.max(bg,eventualBG) : eventualBG);
+            eventualBG = (sens_predType == "TBR" ? preBolusBG : eventualBG);
+            // EXPERIMENT: minGuardBG prevents reduction in high bg force higher until TIRS resets
+            minGuardBG = (sens_predType == "TBR" ? preBolusBG: minGuardBG);
         }
 
         // COB predictions or UAM with COB
@@ -1223,6 +1232,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = (DeltaPctS > 1.0 && sens_predType == "COB" && bg > threshold ? 0.75 : eBGweight);
             eBGweight = (DeltaPctS > 1.0 && sens_predType == "UAM" && bg > threshold ? 0.50 : eBGweight);
         }
+
+        // SAFETY: if minGuardBG has been increased temporarily TBR only
+        sens_predType = (minGuardBG > minGuardBG_orig ? "TBR" : sens_predType);
 
         eBGweight = (sens_predType == "TBR" || sens_predType == "BG"  ? 1 : eBGweight);
 
