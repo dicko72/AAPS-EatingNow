@@ -409,8 +409,9 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val lastCannAgeMins = ((now - lastCannulaTime) / 60000).toDouble()
         // this.mealData.put("lastCannAgeMins", lastCannAgeMins)
 
+        // sp.putDouble("TDDAvgtoCannula", 0.0) // reset
         val TDDAvgtoCannula = sp.getDouble("TDDAvgtoCannula", 0.0)
-        if (lastCannAgeMins <= 5 || TDDAvgtoCannula == 0.0) {
+        if (lastCannAgeMins <= 30 || TDDAvgtoCannula == 0.0) {
             val daysPrior = 3
             val TDDAvgtoCannula = tddCalculator.calculate(lastCannulaTime - 86400000 * daysPrior, lastCannulaTime).totalAmount / daysPrior
             sp.putDouble("TDDAvgtoCannula", TDDAvgtoCannula)
