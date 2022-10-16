@@ -1208,8 +1208,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 eventualBG = preBolusBG;
                 // EXPERIMENT: minGuardBG prevents early prebolus with UAM force higher until SMB given
                 minGuardBG = (UAMBGPreBolus && minGuardBG < threshold ? preBolusBG: minGuardBG);
-                // SAFETY: if minGuardBG has been increased temporarily TBR only
-                sens_predType = (minGuardBG > minGuardBG_orig ? "TBR" : sens_predType);
+                // SAFETY: if minGuardBG has been increased temporarily set PRE predType
+                sens_predType = (minGuardBG > minGuardBG_orig ? "PRE" : sens_predType);
             }
             // set initial eBGw at 50% unless bg is in range and accelerating or preBolus
             eBGweight = (bg < ISFbgMax && eventualBG > bg || UAMBGPreBolus || UAMCOBPreBolus ? 0.75 : 0.50);
@@ -1233,27 +1233,20 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = (DeltaPctS > 1.0 && sens_predType == "UAM" && bg > threshold ? 0.50 : eBGweight);
         }
 
-        // SAFETY: if minGuardBG has been increased temporarily TBR only
-        //sens_predType = (minGuardBG > minGuardBG_orig && !sens_predType.includes("TBR") ? "TBR" : sens_predType);
-
-        eBGweight = (sens_predType.includes("TBR") || sens_predType.includes("BG")  ? 1 : eBGweight);
+        // allow certain conditions 100% eBGw
+        eBGweight = (sens_predType == "PRE" || sens_predType == "TBR" || sens_predType == "BG+" ? 1 : eBGweight);
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
         insulinReq_bg = (Math.max(minPredBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight);
 
         // override and use current bg for insulinReq_bg with TBR and BG predType
         insulinReq_bg = (sens_predType == "BG" ? bg : insulinReq_bg);
-        //insulinReq_bg = (sens_predType == "TBR" ? Math.max(bg,insulinReq_bg,eventualBG) : insulinReq_bg);
-
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
         insulinReq_sens = dynISF(insulinReq_bg,normalTarget,sens_normalTarget,ins_val); // dynISF
 
         // use the strongest ISF when ENW active
         insulinReq_sens = (!firstMealWindow && !COB && ENWindowRunTime <= ENWindowDuration ? Math.min(insulinReq_sens, sens) : insulinReq_sens);
-
-        // EXPERIMENTAL FOR DEBUG ONLY
-        // insulinReq_sens_ebg = sens_normalTarget / Math.log((eventualBG / ins_val) + 1);
     }
 
     insulinReq_sens = round(insulinReq_sens, 1);
@@ -1642,6 +1635,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
                 // BG+ provides 20 mins SMB
                 ENMaxSMB = (sens_predType == "BG+" ? profile.current_basal * 20/60 : ENMaxSMB);
+
+                // EXPERIMENTAL: TBR only for PRE
+                ENMaxSMB = (sens_predType == "PRE" ? 0 : ENMaxSMB);
 
                 // if bg numbers resumed after sensor errors dont allow a large SMB
                 ENMaxSMB = (minAgo < 1 && delta == 0 && glucose_status.short_avgdelta == 0 ? maxBolus : ENMaxSMB);
