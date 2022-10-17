@@ -1206,7 +1206,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 minPredBG = preBolusBG;
                 eventualBG = preBolusBG;
                 // EXPERIMENT: minGuardBG prevents early prebolus with UAM force higher until SMB given when on or above target
-                minGuardBG = (UAMBGPreBolus && minGuardBG < threshold && bg >= target_bg? preBolusBG: minGuardBG);
+                minGuardBG = (UAMBGPreBolus && minGuardBG < threshold && bg >= target_bg? threshold: minGuardBG);
                 // SAFETY: if minGuardBG has been increased temporarily set PRE predType
                 sens_predType = (minGuardBG > minGuardBG_orig ? "PRE" : sens_predType);
             }
@@ -1224,7 +1224,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             sens_predType = (DeltaPctS > 1.0 && eventualBG < bg && TIR_sens > 1 && !ENSleepMode ? "BG+" : sens_predType);
             eventualBG = (sens_predType == "BG+" ? preBolusBG : eventualBG);
             // EXPERIMENT: minGuardBG prevents reduction in high bg force higher until TIRS resets
-            minGuardBG = (sens_predType == "BG+" ? preBolusBG: minGuardBG);
+            minGuardBG = (sens_predType == "BG+" ? threshold: minGuardBG);
             AllowZT = sens_predType != "BG+"; // disable ZT when using BG+
         }
 
@@ -1239,7 +1239,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             sens_predType = (DeltaPctS > 1.0 && eventualBG < bg && TIR_sens > 1 && !ENSleepMode ? "BG+" : sens_predType);
             eventualBG = (sens_predType == "BG+" ? preBolusBG : eventualBG);
             // EXPERIMENT: minGuardBG prevents reduction in high bg force higher until TIRS resets
-            minGuardBG = (sens_predType == "BG+" ? preBolusBG: minGuardBG);
+            minGuardBG = (sens_predType == "BG+" ? threshold: minGuardBG);
         }
 
         // allow certain conditions 100% eBGw
