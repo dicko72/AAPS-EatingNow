@@ -497,7 +497,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (meal_data.TIRTW4H > 0 && TIR_sens == 3) TIR_sens += meal_data.TIRTW4H / 100;
     }
     TIR_sens = TIR_sens * TIRH_percent + 1;
-    //TIR_sens = 1; // disabling as testing
 
     // ISF at normal target
     var sens_normalTarget = sens, sens_profile = sens; // use profile sens and keep profile sens with any SR
@@ -1286,7 +1285,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += ", eBGw: " + (sens_predType != "NA" ? sens_predType + " " : "") + convert_bg(insulinReq_bg, profile) + " " + round(eBGweight * 100) + "%";
     //rT.reason += (sens_predType !="NA" ? ", eBGw: " + sens_predType + " " +  round(eBGweight*100) + "% ("+convert_bg(insulinReq_bg,profile)+")" : "");
     rT.reason += ", TDD:" + round(TDD, 2) + " " + (profile.sens_TDD_scale != 100 ? profile.sens_TDD_scale + "% " : "") + "(" + convert_bg(sens_TDD, profile) + ")";
-    rT.reason += (TIR_sens > 1 ? ", TIRH:" + round(meal_data.TIRW4H) + "/" + round(meal_data.TIRW3H) + "/" + round(meal_data.TIRW2H) + "/" + round(meal_data.TIRW1H) : "");
+    rT.reason += (TIR_sens > 1 && ENtimeOK ? ", TIRH:" + round(meal_data.TIRW4H) + "/" + round(meal_data.TIRW3H) + "/" + round(meal_data.TIRW2H) + "/" + round(meal_data.TIRW1H) : "");
+    rT.reason += (TIR_sens > 1 && !ENtimeOK ? ", TIRH:" + round(meal_data.TIRTW4H) + "/" + round(meal_data.TIRTW3H) + "/" + round(meal_data.TIRTW2H) + "/" + round(meal_data.TIRTW1H) : "");
     //    rT.reason += (TIR_sens <1 ? ", TIRL:" + round(meal_data.TIRW4L) + "/" + round(meal_data.TIRW3L) + "/" + round(meal_data.TIRW2L) +"/"+round(meal_data.TIRW1L) : "");
     if (profile.use_autosens) rT.reason += ", AS: " + round(autosens_data.ratio, 2);
     rT.reason += ", TIRS: " + round(TIR_sens, 2);
