@@ -1206,8 +1206,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (UAMBGPreBolus || UAMCOBPreBolus) {
                 minPredBG = preBolusBG;
                 eventualBG = preBolusBG;
-                // EXPERIMENT: minGuardBG prevents early prebolus with UAM force higher until SMB given
-                minGuardBG = (UAMBGPreBolus && minGuardBG < threshold ? preBolusBG: minGuardBG);
+                // EXPERIMENT: minGuardBG prevents early prebolus with UAM force higher until SMB given when on or above target
+                minGuardBG = (UAMBGPreBolus && minGuardBG < threshold && bg >= target_bg? preBolusBG: minGuardBG);
                 // SAFETY: if minGuardBG has been increased temporarily set PRE predType
                 sens_predType = (minGuardBG > minGuardBG_orig ? "PRE" : sens_predType);
             }
@@ -1637,7 +1637,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 ENMaxSMB = (sens_predType == "BG+" ? profile.current_basal * 20/60 : ENMaxSMB);
 
                 // EXPERIMENTAL: TBR only for PRE
-                ENMaxSMB = (sens_predType == "PRE" ? 0 : ENMaxSMB);
+                // ENMaxSMB = (sens_predType == "PRE" ? 0 : ENMaxSMB);
 
                 // if bg numbers resumed after sensor errors dont allow a large SMB
                 ENMaxSMB = (minAgo < 1 && delta == 0 && glucose_status.short_avgdelta == 0 ? maxBolus : ENMaxSMB);
