@@ -1212,18 +1212,20 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             }
             // set initial eBGw at 50% unless bg is in range and accelerating or preBolus
             eBGweight = (bg < ISFbgMax && eventualBG > bg || UAMBGPreBolus || UAMCOBPreBolus ? 0.75 : 0.50);
-            AllowZT = false;
+            AllowZT = false; // disable ZT for UAM+
         }
 
         // UAM predictions, no COB or GhostCOB
         if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
             // positive or negative delta with acceleration and default
             eBGweight = (DeltaPctS > 1.0 || eventualBG > bg ? 0.50 : eBGweight);
-            // TBR predtype when stuck high set a higher eventualBG
+
+            // BG+ predtype when stuck high set a higher eventualBG
             sens_predType = (DeltaPctS > 1.0 && eventualBG < bg && TIR_sens > 1 && !ENSleepMode ? "BG+" : sens_predType);
             eventualBG = (sens_predType == "BG+" ? preBolusBG : eventualBG);
             // EXPERIMENT: minGuardBG prevents reduction in high bg force higher until TIRS resets
             minGuardBG = (sens_predType == "BG+" ? preBolusBG: minGuardBG);
+            AllowZT = sens_predType != "BG+"; // disable ZT when using BG+
         }
 
         // COB predictions or UAM with COB
@@ -1231,7 +1233,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // positive or negative delta with acceleration and UAM default
             eBGweight = (DeltaPctS > 1.0 && sens_predType == "COB" && bg > threshold ? 0.75 : 0.50);
             eBGweight = (DeltaPctS > 1.0 && sens_predType == "UAM" && bg > threshold ? 0.50 : eBGweight);
-            AllowZT = eBGweight == eBGweight_orig;
+            AllowZT = eBGweight == eBGweight_orig; // disable ZT when eBGw is stronger
+
+            // BG+ predtype when stuck high set a higher eventualBG
+            sens_predType = (DeltaPctS > 1.0 && eventualBG < bg && TIR_sens > 1 && !ENSleepMode ? "BG+" : sens_predType);
+            eventualBG = (sens_predType == "BG+" ? preBolusBG : eventualBG);
+            // EXPERIMENT: minGuardBG prevents reduction in high bg force higher until TIRS resets
+            minGuardBG = (sens_predType == "BG+" ? preBolusBG: minGuardBG);
         }
 
         // allow certain conditions 100% eBGw
