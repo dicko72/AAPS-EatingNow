@@ -428,10 +428,10 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val resistancePerHr = sp.getDouble(R.string.en_resistance_per_hour, 0.0)
         this.profile.put("resistancePerHr", sp.getDouble(R.string.en_resistance_per_hour, 0.0))
         if (resistancePerHr > 0) {
-            this.mealData.put("TIRW4H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4, 3, 72.0, 160.0)).abovePct())
-            this.mealData.put("TIRW3H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3, 2, 72.0, 160.0)).abovePct())
-            this.mealData.put("TIRW2H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2, 1, 72.0, 160.0)).abovePct())
-            this.mealData.put("TIRW1H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1, 0, 72.0, 160.0)).abovePct())
+            this.mealData.put("TIRW4H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4, 3, 72.0, 150.0)).abovePct())
+            this.mealData.put("TIRW3H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3, 2, 72.0, 150.0)).abovePct())
+            this.mealData.put("TIRW2H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2, 1, 72.0, 150.0)).abovePct())
+            this.mealData.put("TIRW1H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1, 0, 72.0, 150.0)).abovePct())
         }
 
         // TIR Windows for normalTarget
