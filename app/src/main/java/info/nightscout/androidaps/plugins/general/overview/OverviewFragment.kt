@@ -45,7 +45,7 @@ import info.nightscout.androidaps.extensions.valueToUnitsString
 import info.nightscout.androidaps.interfaces.*
 import info.nightscout.androidaps.logging.UserEntryLogger
 import info.nightscout.androidaps.plugins.aps.loop.events.EventNewOpenLoopNotification
-import info.nightscout.androidaps.plugins.aps.openAPSSMB.DetermineBasalResultSMB
+import info.nightscout.androidaps.plugins.aps.EN.DetermineBasalResultEN
 import info.nightscout.androidaps.plugins.bus.RxBus
 import info.nightscout.androidaps.plugins.configBuilder.ConstraintChecker
 import info.nightscout.androidaps.plugins.constraints.bgQualityCheck.BgQualityCheckPlugin
@@ -691,10 +691,10 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                 }
                 // Show variable sensitivity
                 val request = loop.lastRun?.request
-                if (request is DetermineBasalResultSMB) {
+                if (request is DetermineBasalResultEN) {
                     val isfMgdl = profile?.getIsfMgdl()
                     val variableSens = request.variableSens
-                    if (variableSens != isfMgdl && variableSens != null && isfMgdl != null) {
+                    if (variableSens != null && isfMgdl != null) {
                         binding.infoLayout.variableSensitivity.text =
                             String.format(
                                 Locale.getDefault(), "%1$.1f→%2$.1f",
