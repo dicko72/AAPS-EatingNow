@@ -1221,7 +1221,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = (DeltaPctS > 1.0 || eventualBG > bg ? 0.50 : eBGweight);
 
             // BG+ predtype when stuck high set a higher eventualBG
-            sens_predType = (DeltaPctS > 1.0 && eventualBG < bg && TIR_sens > 1 && !ENSleepMode ? "BG+" : sens_predType);
+            sens_predType = (DeltaPctS > 1.0 && eventualBG < bg && TIR_sens > 1 && ENactive ? "BG+" : sens_predType);
             eventualBG = (sens_predType == "BG+" ? preBolusBG : eventualBG);
             // EXPERIMENT: minGuardBG prevents reduction in high bg force higher until TIRS resets
             minGuardBG = (sens_predType == "BG+" ? threshold: minGuardBG);
@@ -1236,7 +1236,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             AllowZT = eBGweight == eBGweight_orig; // disable ZT when eBGw is stronger
 
             // BG+ predtype when stuck high set a higher eventualBG
-            sens_predType = (DeltaPctS > 1.0 && eventualBG < bg && TIR_sens > 1 && !ENSleepMode ? "BG+" : sens_predType);
+            sens_predType = (DeltaPctS > 1.0 && eventualBG < bg && TIR_sens > 1 && ENactive ? "BG+" : sens_predType);
             eventualBG = (sens_predType == "BG+" ? preBolusBG : eventualBG);
             // EXPERIMENT: minGuardBG prevents reduction in high bg force higher until TIRS resets
             minGuardBG = (sens_predType == "BG+" ? threshold: minGuardBG);
