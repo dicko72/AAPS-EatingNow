@@ -379,8 +379,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         }
 
         // use stored value where appropriate
-        val TDDAvg7d = sp.getDouble("TDDAvg7d", ((basalRate * 12)*100)/21)
-        this.mealData.put("TDDAvg7d",TDDAvg7d)
+        var TDDAvg7d = sp.getDouble("TDDAvg7d", ((basalRate * 12)*100)/21)
 
         // calculate the rest of the TDD data
         var TDDAvg1d = tddCalculator.averageTDD(tddCalculator.calculate(1))?.totalAmount
@@ -399,6 +398,10 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         val TDDLast8_wt = (((1.4 * TDDLast4h) + (0.6 * TDDLast8hfor4h)) * 3)
         var TDD8h_exp = (3 * TDDLast8h)
+
+        if ( TDDLast8_wt < (0.75 * TDDAvg7d)) TDDAvg7d = TDDLast8_wt + ( ( TDDLast8_wt / TDDAvg7d ) * ( TDDAvg7d - TDDLast8_wt ) )
+
+        this.mealData.put("TDDAvg7d",TDDAvg7d)
 
         val TDD = (TDDLast8_wt * 0.33) + (TDDAvg7d * 0.34) + (TDDAvg1d * 0.33)
         this.mealData.put("TDD", TDD)
