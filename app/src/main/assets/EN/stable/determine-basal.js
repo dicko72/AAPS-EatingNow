@@ -541,7 +541,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // Use SR_TDD when no TT, profile switch
         sensitivityRatio = (profile.temptargetSet && !ENTTActive || profile.percent != 100 ?  1 : SR_TDD);
         // when SR_TDD shows sensitivity but TIR is resistant reset sensitivityRatio to 100%
-        sensitivityRatio = (TIR_sens > 1 && sensitivityRatio < 1 ?  1 : sensitivityRatio);
+        // sensitivityRatio = (TIR_sens > 1 && sensitivityRatio < 1 ?  1 : sensitivityRatio);
         // adjust basal later
         // basal = profile.current_basal * sensitivityRatio;
         // adjust sens_normalTarget below with TIR_sens
@@ -1215,6 +1215,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             }
             // set initial eBGw at 50% unless bg is in range and accelerating or preBolus
             eBGweight = (bg < ISFbgMax && eventualBG > bg || UAMBGPreBolus || UAMCOBPreBolus ? 0.75 : 0.50);
+            // SAFETY: UAM+ fast delta with higher bg lowers eBGw
+            // eBGweight = (bg > ISFbgMax && delta >= 15 ? 0.30 : eBGweight);
             AllowZT = false; // disable ZT for UAM+
         }
 
