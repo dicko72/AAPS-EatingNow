@@ -496,6 +496,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (meal_data.TIRTW3H > 0 && TIR_sens == 2) TIR_sens += meal_data.TIRTW3H / 100;
         if (meal_data.TIRTW4H > 0 && TIR_sens == 3) TIR_sens += meal_data.TIRTW4H / 100;
     }
+    var TIR_sum = Math.max(TIR_sens,1); // use this for BG+
+    var endebug = TIR_sum;
     TIR_sens = TIR_sens * TIRH_percent + 1;
 
     // ISF at normal target
@@ -1650,8 +1652,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // TBR only
                 ENMaxSMB = (sens_predType == "TBR" ? 0 : ENMaxSMB);
 
-                // BG+ provides 20 mins SMB
-                ENMaxSMB = (sens_predType == "BG+" ? profile.current_basal * 20/60 : ENMaxSMB);
+                // BG+ provides 20 min blocks of SMB based on TIR
+                //ENMaxSMB = (sens_predType == "BG+" ? profile.current_basal * 20/60 : ENMaxSMB);
+                ENMaxSMB = (sens_predType == "BG+" ? profile.current_basal * (20 * TIR_sum) / 60 : ENMaxSMB);
 
                 // EXPERIMENTAL: TBR only for PRE
                 // ENMaxSMB = (sens_predType == "PRE" ? 0 : ENMaxSMB);
