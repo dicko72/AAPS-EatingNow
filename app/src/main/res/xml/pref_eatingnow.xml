@@ -509,6 +509,12 @@
                 android:title="Use TDD for ISF"
                 android:summary="Use TDD as the basis for calculating the current ISF. This will override the profile ISF." />
 
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="key_use_sens_lctdd"
+                android:title="Use LCTDD for ISF"
+                android:summary="Use last cannula TDD as the basis for calculating the current ISF. This will override the profile ISF." />
+
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="100"
                 android:inputType="numberDecimal"
