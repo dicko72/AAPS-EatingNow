@@ -1232,6 +1232,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // SAFETY: UAM+ fast delta with higher bg lowers eBGw
             eBGweight = (bg > ISFbgMax && delta >= 15 ? 0.30 : eBGweight);
             AllowZT = false; // disable ZT for UAM+
+            // when no ENW and UAM+ at normalTarget + 1mmol enable ENW
+            if (!ENWindowOK && ENactive && bg > normalTarget + 18) ENWindowOK = true;
         }
 
         // UAM predictions, no COB or GhostCOB
