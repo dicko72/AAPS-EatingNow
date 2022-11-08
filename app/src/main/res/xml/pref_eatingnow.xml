@@ -509,12 +509,6 @@
                 android:title="Use TDD for ISF"
                 android:summary="Use TDD as the basis for calculating the current ISF. This will override the profile ISF." />
 
-            <SwitchPreference
-                android:defaultValue="false"
-                android:key="key_use_sens_lctdd"
-                android:title="Use LCTDD for ISF"
-                android:summary="Use last cannula TDD as the basis for calculating the current ISF. This will override the profile ISF." />
-
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="100"
                 android:inputType="numberDecimal"
@@ -563,6 +557,12 @@
                 android:key="key_use_3pm_basal"
                 android:title="Use 3PM Basal ISF Variance"
                 android:summary="Use 3PM Basal as the basis for ISF changes. The basal at 3PM is taken as the basis for baseline ISF.\nBasal variation from this point is used to scale the ISF, stronger basal will make ISF weaker.\nOnly use when the profile uses a single ISF for 24 hours and the basal profile is fully populated." />
+
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="key_use_sens_lctdd"
+                android:title="Use LCTDD for ISF"
+                android:summary="Use last cannula TDD as the basis for calculating the current ISF. This will override the profile ISF." />
 
         </PreferenceCategory>
 
