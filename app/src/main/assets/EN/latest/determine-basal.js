@@ -1202,8 +1202,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
     if (UAMBGPreBolus || UAMCOBPreBolus) sens_predType = "UAM+"; // force UAM+ when appropriate
 
-    // UAM+ predtype when sufficient delta and no COB
-    if ((profile.EN_UAMPlus_NoENW || ENWindowOK) && ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && !COB) {
+    // UAM+ predtype when sufficient delta and not a COB prediction
+    //if ((profile.EN_UAMPlus_NoENW || ENWindowOK) && ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && !COB) {
+    if ((profile.EN_UAMPlus_NoENW || ENWindowOK) && ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && sens_predType != "COB") {
         if (DeltaPctS > 1 && DeltaPctL > 1.5) sens_predType = "UAM+"; // with acceleration
         if (eventualBG > ISFbgMax && bg < ISFbgMax) sens_predType = "UAM+"; // when predicted high and bg is lower
     }
