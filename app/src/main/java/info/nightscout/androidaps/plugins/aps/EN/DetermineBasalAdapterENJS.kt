@@ -372,8 +372,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val TDDLastUpdate =  sp.getLong("TDDLastUpdate",0)
         val TDDHrSinceUpdate = (now - TDDLastUpdate) / 3600000
 
-        if (TDDLastUpdate == 0L || TDDHrSinceUpdate > 12) {
-            // Generate the data for the larger datasets every 12 hours
+        if (TDDLastUpdate == 0L || TDDHrSinceUpdate > 6) {
+            // Generate the data for the larger datasets every 6 hours
             var TDDAvg7d = tddCalculator.averageTDD(tddCalculator.calculate(7))?.totalAmount
             if (TDDAvg7d == 0.0 || TDDAvg7d == null ) TDDAvg7d = ((basalRate * 12)*100)/21
             sp.putDouble("TDDAvg7d", TDDAvg7d)
