@@ -1287,6 +1287,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "sens_predType: " + sens_predType + "\n";
     enlog += "eBGweight final result: " + eBGweight + "\n";
     // END OF Eventual BG based future sensitivity - insulinReq_sens
+    rT.variable_sens = insulinReq_sens;
 
     rT.COB = meal_data.mealCOB;
     rT.IOB = iob_data.iob;
