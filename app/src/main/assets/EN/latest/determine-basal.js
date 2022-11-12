@@ -502,9 +502,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (meal_data.TIRTW2H > 0 && TIR_sens == 1) TIR_sens += meal_data.TIRTW2H / 100;
         if (meal_data.TIRTW3H > 0 && TIR_sens == 2) TIR_sens += meal_data.TIRTW3H / 100;
         if (meal_data.TIRTW4H > 0 && TIR_sens == 3) TIR_sens += meal_data.TIRTW4H / 100;
+    } else if (TIRH_percent && bg < normalTarget) {
+        if (meal_data.TIRTW1L > 25) TIR_sens = meal_data.TIRTW1L / 100;
+        if (meal_data.TIRTW2L > 0 && TIR_sens == 1) TIR_sens += meal_data.TIRTW2L / 100;
+        if (meal_data.TIRTW3L > 0 && TIR_sens == 2) TIR_sens += meal_data.TIRTW3L / 100;
+        if (meal_data.TIRTW4L > 0 && TIR_sens == 3) TIR_sens += meal_data.TIRTW4L / 100;
     }
     var TIR_sum = Math.max(TIR_sens,1); // use this for BG+
-    TIR_sens = TIR_sens * TIRH_percent + 1;
+    //TIR_sens = 1 + (TIR_sens * TIRH_percent);
+    // if above target use resistance calc if below sensitivity calc, if either is present
+    TIR_sens = (bg > normalTarget ? 1 + (TIR_sens * TIRH_percent) : 1 - (TIR_sens * TIRH_percent) );
 
     // ISF at normal target
     var sens_normalTarget = sens, sens_profile = sens; // use profile sens and keep profile sens with any SR
@@ -1327,6 +1334,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += ", TDD7:" + round(meal_data.TDDAvg7d,2);
     //rT.reason += (TIR_sens > 1 && ENtimeOK ? ", TIRH:" + round(meal_data.TIRW4H) + "/" + round(meal_data.TIRW3H) + "/" + round(meal_data.TIRW2H) + "/" + round(meal_data.TIRW1H) : "");
     //rT.reason += (TIR_sens > 1 && !ENtimeOK ? ", TIRH:" + round(meal_data.TIRTW4H) + "/" + round(meal_data.TIRTW3H) + "/" + round(meal_data.TIRTW2H) + "/" + round(meal_data.TIRTW1H) : "");
+    //rT.reason += (bg < normalTarget && !ENtimeOK && meal_data.TIRTW1L > 25 ? ", TIRL:" + round(meal_data.TIRTW4L) + "/" + round(meal_data.TIRTW3L) + "/" + round(meal_data.TIRTW2L) + "/" + round(meal_data.TIRTW1L) : "");
     //    rT.reason += (TIR_sens <1 ? ", TIRL:" + round(meal_data.TIRW4L) + "/" + round(meal_data.TIRW3L) + "/" + round(meal_data.TIRW2L) +"/"+round(meal_data.TIRW1L) : "");
     if (profile.use_autosens) rT.reason += ", AS: " + round(autosens_data.ratio, 2);
     rT.reason += ", TIRS: " + round(TIR_sens, 2);

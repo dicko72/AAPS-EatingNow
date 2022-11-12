@@ -447,6 +447,11 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             this.mealData.put("TIRTW3H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3, 2, normalTargetBG-9.0, normalTargetBG+9.0)).abovePct())
             this.mealData.put("TIRTW2H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2, 1, normalTargetBG-9.0, normalTargetBG+9.0)).abovePct())
             this.mealData.put("TIRTW1H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1, 0, normalTargetBG-9.0, normalTargetBG+9.0)).abovePct())
+
+            this.mealData.put("TIRTW4L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4,3,normalTargetBG-9.0, normalTargetBG+9.0)).belowPct())
+            this.mealData.put("TIRTW3L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3,2,normalTargetBG-9.0, normalTargetBG+9.0)).belowPct())
+            this.mealData.put("TIRTW2L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2,1,normalTargetBG-9.0, normalTargetBG+9.0)).belowPct())
+            this.mealData.put("TIRTW1L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1,0,normalTargetBG-9.0, normalTargetBG+9.0)).belowPct())
         }
 
         //
