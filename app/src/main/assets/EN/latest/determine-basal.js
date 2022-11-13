@@ -549,13 +549,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (profile.use_sens_TDD || profile.use_sens_LCTDD ) {
         // dont adjust sens_normalTarget
         //sens_normalTarget = sens_normalTarget;
-        //sensitivityRatio = 1;
+        sensitivityRatio = 1;
         // SR can use the profile ISF and current TDD ISF to scale SR
-        sensitivityRatio = (profile.enableSRTDD  && !firstMealScaling ? sens / sens_normalTarget : 1);
+        // sensitivityRatio = (profile.enableSRTDD  && !firstMealScaling ? sens / sens_normalTarget : 1);
         // when SR_TDD shows sensitivity but TIR is resistant reset sensitivityRatio to 100%
-        sensitivityRatio = (TIR_sens > 1 && sensitivityRatio < 1 ?  1 : sensitivityRatio);
+        //sensitivityRatio = (TIR_sens > 1 && sensitivityRatio < 1 ?  1 : sensitivityRatio);
         // sens_normalTarget will be adjusted later with SR so set to profile ISF
-        sens_normalTarget = (sensitivityRatio !=1 ? profile_sens : sens_normalTarget);
+        // sens_normalTarget = (sensitivityRatio !=1 ? profile_sens : sens_normalTarget);
     } else if (profile.enableSRTDD && SR_TDD !=1) {
         // dont apply autosens limits to show SR_TDD full potential
         //SR_TDD = Math.min(SR_TDD, profile.autosens_max);
