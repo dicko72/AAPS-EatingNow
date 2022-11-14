@@ -651,7 +651,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // scale the current bg ISF using previously defined sens at normal target
     // var sens_currentBG = sens_normalTarget / sens_BGscaler * sens_normalTarget_scaler;
-    var sens_currentBG = dynISF(bg,normalTarget,sens_normalTarget,ins_val);
+    //var sens_currentBG = dynISF(bg,normalTarget,sens_normalTarget,ins_val);
+    var sens_currentBG = dynISF(bg,target_bg,sens_normalTarget,ins_val);
     enlog += "sens_currentBG:" + convert_bg(sens_currentBG, profile) + "\n";
     sens_currentBG = sens_currentBG * (profile.useDynISF ? ISFBGscaler : 1);
     enlog += "sens_currentBG with ISFBGscaler:" + sens_currentBG + "\n";
@@ -660,8 +661,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     //enlog += "dynISF@target:" + dynISF(normalTarget,normalTarget,sens_normalTarget,ins_val) + "\n";
 
 
-    // SAFETY: if below normal target at night use normal ISF otherwise use dynamic ISF
-    sens_currentBG = (bg < normalTarget && ENSleepMode ? sens_normalTarget : sens_currentBG);
+    // SAFETY: if below target at night use normal ISF otherwise use dynamic ISF
+    sens_currentBG = (bg < target_bg && ENSleepMode ? sens_normalTarget : sens_currentBG);
 
     sens_currentBG = round(sens_currentBG, 1);
     enlog += "sens_currentBG final result:" + convert_bg(sens_currentBG, profile) + "\n";
@@ -1241,7 +1242,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             AllowZT = false; // disable ZT for UAM+
 
             // when no ENW and UAM+ enable ENW when bg is higher or bg is rising fast
-            if (!ENWindowOK && ENactive) ENWindowOK = (bg > normalTarget + 18 || bg < ISFbgMax && delta >=15);
+            if (!ENWindowOK && ENactive) ENWindowOK = (bg > target_bg + 18 || bg < ISFbgMax && delta >=15);
         }
 
         // UAM predictions, no COB or GhostCOB
@@ -1282,7 +1283,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
         //insulinReq_sens = dynISF(insulinReq_bg,normalTarget,sens_normalTarget,ins_val); // dynISF
-        insulinReq_sens = (sens_predType == "PRE" ? sens : dynISF(insulinReq_bg,normalTarget,sens_normalTarget,ins_val)); // dynISF
+        insulinReq_sens = (sens_predType == "PRE" ? sens : dynISF(insulinReq_bg,target_bg,sens_normalTarget,ins_val)); // dynISF
 
         // use the strongest ISF when ENW active
         insulinReq_sens = (!firstMealWindow && !COB && ENWindowRunTime <= ENWindowDuration ? Math.min(insulinReq_sens, sens) : insulinReq_sens);
