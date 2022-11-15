@@ -652,8 +652,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // scale the current bg ISF using previously defined sens at normal target
     // var sens_currentBG = sens_normalTarget / sens_BGscaler * sens_normalTarget_scaler;
-    //var sens_currentBG = dynISF(bg,normalTarget,sens_normalTarget,ins_val);
-    var sens_currentBG = dynISF(bg,target_bg,sens_normalTarget,ins_val);
+    var sens_currentBG = dynISF(bg,normalTarget,sens_normalTarget,ins_val);
     enlog += "sens_currentBG:" + convert_bg(sens_currentBG, profile) + "\n";
     sens_currentBG = sens_currentBG * (profile.useDynISF ? ISFBGscaler : 1);
     enlog += "sens_currentBG with ISFBGscaler:" + sens_currentBG + "\n";
@@ -1283,8 +1282,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq_bg = (sens_predType == "BG" ? bg : insulinReq_bg);
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
-        //insulinReq_sens = dynISF(insulinReq_bg,normalTarget,sens_normalTarget,ins_val); // dynISF
-        insulinReq_sens = (sens_predType == "PRE" ? sens : dynISF(insulinReq_bg,target_bg,sens_normalTarget,ins_val)); // dynISF
+        insulinReq_sens = (sens_predType == "PRE" ? sens : dynISF(insulinReq_bg,normalTarget,sens_normalTarget,ins_val)); // dynISF
 
         // use the strongest ISF when ENW active
         insulinReq_sens = (!firstMealWindow && !COB && ENWindowRunTime <= ENWindowDuration ? Math.min(insulinReq_sens, sens) : insulinReq_sens);
