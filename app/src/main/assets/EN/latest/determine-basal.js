@@ -324,14 +324,24 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // Check that max iob is OK
     if (iob_data.iob <= max_iob) ENmaxIOBOK = true;
 
+    // check if SMB is allowed
+    var enableSMB = enable_smb(
+        profile,
+        microBolusAllowed,
+        meal_data,
+        target_bg
+    );
+
     // If we have UAM enabled with IOB less than max enable eating now mode
     if (profile.enableUAM && ENmaxIOBOK) {
         // if time is OK EN is active
         if (ENtimeOK) ENactive = true;
         // If there are COB or ENTT EN is active
         if (meal_data.mealCOB || ENTTActive) ENactive = true;
-        // SAFETY: Disable EN with a TT other than normal target
-        if (profile.temptargetSet && !ENTTActive) ENactive = false;
+        // SAFETY: Disable EN with a TT other than normal target when SMB is active
+        //if (profile.temptargetSet && !ENTTActive) ENactive = false;
+        if (profile.temptargetSet && !ENTTActive && enableSMB) ENactive = false;
+
         // SAFETY: Disable EN overnight after EN hours and no override in prefs
         if (!ENtimeOK && ENactive && !profile.allowENWovernight) ENactive = false;
     }
@@ -813,12 +823,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     ZTpredBGs.push(bg);
     UAMpredBGs.push(bg);
 
-    var enableSMB = enable_smb(
-        profile,
-        microBolusAllowed,
-        meal_data,
-        target_bg
-    );
+//    var enableSMB = enable_smb(
+//        profile,
+//        microBolusAllowed,
+//        meal_data,
+//        target_bg
+//    );
 
     // enable UAM (if enabled in preferences)
     var enableUAM = (profile.enableUAM);
