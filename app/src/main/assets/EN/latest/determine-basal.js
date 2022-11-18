@@ -585,29 +585,25 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         //basal = profile.current_basal * sensitivityRatio;
     }
 
-    // adjust basal prior to TIR_sens addition with limits applied
-    sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
-    sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
-    basal = profile.current_basal * sensitivityRatio;
-    carb_ratio = carb_ratio / sensitivityRatio;
-
     // apply TIRS to ISF, TIRS will be 1 if not enabled, limit to autosens_max
-    //TIR_sens = Math.min(TIR_sens, profile.autosens_max);
     sensitivityRatio = sensitivityRatio * TIR_sens;
-    basal = round_basal(basal, profile);
-    if (basal !== profile_current_basal) {
-        enlog += "Adjusting basal from " + profile_current_basal + " to " + basal + "; ";
-    } else {
-        enlog += "Basal unchanged: " + basal + "; ";
-    }
 
     // apply final autosens limits after TIR_sens
     sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
     sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
     sensitivityRatio = round(sensitivityRatio, 2);
 
-    // adjust ISF
+    // adjust ISF, basal and CR
     sens_normalTarget = sens_normalTarget / sensitivityRatio;
+    basal = profile.current_basal * sensitivityRatio;
+    carb_ratio = carb_ratio / sensitivityRatio;
+
+    basal = round_basal(basal, profile);
+    if (basal !== profile_current_basal) {
+        enlog += "Adjusting basal from " + profile_current_basal + " to " + basal + "; ";
+    } else {
+        enlog += "Basal unchanged: " + basal + "; ";
+    }
 
     // adjust min, max, and target BG for sensitivity, such that 50% increase in ISF raises target from 100 to 120
     if (profile.temptargetSet) {
