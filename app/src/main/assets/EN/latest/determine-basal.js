@@ -524,7 +524,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var sens_normalTarget = sens, sens_profile = sens; // use profile sens and keep profile sens with any SR
     enlog += "sens_normalTarget:" + convert_bg(sens_normalTarget, profile) + "\n";
 
-    // MaxISF is the user defined limit for sens_TDD based on a percentage of the current profile based ISF
+    // MaxISF is the user defined limit for adjusted ISF based on a percentage of the current profile based ISF
     var MaxISF = sens_profile / (profile.MaxISFpct / 100);
 
     // If Use TDD ISF is enabled in profile restrict by MaxISF also adjust for when a high TT using SR if applicable
@@ -552,51 +552,38 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         sensitivityRatio = (typeof autosens_data !== 'undefined' && autosens_data ? autosens_data.ratio : sensitivityRatio);
     }
 
-    // adjust profile basal and ISF based on prefs and sensitivityRatio
+    // adjust profile basal based on prefs and sensitivityRatio
     if (profile.use_sens_TDD || profile.use_sens_LCTDD ) {
         // dont adjust sens_normalTarget
-        //sens_normalTarget = sens_normalTarget;
         sensitivityRatio = 1;
-        // SR can use the profile ISF and current TDD ISF to scale SR
-        // sensitivityRatio = (profile.enableSRTDD  && !firstMealScaling ? sens / sens_normalTarget : 1);
-        // when SR_TDD shows sensitivity but TIR is resistant reset sensitivityRatio to 100%
-        //sensitivityRatio = (TIR_sens > 1 && sensitivityRatio < 1 ?  1 : sensitivityRatio);
-        // sens_normalTarget will be adjusted later with SR so set to profile ISF
-        // sens_normalTarget = (sensitivityRatio !=1 ? profile_sens : sens_normalTarget);
     } else if (profile.enableSRTDD && SR_TDD !=1) {
-        // dont apply autosens limits to show SR_TDD full potential
-        //SR_TDD = Math.min(SR_TDD, profile.autosens_max);
-        //SR_TDD = Math.max(SR_TDD, profile.autosens_min);
         // Use SR_TDD when no TT, profile switch
         sensitivityRatio = (profile.temptargetSet && !ENTTActive || profile.percent != 100 ?  1 : SR_TDD);
         // when SR_TDD shows sensitivity but TIR is resistant reset sensitivityRatio to 100%
         sensitivityRatio = (TIR_sens > 1 && sensitivityRatio < 1 ?  1 : sensitivityRatio);
-        // adjust basal later
-        // basal = profile.current_basal * sensitivityRatio;
-        // adjust sens_normalTarget below with TIR_sens
-        // sens_normalTarget = sens_normalTarget / sensitivityRatio;
+        // apply autosens limits
+        sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
+        sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
+        // adjust basal
+        basal = profile.current_basal * sensitivityRatio;
+        // adjust CR
+        //carb_ratio = carb_ratio / sensitivityRatio;
     } else {
         // apply autosens limits
         sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
         sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
-        // adjust sens_normalTarget below with TIR_sens
-        // sens_normalTarget = sens_normalTarget / sensitivityRatio;
-        // adjust basal later
-        //basal = profile.current_basal * sensitivityRatio;
+        // adjust basal
+        basal = profile.current_basal * sensitivityRatio;
     }
 
-    // apply TIRS to ISF, TIRS will be 1 if not enabled, limit to autosens_max
-    sensitivityRatio = sensitivityRatio * TIR_sens;
+    if (TIR_sens !=1) {
+        // apply TIRS to ISF only
+        sens_normalTarget = sens_normalTarget / TIR_sens;
+        sens_normalTarget = Math.max(MaxISF, sens_normalTarget);
+    }
 
-    // apply final autosens limits after TIR_sens
-    sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
-    sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
+    // round SR
     sensitivityRatio = round(sensitivityRatio, 2);
-
-    // adjust ISF, basal and CR
-    sens_normalTarget = sens_normalTarget / sensitivityRatio;
-    basal = profile.current_basal * sensitivityRatio;
-    carb_ratio = carb_ratio / sensitivityRatio;
 
     basal = round_basal(basal, profile);
     if (basal !== profile_current_basal) {
@@ -1303,7 +1290,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     rT.COB = meal_data.mealCOB;
     rT.IOB = iob_data.iob;
-    rT.reason = "COB: " + round(meal_data.mealCOB, 1) + ", Dev: " + convert_bg(deviation, profile) + ", BGI: " + convert_bg(bgi, profile) + ", Delta: " + glucose_status.delta + "/" + glucose_status.short_avgdelta + "/" + glucose_status.long_avgdelta + "=" + round(DeltaPctS * 100) + "/" + round(DeltaPctL * 100) + "%" + ", ISF: " + convert_bg(sens_normalTarget, profile) + (profile.use_sens_TDD && sens_normalTarget == MaxISF ? "*" : "") + "/" + convert_bg(sens, profile) + "=" + convert_bg(insulinReq_sens, profile) + ", CR: " + round(carb_ratio, 2) + ", Target: " + convert_bg(target_bg, profile) + (target_bg != normalTarget ? "(" + convert_bg(normalTarget, profile) + ")" : "") + ", minPredBG " + convert_bg(minPredBG, profile) + ", minGuardBG " + convert_bg(minGuardBG_orig, profile) + (minGuardBG > minGuardBG_orig ? "=" + convert_bg(minGuardBG, profile) : "") + ", IOBpredBG " + convert_bg(lastIOBpredBG, profile) + ", LGS: " + convert_bg(threshold, profile);
+    rT.reason = "COB: " + round(meal_data.mealCOB, 1) + ", Dev: " + convert_bg(deviation, profile) + ", BGI: " + convert_bg(bgi, profile) + ", Delta: " + glucose_status.delta + "/" + glucose_status.short_avgdelta + "/" + glucose_status.long_avgdelta + "=" + round(DeltaPctS * 100) + "/" + round(DeltaPctL * 100) + "%" + ", ISF: " + convert_bg(sens_normalTarget, profile) + (MaxISF != 1 && sens_normalTarget == MaxISF ? "*" : "") + "/" + convert_bg(sens, profile) + "=" + convert_bg(insulinReq_sens, profile) + ", CR: " + round(carb_ratio, 2) + ", Target: " + convert_bg(target_bg, profile) + (target_bg != normalTarget ? "(" + convert_bg(normalTarget, profile) + ")" : "") + ", minPredBG " + convert_bg(minPredBG, profile) + ", minGuardBG " + convert_bg(minGuardBG_orig, profile) + (minGuardBG > minGuardBG_orig ? "=" + convert_bg(minGuardBG, profile) : "") + ", IOBpredBG " + convert_bg(lastIOBpredBG, profile) + ", LGS: " + convert_bg(threshold, profile);
 
     if (lastCOBpredBG > 0) {
         rT.reason += ", " + (ignoreCOB && !ENWindowOK ? "!" : "") + "COBpredBG " + convert_bg(lastCOBpredBG, profile);
