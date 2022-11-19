@@ -319,7 +319,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     // patches ==== START
-    var ignoreCOB = profile.enableGhostCOB; //MD#01: Ignore any COB and rely purely on UAM after initial rise
+    var ignoreCOB = (profile.enableGhostCOB || profile.enableGhostCOBAlways); //MD#01: Ignore any COB and rely purely on UAM after initial rise
+    var ignoreCOBAlways = profile.enableGhostCOBAlways; //MD#01: Ignore any COB and rely purely on UAM after initial rise
 
     // Check that max iob is OK
     if (iob_data.iob <= max_iob) ENmaxIOBOK = true;
@@ -462,7 +463,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var COB = meal_data.mealCOB;
 
     // If GhostCOB is enabled we will use COB when ENWindowOK but outside this window UAM will be used
-    if (ignoreCOB && ENWindowOK && COB > 0) ignoreCOB = false;
+    if (ignoreCOB && !ignoreCOBAlways && ENWindowOK && COB > 0) ignoreCOB = false;
+
 
     // ins_val used as the divisor for ISF scaling
     var insulinType = profile.insulinType, ins_val = 90, ins_peak = 75;

@@ -247,6 +247,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val normalTargetBG = profile.getTargetMgdl().roundToInt()
         this.profile.put("normal_target_bg", normalTargetBG)
         this.profile.put("enableGhostCOB", sp.getBoolean(R.string.key_use_ghostcob, false))
+        this.profile.put("enableGhostCOBAlways", sp.getBoolean(R.string.key_use_ghostcob_always, false))
+
         this.profile.put("allowENWovernight", sp.getBoolean(R.string.key_use_enw_overnight, false))
         //this.profile.put("COBWindow", sp.getInt(R.string.key_eatingnow_cobboostminutes, 0))
 

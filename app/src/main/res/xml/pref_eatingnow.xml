@@ -280,8 +280,14 @@
             <SwitchPreference
                 android:defaultValue="false"
                 android:key="key_use_ghostcob"
-                android:title="Use GhostCOB"
-                android:summary="Ignore COB after EN Window and rely on UAM predictions.\nWhen disabled COB predictions will be as normal." />
+                android:title="Use GhostCOB after ENW"
+                android:summary="Ignore COB after EN Window and rely on UAM predictions." />
+
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="key_use_ghostcob_always"
+                android:title="Use GhostCOB Always"
+                android:summary="Always ignore COB." />
 
         </PreferenceCategory>
 
