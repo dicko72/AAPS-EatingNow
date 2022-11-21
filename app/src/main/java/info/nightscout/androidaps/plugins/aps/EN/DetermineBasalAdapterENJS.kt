@@ -330,30 +330,45 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.mealData.put("firstCarbTime",firstCarbTime)
 
         // get the FIRST bolus time since EN activation
-        val firstENBolusTime = repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.timestamp
-        val firstENBolusUnits = repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.amount
-        this.mealData.put("firstENBolusTime",firstENBolusTime)
-        this.mealData.put("firstENBolusUnits",firstENBolusUnits)
+        // val firstENBolusTime = repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.timestamp
+        // val firstENBolusUnits = repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.amount
+        // this.mealData.put("firstENBolusTime",firstENBolusTime)
+        // this.mealData.put("firstENBolusUnits",firstENBolusUnits)
+        repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.let { firstENBolus->
+            this.mealData.put("firstENBolusTime", firstENBolus.timestamp)
+            this.mealData.put("firstENBolusUnits", firstENBolus.amount)
+        }
 
         // get the FIRST EN TT time since EN activation
-        val firstENTempTargetTime = repository.getENTemporaryTargetDataFromTime(ENStartTime,true).blockingGet().lastOrNull()?.timestamp
-        this.mealData.put("firstENTempTargetTime",firstENTempTargetTime)
+        // val firstENTempTargetTime = repository.getENTemporaryTargetDataFromTime(ENStartTime,true).blockingGet().lastOrNull()?.timestamp
+        // this.mealData.put("firstENTempTargetTime",firstENTempTargetTime)
+        repository.getENTemporaryTargetDataFromTime(ENStartTime,true).blockingGet().lastOrNull()?.let { firstENTempTarget ->
+            this.mealData.put("firstENTempTargetTime", firstENTempTarget.timestamp)
+        }
 
         // get the current EN TT info
-        val activeENTempTargetStartTime = repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.timestamp
-        this.mealData.put("activeENTempTargetStartTime",activeENTempTargetStartTime)
-        val activeENTempTargetDuration = repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.duration
-        if (activeENTempTargetDuration != null) {
-            this.mealData.put("activeENTempTargetDuration",activeENTempTargetDuration/60000)
-        } else {
-            this.mealData.put("activeENTempTargetDuration", 0)
+        // val activeENTempTargetStartTime = repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.timestamp
+        // this.mealData.put("activeENTempTargetStartTime",activeENTempTargetStartTime)
+        // val activeENTempTargetDuration = repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.duration
+        // if (activeENTempTargetDuration != null) {
+        //     this.mealData.put("activeENTempTargetDuration",activeENTempTargetDuration/60000)
+        // } else {
+        //     this.mealData.put("activeENTempTargetDuration", 0)
+        // }
+        repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.let { activeENTempTarget ->
+            this.mealData.put("activeENTempTargetStartTime",activeENTempTarget.timestamp)
+            this.mealData.put("activeENTempTargetDuration",activeENTempTarget.duration/60000)
         }
 
         // get the LAST bolus time since EN activation
-        val lastENBolusTime = repository.getENBolusFromTimeOfType(ENStartTime,false, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.timestamp
-        val lastENBolusUnits = repository.getENBolusFromTimeOfType(ENStartTime,false, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.amount
-        this.mealData.put("lastENBolusTime",lastENBolusTime)
-        this.mealData.put("lastENBolusUnits",lastENBolusUnits)
+        // val lastENBolusTime = repository.getENBolusFromTimeOfType(ENStartTime,false, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.timestamp
+        // val lastENBolusUnits = repository.getENBolusFromTimeOfType(ENStartTime,false, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.amount
+        // this.mealData.put("lastENBolusTime",lastENBolusTime)
+        // this.mealData.put("lastENBolusUnits",lastENBolusUnits)
+        repository.getENBolusFromTimeOfType(ENStartTime, false, Bolus.Type.NORMAL, enwMinBolus).blockingGet().lastOrNull()?.let { it ->
+            this.mealData.put("lastENBolusTime", it.timestamp)
+            this.mealData.put("lastENBolusUnits", it.amount)
+        }
 
         // 3PM is used as a low basal point at which the rest of the day leverages for ISF variance when using one ISF in the profile
         this.profile.put("enableBasalAt3PM", sp.getBoolean(R.string.key_use_3pm_basal, false))
