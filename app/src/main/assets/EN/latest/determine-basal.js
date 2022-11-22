@@ -1298,7 +1298,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason = "COB: " + round(meal_data.mealCOB, 1) + ", Dev: " + convert_bg(deviation, profile) + ", BGI: " + convert_bg(bgi, profile) + ", Delta: " + glucose_status.delta + "/" + glucose_status.short_avgdelta + "/" + glucose_status.long_avgdelta + "=" + round(DeltaPctS * 100) + "/" + round(DeltaPctL * 100) + "%" + ", ISF: " + convert_bg(sens_normalTarget, profile) + (MaxISF != 1 && sens_normalTarget == MaxISF ? "*" : "") + "/" + convert_bg(sens, profile) + "=" + convert_bg(insulinReq_sens, profile) + ", CR: " + round(carb_ratio, 2) + ", Target: " + convert_bg(target_bg, profile) + (target_bg != normalTarget ? "(" + convert_bg(normalTarget, profile) + ")" : "") + ", minPredBG " + convert_bg(minPredBG, profile) + ", minGuardBG " + convert_bg(minGuardBG_orig, profile) + (minGuardBG > minGuardBG_orig ? "=" + convert_bg(minGuardBG, profile) : "") + ", IOBpredBG " + convert_bg(lastIOBpredBG, profile) + ", LGS: " + convert_bg(threshold, profile);
 
     if (lastCOBpredBG > 0) {
-        rT.reason += ", " + (ignoreCOB && !ENWindowOK ? "!" : "") + "COBpredBG " + convert_bg(lastCOBpredBG, profile);
+        rT.reason += ", " + (ignoreCOB ? "!" : "") + "COBpredBG " + convert_bg(lastCOBpredBG, profile);
     }
     if (lastUAMpredBG > 0) {
         rT.reason += ", UAMpredBG " + convert_bg(lastUAMpredBG, profile);
