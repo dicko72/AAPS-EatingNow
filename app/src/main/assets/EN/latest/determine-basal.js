@@ -1245,6 +1245,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // positive or negative delta with acceleration and default
             eBGweight = (DeltaPctS > 1.0 || eventualBG > bg ? 0.50 : eBGweight);
 
+            // SAFETY: UAM fast delta with higher bg lowers eBGw
+            eBGweight = (bg > ISFbgMax && delta >= 15 ? 0.30 : eBGweight);
+
             // BG+ predtype when stuck high set a higher eventualBG
             sens_predType = (DeltaPctS > 1.0 && delta >= 0 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens > 1 && ENactive ? "BG+" : sens_predType);
             eventualBG = (sens_predType == "BG+" ? preBolusBG : eventualBG);
