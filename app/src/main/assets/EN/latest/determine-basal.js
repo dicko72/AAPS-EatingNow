@@ -498,31 +498,36 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "* advanced ISF:\n";
 
     // TIR_sens - a very simple implementation of autoISF configurable % per hour
-    var TIR_sens = 0, TIRH_percent = profile.resistancePerHr / 100, TIR = 0;
-    //if (ENtimeOK && TIRH_percent && bg > 150 && delta >= -4 && delta <= 4) {
-    if (TIRH_percent && bg > 150) {
-        if (meal_data.TIRW1H > 25) TIR = meal_data.TIRW1H / 100;
-        if (meal_data.TIRW2H > 0 && TIR == 1) TIR += meal_data.TIRW2H / 100;
-        if (meal_data.TIRW3H > 0 && TIR == 2) TIR += meal_data.TIRW3H / 100;
-        if (meal_data.TIRW4H > 0 && TIR == 3) TIR += meal_data.TIRW4H / 100;
-        if (delta >= -4 && delta <= 4) TIR_sens = TIR; // only use if delta not too high
-    } else if (TIRH_percent && bg > normalTarget + (ENtimeOK ? 18 : 9)) {
-        if (meal_data.TIRTW1H > 25) TIR = meal_data.TIRTW1H / 100;
-        if (meal_data.TIRTW2H > 0 && TIR == 1) TIR += meal_data.TIRTW2H / 100;
-        if (meal_data.TIRTW3H > 0 && TIR == 2) TIR += meal_data.TIRTW3H / 100;
-        if (meal_data.TIRTW4H > 0 && TIR == 3) TIR += meal_data.TIRTW4H / 100;
-        if (delta >= -4 && delta <= (ENtimeOK ? 4 : 10)) TIR_sens = TIR; // only use if delta not too high
+    var TIR_sens = 0, TIRH_percent = profile.resistancePerHr / 100;
+    if (TIRH_percent && bg > 150 && delta >= -4 && delta <= 4) {
+        if (meal_data.TIRW1H > 25) TIR_sens = meal_data.TIRW1H / 100;
+        if (meal_data.TIRW2H > 0 && TIR_sens == 1) TIR_sens += meal_data.TIRW2H / 100;
+        if (meal_data.TIRW3H > 0 && TIR_sens == 2) TIR_sens += meal_data.TIRW3H / 100;
+        if (meal_data.TIRW4H > 0 && TIR_sens == 3) TIR_sens += meal_data.TIRW4H / 100;
+    } else if (TIRH_percent && bg > normalTarget + (ENtimeOK ? 18 : 9) && delta >= -4 && delta <= (ENtimeOK ? 4 : 10)) {
+        if (meal_data.TIRTW1H > 25) TIR_sens = meal_data.TIRTW1H / 100;
+        if (meal_data.TIRTW2H > 0 && TIR_sens == 1) TIR_sens += meal_data.TIRTW2H / 100;
+        if (meal_data.TIRTW3H > 0 && TIR_sens == 2) TIR_sens += meal_data.TIRTW3H / 100;
+        if (meal_data.TIRTW4H > 0 && TIR_sens == 3) TIR_sens += meal_data.TIRTW4H / 100;
     } else if (TIRH_percent && bg < normalTarget) {
-        if (meal_data.TIRTW1L > 25) TIR = meal_data.TIRTW1L / 100;
-        if (meal_data.TIRTW2L > 0 && TIR == 1) TIR += meal_data.TIRTW2L / 100;
-        if (meal_data.TIRTW3L > 0 && TIR == 2) TIR += meal_data.TIRTW3L / 100;
-        if (meal_data.TIRTW4L > 0 && TIR == 3) TIR += meal_data.TIRTW4L / 100;
-        TIR_sens = TIR;
+        if (meal_data.TIRTW1L > 25) TIR_sens = meal_data.TIRTW1L / 100;
+        if (meal_data.TIRTW2L > 0 && TIR_sens == 1) TIR_sens += meal_data.TIRTW2L / 100;
+        if (meal_data.TIRTW3L > 0 && TIR_sens == 2) TIR_sens += meal_data.TIRTW3L / 100;
+        if (meal_data.TIRTW4L > 0 && TIR_sens == 3) TIR_sens += meal_data.TIRTW4L / 100;
     }
     var TIR_sum = Math.max(TIR_sens,1); // use this for BG+
     // if above target use resistance calc if below sensitivity calc, if either is present
     TIR_sens = (bg > normalTarget ? 1 + (TIR_sens * TIRH_percent) : 1 - (TIR_sens * TIRH_percent) );
-    TIR = (bg > normalTarget ? 1 + (TIR * TIRH_percent) : 1 - (TIR * TIRH_percent) );
+
+    // TIR experiment
+    var TIR = 0;
+    if (TIRH_percent) {
+        if (meal_data.TIRTW1H > 0) TIR = meal_data.TIRTW1H / 100;
+        if (meal_data.TIRTW2H > 0) TIR += meal_data.TIRTW2H / 100;
+        if (meal_data.TIRTW3H > 0) TIR += meal_data.TIRTW3H / 100;
+        if (meal_data.TIRTW4H > 0) TIR += meal_data.TIRTW4H / 100;
+    }
+    TIR = (bg > normalTarget ? 1 + (TIR * TIRH_percent) : 1);
     var endebug = "TIR:" + TIR;
 
     // ISF at normal target
