@@ -528,7 +528,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (meal_data.TIRTW4H > 0) TIR += meal_data.TIRTW4H / 100;
     }
     TIR = (bg > normalTarget ? 1 + (TIR * TIRH_percent) : 1);
-    var endebug = "TIR:" + TIR;
 
     // ISF at normal target
     var sens_normalTarget = sens, sens_profile = sens; // use profile sens and keep profile sens with any SR
@@ -578,6 +577,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         basal = profile.current_basal * sensitivityRatio;
         // adjust CR
         //carb_ratio = carb_ratio / sensitivityRatio;
+
+        // Try TIR for current BG ISF
+        // apply autosens limits
+        var TIR_limited = TIR;
+        TIR_limited = Math.min(TIR_limited, profile.autosens_max);
+        TIR_limited = Math.max(TIR_limited, profile.autosens_min);
+
+        var endebug = "TIR:" + round(TIR,2) + "=" + round(TIR_limited,2) + " " + profile.resistancePerHr + "%";
     } else {
         // apply autosens limits
         sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
@@ -586,11 +593,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         basal = profile.current_basal * sensitivityRatio;
     }
 
-    if (TIR_sens !=1) {
-        // apply TIRS to ISF only
-        sens_normalTarget = sens_normalTarget / TIR_sens;
-        sens_normalTarget = Math.max(MaxISF, sens_normalTarget);
-    }
+//    if (TIR_sens !=1) {
+//        // apply TIRS to ISF only
+//        sens_normalTarget = sens_normalTarget / TIR_sens;
+//        sens_normalTarget = Math.max(MaxISF, sens_normalTarget);
+//    }
 
     // round SR
     sensitivityRatio = round(sensitivityRatio, 2);
@@ -647,7 +654,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         //circadian_sensitivity = 1.2;
         circadian_sensitivity = (0.000125*Math.pow(nowdec,3))-(0.0015*Math.pow(nowdec,2))-(0.0045*nowdec)+1.2;
     }
-    endebug += ", nowdec:" + nowdec + ", circSens:" + circadian_sensitivity;
+    //endebug += ", nowdec:" + nowdec + ", circSens:" + circadian_sensitivity;
 
 
     // experimenting with basal rate from 3PM
@@ -673,18 +680,18 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "ISFBGscaler % is now:" + ISFBGscaler + "\n";
 
     // scale the current bg ISF using previously defined sens at normal target
-    // var sens_currentBG = sens_normalTarget / sens_BGscaler * sens_normalTarget_scaler;
     var sens_currentBG = dynISF(bg,normalTarget,sens_normalTarget,ins_val);
+
     enlog += "sens_currentBG:" + convert_bg(sens_currentBG, profile) + "\n";
     sens_currentBG = sens_currentBG * (profile.useDynISF ? ISFBGscaler : 1);
     enlog += "sens_currentBG with ISFBGscaler:" + sens_currentBG + "\n";
-    //enlog += "dynISF@90:" + dynISF(90,normalTarget,sens_normalTarget,ins_val) + "\n";
-    //enlog += "dynISF@100:" + dynISF(100,normalTarget,sens_normalTarget,ins_val) + "\n";
-    //enlog += "dynISF@target:" + dynISF(normalTarget,normalTarget,sens_normalTarget,ins_val) + "\n";
-
 
     // SAFETY: if below target at night use normal ISF otherwise use dynamic ISF
     sens_currentBG = (bg < target_bg && ENSleepMode ? sens_normalTarget : sens_currentBG);
+
+    // EXPERIMENT * APPLY TIR
+    sens_currentBG /= (bg > normalTarget ? TIR_limited : 1);
+
 
     sens_currentBG = round(sens_currentBG, 1);
     enlog += "sens_currentBG final result:" + convert_bg(sens_currentBG, profile) + "\n";
