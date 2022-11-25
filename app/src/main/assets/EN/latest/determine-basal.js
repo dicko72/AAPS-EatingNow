@@ -593,11 +593,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         basal = profile.current_basal * sensitivityRatio;
     }
 
-//    if (TIR_sens !=1) {
-//        // apply TIRS to ISF only
-//        sens_normalTarget = sens_normalTarget / TIR_sens;
-//        sens_normalTarget = Math.max(MaxISF, sens_normalTarget);
-//    }
+    // apply TIRS to ISF only
+    if (TIR_sens !=1) {
+        sens_normalTarget = sens_normalTarget / TIR_sens;
+        sens_normalTarget = Math.max(MaxISF, sens_normalTarget);
+    }
 
     // round SR
     sensitivityRatio = round(sensitivityRatio, 2);
@@ -690,7 +690,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     sens_currentBG = (bg < target_bg && ENSleepMode ? sens_normalTarget : sens_currentBG);
 
     // EXPERIMENT * APPLY TIR
-    sens_currentBG /= (bg > normalTarget ? TIR_limited : 1);
+    //sens_currentBG /= (bg > normalTarget ? TIR_limited : 1);
 
 
     sens_currentBG = round(sens_currentBG, 1);
@@ -1367,9 +1367,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     //rT.reason += (bg < normalTarget && !ENtimeOK && meal_data.TIRTW1L > 25 ? ", TIRL:" + round(meal_data.TIRTW4L) + "/" + round(meal_data.TIRTW3L) + "/" + round(meal_data.TIRTW2L) + "/" + round(meal_data.TIRTW1L) : "");
     //    rT.reason += (TIR_sens <1 ? ", TIRL:" + round(meal_data.TIRW4L) + "/" + round(meal_data.TIRW3L) + "/" + round(meal_data.TIRW2L) +"/"+round(meal_data.TIRW1L) : "");
     if (profile.use_autosens) rT.reason += ", AS: " + round(autosens_data.ratio, 2);
-    rT.reason += ", TIRS: " + round(TIR_sens, 2);
-    rT.reason += ", SR_TDD: " + round(SR_TDD, 2);
-    rT.reason += ", SR: " + sensitivityRatio;
+    rT.reason += ", ISF: " + round(TIR_sens*100)+"%";
+    rT.reason += ", Basal: " + round(SR_TDD*100)+"="+round(sensitivityRatio*100)+"%";
+    //rT.reason += ", SR: " + sensitivityRatio;
     rT.reason += ", LRT: " + round(60 * minAgo);
     rT.reason += "; ";
     rT.reason += (typeof endebug !== 'undefined' && !rT.reason.includes("DEBUG") ? "** DEBUG: " + endebug + "** ": "");
