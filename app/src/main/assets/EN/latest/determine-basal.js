@@ -581,7 +581,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // Use SR_TDD when no TT, profile switch
         sensitivityRatio = (profile.temptargetSet && !ENTTActive || profile.percent != 100 ?  1 : SR_TDD);
         // when SR_TDD shows sensitivity but TIR is resistant reset sensitivityRatio to 100%
-        sensitivityRatio = (TIR_sens > 1 && sensitivityRatio < 1 ?  1 : sensitivityRatio);
+        //sensitivityRatio = (TIRB2 > 1 && sensitivityRatio < 1 ?  1 : sensitivityRatio);
         // apply autosens limits
         sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
         sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
