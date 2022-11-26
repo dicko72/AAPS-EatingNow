@@ -597,9 +597,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         basal = profile.current_basal * sensitivityRatio;
     }
 
-    // apply TIRS to ISF only
+    // apply TIRS to ISF only when delta is slight
     if (TIR_sens !=1) {
-        sens_normalTarget = sens_normalTarget / TIR_sens_limited;
+        sens_normalTarget = (delta >= 0 && delta <= 4 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
     }
 
     // round SR
