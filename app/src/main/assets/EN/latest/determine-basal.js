@@ -508,27 +508,28 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (meal_data.TIRW4H > 0 && TIRB2 == 3) TIRB2 += meal_data.TIRW4H / 100;
     }
     var TIRB2_sum = Math.max(TIRB2,1); // use this for BG+ later
-    // dont use TIRB2 when lower than 150/8.3
-    TIRB2 = (bg > 150 ? 1 + (TIRB2 * TIRH_percent) : 1);
+    // dont use TIRB2 when lower than target
+    TIRB2 = (bg > normalTarget ? 1 + (TIRB2 * TIRH_percent) : 1);
 
     // TIRB1 - The TIR for the lower band just above normalTarget (+9/0.5)
     if (TIRH_percent) {
-        if (meal_data.TIRTW1H > 0) TIRB1 = meal_data.TIRTW1H / 100;
+        if (meal_data.TIRTW1H > 25) TIRB1 = meal_data.TIRTW1H / 100;
         if (meal_data.TIRTW2H > 0) TIRB1 += meal_data.TIRTW2H / 100;
         if (meal_data.TIRTW3H > 0) TIRB1 += meal_data.TIRTW3H / 100;
         if (meal_data.TIRTW4H > 0) TIRB1 += meal_data.TIRTW4H / 100;
     }
     // dont use TIRB1 when lower than target
+    var TIRB1_sum = Math.max(TIRB1,1); // use this for BG+ later
     TIRB1 = (bg > normalTarget ? 1 + (TIRB1 * TIRH_percent) : 1);
 
     // TIRB0 - The TIR for the lowest band below normalTarget (-9/0.5)
     if (TIRH_percent) {
-        if (meal_data.TIRTW1L > 25) TIRB0 = meal_data.TIRTW1L / 100;
+        if (meal_data.TIRTW1L > 0) TIRB0 = meal_data.TIRTW1L / 100;
         if (meal_data.TIRTW2L > 0 && TIRB0 == 1) TIRB0 += meal_data.TIRTW2L / 100;
         if (meal_data.TIRTW3L > 0 && TIRB0 == 2) TIRB0 += meal_data.TIRTW3L / 100;
         if (meal_data.TIRTW4L > 0 && TIRB0 == 3) TIRB0 += meal_data.TIRTW4L / 100;
     }
-    // dont use TIRB0 when lower above low band
+    // dont use TIRB0 when above low band
     TIRB0 = (bg < normalTarget ? 1 - (TIRB0 * TIRH_percent) : 1);
 
     // if above target use resistance calc if below sensitivity calc, if either is present
@@ -536,6 +537,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // if we have low TIR data use it, else use max resistance data of B2 and B1
     TIR_sens = (TIRB0 < 1 ? TIRB0 : Math.max(TIRB2,TIRB1) );
+
+    // TIR_sum will use relevant TIR band for BG+
+    var TIRB_sum = (bg < 150 ? TIRB1_sum : TIRB2_sum);
+
     var endebug = "TIRB012:" + round(TIRB0,2) + "," + round(TIRB1,2) + "," + round(TIRB2,2) + "@" + profile.resistancePerHr + "%" + "=" + round(TIR_sens,2);
     // apply autosens limit to TIR_sens_limited
     TIR_sens_limited = Math.min(TIR_sens, profile.autosens_max);
@@ -598,8 +603,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     // apply TIRS to ISF only when delta is slight
-    if (TIR_sens !=1) {
-        sens_normalTarget = (delta >= 0 && delta <= 4 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
+    if (TIR_sens_limited !=1) {
+        sens_normalTarget = (delta >= 0 && delta <= 4 || TIR_sens_limited < 1 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
     }
 
     // round SR
@@ -1249,7 +1254,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
-    if (ENactive || ENSleepMode || TIR_sens > 1) {
+    if (ENactive || ENSleepMode || TIR_sens_limited > 1) {
         // prebolus exaggerated bg
         var preBolusBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
 
@@ -1287,7 +1292,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
             // BG+ predtype when stuck high set a higher eventualBG
             //sens_predType = (DeltaPctS > 1.0 && delta >= 0 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens > 1 && ENactive ? "BG+" : sens_predType);
-            sens_predType = (DeltaPctS > 1.0 && delta >= 0 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens > 1 ? "BG+" : sens_predType);
+            sens_predType = (DeltaPctS > 1.0 && delta >= 0 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens_limited > 1 ? "BG+" : sens_predType);
 
             eventualBG = (sens_predType == "BG+" ? preBolusBG : eventualBG);
             // EXPERIMENT: minGuardBG prevents reduction in high bg force higher until TIRS resets
@@ -1304,7 +1309,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
             // BG+ predtype when stuck high set a higher eventualBG
             //sens_predType = (DeltaPctS > 1.0 && delta >= 0 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens > 1 && ENactive ? "BG+" : sens_predType);
-            sens_predType = (DeltaPctS > 1.0 && delta >= 0 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens > 1 ? "BG+" : sens_predType);
+            sens_predType = (DeltaPctS > 1.0 && delta >= 0 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens_limited > 1 ? "BG+" : sens_predType);
             eventualBG = (sens_predType == "BG+" ? preBolusBG : eventualBG);
             // EXPERIMENT: minGuardBG prevents reduction in high bg force higher until TIRS resets
             minGuardBG = (sens_predType == "BG+" ? threshold: minGuardBG);
@@ -1678,7 +1683,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // ENW gets 85%
                 if (ENWindowOK) insulinReqPct = ENWinsulinReqPct;
                 // SAFETY: Restrict insulinReq when not ENW to lower dynamic insulinReq unless high
-                if (!ENWindowOK && TIR_sens ==1) {
+                if (!ENWindowOK && TIR_sens_limited ==1) {
                     insulinReqPct = Math.max(insulinReqOrig/insulinReq,maxBolusOrig/insulinReq); // minimum SMB is maxBolusOrig
                     insulinReqPct = Math.max(insulinReqPct,0); // minimum 0% when original insulinReq is much lower
                     insulinReqPct = Math.min(insulinReqPct,1); // maximum 100% when original insulinReq is much higher
@@ -1720,7 +1725,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
                 // BG+ provides 20 min blocks of SMB based on TIR
                 //ENMaxSMB = (sens_predType == "BG+" ? profile.current_basal * 20/60 : ENMaxSMB);
-                ENMaxSMB = (sens_predType == "BG+" ? profile.current_basal * (20 * TIRB2_sum) / 60 : ENMaxSMB);
+                ENMaxSMB = (sens_predType == "BG+" ? profile.current_basal * (20 * TIRB_sum) / 60 : ENMaxSMB);
 
                 // EXPERIMENTAL: TBR only for PRE
                 // ENMaxSMB = (sens_predType == "PRE" ? 0 : ENMaxSMB);
@@ -1832,7 +1837,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         var maxSafeBasal = tempBasalFunctions.getMaxSafeBasal(profile);
 
         // SAFETY: if ENactive and an SMB given reduce the temp rate, unless resistant
-        if (microBolus && TIR_sens == 1 && AllowZT) {
+        if (microBolus && TIR_sens_limited == 1 && AllowZT) {
             rate = Math.max(basal + insulinReq - microBolus, 0);
             rate = round_basal(rate, profile);
         }
