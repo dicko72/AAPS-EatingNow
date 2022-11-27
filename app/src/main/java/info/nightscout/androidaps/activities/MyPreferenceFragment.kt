@@ -98,6 +98,7 @@ class MyPreferenceFragment : PreferenceFragmentCompat(), OnSharedPreferenceChang
     @Inject lateinit var nsClientV3Plugin: NSClientV3Plugin
     @Inject lateinit var openAPSAMAPlugin: info.nightscout.plugins.aps.openAPSAMA.OpenAPSAMAPlugin
     @Inject lateinit var openAPSSMBPlugin: info.nightscout.plugins.aps.openAPSSMB.OpenAPSSMBPlugin
+    @Inject lateinit var ENPlugin: info.nightscout.plugins.aps.EN.ENPlugin
     @Inject lateinit var openAPSSMBDynamicISFPlugin: info.nightscout.plugins.aps.openAPSSMBDynamicISF.OpenAPSSMBDynamicISFPlugin
     @Inject lateinit var safetyPlugin: SafetyPlugin
     @Inject lateinit var sensitivityAAPSPlugin: SensitivityAAPSPlugin
@@ -194,6 +195,7 @@ class MyPreferenceFragment : PreferenceFragmentCompat(), OnSharedPreferenceChang
             addPreferencesFromResourceIfEnabled(loopPlugin, rootKey, config.APS)
             addPreferencesFromResourceIfEnabled(openAPSAMAPlugin, rootKey, config.APS)
             addPreferencesFromResourceIfEnabled(openAPSSMBPlugin, rootKey, config.APS)
+            addPreferencesFromResourceIfEnabled(ENPlugin, rootKey, config.APS)
             addPreferencesFromResourceIfEnabled(openAPSSMBDynamicISFPlugin, rootKey, config.APS)
             addPreferencesFromResourceIfEnabled(sensitivityAAPSPlugin, rootKey)
             addPreferencesFromResourceIfEnabled(sensitivityWeightedAveragePlugin, rootKey)

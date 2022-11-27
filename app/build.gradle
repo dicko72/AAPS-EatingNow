@@ -59,7 +59,7 @@ def generateGitRemote = { ->
 def generateDate = { ->
     StringBuilder stringBuilder = new StringBuilder()
     // showing only date prevents app to rebuild everytime
-    stringBuilder.append((new Date()).format('yyyy.MM.dd'))
+    stringBuilder.append((new Date()).format('yyyy.MM.dd-HH:mm'))
     return stringBuilder.toString()
 }
 
@@ -111,15 +111,46 @@ android {
     defaultConfig {
         multiDexEnabled true
         versionCode 1500
-        version "3.1.0.3-dev-c-nscv3"
+        version "3.1.0.3-dev-c-nscv3-EatingNow"
         buildConfigField "String", "VERSION", '"' + version + '"'
-        buildConfigField "String", "BUILDVERSION", '"' + generateGitBuild() + '-' + generateDate() + '"'
+        buildConfigField "String", "BUILDVERSION",   '"' + 'EN-' + generateGitBuild()[0..7] + '-' + generateDate() + '"'
         buildConfigField "String", "REMOTE", '"' + generateGitRemote() + '"'
         buildConfigField "String", "HEAD", '"' + generateGitBuild() + '"'
         buildConfigField "String", "COMMITTED", '"' + allCommitted() + '"'
 
     }
-
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            testCoverageEnabled(project.hasProperty('coverage'))
+        }
+        firebaseDisable {
+            System.setProperty("disableFirebase", "true")
+            ext.enableCrashlytics = false
+        }
+        applicationVariants.all{
+                // this method is use to rename your all apk weather
+                // it may be signed or unsigned(debug apk)
+            variant ->
+                variant.outputs.each{
+                        // on below line we are setting a name to our apk
+                    output->
+                        // on below line we are adding the formatted date to our apk file name.
+                        def formattedDate = new Date().format('YYMMdd')
+                        // on below line we are creating a new name for our apk.
+                        def newName = output.outputFile.name
+                        newName = newName.replace("-release", "")
+                        newName = newName.replace("app-", "")
+                        // on below line we are replacing -release with our formatted date and ID.
+                        newName = formattedDate + "-" + generateGitBuild()[0..7] + "-en-" + newName
+                        // at last we are setting our apk name to it.
+                        output.outputFileName  = newName
+                }
+        }
+    }
     flavorDimensions "standard"
     productFlavors {
         full {
@@ -278,6 +309,6 @@ if (isMaster() && !gitAvailable()) {
     throw new GradleException('GIT system is not available. On Windows try to run Android Studio as an Administrator. Check if GIT is installed and Studio have permissions to use it')
 }
 if (isMaster() && !allCommitted()) {
-    throw new GradleException('There are uncommitted changes. Clone sources again as described in wiki and do not allow gradle update')
+    //throw new GradleException('There are uncommitted changes. Clone sources again as described in wiki and do not allow gradle update')
 }
 
