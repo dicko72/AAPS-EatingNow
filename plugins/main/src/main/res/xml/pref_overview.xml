@@ -25,6 +25,11 @@
 
             <SwitchPreference
                 android:defaultValue="true"
+                android:key="@string/key_eatingnow_showbutton"
+                android:title="@string/en_eatingnow_showbutton" />
+
+            <SwitchPreference
+                android:defaultValue="true"
                 android:key="@string/key_show_wizard_button"
                 android:title="@string/calculator_label" />
 

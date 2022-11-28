@@ -4,29 +4,39 @@ import android.content.Context
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
 import dagger.android.HasAndroidInjector
-import info.nightscout.androidaps.R
 import info.nightscout.androidaps.annotations.OpenForTesting
-import info.nightscout.androidaps.database.AppRepository
-import info.nightscout.androidaps.database.ValueWrapper
 import info.nightscout.androidaps.extensions.target
-import info.nightscout.androidaps.interfaces.*
-import info.nightscout.androidaps.plugins.aps.events.EventOpenAPSUpdateGui
-import info.nightscout.androidaps.plugins.aps.events.EventOpenAPSUpdateResultGui
-import info.nightscout.androidaps.plugins.aps.loop.ScriptReader
-import info.nightscout.androidaps.plugins.bus.RxBus
-import info.nightscout.androidaps.plugins.configBuilder.ConstraintChecker
-import info.nightscout.androidaps.plugins.iob.iobCobCalculator.AutosensResult
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.GlucoseStatusProvider
-import info.nightscout.androidaps.utils.DateUtil
-import info.nightscout.androidaps.utils.HardLimits
-import info.nightscout.androidaps.utils.Profiler
-import info.nightscout.androidaps.utils.Round
-import info.nightscout.androidaps.interfaces.ResourceHelper
-import info.nightscout.shared.logging.AAPSLogger
-import info.nightscout.shared.logging.LTag
+import info.nightscout.core.utils.MidnightUtils
+import info.nightscout.database.ValueWrapper
+import info.nightscout.database.impl.AppRepository
+import info.nightscout.interfaces.aps.APS
+import info.nightscout.interfaces.aps.AutosensResult
+import info.nightscout.interfaces.aps.DetermineBasalAdapter
+import info.nightscout.interfaces.aps.SMBDefaults
+import info.nightscout.interfaces.constraints.Constraint
+import info.nightscout.interfaces.constraints.Constraints
+import info.nightscout.interfaces.iob.IobCobCalculator
+import info.nightscout.interfaces.plugin.ActivePlugin
+import info.nightscout.interfaces.plugin.PluginBase
+import info.nightscout.interfaces.plugin.PluginDescription
+import info.nightscout.interfaces.plugin.PluginType
+import info.nightscout.interfaces.profile.Profile
+import info.nightscout.interfaces.profile.ProfileFunction
+import info.nightscout.interfaces.profiling.Profiler
+import info.nightscout.interfaces.utils.HardLimits
+import info.nightscout.interfaces.utils.Round
+import info.nightscout.plugins.aps.R
+import info.nightscout.plugins.aps.utils.ScriptReader
+import info.nightscout.rx.bus.RxBus
+import info.nightscout.rx.logging.AAPSLogger
+import info.nightscout.rx.logging.LTag
+import info.nightscout.shared.interfaces.ResourceHelper
 import info.nightscout.shared.sharedPreferences.SP
+import info.nightscout.shared.utils.DateUtil
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.floor
 
 @OpenForTesting
 @Singleton
@@ -34,7 +44,7 @@ class ENPlugin @Inject constructor(
     injector: HasAndroidInjector,
     aapsLogger: AAPSLogger,
     private val rxBus: RxBus,
-    private val constraintChecker: ConstraintChecker,
+    private val constraintChecker: Constraints,
     rh: ResourceHelper,
     private val profileFunction: ProfileFunction,
     val context: Context,
@@ -49,7 +59,7 @@ class ENPlugin @Inject constructor(
 ) : PluginBase(
     PluginDescription()
         .mainType(PluginType.APS)
-        .fragmentClass(ENFragment::class.java.name)
+        .fragmentClass(info.nightscout.plugins.aps.OpenAPSFragment::class.java.name)
         .pluginIcon(R.drawable.ic_generic_icon)
         .pluginName(R.string.EN)
         .shortName(R.string.EN_shortname)
@@ -61,7 +71,7 @@ class ENPlugin @Inject constructor(
     // last values
     override var lastAPSRun: Long = 0
     override var lastAPSResult: DetermineBasalResultEN? = null
-    override var lastDetermineBasalAdapter: DetermineBasalAdapterInterface? = null
+    override var lastDetermineBasalAdapter: DetermineBasalAdapter? = null
     override var lastAutosensResult = AutosensResult()
 
     override fun specialEnableCondition(): Boolean {
@@ -93,18 +103,18 @@ class ENPlugin @Inject constructor(
         val profile = profileFunction.getProfile()
         val pump = activePlugin.activePump
         if (profile == null) {
-            rxBus.send(EventOpenAPSUpdateResultGui(rh.gs(R.string.noprofileset)))
-            aapsLogger.debug(LTag.APS, rh.gs(R.string.noprofileset))
+            rxBus.send(info.nightscout.plugins.aps.events.EventOpenAPSUpdateResultGui(rh.gs(R.string.no_profile_set)))
+            aapsLogger.debug(LTag.APS, rh.gs(R.string.no_profile_set))
             return
         }
-        if (!isEnabled(PluginType.APS)) {
-            rxBus.send(EventOpenAPSUpdateResultGui(rh.gs(R.string.openapsma_disabled)))
+        if (!isEnabled()) {
+            rxBus.send(info.nightscout.plugins.aps.events.EventOpenAPSUpdateResultGui(rh.gs(R.string.openapsma_disabled)))
             aapsLogger.debug(LTag.APS, rh.gs(R.string.openapsma_disabled))
             return
         }
         if (glucoseStatus == null) {
-            rxBus.send(EventOpenAPSUpdateResultGui(rh.gs(R.string.openapsma_noglucosedata)))
-            aapsLogger.debug(LTag.APS, rh.gs(R.string.openapsma_noglucosedata))
+            rxBus.send(info.nightscout.plugins.aps.events.EventOpenAPSUpdateResultGui(rh.gs(R.string.openapsma_no_glucose_data)))
+            aapsLogger.debug(LTag.APS, rh.gs(R.string.openapsma_no_glucose_data))
             return
         }
 
@@ -150,7 +160,7 @@ class ENPlugin @Inject constructor(
                 )
         }
         if (!hardLimits.checkHardLimits(profile.dia, R.string.profile_dia, hardLimits.minDia(), hardLimits.maxDia())) return
-        if (!hardLimits.checkHardLimits(profile.getIcTimeFromMidnight(Profile.secondsFromMidnight()), R.string.profile_carbs_ratio_value, hardLimits.minIC(), hardLimits.maxIC())) return
+        if (!hardLimits.checkHardLimits(profile.getIcTimeFromMidnight(MidnightUtils.secondsFromMidnight()), R.string.profile_carbs_ratio_value, hardLimits.minIC(), hardLimits.maxIC())) return
         if (!hardLimits.checkHardLimits(profile.getIsfMgdl(), R.string.profile_sensitivity_value, HardLimits.MIN_ISF, HardLimits.MAX_ISF)) return
         if (!hardLimits.checkHardLimits(profile.getMaxDailyBasal(), R.string.profile_max_daily_basal_value, 0.02, hardLimits.maxBasal())) return
         if (!hardLimits.checkHardLimits(pump.baseBasalRate, R.string.current_basal_value, 0.01, hardLimits.maxBasal())) return
@@ -158,7 +168,7 @@ class ENPlugin @Inject constructor(
         if (constraintChecker.isAutosensModeEnabled().value()) {
             val autosensData = iobCobCalculator.getLastAutosensDataWithWaitForCalculationFinish("OpenAPSPlugin")
             if (autosensData == null) {
-                rxBus.send(EventOpenAPSUpdateResultGui(rh.gs(R.string.openaps_noasdata)))
+                rxBus.send(info.nightscout.plugins.aps.events.EventOpenAPSUpdateResultGui(rh.gs(R.string.openaps_no_as_data)))
                 return
             }
             lastAutosensResult = autosensData.autosensResult
@@ -218,7 +228,7 @@ class ENPlugin @Inject constructor(
                 lastAPSRun = now
             }
         }
-        rxBus.send(EventOpenAPSUpdateGui())
+        rxBus.send(info.nightscout.plugins.aps.events.EventOpenAPSUpdateGui())
     }
 
     override fun isSuperBolusEnabled(value: Constraint<Boolean>): Constraint<Boolean> {
@@ -226,5 +236,52 @@ class ENPlugin @Inject constructor(
         return value
     }
 
-    fun provideDetermineBasalAdapter(): DetermineBasalAdapterInterface = DetermineBasalAdapterENJS(ScriptReader(context), injector)
+    override fun applyMaxIOBConstraints(maxIob: Constraint<Double>): Constraint<Double> {
+        if (isEnabled()) {
+            val maxIobPref: Double = sp.getDouble(R.string.key_openapssmb_max_iob, 3.0)
+            maxIob.setIfSmaller(aapsLogger, maxIobPref, rh.gs(R.string.limiting_iob, maxIobPref, rh.gs(R.string.maxvalueinpreferences)), this)
+            maxIob.setIfSmaller(aapsLogger, hardLimits.maxIobSMB(), rh.gs(R.string.limiting_iob, hardLimits.maxIobSMB(), rh.gs(R.string.hardlimit)), this)
+        }
+        return maxIob
+    }
+
+    override fun applyBasalConstraints(absoluteRate: Constraint<Double>, profile: Profile): Constraint<Double> {
+        if (isEnabled()) {
+            var maxBasal = sp.getDouble(R.string.key_openapsma_max_basal, 1.0)
+            if (maxBasal < profile.getMaxDailyBasal()) {
+                maxBasal = profile.getMaxDailyBasal()
+                absoluteRate.addReason(rh.gs(R.string.increasing_max_basal), this)
+            }
+            absoluteRate.setIfSmaller(aapsLogger, maxBasal, rh.gs(R.string.limitingbasalratio, maxBasal, rh.gs(R.string.maxvalueinpreferences)), this)
+
+            // Check percentRate but absolute rate too, because we know real current basal in pump
+            val maxBasalMultiplier = sp.getDouble(R.string.key_openapsama_current_basal_safety_multiplier, 4.0)
+            val maxFromBasalMultiplier = floor(maxBasalMultiplier * profile.getBasal() * 100) / 100
+            absoluteRate.setIfSmaller(aapsLogger, maxFromBasalMultiplier, rh.gs(R.string.limitingbasalratio, maxFromBasalMultiplier, rh.gs(R.string.max_basal_multiplier)), this)
+            val maxBasalFromDaily = sp.getDouble(R.string.key_openapsama_max_daily_safety_multiplier, 3.0)
+            val maxFromDaily = floor(profile.getMaxDailyBasal() * maxBasalFromDaily * 100) / 100
+            absoluteRate.setIfSmaller(aapsLogger, maxFromDaily, rh.gs(R.string.limitingbasalratio, maxFromDaily, rh.gs(R.string.max_daily_basal_multiplier)), this)
+        }
+        return absoluteRate
+    }
+
+    override fun isSMBModeEnabled(value: Constraint<Boolean>): Constraint<Boolean> {
+        val enabled = sp.getBoolean(R.string.key_use_smb, false)
+        if (!enabled) value.set(aapsLogger, false, rh.gs(R.string.smb_disabled_in_preferences), this)
+        return value
+    }
+
+    override fun isUAMEnabled(value: Constraint<Boolean>): Constraint<Boolean> {
+        val enabled = sp.getBoolean(R.string.key_use_uam, false)
+        if (!enabled) value.set(aapsLogger, false, rh.gs(R.string.uam_disabled_in_preferences), this)
+        return value
+    }
+
+    override fun isAutosensModeEnabled(value: Constraint<Boolean>): Constraint<Boolean> {
+        val enabled = sp.getBoolean(R.string.key_openapsama_use_autosens, false)
+        if (!enabled) value.set(aapsLogger, false, rh.gs(R.string.autosens_disabled_in_preferences), this)
+        return value
+    }
+
+    fun provideDetermineBasalAdapter(): DetermineBasalAdapter = DetermineBasalAdapterENJS(ScriptReader(context), injector)
 }
