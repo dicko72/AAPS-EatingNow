@@ -181,6 +181,7 @@ class TranslatorImpl @Inject internal constructor(
         TemporaryTarget.Reason.CUSTOM       -> rh.gs(R.string.custom)
         TemporaryTarget.Reason.HYPOGLYCEMIA -> rh.gs(R.string.hypo)
         TemporaryTarget.Reason.EATING_SOON  -> rh.gs(R.string.eatingsoon)
+        TemporaryTarget.Reason.EATING_NOW  -> rh.gs(R.string.eatingnow)
         TemporaryTarget.Reason.ACTIVITY     -> rh.gs(R.string.activity)
         TemporaryTarget.Reason.AUTOMATION   -> rh.gs(R.string.automation)
         TemporaryTarget.Reason.WEAR         -> rh.gs(R.string.wear)
