@@ -46,6 +46,8 @@ import java.lang.reflect.InvocationTargetException
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import kotlin.math.roundToInt
+import info.nightscout.interfaces.stats.TddCalculator
+import info.nightscout.interfaces.stats.TirCalculator
 
 class DetermineBasalAdapterENJS internal constructor(private val scriptReader: ScriptReader, private val injector: HasAndroidInjector) : DetermineBasalAdapter {
 
