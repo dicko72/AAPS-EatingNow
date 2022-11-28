@@ -1,4 +1,4 @@
-package info.nightscout.androidaps.plugins.aps.EN
+package info.nightscout.interfaces.aps
 
 @Suppress("SpellCheckingInspection")
 object ENDefaults {

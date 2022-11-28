@@ -5,7 +5,7 @@ import info.nightscout.interfaces.utils.MidnightTime
 import dagger.android.HasAndroidInjector
 import info.nightscout.core.profile.ProfileSealed
 import info.nightscout.database.impl.AppRepository
-import info.nightscout.androidaps.database.ValueWrapper
+import info.nightscout.database.ValueWrapper
 import info.nightscout.androidaps.database.entities.Bolus
 import info.nightscout.androidaps.database.entities.TherapyEvent
 import info.nightscout.androidaps.extensions.convertedToAbsolute
