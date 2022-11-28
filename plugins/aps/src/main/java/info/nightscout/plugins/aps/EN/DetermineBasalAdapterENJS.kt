@@ -6,8 +6,8 @@ import dagger.android.HasAndroidInjector
 import info.nightscout.core.profile.ProfileSealed
 import info.nightscout.database.impl.AppRepository
 import info.nightscout.database.ValueWrapper
-import info.nightscout.androidaps.database.entities.Bolus
-import info.nightscout.androidaps.database.entities.TherapyEvent
+import info.nightscout.database.entities.Bolus
+import info.nightscout.database.entities.TherapyEvent
 import info.nightscout.androidaps.extensions.convertedToAbsolute
 import info.nightscout.androidaps.extensions.getPassedDurationToTimeInMinutes
 import info.nightscout.androidaps.extensions.plannedRemainingMinutes
