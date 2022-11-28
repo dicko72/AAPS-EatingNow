@@ -14,7 +14,7 @@ import info.nightscout.androidaps.extensions.plannedRemainingMinutes
 import info.nightscout.core.aps.APSResultObject
 import info.nightscout.interfaces.GlucoseUnit
 import info.nightscout.interfaces.aps.DetermineBasalAdapter
-import info.nightscout.interfaces.aps.SMBDefaults
+import info.nightscout.interfaces.aps.ENDefaults
 import info.nightscout.interfaces.constraints.Constraints
 import info.nightscout.interfaces.iob.GlucoseStatus
 import info.nightscout.interfaces.iob.IobCobCalculator
