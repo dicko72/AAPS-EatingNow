@@ -1,4 +1,4 @@
-package info.nightscout.androidaps.plugins.aps.EN
+package info.nightscout.plugins.aps.EN
 
 import android.content.Context
 import androidx.preference.PreferenceFragmentCompat

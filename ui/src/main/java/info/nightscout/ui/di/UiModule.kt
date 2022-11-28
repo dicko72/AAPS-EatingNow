@@ -34,7 +34,7 @@ import info.nightscout.ui.dialogs.WizardDialog
 import info.nightscout.ui.dialogs.WizardInfoDialog
 import info.nightscout.ui.widget.Widget
 import info.nightscout.ui.widget.WidgetConfigureActivity
-import info.nightscout.androidaps.plugins.aps.EN.ENVariantPreference
+import info.nightscout.plugins.aps.EN.ENVariantPreference
 
 
 @Module
