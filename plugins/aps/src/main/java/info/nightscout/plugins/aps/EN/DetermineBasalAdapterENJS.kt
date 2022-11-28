@@ -1,9 +1,10 @@
 package info.nightscout.plugins.aps.EN
 
 // import info.nightscout.androidaps.utils.DateUtil
+import info.nightscout.interfaces.utils.MidnightTime
 import dagger.android.HasAndroidInjector
-import info.nightscout.interfaces.profile.ProfileSealed
-import info.nightscout.androidaps.database.AppRepository
+import info.nightscout.core.profile.ProfileSealed
+import info.nightscout.database.impl.AppRepository
 import info.nightscout.androidaps.database.ValueWrapper
 import info.nightscout.androidaps.database.entities.Bolus
 import info.nightscout.androidaps.database.entities.TherapyEvent
@@ -51,7 +52,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
     @Inject lateinit var aapsLogger: AAPSLogger
     @Inject lateinit var constraintChecker: Constraints
     @Inject lateinit var sp: SP
-    @Inject lateinit var rh: ResourceHelper
+    // @Inject lateinit var rh: ResourceHelper
     @Inject lateinit var profileFunction: ProfileFunction
     @Inject lateinit var iobCobCalculator: IobCobCalculator
     @Inject lateinit var activePlugin: ActivePlugin
