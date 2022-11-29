@@ -13,7 +13,8 @@ import info.nightscout.database.impl.AppRepository
 import info.nightscout.interfaces.aps.APS
 import info.nightscout.interfaces.aps.AutosensResult
 import info.nightscout.interfaces.aps.DetermineBasalAdapter
-import info.nightscout.interfaces.aps.SMBDefaults
+import info.nightscout.interfaces.aps.ENDefaults
+//import info.nightscout.interfaces.aps.SMBDefaults
 import info.nightscout.interfaces.constraints.Constraint
 import info.nightscout.interfaces.constraints.Constraints
 import info.nightscout.interfaces.iob.IobCobCalculator
