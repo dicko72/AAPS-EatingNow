@@ -30,7 +30,7 @@ class TirCalculatorImpl @Inject constructor(
     private val repository: AppRepository
 ) : TirCalculator {
 
-    override fun calculate(days: Long, lowMgdl: Double, highMgdl: Double): LongSparseArray<TIR> {
+    fun calculate(days: Long, lowMgdl: Double, highMgdl: Double): LongSparseArray<TIR> {
         if (lowMgdl < 39) throw RuntimeException("Low below 39")
         if (lowMgdl > highMgdl) throw RuntimeException("Low > High")
         val startTime = MidnightTime.calc(dateUtil.now() - T.days(days).msecs())
@@ -53,7 +53,7 @@ class TirCalculatorImpl @Inject constructor(
         return result
     }
 
-    override fun averageTIR(tirs: LongSparseArray<TIR>): TIR {
+    fun averageTIR(tirs: LongSparseArray<TIR>): TIR {
         val totalTir = if (tirs.size() > 0) {
             TirImpl(tirs.valueAt(0).date, tirs.valueAt(0).lowThreshold, tirs.valueAt(0).highThreshold)
         } else {
@@ -70,7 +70,7 @@ class TirCalculatorImpl @Inject constructor(
         return totalTir
     }
 
-    override fun calculateHoursPrior(hrsPriorStart: Long, hrsPriorEnd: Long, lowMgdl: Double, highMgdl: Double): LongSparseArray<TIR> {
+    fun calculateHoursPrior(hrsPriorStart: Long, hrsPriorEnd: Long, lowMgdl: Double, highMgdl: Double): LongSparseArray<TIR> {
         if (lowMgdl < 39) throw RuntimeException("Low below 39")
         if (lowMgdl > highMgdl) throw RuntimeException("Low > High")
         val startTime = dateUtil.now() - T.hours(hour = hrsPriorStart).msecs()
@@ -94,7 +94,7 @@ class TirCalculatorImpl @Inject constructor(
     }
 
     @SuppressLint("SetTextI18n")
-    override fun stats(context: Context): TableLayout =
+    fun stats(context: Context): TableLayout =
         TableLayout(context).also { layout ->
             val lowTirMgdl = Constants.STATS_RANGE_LOW_MMOL * Constants.MMOLL_TO_MGDL
             val highTirMgdl = Constants.STATS_RANGE_HIGH_MMOL * Constants.MMOLL_TO_MGDL
