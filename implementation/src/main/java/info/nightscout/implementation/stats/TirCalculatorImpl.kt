@@ -30,7 +30,7 @@ class TirCalculatorImpl @Inject constructor(
     private val repository: AppRepository
 ) : TirCalculator {
 
-    fun calculate(days: Long, lowMgdl: Double, highMgdl: Double): LongSparseArray<TIR> {
+    override fun calculate(days: Long, lowMgdl: Double, highMgdl: Double): LongSparseArray<TIR> {
         if (lowMgdl < 39) throw RuntimeException("Low below 39")
         if (lowMgdl > highMgdl) throw RuntimeException("Low > High")
         val startTime = MidnightTime.calc(dateUtil.now() - T.days(days).msecs())
@@ -70,7 +70,7 @@ class TirCalculatorImpl @Inject constructor(
         return totalTir
     }
 
-    fun calculateHoursPrior(hrsPriorStart: Long, hrsPriorEnd: Long, lowMgdl: Double, highMgdl: Double): LongSparseArray<TIR> {
+    override calculateHoursPrior(hrsPriorStart: Long, hrsPriorEnd: Long, lowMgdl: Double, highMgdl: Double): LongSparseArray<TIR> {
         if (lowMgdl < 39) throw RuntimeException("Low below 39")
         if (lowMgdl > highMgdl) throw RuntimeException("Low > High")
         val startTime = dateUtil.now() - T.hours(hour = hrsPriorStart).msecs()
