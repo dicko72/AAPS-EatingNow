@@ -220,7 +220,7 @@ class ENPlugin @Inject constructor(
             } else {
                 // TODO still needed with oref1?
                 // Fix bug determine basal
-                if (determineBasalResultEN.rate == 0.0 && determineBasalResultEN.duration == 0 && iobCobCalculator.getTempBasalIncludingConvertedExtended(dateUtil.now()) == null) determineBasalResultEN.tempBasalRequested = false
+                if (determineBasalResultEN.rate == 0.0 && determineBasalResultEN.duration == 0 && iobCobCalculator.getTempBasalIncludingConvertedExtended(dateUtil.now()) == null) determineBasalResultEN.istempBasalRequested = false
                 determineBasalResultEN.iob = iobArray[0]
                 determineBasalResultEN.json?.put("timestamp", dateUtil.toISOString(now))
                 determineBasalResultEN.inputConstraints = inputConstraints

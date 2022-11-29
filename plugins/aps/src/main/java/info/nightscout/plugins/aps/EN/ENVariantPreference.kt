@@ -8,6 +8,7 @@ import info.nightscout.plugins.aps.R
 import info.nightscout.shared.sharedPreferences.SP
 import java.util.*
 import javax.inject.Inject
+import info.nightscout.interfaces.aps.ENDefaults
 
 class ENVariantPreference(context: Context, attrs: AttributeSet?)
     : DropDownPreference(context, attrs) {

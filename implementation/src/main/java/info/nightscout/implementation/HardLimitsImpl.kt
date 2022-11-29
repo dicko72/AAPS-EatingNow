@@ -59,6 +59,7 @@ class HardLimitsImpl @Inject constructor(
         const val MAX_ISF = 1000.0 // mgdl
         val MAX_IOB_AMA = doubleArrayOf(3.0, 5.0, 7.0, 12.0, 25.0)
         val MAX_IOB_SMB = doubleArrayOf(7.0, 13.0, 22.0, 30.0, 70.0)
+        val MAX_IOB_EN = doubleArrayOf(7.0, 13.0, 22.0, 30.0, 70.0)
         val MAX_BASAL = doubleArrayOf(2.0, 5.0, 10.0, 12.0, 25.0)
 
         //LGS Hard limits
@@ -79,6 +80,7 @@ class HardLimitsImpl @Inject constructor(
     override fun maxBolus(): Double = MAX_BOLUS[loadAge()]
     override fun maxIobAMA(): Double = MAX_IOB_AMA[loadAge()]
     override fun maxIobSMB(): Double = MAX_IOB_SMB[loadAge()]
+    override fun maxIobEN(): Double = MAX_IOB_EN[loadAge()]
     override fun maxBasal(): Double = MAX_BASAL[loadAge()]
     override fun minDia(): Double = MIN_DIA[loadAge()]
     override fun maxDia(): Double = MAX_DIA[loadAge()]
