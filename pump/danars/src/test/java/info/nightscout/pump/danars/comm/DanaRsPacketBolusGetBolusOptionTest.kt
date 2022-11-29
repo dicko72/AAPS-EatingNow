@@ -4,7 +4,7 @@ import dagger.android.AndroidInjector
 import dagger.android.HasAndroidInjector
 import info.nightscout.pump.danars.DanaRSTestBase
 import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class DanaRsPacketBolusGetBolusOptionTest : DanaRSTestBase() {
 
@@ -15,7 +15,7 @@ class DanaRsPacketBolusGetBolusOptionTest : DanaRSTestBase() {
                 it.rxBus = rxBus
                 it.rh = rh
                 it.danaPump = danaPump
-                it.activityNames = activityNames
+                it.uiInteraction = uiInteraction
             }
         }
     }

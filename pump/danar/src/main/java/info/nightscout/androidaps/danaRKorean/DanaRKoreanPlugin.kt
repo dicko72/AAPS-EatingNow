@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import dagger.android.HasAndroidInjector
+import info.nightscout.androidaps.annotations.OpenForTesting
 import info.nightscout.androidaps.danaRKorean.services.DanaRKoreanExecutionService
 import info.nightscout.androidaps.danar.AbstractDanaRPlugin
 import info.nightscout.androidaps.danar.R
@@ -20,7 +21,7 @@ import info.nightscout.interfaces.pump.PumpSync
 import info.nightscout.interfaces.pump.PumpSync.TemporaryBasalType
 import info.nightscout.interfaces.pump.defs.PumpType
 import info.nightscout.interfaces.queue.CommandQueue
-import info.nightscout.interfaces.ui.ActivityNames
+import info.nightscout.interfaces.ui.UiInteraction
 import info.nightscout.interfaces.utils.Round
 import info.nightscout.pump.dana.DanaPump
 import info.nightscout.pump.dana.database.DanaHistoryDatabase
@@ -41,6 +42,7 @@ import kotlin.math.abs
 import kotlin.math.max
 
 @Singleton
+@OpenForTesting
 class DanaRKoreanPlugin @Inject constructor(
     injector: HasAndroidInjector,
     aapsLogger: AAPSLogger,
@@ -56,9 +58,9 @@ class DanaRKoreanPlugin @Inject constructor(
     dateUtil: DateUtil,
     private val fabricPrivacy: FabricPrivacy,
     pumpSync: PumpSync,
-    activityNames: ActivityNames,
+    uiInteraction: UiInteraction,
     danaHistoryDatabase: DanaHistoryDatabase
-) : AbstractDanaRPlugin(injector, danaPump, rh, constraintChecker, aapsLogger, aapsSchedulers, commandQueue, rxBus, activePlugin, sp, dateUtil, pumpSync, activityNames, danaHistoryDatabase) {
+) : AbstractDanaRPlugin(injector, danaPump, rh, constraintChecker, aapsLogger, aapsSchedulers, commandQueue, rxBus, activePlugin, sp, dateUtil, pumpSync, uiInteraction, danaHistoryDatabase) {
 
     init {
         pluginDescription.description(R.string.description_pump_dana_r_korean)

@@ -5,7 +5,7 @@ import dagger.android.AndroidInjector
 import info.nightscout.androidaps.HardLimitsMock
 import info.nightscout.androidaps.TestBase
 import info.nightscout.androidaps.TestPumpPlugin
-import info.nightscout.androidaps.extensions.pureProfileFromJson
+import info.nightscout.core.extensions.pureProfileFromJson
 import info.nightscout.core.main.R
 import info.nightscout.core.profile.ProfileSealed
 import info.nightscout.interfaces.Config
@@ -20,8 +20,8 @@ import info.nightscout.shared.sharedPreferences.SP
 import info.nightscout.shared.utils.DateUtil
 import org.json.JSONObject
 import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mock
 import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.anyString
@@ -59,7 +59,7 @@ class ProfileTest : TestBase() {
 
     //String profileStore = "{\"defaultProfile\":\"Default\",\"store\":{\"Default\":" + validProfile + "}}";
 
-    @Before
+    @BeforeEach
     fun prepare() {
         testPumpPlugin = TestPumpPlugin { AndroidInjector { } }
         dateUtil = DateUtil(context)
@@ -159,7 +159,7 @@ class ProfileTest : TestBase() {
                 00:00    6.2 mmol/U
                 01:00    6.0 mmol/U
                 03:00    6.2 mmol/U
-                """.trimIndent(), p.getIsfList(rh, dateUtil)
+                """.trimIndent(), p.getIsfList(rh, dateUtil).replace(',', '.')
         )
 
         // Test hour alignment

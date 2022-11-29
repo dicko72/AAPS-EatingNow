@@ -7,21 +7,21 @@ import info.nightscout.rx.events.EventNetworkChange
 import org.json.JSONException
 import org.json.JSONObject
 import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 
 class TriggerWifiSsidTest : TriggerTestBase() {
 
     var now = 1514766900000L
 
-    @Before fun mock() {
+    @BeforeEach fun mock() {
         `when`(dateUtil.now()).thenReturn(now)
     }
 
     @Test fun shouldRunTest() {
         val e = EventNetworkChange()
-        receiverStatusStore.lastNetworkEvent = e
+        `when`(receiverStatusStore.lastNetworkEvent).thenReturn(e)
         var t: TriggerWifiSsid = TriggerWifiSsid(injector).setValue("aSSID").comparator(Comparator.Compare.IS_EQUAL)
         e.wifiConnected = false
         Assert.assertFalse(t.shouldRun())
@@ -36,7 +36,7 @@ class TriggerWifiSsidTest : TriggerTestBase() {
         Assert.assertTrue(t.shouldRun())
 
         // no network data
-        receiverStatusStore.lastNetworkEvent = null
+        `when`(receiverStatusStore.lastNetworkEvent).thenReturn(null)
         Assert.assertFalse(t.shouldRun())
     }
 

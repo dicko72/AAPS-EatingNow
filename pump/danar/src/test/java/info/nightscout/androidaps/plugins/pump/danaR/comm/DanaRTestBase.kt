@@ -16,19 +16,19 @@ import info.nightscout.interfaces.profile.ProfileInstantiator
 import info.nightscout.interfaces.pump.DetailedBolusInfoStorage
 import info.nightscout.interfaces.pump.PumpSync
 import info.nightscout.interfaces.queue.CommandQueue
-import info.nightscout.interfaces.ui.ActivityNames
+import info.nightscout.interfaces.ui.UiInteraction
 import info.nightscout.pump.dana.DanaPump
 import info.nightscout.pump.dana.database.DanaHistoryRecordDao
 import info.nightscout.rx.bus.RxBus
 import info.nightscout.shared.interfaces.ResourceHelper
 import info.nightscout.shared.sharedPreferences.SP
 import info.nightscout.shared.utils.DateUtil
-import org.junit.Before
+import org.junit.jupiter.api.BeforeEach
 import org.mockito.ArgumentMatchers
 import org.mockito.Mock
 import org.mockito.Mockito.anyBoolean
-import org.mockito.Mockito.doNothing
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.doNothing
 
 open class DanaRTestBase : TestBase() {
 
@@ -47,17 +47,19 @@ open class DanaRTestBase : TestBase() {
     @Mock lateinit var pumpSync: PumpSync
     @Mock lateinit var danaHistoryRecordDao: DanaHistoryRecordDao
     @Mock lateinit var profileInstantiator: ProfileInstantiator
-    @Mock lateinit var activityNames: ActivityNames
+    @Mock lateinit var uiInteraction: UiInteraction
 
     private lateinit var testPumpPlugin: TestPumpPlugin
 
-    @Before
+    @BeforeEach
     fun setup() {
         danaPump = DanaPump(aapsLogger, sp, dateUtil, profileInstantiator)
         testPumpPlugin = TestPumpPlugin(injector)
         `when`(activePlugin.activePump).thenReturn(testPumpPlugin)
         doNothing().`when`(danaRKoreanPlugin).setPluginEnabled(anyObject(), anyBoolean())
         doNothing().`when`(danaRPlugin).setPluginEnabled(anyObject(), anyBoolean())
+        doNothing().`when`(danaRKoreanPlugin).setFragmentVisible(anyObject(), anyBoolean())
+        doNothing().`when`(danaRPlugin).setFragmentVisible(anyObject(), anyBoolean())
         `when`(rh.gs(ArgumentMatchers.anyInt())).thenReturn("")
     }
 
@@ -79,7 +81,7 @@ open class DanaRTestBase : TestBase() {
                 it.commandQueue = commandQueue
                 it.pumpSync = pumpSync
                 it.danaHistoryRecordDao = danaHistoryRecordDao
-                it.activityNames = activityNames
+                it.uiInteraction = uiInteraction
             }
         }
     }

@@ -4,11 +4,11 @@ import android.content.Context
 import dagger.android.AndroidInjector
 import dagger.android.HasAndroidInjector
 import info.nightscout.androidaps.TestBase
-import info.nightscout.interfaces.ui.ActivityNames
+import info.nightscout.interfaces.ui.UiInteraction
 import info.nightscout.shared.interfaces.ResourceHelper
 import info.nightscout.shared.sharedPreferences.SP
 import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.mockito.Mock
 
 class SignatureVerifierPluginTest : TestBase() {
@@ -16,7 +16,7 @@ class SignatureVerifierPluginTest : TestBase() {
     @Mock lateinit var rh: ResourceHelper
     @Mock lateinit var sp: SP
     @Mock lateinit var context: Context
-    @Mock lateinit var activityNames: ActivityNames
+    @Mock lateinit var uiInteraction: UiInteraction
 
     val injector = HasAndroidInjector { AndroidInjector { } }
 

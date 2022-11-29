@@ -2,7 +2,7 @@ package info.nightscout.plugins.general.autotune
 
 import dagger.android.HasAndroidInjector
 import info.nightscout.androidaps.TestBaseWithProfile
-import info.nightscout.androidaps.extensions.shiftBlock
+import info.nightscout.core.extensions.shiftBlock
 import info.nightscout.core.profile.ProfileSealed
 import info.nightscout.database.entities.Bolus
 import info.nightscout.database.entities.Carbs
@@ -24,8 +24,8 @@ import info.nightscout.shared.utils.T
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import java.io.File
@@ -45,7 +45,7 @@ class AutotunePrepTest : TestBaseWithProfile() {
     private var autotuneMax = 0.0
     private var startDayTime = 0L
 
-    @Before
+    @BeforeEach
     fun initData() {
         ts = T.msecs(TimeZone.getDefault().getOffset(System.currentTimeMillis()).toLong()).hours().toInt() - 2
     }

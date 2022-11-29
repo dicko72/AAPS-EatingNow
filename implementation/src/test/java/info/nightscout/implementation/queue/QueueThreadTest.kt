@@ -17,11 +17,11 @@ import info.nightscout.interfaces.plugin.ActivePlugin
 import info.nightscout.interfaces.pump.PumpSync
 import info.nightscout.interfaces.pump.defs.PumpDescription
 import info.nightscout.interfaces.queue.Command
-import info.nightscout.interfaces.ui.ActivityNames
+import info.nightscout.interfaces.ui.UiInteraction
 import info.nightscout.shared.sharedPreferences.SP
 import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mock
 import org.mockito.Mockito
@@ -34,7 +34,7 @@ class QueueThreadTest : TestBaseWithProfile() {
     @Mock lateinit var powerManager: PowerManager
     @Mock lateinit var repository: AppRepository
     @Mock lateinit var androidPermission: AndroidPermission
-    @Mock lateinit var activityNames: ActivityNames
+    @Mock lateinit var uiInteraction: UiInteraction
     @Mock lateinit var persistenceLayer: PersistenceLayer
 
     val injector = HasAndroidInjector {
@@ -54,13 +54,13 @@ class QueueThreadTest : TestBaseWithProfile() {
     private lateinit var commandQueue: CommandQueueImplementation
     private lateinit var sut: QueueThread
 
-    @Before
+    @BeforeEach
     fun prepare() {
         pumpPlugin = TestPumpPlugin(injector)
         commandQueue = CommandQueueImplementation(
             injector, aapsLogger, rxBus, aapsSchedulers, rh, constraintChecker,
             profileFunction, activePlugin, context, sp,
-            config, dateUtil, repository, fabricPrivacy, androidPermission, activityNames, persistenceLayer
+            config, dateUtil, repository, fabricPrivacy, androidPermission, uiInteraction, persistenceLayer
         )
 
         val pumpDescription = PumpDescription()

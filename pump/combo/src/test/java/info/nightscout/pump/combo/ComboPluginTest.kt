@@ -10,7 +10,7 @@ import info.nightscout.interfaces.profile.ProfileFunction
 import info.nightscout.interfaces.pump.PumpEnactResult
 import info.nightscout.interfaces.pump.PumpSync
 import info.nightscout.interfaces.queue.CommandQueue
-import info.nightscout.interfaces.ui.ActivityNames
+import info.nightscout.interfaces.ui.UiInteraction
 import info.nightscout.pump.combo.ruffyscripter.RuffyScripter
 import info.nightscout.pump.combo.ruffyscripter.history.Bolus
 import info.nightscout.rx.bus.RxBus
@@ -18,8 +18,8 @@ import info.nightscout.shared.interfaces.ResourceHelper
 import info.nightscout.shared.sharedPreferences.SP
 import info.nightscout.shared.utils.DateUtil
 import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 
@@ -33,7 +33,7 @@ class ComboPluginTest : TestBase() {
     @Mock lateinit var dateUtil: DateUtil
     @Mock lateinit var ruffyScripter: RuffyScripter
     @Mock lateinit var context: Context
-    @Mock lateinit var activityNames: ActivityNames
+    @Mock lateinit var uiInteraction: UiInteraction
 
     private val injector = HasAndroidInjector {
         AndroidInjector {
@@ -45,11 +45,11 @@ class ComboPluginTest : TestBase() {
 
     private lateinit var comboPlugin: ComboPlugin
 
-    @Before
+    @BeforeEach
     fun prepareMocks() {
         `when`(rh.gs(R.string.no_valid_basal_rate)).thenReturn("No valid basal rate read from pump")
         `when`(context.getString(R.string.combo_pump_unsupported_operation)).thenReturn("Requested operation not supported by pump")
-        comboPlugin = ComboPlugin(injector, aapsLogger, RxBus(aapsSchedulers, aapsLogger), rh, profileFunction, sp, commandQueue, pumpSync, dateUtil, ruffyScripter, activityNames)
+        comboPlugin = ComboPlugin(injector, aapsLogger, RxBus(aapsSchedulers, aapsLogger), rh, profileFunction, sp, commandQueue, pumpSync, dateUtil, ruffyScripter, uiInteraction)
     }
 
     @Test

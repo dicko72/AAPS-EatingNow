@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import dagger.android.HasAndroidInjector;
+import info.nightscout.androidaps.annotations.OpenForTesting;
 import info.nightscout.androidaps.danar.services.DanaRExecutionService;
 import info.nightscout.core.utils.fabric.FabricPrivacy;
 import info.nightscout.interfaces.constraints.Constraint;
@@ -23,7 +24,7 @@ import info.nightscout.interfaces.pump.PumpEnactResult;
 import info.nightscout.interfaces.pump.PumpSync;
 import info.nightscout.interfaces.pump.defs.PumpType;
 import info.nightscout.interfaces.queue.CommandQueue;
-import info.nightscout.interfaces.ui.ActivityNames;
+import info.nightscout.interfaces.ui.UiInteraction;
 import info.nightscout.interfaces.utils.Round;
 import info.nightscout.pump.dana.DanaPump;
 import info.nightscout.pump.dana.database.DanaHistoryDatabase;
@@ -40,6 +41,7 @@ import info.nightscout.shared.utils.DateUtil;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 
 @Singleton
+@OpenForTesting
 public class DanaRPlugin extends AbstractDanaRPlugin {
     private final CompositeDisposable disposable = new CompositeDisposable();
 
@@ -65,10 +67,10 @@ public class DanaRPlugin extends AbstractDanaRPlugin {
             DateUtil dateUtil,
             FabricPrivacy fabricPrivacy,
             PumpSync pumpSync,
-            ActivityNames activityNames,
+            UiInteraction uiInteraction,
             DanaHistoryDatabase danaHistoryDatabase
     ) {
-        super(injector, danaPump, rh, constraints, aapsLogger, aapsSchedulers, commandQueue, rxBus, activePlugin, sp, dateUtil, pumpSync, activityNames, danaHistoryDatabase);
+        super(injector, danaPump, rh, constraints, aapsLogger, aapsSchedulers, commandQueue, rxBus, activePlugin, sp, dateUtil, pumpSync, uiInteraction, danaHistoryDatabase);
         this.aapsLogger = aapsLogger;
         this.context = context;
         this.rh = rh;

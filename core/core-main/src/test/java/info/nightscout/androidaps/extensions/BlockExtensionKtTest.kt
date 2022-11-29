@@ -1,12 +1,18 @@
 package info.nightscout.androidaps.extensions
 
+import info.nightscout.core.extensions.blockValueBySeconds
+import info.nightscout.core.extensions.highTargetBlockValueBySeconds
+import info.nightscout.core.extensions.lowTargetBlockValueBySeconds
+import info.nightscout.core.extensions.shiftBlock
+import info.nightscout.core.extensions.shiftTargetBlock
+import info.nightscout.core.extensions.targetBlockValueBySeconds
 import info.nightscout.database.entities.data.Block
 import info.nightscout.database.entities.data.TargetBlock
 import info.nightscout.database.entities.data.checkSanity
 import info.nightscout.shared.utils.T
 import org.junit.Assert
 
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class BlockExtensionKtTest {
 

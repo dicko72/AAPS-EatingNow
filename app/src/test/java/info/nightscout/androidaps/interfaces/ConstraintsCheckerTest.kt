@@ -10,8 +10,8 @@ import info.nightscout.androidaps.implementations.ConfigImpl
 import info.nightscout.androidaps.insight.database.InsightDatabase
 import info.nightscout.androidaps.insight.database.InsightDatabaseDao
 import info.nightscout.androidaps.insight.database.InsightDbHelper
-import info.nightscout.androidaps.plugins.iob.iobCobCalculator.GlucoseStatusProvider
 import info.nightscout.androidaps.plugins.pump.insight.LocalInsightPlugin
+import info.nightscout.core.iob.iobCobCalculator.GlucoseStatusProvider
 import info.nightscout.database.impl.AppRepository
 import info.nightscout.implementation.constraints.ConstraintsImpl
 import info.nightscout.interfaces.constraints.Constraint
@@ -29,7 +29,7 @@ import info.nightscout.interfaces.pump.PumpSync
 import info.nightscout.interfaces.pump.TemporaryBasalStorage
 import info.nightscout.interfaces.pump.defs.PumpDescription
 import info.nightscout.interfaces.queue.CommandQueue
-import info.nightscout.interfaces.ui.ActivityNames
+import info.nightscout.interfaces.ui.UiInteraction
 import info.nightscout.interfaces.utils.HardLimits
 import info.nightscout.plugins.aps.openAPSAMA.OpenAPSAMAPlugin
 import info.nightscout.plugins.aps.openAPSSMB.OpenAPSSMBPlugin
@@ -45,8 +45,8 @@ import info.nightscout.pump.dana.DanaPump
 import info.nightscout.pump.dana.database.DanaHistoryDatabase
 import info.nightscout.shared.sharedPreferences.SP
 import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 
@@ -68,7 +68,7 @@ class ConstraintsCheckerTest : TestBaseWithProfile() {
     @Mock lateinit var pumpSync: PumpSync
     @Mock lateinit var insightDatabaseDao: InsightDatabaseDao
     @Mock lateinit var ruffyScripter: RuffyScripter
-    @Mock lateinit var activityNames: ActivityNames
+    @Mock lateinit var uiInteraction: UiInteraction
     @Mock lateinit var profileInstantiator: ProfileInstantiator
     @Mock lateinit var danaHistoryDatabase: DanaHistoryDatabase
     @Mock lateinit var insightDatabase: InsightDatabase
@@ -99,7 +99,7 @@ class ConstraintsCheckerTest : TestBaseWithProfile() {
         }
     }
 
-    @Before
+    @BeforeEach
     fun prepare() {
         `when`(rh.gs(R.string.closed_loop_disabled_on_dev_branch)).thenReturn("Running dev version. Closed loop is disabled.")
         `when`(rh.gs(R.string.closedmodedisabledinpreferences)).thenReturn("Closed loop mode disabled in preferences")
@@ -142,9 +142,9 @@ class ConstraintsCheckerTest : TestBaseWithProfile() {
         insightDbHelper = InsightDbHelper(insightDatabaseDao)
         danaPump = DanaPump(aapsLogger, sp, dateUtil, profileInstantiator)
         objectivesPlugin = ObjectivesPlugin(injector, aapsLogger, rh, activePlugin, sp, config)
-        comboPlugin = ComboPlugin(injector, aapsLogger, rxBus, rh, profileFunction, sp, commandQueue, pumpSync, dateUtil, ruffyScripter, activityNames)
+        comboPlugin = ComboPlugin(injector, aapsLogger, rxBus, rh, profileFunction, sp, commandQueue, pumpSync, dateUtil, ruffyScripter, uiInteraction)
         danaRPlugin = DanaRPlugin(injector, aapsLogger, aapsSchedulers, rxBus, context, rh, constraintChecker, activePlugin, sp, commandQueue, danaPump, dateUtil, fabricPrivacy, pumpSync,
-                                  activityNames, danaHistoryDatabase)
+                                  uiInteraction, danaHistoryDatabase)
         danaRSPlugin =
             info.nightscout.pump.danars.DanaRSPlugin(
                 injector,
@@ -163,7 +163,7 @@ class ConstraintsCheckerTest : TestBaseWithProfile() {
                 temporaryBasalStorage,
                 fabricPrivacy,
                 dateUtil,
-                activityNames,
+                uiInteraction,
                 danaHistoryDatabase
             )
         insightPlugin = LocalInsightPlugin(injector, aapsLogger, rxBus, rh, sp, commandQueue, profileFunction, context, config, dateUtil, insightDbHelper, pumpSync, insightDatabase)
