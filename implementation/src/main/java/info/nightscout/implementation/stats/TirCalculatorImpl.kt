@@ -82,7 +82,7 @@ class TirCalculatorImpl @Inject constructor(
             //val midnight = MidnightTime.calc(bg.date)
             var tir = result[startTime]
             if (tir == null) {
-                tir = TIR(startTime, lowMgdl, highMgdl)
+                tir = TirImpl(startTime, lowMgdl, highMgdl)
                 result.append(startTime, tir)
             }
             if (bg.value < 39) tir.error()
