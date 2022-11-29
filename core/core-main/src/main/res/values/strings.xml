@@ -524,4 +524,9 @@
         <item quantity="other">%1$d minutes</item>
     </plurals>
 
+    <!--   Eating Now-->
+    <string name="eatingnow">Eating Now</string>
+    <!--    <string name="key_eatingnow_duration" translatable="false">eatingnow_duration</string>-->
+    <string name="key_eatingnow_duration" translatable="false">key_eatingnow_enwindowminutes</string>
+
 </resources>
