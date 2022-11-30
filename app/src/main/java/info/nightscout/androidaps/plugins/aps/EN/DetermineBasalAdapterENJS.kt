@@ -435,15 +435,39 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         // TIR Windows for normalTarget
         if (resistancePerHr > 0) {
-            this.mealData.put("TIRTW4H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4, 3, normalTargetBG-9.0, normalTargetBG+9.0)).abovePct())
-            this.mealData.put("TIRTW3H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3, 2, normalTargetBG-9.0, normalTargetBG+9.0)).abovePct())
-            this.mealData.put("TIRTW2H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2, 1, normalTargetBG-9.0, normalTargetBG+9.0)).abovePct())
-            this.mealData.put("TIRTW1H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1, 0, normalTargetBG-9.0, normalTargetBG+9.0)).abovePct())
 
-            this.mealData.put("TIRTW4L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4,3,normalTargetBG-9.0, normalTargetBG+9.0)).belowPct())
-            this.mealData.put("TIRTW3L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3,2,normalTargetBG-9.0, normalTargetBG+9.0)).belowPct())
-            this.mealData.put("TIRTW2L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2,1,normalTargetBG-9.0, normalTargetBG+9.0)).belowPct())
-            this.mealData.put("TIRTW1L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1,0,normalTargetBG-9.0, normalTargetBG+9.0)).belowPct())
+            // TIR 4h ago
+            tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4, 3, normalTargetBG-9.0, normalTargetBG+9.0)).let { tir ->
+                this.mealData.put("TIRTW4H",tir.abovePct())
+                this.mealData.put("TIRTW4L",tir.belowPct())
+            }
+
+            // TIR 3h ago
+            tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3, 2, normalTargetBG-9.0, normalTargetBG+9.0)).let { tir ->
+                this.mealData.put("TIRTW3H",tir.abovePct())
+                this.mealData.put("TIRTW3L",tir.belowPct())
+            }
+
+            // TIR 2h ago
+            tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2, 1, normalTargetBG-9.0, normalTargetBG+9.0)).let { tir ->
+                this.mealData.put("TIRTW2H",tir.abovePct())
+                this.mealData.put("TIRTW2L",tir.belowPct())
+            }
+
+            // TIR 1h ago
+            tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1, 0, normalTargetBG-9.0, normalTargetBG+9.0)).let { tir ->
+                this.mealData.put("TIRTW1H",tir.abovePct())
+                this.mealData.put("TIRTW1L",tir.belowPct())
+            }
+            // this.mealData.put("TIRTW4H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4, 3, normalTargetBG-9.0, normalTargetBG+9.0)).abovePct())
+            // this.mealData.put("TIRTW3H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3, 2, normalTargetBG-9.0, normalTargetBG+9.0)).abovePct())
+            // this.mealData.put("TIRTW2H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2, 1, normalTargetBG-9.0, normalTargetBG+9.0)).abovePct())
+            // this.mealData.put("TIRTW1H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1, 0, normalTargetBG-9.0, normalTargetBG+9.0)).abovePct())
+
+            // this.mealData.put("TIRTW4L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4,3,normalTargetBG-9.0, normalTargetBG+9.0)).belowPct())
+            // this.mealData.put("TIRTW3L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3,2,normalTargetBG-9.0, normalTargetBG+9.0)).belowPct())
+            // this.mealData.put("TIRTW2L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2,1,normalTargetBG-9.0, normalTargetBG+9.0)).belowPct())
+            // this.mealData.put("TIRTW1L",tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1,0,normalTargetBG-9.0, normalTargetBG+9.0)).belowPct())
         }
 
         if (constraintChecker.isAutosensModeEnabled().value()) {
