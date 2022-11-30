@@ -4,7 +4,8 @@ import android.content.Context
 import android.util.AttributeSet
 import androidx.preference.DropDownPreference
 import dagger.android.HasAndroidInjector
-import info.nightscout.plugins.aps.R
+// import info.nightscout.plugins.aps.R
+import info.nightscout.ui.R
 import info.nightscout.shared.sharedPreferences.SP
 import java.util.*
 import javax.inject.Inject
