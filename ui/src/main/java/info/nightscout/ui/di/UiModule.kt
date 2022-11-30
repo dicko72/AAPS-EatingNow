@@ -34,14 +34,14 @@ import info.nightscout.ui.dialogs.WizardDialog
 import info.nightscout.ui.dialogs.WizardInfoDialog
 import info.nightscout.ui.widget.Widget
 import info.nightscout.ui.widget.WidgetConfigureActivity
-// import info.nightscout.plugins.aps.EN.ENVariantPreference
+import info.nightscout.plugins.aps.EN.ENVariantPreference
 
 
 @Module
 @Suppress("unused")
 abstract class UiModule {
 
-    // @ContributesAndroidInjector abstract fun enVariantPreferenceInjector(): ENVariantPreference
+    @ContributesAndroidInjector abstract fun enVariantPreferenceInjector(): ENVariantPreference
 
     @ContributesAndroidInjector abstract fun contributesWidget(): Widget
     @ContributesAndroidInjector abstract fun contributesWidgetConfigureActivity(): WidgetConfigureActivity
