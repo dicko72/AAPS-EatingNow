@@ -1,4 +1,4 @@
-package info.nightscout.plugins.aps.EN
+package info.nightscout.ui.dialogs
 
 import android.content.Context
 import android.util.AttributeSet
