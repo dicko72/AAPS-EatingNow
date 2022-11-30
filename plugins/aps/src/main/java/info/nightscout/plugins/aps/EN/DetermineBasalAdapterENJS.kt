@@ -1,7 +1,18 @@
 package info.nightscout.plugins.aps.EN
 
+// Eating now
+import info.nightscout.core.profile.ProfileSealed
+import info.nightscout.database.impl.AppRepository
+import info.nightscout.database.ValueWrapper
+import info.nightscout.database.entities.Bolus
+import info.nightscout.database.entities.TherapyEvent
+import info.nightscout.interfaces.aps.ENDefaults
+import kotlin.math.roundToInt
+import info.nightscout.interfaces.stats.TddCalculator
+import info.nightscout.interfaces.stats.TirCalculator
 // import info.nightscout.androidaps.utils.DateUtil
 import info.nightscout.interfaces.utils.MidnightTime
+
 import dagger.android.HasAndroidInjector
 import info.nightscout.core.extensions.convertedToAbsolute
 import info.nightscout.core.extensions.getPassedDurationToTimeInMinutes
@@ -9,7 +20,7 @@ import info.nightscout.core.extensions.plannedRemainingMinutes
 import info.nightscout.core.aps.APSResultObject
 import info.nightscout.interfaces.GlucoseUnit
 import info.nightscout.interfaces.aps.DetermineBasalAdapter
-import info.nightscout.interfaces.aps.ENDefaults
+//import info.nightscout.interfaces.aps.SMBDefaults
 import info.nightscout.interfaces.constraints.Constraints
 import info.nightscout.interfaces.iob.GlucoseStatus
 import info.nightscout.interfaces.iob.IobCobCalculator
@@ -40,19 +51,19 @@ import java.io.IOException
 import java.lang.reflect.InvocationTargetException
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
-import kotlin.math.roundToInt
-import info.nightscout.interfaces.stats.TddCalculator
-import info.nightscout.interfaces.stats.TirCalculator
 
 class DetermineBasalAdapterENJS internal constructor(private val scriptReader: ScriptReader, private val injector: HasAndroidInjector) : DetermineBasalAdapter {
 
     @Inject lateinit var aapsLogger: AAPSLogger
     @Inject lateinit var constraintChecker: Constraints
     @Inject lateinit var sp: SP
-    // @Inject lateinit var rh: ResourceHelper
     @Inject lateinit var profileFunction: ProfileFunction
     @Inject lateinit var iobCobCalculator: IobCobCalculator
     @Inject lateinit var activePlugin: ActivePlugin
+
+
+    // Eating Now
+    // @Inject lateinit var rh: ResourceHelper
     @Inject lateinit var repository: AppRepository
     // @Inject lateinit var dateUtil: DateUtil
     @Inject lateinit var tddCalculator: TddCalculator
