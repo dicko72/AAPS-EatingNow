@@ -3,14 +3,9 @@ package info.nightscout.plugins.aps.EN
 // import info.nightscout.androidaps.utils.DateUtil
 import info.nightscout.interfaces.utils.MidnightTime
 import dagger.android.HasAndroidInjector
-import info.nightscout.core.profile.ProfileSealed
-import info.nightscout.database.impl.AppRepository
-import info.nightscout.database.ValueWrapper
-import info.nightscout.database.entities.Bolus
-import info.nightscout.database.entities.TherapyEvent
-import info.nightscout.androidaps.extensions.convertedToAbsolute
-import info.nightscout.androidaps.extensions.getPassedDurationToTimeInMinutes
-import info.nightscout.androidaps.extensions.plannedRemainingMinutes
+import info.nightscout.core.extensions.convertedToAbsolute
+import info.nightscout.core.extensions.getPassedDurationToTimeInMinutes
+import info.nightscout.core.extensions.plannedRemainingMinutes
 import info.nightscout.core.aps.APSResultObject
 import info.nightscout.interfaces.GlucoseUnit
 import info.nightscout.interfaces.aps.DetermineBasalAdapter
