@@ -541,7 +541,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // TIR_sum will use relevant TIR band for BG+
     var TIRB_sum = (bg < 150 ? TIRB1_sum : TIRB2_sum);
 
-    var endebug = "TIRB012:" + round(TIRB0,2) + "," + round(TIRB1,2) + "," + round(TIRB2,2) + "@" + profile.resistancePerHr + "%" + "=" + round(TIR_sens,2);
+    //var endebug = "TIRB012:" + round(TIRB0,2) + "," + round(TIRB1,2) + "," + round(TIRB2,2) + "@" + profile.resistancePerHr + "%" + "=" + round(TIR_sens,2);
     // apply autosens limit to TIR_sens_limited
     TIR_sens_limited = Math.min(TIR_sens, profile.autosens_max);
     TIR_sens_limited = Math.max(TIR_sens_limited, profile.autosens_min);
@@ -605,6 +605,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // apply TIRS to ISF only when delta is slight
     if (TIR_sens_limited !=1) {
         sens_normalTarget = (delta >= 0 && delta <= 4 || TIR_sens_limited < 1 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
+        TIR_sens_limited = (sens_normalTarget != sens_normalTarget ? TIR_sens_limited : 1); // reset to 1 when not being used
     }
 
     // round SR
