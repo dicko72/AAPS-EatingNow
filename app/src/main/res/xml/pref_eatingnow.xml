@@ -289,6 +289,16 @@
                 android:title="Use GhostCOB Always"
                 android:summary="Always ignore COB." />
 
+            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:dialogMessage="Max IOB for EN. Once reached the maxBolus will fallback to AAPS maxBolus."
+                android:inputType="numberDecimal"
+                android:key="key_en_max_iob"
+                android:title="Maximum IOB for Eating Now"
+                validate:floatmaxNumber="25.0"
+                validate:floatminNumber="0"
+                validate:testType="floatNumericRange" />
+
         </PreferenceCategory>
 
         <PreferenceCategory

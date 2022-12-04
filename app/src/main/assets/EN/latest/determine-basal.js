@@ -187,6 +187,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     var max_iob = profile.max_iob; // maximum amount of non-bolus IOB OpenAPS will ever deliver
+    var max_iob_en = profile.EN_max_iob; // maximum amount IOB EN will deliver before falling back to AAPS maxBolus
 
     // if min and max are set, then set target to their average
     var target_bg;
@@ -1739,6 +1740,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
                 // if bg numbers resumed after sensor errors dont allow a large SMB
                 ENMaxSMB = (minAgo < 1 && delta == 0 && glucose_status.short_avgdelta == 0 ? maxBolus : ENMaxSMB);
+
+                // IOB > EN max IOB fallback to AAPS maxBolus
+                ENMaxSMB = (max_iob_en > 0 && iob_data.iob > max_iob_en ? maxBolus : ENMaxSMB);
 
                 // if loop ran again without a new bg dont allow a large SMB, use maxBolus, allow 90 seconds
                 // ENMaxSMB = (minAgo > 1.5 && !ENTTActive ? maxBolus : ENMaxSMB);
