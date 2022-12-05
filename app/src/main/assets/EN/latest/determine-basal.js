@@ -1331,6 +1331,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // allow certain conditions 100% eBGw
         eBGweight = (sens_predType == "PRE" || sens_predType == "TBR" || sens_predType == "BG+" ? 1 : eBGweight);
+        if (eBGweight != 1 && TIR_sens_limited > 1 && ENactive && !firstMealScaling) sens_normalTarget = sens_normalTarget * TIR_sens_limited; // only use TIR_sens_limited with certain eBG conditions
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
         insulinReq_bg = (Math.max(minPredBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight);
