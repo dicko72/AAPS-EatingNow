@@ -1561,7 +1561,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     durationReq = Math.min(120, Math.max(0, durationReq));
                 }
                 //console.error(durationReq);
-                if (durationReq > 0 && !NoZT) {
+                if (durationReq > 0 && AllowZT) {
                     rT.reason += ", setting " + durationReq + "m zero temp. ";
                     return tempBasalFunctions.setTempBasal(rate, durationReq, profile, rT, currenttemp);
                 }
