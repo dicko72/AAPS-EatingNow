@@ -352,12 +352,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "ENactive: " + ENactive + ", ENtimeOK: " + ENtimeOK + "\n";
     enlog += "ENmaxIOBOK: " + ENmaxIOBOK + ", max_iob: " + max_iob + "\n";
 
-    // Threshold for SMB at night
-    var SMBbgOffset = (profile.SMBbgOffset > 0 ? target_bg + profile.SMBbgOffset : target_bg);
-    var ENSleepMode = !ENactive && !ENtimeOK && bg < SMBbgOffset;
-    enlog += "SMBbgOffset:" + SMBbgOffset + "\n";
-
-    // patches ===== END
+   // patches ===== END
 
     var tick;
 
@@ -445,6 +440,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "b1Time:" + b1Time + ", c1Time:" + c1Time + ", bTime:" + bTime + ", cTime:" + cTime + "\n";
     enlog += "firstMealWindow:" + firstMealWindow + ", firstMealScaling:" + firstMealScaling + "\n";
     enlog += "-----------------------" + "\n";
+
+    // Thresholds for no SMB's
+    var SMBbgOffset_night = (profile.SMBbgOffset > 0 ? target_bg + profile.SMBbgOffset : target_bg);
+    var SMBbgOffset_day = (profile.SMBbgOffset_day > 0 ? target_bg + profile.SMBbgOffset_day : bg);
+
+    var ENSleepModeNoSMB = !ENactive && !ENtimeOK && bg < SMBbgOffset_night;
+    var ENDayModeNoSMB = ENactive && ENtimeOK && !ENWindowOK && bg < SMBbgOffset_day;
+
+    enlog += "SMBbgOffset_night:" + SMBbgOffset_night + "\n";
+    enlog += "SMBbgOffset_day:" + SMBbgOffset_day + "\n";
 
     // UAM+ uses COB defined from prefs as prebolus within 30 minutes
     //var UAMPreBolus = (ENactive && ENTTActive && !meal_data.mealCOB && ENWindowRunTime < 30);
@@ -594,7 +599,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         sensitivityRatio = 1;
     } else if (profile.enableSRTDD) {
         // SR_TDD overnight uses TIR
-        SR_TDD = (ENSleepMode && TIR_sens_limited !=1 ? TIR_sens_limited : SR_TDD);
+        SR_TDD = (ENSleepModeNoSMB && TIR_sens_limited !=1 ? TIR_sens_limited : SR_TDD);
         // Use SR_TDD when no TT, profile switch
         sensitivityRatio = (profile.temptargetSet && !ENTTActive || profile.percent != 100 ?  1 : SR_TDD);
         // when SR_TDD shows sensitivity but TIR is resistant reset sensitivityRatio to 100%
@@ -689,7 +694,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // Allow user preferences to adjust the scaling of ISF as BG increases
     // Scaling is converted to a percentage, 0 is normal scaling (1), 5 is 5% stronger (0.95) and -5 is 5% weaker (1.05)
     // When eating now is not active during the day or at night do not apply additional scaling unless weaker
-    var ISFBGscaler = (ENSleepMode || !ENactive && ENtimeOK ? Math.min(profile.ISFbgscaler, 0) : profile.ISFbgscaler);
+    var ISFBGscaler = (ENSleepModeNoSMB || !ENactive && ENtimeOK ? Math.min(profile.ISFbgscaler, 0) : profile.ISFbgscaler);
     enlog += "ISFBGscaler is now:" + ISFBGscaler + "\n";
     // Convert ISFBGscaler to %
     ISFBGscaler = (100 - ISFBGscaler) / 100;
@@ -703,7 +708,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "sens_currentBG with ISFBGscaler:" + sens_currentBG + "\n";
 
     // SAFETY: if below target at night use normal ISF otherwise use dynamic ISF
-    sens_currentBG = (bg < target_bg && ENSleepMode ? sens_normalTarget : sens_currentBG);
+    sens_currentBG = (bg < target_bg && ENSleepModeNoSMB ? sens_normalTarget : sens_currentBG);
 
     // EXPERIMENT * APPLY TIR
     //sens_currentBG /= (bg > normalTarget ? TIR_limited : 1);
@@ -829,7 +834,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // min_bg of 90 -> threshold of 65, 100 -> 70 110 -> 75, and 130 -> 85
     //var threshold = Math.max(min_bg - 0.5*(min_bg-40),72); // minimum 72
     //    var threshold = Math.max(min_bg-0.5*(min_bg-40), profile.normal_target_bg-9, 75); // minimum 75 or current profile target - 10
-    var threshold = (ENWindowOK || ENSleepMode ? Math.max(min_bg - 0.5 * (min_bg - 40), 75) : Math.max(profile.normal_target_bg - 13, 75)); // minimum 75 or current profile target - 13
+    var threshold = (ENWindowOK || ENSleepModeNoSMB ? Math.max(min_bg - 0.5 * (min_bg - 40), 75) : Math.max(profile.normal_target_bg - 13, 75)); // minimum 75 or current profile target - 13
 
     //console.error(reservoir_data);
 
@@ -1259,10 +1264,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if ((profile.EN_UAMPlus_NoENW || ENWindowOK) && ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && sens_predType != "COB") {
         if (DeltaPctS > 1 && DeltaPctL > 1.5) sens_predType = "UAM+"; // with acceleration
         if (eventualBG > ISFbgMax && bg < ISFbgMax) sens_predType = "UAM+"; // when predicted high and bg is lower
+        //if (sens_predType == "UAM+") ENDayModeNoSMB = false; // allow SMB with UAM+
     }
 
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
-    if (ENactive || ENSleepMode || TIR_sens_limited > 1) {
+    if (ENactive || ENSleepModeNoSMB || TIR_sens_limited > 1) {
         // prebolus exaggerated bg
         var preBolusBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
 
@@ -1358,10 +1364,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     // main EN status
-    rT.reason += ", EN-" + profile.variant.substring(0,3) + ":";
-    if (!ENSleepMode) rT.reason += (ENactive ? "On" : "Off");
-    rT.reason += (ENSleepMode ? "Sleep" : "");
-    rT.reason += (ENSleepMode ? " (SMB bg>" + convert_bg(SMBbgOffset, profile) + ")" : "");
+    rT.reason += ", EN-" + profile.variant.substring(0,3) + ": " + (ENactive ? "On" : "Off");
     if (profile.temptargetSet) rT.reason += (ENTTActive ? " EN-TT" : " TT") + "=" + convert_bg(target_bg, profile);
     rT.reason += (COB && !profile.temptargetSet && !ENWindowOK ? " COB&gt;0" : "");
 
@@ -1780,8 +1783,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             worstCaseInsulinReq = (smbTarget - (naive_eventualBG + minIOBPredBG) / 2) / sens;
             durationReq = round(60 * worstCaseInsulinReq / profile.current_basal);
 
-            // Nightmode TBR when below SMBbgOffset with no low TT / no COB
-            if (ENSleepMode) {
+            // TBR only when below respective SMBbgOffsets with no low TT / no COB
+            if (ENSleepModeNoSMB || ENDayModeNoSMB) {
                 microBolus = 0;
             }
 
@@ -1803,6 +1806,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 durationReq = 30;
             }
             rT.reason += " insulinReq" + (insulinReq_bg_boost > 0 ? "+ " : " ") + insulinReq + (insulinReq != insulinReqOrig ? "(" + insulinReqOrig + ")" : "") + "@" + round(insulinReqPct * 100, 0) + "%";
+            if (ENSleepModeNoSMB || ENDayModeNoSMB) rT.reason += "; No SMB < " + convert_bg( (ENSleepModeNoSMB ? SMBbgOffset_night : SMBbgOffset_day) , profile);
 
             if (microBolus >= maxBolus) {
                 rT.reason += "; maxBolus " + maxBolus;

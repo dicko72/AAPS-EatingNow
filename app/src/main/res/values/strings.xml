@@ -1259,6 +1259,7 @@
     <string name="pref_en">EN</string>
     <string name="key_use_eatingnow">key_use_eatingnow</string>
     <string name="key_eatingnow_smbbgoffset">key_eatingnow_smbbgoffset</string>
+    <string name="key_eatingnow_smbbgoffset_day">key_eatingnow_smbbgoffset_day</string>
     <string name="key_use_ghostcob" translatable="false">key_use_ghostcob</string>
     <string name="key_use_ghostcob_always" translatable="false">key_use_ghostcob_always</string>
     <string name="key_use_enw_overnight" translatable="false">key_use_enw_overnight</string>
