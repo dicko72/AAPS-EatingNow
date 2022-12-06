@@ -247,6 +247,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val normalTargetBG = profile.getTargetMgdl().roundToInt()
         this.profile.put("normal_target_bg", normalTargetBG)
         this.profile.put("EN_max_iob", sp.getDouble(R.string.key_en_max_iob, 0.0))
+        this.profile.put("EN_max_iob_allow_smb", sp.getBoolean(R.string.key_en_max_iob_allow_smb, true))
         this.profile.put("enableGhostCOB", sp.getBoolean(R.string.key_use_ghostcob, false))
         this.profile.put("enableGhostCOBAlways", sp.getBoolean(R.string.key_use_ghostcob_always, false))
 

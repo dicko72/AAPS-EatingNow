@@ -1745,8 +1745,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // if bg numbers resumed after sensor errors dont allow a large SMB
                 ENMaxSMB = (minAgo < 1 && delta == 0 && glucose_status.short_avgdelta == 0 ? maxBolus : ENMaxSMB);
 
-                // IOB > EN max IOB fallback to AAPS maxBolus
-                ENMaxSMB = (max_iob_en > 0 && iob_data.iob > max_iob_en ? maxBolus : ENMaxSMB);
+                // IOB > EN max IOB fallback to AAPS maxBolus (default) or TBR
+                if (max_iob_en > 0 && iob_data.iob > max_iob_en) ENMaxSMB = (profile.EN_max_iob_allow_smb ? maxBolus : 0);
 
                 // if loop ran again without a new bg dont allow a large SMB, use maxBolus, allow 90 seconds
                 // ENMaxSMB = (minAgo > 1.5 && !ENTTActive ? maxBolus : ENMaxSMB);
