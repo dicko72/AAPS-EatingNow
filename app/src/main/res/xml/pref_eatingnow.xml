@@ -499,6 +499,13 @@
                 android:title="Use dynamic ISF"
                 android:summary="As BG increases ISF will become stronger when enabled." />
 
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="key_dynISFPredScale"
+                android:title="Dynamic ISF scale Prediction Curves"
+                android:summary="Use dynamic ISF to scale BG Prediction Curves." />
+
+
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"

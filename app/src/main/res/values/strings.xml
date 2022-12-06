@@ -1282,6 +1282,7 @@
 
 <!--    <string name="key_eatingnow_isfboost_maxbolus">key_eatingnow_isfboost_maxbolus</string>-->
     <string name="key_use_dynamicISF">key_use_dynamicISF</string>
+    <string name="key_dynISFPredScale">key_dynISFPredScale</string>
     <string name="key_eatingnow_isfbgscaler">key_eatingnow_isfbgscaler</string>
     <string name="key_use_sr_tdd">key_use_sr_tdd</string>
     <string name="key_eatingnow_maxisfpct">key_eatingnow_maxisfpct</string>

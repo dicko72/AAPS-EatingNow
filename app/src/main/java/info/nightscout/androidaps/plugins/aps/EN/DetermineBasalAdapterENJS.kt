@@ -277,6 +277,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("ISFbgscaler", sp.getDouble(R.string.key_eatingnow_isfbgscaler, 0.0))
         this.profile.put("MaxISFpct", sp.getInt(R.string.key_eatingnow_maxisfpct, 100))
         this.profile.put("useDynISF", sp.getBoolean(R.string.key_use_dynamicISF, true))
+        this.profile.put("dynISFPredScale", sp.getBoolean(R.string.key_dynISFPredScale, true))
 
         this.profile.put("insulinType", activePlugin.activeInsulin.friendlyName)
         this.profile.put("insulinPeak", activePlugin.activeInsulin.insulinConfiguration.peak/60000)
