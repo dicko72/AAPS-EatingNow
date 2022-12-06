@@ -1809,9 +1809,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             rT.reason += " insulinReq" + (insulinReq_bg_boost > 0 ? "+ " : " ") + insulinReq + (insulinReq != insulinReqOrig ? "(" + insulinReqOrig + ")" : "") + "@" + round(insulinReqPct * 100, 0) + "%";
             if (ENSleepModeNoSMB || ENDayModeNoSMB) rT.reason += "; No SMB < " + convert_bg( (ENSleepModeNoSMB ? SMBbgOffset_night : SMBbgOffset_day) , profile);
 
+            /*
             if (microBolus >= maxBolus) {
                 rT.reason += "; maxBolus " + maxBolus;
             }
+            */
+
             if (durationReq > 0 && AllowZT) {
                 rT.reason += "; setting " + durationReq + "m low temp of " + smbLowTempReq + "U/h";
             }
