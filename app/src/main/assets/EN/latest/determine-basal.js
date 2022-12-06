@@ -542,9 +542,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // SR_TDD ********************************
     //var SR_TDD = TDD / meal_data.TDDLastCannula;
-    var SR_TDD = meal_data.TDDLastCannula / meal_data.TDDAvg7d;
-    var endebug = "sr_tdd:" + round(SR_TDD,2);
     var SR_TDD = meal_data.TDD8h_exp / meal_data.TDDAvg7d;
+    var endebug = "sr_tdd8h:" + round(SR_TDD,2);
+    var SR_TDD = meal_data.TDDLastCannula / meal_data.TDDAvg7d;
+
 
     var sens_LCTDD = 1800 / (meal_data.TDDLastCannula * (Math.log((normalTarget / ins_val) + 1)));
     sens_LCTDD = sens_LCTDD / (profile.sens_TDD_scale / 100);
