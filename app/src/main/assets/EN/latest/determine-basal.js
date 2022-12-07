@@ -1300,6 +1300,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
             // when no ENW and UAM+ enable ENW when bg is higher or bg is rising fast
             if (!ENWindowOK && ENactive) ENWindowOK = (bg > target_bg + 18 || bg < ISFbgMax && delta >=15);
+
+            // when UAM+ is triggered but minGuardBG is below threshold force TBR for current BG
+            if (minGuardBG < threshold && !UAMBGPreBolus || !UAMCOBPreBolus) sens_predType = "BG+";
         }
 
         // UAM predictions, no COB or GhostCOB
@@ -1311,13 +1314,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = (bg > ISFbgMax && delta >= 15 ? 0.30 : eBGweight);
 
             // BG+ predtype when stuck high set a higher eventualBG
-            //sens_predType = (DeltaPctS > 1.0 && delta >= 0 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens > 1 && ENactive ? "BG+" : sens_predType);
             sens_predType = (DeltaPctS > 1.0 && delta >= 0 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens_limited > 1 ? "BG+" : sens_predType);
-
-            eventualBG = (sens_predType == "BG+" ? preBolusBG : eventualBG);
-            // EXPERIMENT: minGuardBG prevents reduction in high bg force higher until TIRS resets
-            minGuardBG = (sens_predType == "BG+" ? threshold: minGuardBG);
-            AllowZT = sens_predType != "BG+"; // disable ZT when using BG+
         }
 
         // COB predictions or UAM with COB
@@ -1328,12 +1325,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             AllowZT = eBGweight == eBGweight_orig; // disable ZT when eBGw is stronger
 
             // BG+ predtype when stuck high set a higher eventualBG
-            //sens_predType = (DeltaPctS > 1.0 && delta >= 0 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens > 1 && ENactive ? "BG+" : sens_predType);
             sens_predType = (DeltaPctS > 1.0 && delta >= 0 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens_limited > 1 ? "BG+" : sens_predType);
-            eventualBG = (sens_predType == "BG+" ? preBolusBG : eventualBG);
-            // EXPERIMENT: minGuardBG prevents reduction in high bg force higher until TIRS resets
-            minGuardBG = (sens_predType == "BG+" ? threshold: minGuardBG);
         }
+
+        // bg is stuck with resistance or UAM+ activated with minGuardBG
+        if (sens_predType == "BG+") {
+            eventualBG = preBolusBG;
+            minGuardBG = threshold;
+            AllowZT = false;
+        }
+
 
         // allow certain conditions 100% eBGw
         eBGweight = (sens_predType == "PRE" || sens_predType == "TBR" || sens_predType == "BG+" ? 1 : eBGweight);
@@ -1344,7 +1345,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq_bg = (Math.max(minPredBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight);
 
         // override and use current bg for insulinReq_bg with TBR and BG predType
-        insulinReq_bg = (sens_predType == "BG" ? bg : insulinReq_bg);
+        //insulinReq_bg = (sens_predType == "BG" ? bg : insulinReq_bg);
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
         insulinReq_sens = (sens_predType == "PRE" ? sens : dynISF(insulinReq_bg,normalTarget,sens_normalTarget,ins_val)); // dynISF
