@@ -1274,7 +1274,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         var preBolusBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
 
         // when a TT starts some treatments will be processed before it starts causing issues later
-        if (ENWindowRunTime < 1) sens_predType = "TBR";
+        //if (ENWindowRunTime < 1 && !UAMBGPreBolus || !UAMCOBPreBolus) sens_predType = "TBR";
 
         // UAM predictions, no COB or GhostCOB
         if (sens_predType == "UAM+") {
@@ -1283,9 +1283,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 minPredBG = preBolusBG;
                 eventualBG = preBolusBG;
                 // EXPERIMENT: minGuardBG prevents early prebolus with UAM force higher until SMB given when on or above target
-                minGuardBG = (UAMBGPreBolus && minGuardBG < threshold && bg >= target_bg? threshold: minGuardBG);
+                minGuardBG = (UAMBGPreBolus && minGuardBG < threshold && bg >= target_bg ? threshold: minGuardBG);
                 // SAFETY: if minGuardBG has been increased temporarily set PRE predType
-                sens_predType = (minGuardBG > minGuardBG_orig ? "PRE" : sens_predType);
+                //sens_predType = (minGuardBG > minGuardBG_orig ? "PRE" : sens_predType);
+                sens_predType = "PRE";
+
+                // when a TT starts some treatments will be processed before it starts causing issues later for prebolusing
+                if (ENWindowRunTime < 1) sens_predType = "TBR";
             }
             // set initial eBGw at 50% unless bg is in range and accelerating or preBolus
             eBGweight = (bg < ISFbgMax && eventualBG > bg || UAMBGPreBolus || UAMCOBPreBolus ? 0.75 : 0.50);
@@ -1741,9 +1745,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // BG+ provides 20 min blocks of SMB based on TIR
                 //ENMaxSMB = (sens_predType == "BG+" ? profile.current_basal * 20/60 : ENMaxSMB);
                 ENMaxSMB = (sens_predType == "BG+" ? profile.current_basal * (20 * TIRB_sum) / 60 : ENMaxSMB);
-
-                // EXPERIMENTAL: TBR only for PRE
-                // ENMaxSMB = (sens_predType == "PRE" ? 0 : ENMaxSMB);
 
                 // if bg numbers resumed after sensor errors dont allow a large SMB
                 ENMaxSMB = (minAgo < 1 && delta == 0 && glucose_status.short_avgdelta == 0 ? maxBolus : ENMaxSMB);
