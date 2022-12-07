@@ -1284,10 +1284,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eventualBG = preBolusBG;
             // EXPERIMENT: minGuardBG prevents early prebolus with UAM force higher until SMB given when on or above target
             minGuardBG = (minGuardBG < threshold && bg >= target_bg ? threshold: minGuardBG);
+            AllowZT = false; // disable ZT
 
             // when a TT starts some treatments will be processed before it starts causing issues later for prebolusing
             if (ENWindowRunTime < 1) sens_predType = "TBR";
-            AllowZT = false; // disable ZT for UAM+
         }
 
         // UAM+ predictions, stronger eBGw
@@ -1332,19 +1332,21 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (sens_predType == "BG+") {
             eventualBG = preBolusBG;
             minGuardBG = threshold;
+            eBGweight = 1; // 100% eBGw as insulin delivery is restricted
             AllowZT = false;
         }
 
-        // allow certain conditions 100% eBGw
-        eBGweight = (sens_predType == "PRE" || sens_predType == "TBR" || sens_predType == "BG+" ? 1 : eBGweight);
-        // SAFETY: cancel out TIR based sens when not using BG+, PRE or TBR
+        // TBR only
+        if (sens_predType == "TBR") {
+            eBGweight = 1; // 100% eBGw as SMB is disabled
+            AllowZT = false;
+        }
+
+        // SAFETY: cancel out TIR based sens when not using 100% eBGw
         if (eBGweight != 1 && TIR_sens_limited > 1 && ENactive && !firstMealScaling) sens_normalTarget = sens_normalTarget * TIR_sens_limited;
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
         insulinReq_bg = (Math.max(minPredBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight);
-
-        // override and use current bg for insulinReq_bg with TBR and BG predType
-        //insulinReq_bg = (sens_predType == "BG" ? bg : insulinReq_bg);
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
         insulinReq_sens = (sens_predType == "PRE" ? sens : dynISF(insulinReq_bg,normalTarget,sens_normalTarget,ins_val)); // dynISF
