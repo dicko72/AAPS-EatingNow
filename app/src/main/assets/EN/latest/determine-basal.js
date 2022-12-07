@@ -1776,6 +1776,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (insulinReq > max_iob - iob_data.iob) {
                     insulinReq = round(max_iob - iob_data.iob, 2);
                 }
+                if (insulinReq > max_iob_en - iob_data.iob) {
+                    insulinReq = round(max_iob_en - iob_data.iob, 2);
+                }
             }
             // END === if we are eating now and BGL prediction is higher than normal target ===
             // ============  EATING NOW MODE  ==================== END ===
