@@ -928,6 +928,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         remainingCATime = round(remainingCATime, 1);
         //console.error(fractionCOBAbsorbed, remainingCATimeAdjustment, remainingCATime)
         console.error("Last carbs", lastCarbAge, "minutes ago; remainingCATime:", remainingCATime, "hours;", round(fractionCOBAbsorbed * 100) + "% carbs absorbed");
+        endebug += ",COBabsorbed%:"+round(fractionCOBAbsorbed * 100)+",HrsLeft:"+remainingCATime;
     }
 
     // calculate the number of carbs absorbed over remainingCATime hours at current CI
