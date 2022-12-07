@@ -1259,7 +1259,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // categorize the eventualBG prediction type for more accurate weighting
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
-    if (UAMBGPreBolus || UAMCOBPreBolus) sens_predType = "UAM+"; // force UAM+ when appropriate
+
 
     // UAM+ predtype when sufficient delta and not a COB prediction
     //if ((profile.EN_UAMPlus_NoENW || ENWindowOK) && ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && !COB) {
@@ -1269,31 +1269,31 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         //if (sens_predType == "UAM+") ENDayModeNoSMB = false; // allow SMB with UAM+
     }
 
+    // PREbolus active
+    if (UAMBGPreBolus || UAMCOBPreBolus) sens_predType = "PRE";
+
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
     if (ENactive || ENSleepModeNoSMB || TIR_sens_limited > 1) {
         // prebolus exaggerated bg
         var preBolusBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
 
-        // when a TT starts some treatments will be processed before it starts causing issues later
-        //if (ENWindowRunTime < 1 && !UAMBGPreBolus || !UAMCOBPreBolus) sens_predType = "TBR";
-
-        // UAM predictions, no COB or GhostCOB
-        if (sens_predType == "UAM+") {
+        // PREbolus active
+        if (sens_predType == "PRE") {
             // increase predictions to force a prebolus when allowed
-            if (UAMBGPreBolus || UAMCOBPreBolus) {
-                minPredBG = preBolusBG;
-                eventualBG = preBolusBG;
-                // EXPERIMENT: minGuardBG prevents early prebolus with UAM force higher until SMB given when on or above target
-                minGuardBG = (UAMBGPreBolus && minGuardBG < threshold && bg >= target_bg ? threshold: minGuardBG);
-                // SAFETY: if minGuardBG has been increased temporarily set PRE predType
-                //sens_predType = (minGuardBG > minGuardBG_orig ? "PRE" : sens_predType);
-                sens_predType = "PRE";
+            minPredBG = preBolusBG;
+            eventualBG = preBolusBG;
+            // EXPERIMENT: minGuardBG prevents early prebolus with UAM force higher until SMB given when on or above target
+            minGuardBG = (minGuardBG < threshold && bg >= target_bg ? threshold: minGuardBG);
 
-                // when a TT starts some treatments will be processed before it starts causing issues later for prebolusing
-                if (ENWindowRunTime < 1) sens_predType = "TBR";
-            }
+            // when a TT starts some treatments will be processed before it starts causing issues later for prebolusing
+            if (ENWindowRunTime < 1) sens_predType = "TBR";
+            AllowZT = false; // disable ZT for UAM+
+        }
+
+        // UAM+ predictions, stronger eBGw
+        if (sens_predType == "UAM+") {
             // set initial eBGw at 50% unless bg is in range and accelerating or preBolus
-            eBGweight = (bg < ISFbgMax && eventualBG > bg || UAMBGPreBolus || UAMCOBPreBolus ? 0.75 : 0.50);
+            eBGweight = (bg < ISFbgMax && eventualBG > bg ? 0.75 : 0.50);
             // SAFETY: UAM+ fast delta with higher bg lowers eBGw
             eBGweight = (bg > ISFbgMax && delta >= 15 ? 0.30 : eBGweight);
             AllowZT = false; // disable ZT for UAM+
@@ -1301,8 +1301,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // when no ENW and UAM+ enable ENW when bg is higher or bg is rising fast
             if (!ENWindowOK && ENactive) ENWindowOK = (bg > target_bg + 18 || bg < ISFbgMax && delta >=15);
 
-            // when UAM+ is triggered but minGuardBG is below threshold force TBR for current BG
-            if (minGuardBG < threshold && !UAMBGPreBolus || !UAMCOBPreBolus) sens_predType = "BG+";
+            // when UAM+ is triggered but minGuardBG is below threshold force BG+
+            if (minGuardBG < threshold) sens_predType = "BG+";
         }
 
         // UAM predictions, no COB or GhostCOB
@@ -1328,13 +1328,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             sens_predType = (DeltaPctS > 1.0 && delta >= 0 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens_limited > 1 ? "BG+" : sens_predType);
         }
 
-        // bg is stuck with resistance or UAM+ activated with minGuardBG
+        // BG+ bg is stuck with resistance or UAM+ activated with minGuardBG
         if (sens_predType == "BG+") {
             eventualBG = preBolusBG;
             minGuardBG = threshold;
             AllowZT = false;
         }
-
 
         // allow certain conditions 100% eBGw
         eBGweight = (sens_predType == "PRE" || sens_predType == "TBR" || sens_predType == "BG+" ? 1 : eBGweight);
