@@ -1264,7 +1264,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             minPredBG = preBolusBG;
             eventualBG = preBolusBG;
             // EXPERIMENT: minGuardBG prevents early prebolus with UAM force higher until SMB given when on or above target
-            minGuardBG = (minGuardBG < threshold && bg >= target_bg ? threshold: minGuardBG);
+            minGuardBG = (minGuardBG < threshold && bg > threshold ? threshold: minGuardBG);
             AllowZT = false; // disable ZT
 
             // when a TT starts some treatments will be processed before it starts causing issues later for prebolusing
