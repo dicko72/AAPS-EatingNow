@@ -442,8 +442,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "-----------------------" + "\n";
 
     // Thresholds for no SMB's
-    var SMBbgOffset_night = (profile.SMBbgOffset > 0 ? target_bg + profile.SMBbgOffset : target_bg);
-    var SMBbgOffset_day = (profile.SMBbgOffset_day > 0 ? target_bg + profile.SMBbgOffset_day : bg);
+    var SMBbgOffset_night = (profile.SMBbgOffset > 0 ? target_bg + profile.SMBbgOffset : 0);
+    var SMBbgOffset_day = (profile.SMBbgOffset_day > 0 ? target_bg + profile.SMBbgOffset_day : 0);
 
     var ENSleepModeNoSMB = !ENactive && !ENtimeOK && bg < SMBbgOffset_night;
     var ENDayModeNoSMB = ENactive && ENtimeOK && !ENWindowOK && bg < SMBbgOffset_day;
