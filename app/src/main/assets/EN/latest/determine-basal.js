@@ -618,9 +618,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         basal = profile.current_basal * sensitivityRatio;
     }
 
-    // apply TIRS to ISF only when delta is slight
+    // apply TIRS to ISF only when delta is slight or bg higher
     if (TIR_sens_limited !=1) {
-        sens_normalTarget = (delta >= -4 && delta <= 4 || TIR_sens_limited < 1 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
+        //sens_normalTarget = (delta >= -4 && delta <= 4 || TIR_sens_limited < 1 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
+        sens_normalTarget = (delta >= -4 && delta <= 4 || TIR_sens_limited < 1 || bg > ISFbgMax && TIRB2 > 1 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
         TIR_sens_limited = profile_sens / sens_normalTarget;
     }
 
@@ -1342,7 +1343,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
 
         // SAFETY: cancel out TIR based sens when not using 100% eBGw
-        if (eBGweight != 1 && TIR_sens_limited > 1 && ENactive && !firstMealScaling) sens_normalTarget = sens_normalTarget * TIR_sens_limited;
+        //if (eBGweight != 1 && TIR_sens_limited > 1 && ENactive && !firstMealScaling) sens_normalTarget = sens_normalTarget * TIR_sens_limited;
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
         insulinReq_bg = (Math.max(minPredBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight);
