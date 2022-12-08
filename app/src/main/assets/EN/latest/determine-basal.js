@@ -599,12 +599,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // dont adjust sens_normalTarget
         sensitivityRatio = 1;
     } else if (profile.enableSRTDD) {
-        // SR_TDD overnight uses TIR
-        SR_TDD = (ENSleepModeNoSMB && TIR_sens_limited !=1 ? TIR_sens_limited : SR_TDD);
+        // SR_TDD overnight uses TIR or when bg higher and higher TIR band is resistant use TIR
+        SR_TDD = (ENSleepModeNoSMB && TIR_sens_limited !=1 || bg > ISFbgMax && TIRB2 > 1 ? TIR_sens_limited : SR_TDD);
         // Use SR_TDD when no TT, profile switch
         sensitivityRatio = (profile.temptargetSet && !ENTTActive || profile.percent != 100 ?  1 : SR_TDD);
-        // when SR_TDD shows sensitivity but TIR is resistant reset sensitivityRatio to 100%
-        //sensitivityRatio = (TIRB2 > 1 && sensitivityRatio < 1 ?  1 : sensitivityRatio);
         // apply autosens limits
         sensitivityRatio = Math.min(sensitivityRatio, profile.autosens_max);
         sensitivityRatio = Math.max(sensitivityRatio, profile.autosens_min);
@@ -1249,7 +1247,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // minPredBG and eventualBG based dosing - insulinReq_bg
     // insulinReq_sens is calculated using a percentage of eventualBG (eBGweight) with the rest as minPredBG, to reduce the risk of overdosing.
-    var insulinReq_bg_orig = Math.min(minPredBG, eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), eBGweight = eBGweight_orig, AllowZT = true, ISFbgMax = 170;
+    var insulinReq_bg_orig = Math.min(minPredBG, eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), eBGweight = eBGweight_orig, AllowZT = true, ISFbgMax = 160;
     var insulinReq_sens = sens_normalTarget;
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
@@ -1261,11 +1259,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
 
 
-    // UAM+ predtype when sufficient delta and not a COB prediction
-    //if ((profile.EN_UAMPlus_NoENW || ENWindowOK) && ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && !COB) {
+    // UAM+ predtype when sufficient delta not a COB prediction
     if ((profile.EN_UAMPlus_NoENW || ENWindowOK) && ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && sens_predType != "COB") {
         if (DeltaPctS > 1 && DeltaPctL > 1.5) sens_predType = "UAM+"; // with acceleration
         if (eventualBG > ISFbgMax && bg < ISFbgMax) sens_predType = "UAM+"; // when predicted high and bg is lower
+        // reset to UAM prediction when COB are not mostly absorbed
+        if (meal_data.carbs && fractionCOBAbsorbed < 75) sens_predType = "UAM"
         //if (sens_predType == "UAM+") ENDayModeNoSMB = false; // allow SMB with UAM+
     }
 
