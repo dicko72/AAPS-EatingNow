@@ -1274,13 +1274,9 @@
     <string name="key_eatingnow_uam_maxbolus_breakfast">key_eatingnow_uam_maxbolus_breakfast</string>
     <string name="key_eatingnow_cobboost_maxbolus">key_eatingnow_cobboost_maxbolus</string>
     <string name="key_eatingnow_uamboost_maxbolus">key_eatingnow_uamboost_maxbolus</string>
-<!--    <string name="key_eatingnow_uam_maxbolus">key_eatingnow_uam_maxbolus</string>-->
     <string name="key_eatingnow_uambgboost">key_eatingnow_uambgboost</string>
     <string name="key_eatingnow_uambgboost_maxbolus">key_eatingnow_uambgboost_maxbolus</string>
     <string name="key_use_uamplus_noenw">key_use_uamplus_noenw</string>
-    <string name="key_UAM_COB_Bkfst">key_UAM_COB_Bkfst</string>
-    <string name="key_UAM_COB">key_UAM_COB</string>
-<!--    <string name="key_eatingnow_isfboost_maxbolus">key_eatingnow_isfboost_maxbolus</string>-->
     <string name="key_use_dynamicISF">key_use_dynamicISF</string>
     <string name="key_eatingnow_isfbgscaler">key_eatingnow_isfbgscaler</string>
     <string name="key_use_sr_tdd">key_use_sr_tdd</string>

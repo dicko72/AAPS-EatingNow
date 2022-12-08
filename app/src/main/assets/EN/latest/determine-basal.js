@@ -451,26 +451,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "SMBbgOffset_night:" + SMBbgOffset_night + "\n";
     enlog += "SMBbgOffset_day:" + SMBbgOffset_day + "\n";
 
-    // UAM+ uses COB defined from prefs as prebolus within 30 minutes
-    //var UAMPreBolus = (ENactive && ENTTActive && !meal_data.mealCOB && ENWindowRunTime < 30);
-    var UAMCOBPreBolus = (ENactive && ENWindowRunTime < ENWindowDuration && !meal_data.mealCOB);
-    if (UAMCOBPreBolus) {
-        enlog += "\n* UAM COB PreBolus\n";
-        // get the starting COB from prefs
-        var UAM_carbs = (firstMealWindow ? profile.UAM_COB_Bkfst : profile.UAM_COB);
-        enlog += "UAM_carbs from preferences: " + UAM_carbs + "\n";
-        // current IOB would cover how many carbs, first 15m COB stay constant
-        var COB_IOB = (ENWindowRunTime < 15 ? 0 : Math.max(iob_data.iob, 0) * carb_ratio);
-        enlog += "COB_IOB to remove: " + COB_IOB + "\n";
-        // remove the COB already covered by IOB restrict to 0
-        var UAM_mealCOB = Math.max(UAM_carbs - COB_IOB, 0);
-        enlog += "UAM_mealCOB now: " + UAM_mealCOB + "\n";
-        // bring the remaining COB into the loop
-        meal_data.carbs = round(UAM_carbs,1);
-        meal_data.mealCOB = round(UAM_mealCOB,1);
-        UAMCOBPreBolus = (meal_data.mealCOB !=0);
-    }
-
     var COB = meal_data.mealCOB;
 
     // If GhostCOB is enabled we will use COB when ENWindowOK but outside this window UAM will be used
@@ -1253,7 +1233,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var insulinReq_sens = sens_normalTarget;
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
-    var UAMBGPreBolus = (!UAMCOBPreBolus && ENWindowRunTime < ENWindowDuration && ENWindowRunTime < lastBolusAge && !COB);
+    var UAMBGPreBolus = (ENWindowRunTime < ENWindowDuration && ENWindowRunTime < lastBolusAge && !COB);
     var insulinReq_bg_boost = (UAMBGPreBolus ? profile.UAMbgBoost : 0);
 
     // categorize the eventualBG prediction type for more accurate weighting
@@ -1271,7 +1251,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     // PREbolus active
-    if (UAMBGPreBolus || UAMCOBPreBolus) sens_predType = "PRE";
+    if (UAMBGPreBolus) sens_predType = "PRE";
 
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
     if (ENactive || ENSleepModeNoSMB || TIR_sens_limited > 1) {
@@ -1716,25 +1696,25 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // insulinReqPct = (!ENWindowOK && profile.EN_UAMPlus_NoENW && sens_predType == "UAM+" ? ENinsulinReqPct : insulinReqPct);
 
                 // UAM+ PreBolus gets 100% insulinReqPct
-                insulinReqPct = (UAMBGPreBolus || UAMCOBPreBolus ? 1 : insulinReqPct);
+                insulinReqPct = (UAMBGPreBolus ? 1 : insulinReqPct);
 
                 // set EN SMB limit for COB or UAM
                 ENMaxSMB = (sens_predType == "COB" ? profile.EN_COB_maxBolus : profile.EN_UAM_maxBolus);
 
                 // if ENWindowOK allow further increase max of SMB within the window
                 if (ENWindowOK) {
-                    if (COB && !UAMCOBPreBolus) {
+                    if (COB) {
                         ENMaxSMB = (firstMealWindow ? profile.EN_COB_maxBolus_breakfast : profile.EN_COB_maxBolus);
                         //ENReason += ", Recent COB " + (profile.temptargetSet && target_bg == normalTarget ? " + TT" : "") + " ENW-SMB";
                     } else {
                         ENMaxSMB = (firstMealWindow ? profile.EN_UAM_maxBolus_breakfast : profile.EN_UAM_maxBolus);
-                        if (UAMBGPreBolus || UAMCOBPreBolus) ENMaxSMB = (!profile.EN_UAMbgBoost_maxBolus ? ENMaxSMB : profile.EN_UAMbgBoost_maxBolus);
+                        if (UAMBGPreBolus) ENMaxSMB = (!profile.EN_UAMbgBoost_maxBolus ? ENMaxSMB : profile.EN_UAMbgBoost_maxBolus);
                     }
                 }
 
                 // ============== MAXBOLUS RESTRICTIONS ==============
                 // if ENMaxSMB is more than AAPS safety maxbolus then consider the setting to be minutes
-                if (ENMaxSMB > profile.safety_maxbolus) ENMaxSMB = (UAMBGPreBolus || UAMCOBPreBolus ? profile.current_basal : basal) * ENMaxSMB / 60;
+                if (ENMaxSMB > profile.safety_maxbolus) ENMaxSMB = (UAMBGPreBolus ? profile.current_basal : basal) * ENMaxSMB / 60;
                 //ENMaxSMB = (ENMaxSMB > profile.safety_maxbolus ? basal * ENMaxSMB / 60 : ENMaxSMB);
                 //ENMaxSMB = (ENMaxSMB > profile.safety_maxbolus ? profile.current_basal * ENMaxSMB / 60 : ENMaxSMB);
                 // if ENMaxSMB is more than 0 use ENMaxSMB else use AAPS max minutes
