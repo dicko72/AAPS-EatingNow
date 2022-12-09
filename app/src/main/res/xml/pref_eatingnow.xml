@@ -55,6 +55,33 @@
             android:summary="Restricted to maximum of 1 with dynamic ISF"
             android:title="@string/openapsama_useautosens" />
 
+        <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+            android:defaultValue="1.2"
+            android:dialogMessage="@string/openapsama_autosens_max_summary"
+            android:digits="0123456789.,"
+            android:inputType="numberDecimal"
+            android:key="@string/key_openapsama_autosens_max"
+            android:maxLines="20"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/openapsama_autosens_max"
+            validate:floatmaxNumber="3"
+            validate:floatminNumber="0.5"
+            validate:testType="floatNumericRange" />
+
+        <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+            android:defaultValue="0.7"
+            android:dialogMessage="@string/openapsama_autosens_min_summary"
+            android:inputType="numberDecimal"
+            android:key="@string/key_openapsama_autosens_min"
+            android:maxLines="20"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/openapsama_autosens_min"
+            validate:floatmaxNumber="1.0"
+            validate:floatminNumber="0.1"
+            validate:testType="floatNumericRange" />
+
         <SwitchPreference
             android:defaultValue="false"
             android:key="@string/key_use_smb"
@@ -232,7 +259,7 @@
         android:summary="General settings for Eating Now"
         app:initialExpandedChildrenCount="0">
 
-        <Preference android:summary="Eating Now operates within the Start and End time specified.\nThe Eating Now Window becomes active when there is a manual bolus or active carb entry after the Start Time setting.\nWhen the Eating Now Window expires this is considered to be the period when not eating and different SMB sizes may be configured.">
+        <Preference android:summary="Eating Now operates within the Start and End time specified.\nLarger boluses from the Eating Now Window are allowed within this time range.">
         </Preference>
 
         <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
@@ -261,6 +288,9 @@
                 android:title="Enable EN after EN Start Time"
                 android:summary="Allow EN to become active automatically after EN start time without COB or manual bolus entry." />
 
+            <Preference android:summary="SMB's can be restricted inside and outside of the Eating Now time range.">
+            </Preference>
+
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
@@ -271,7 +301,7 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange" />
 
-            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:title="Overnight SMB Restriction"
@@ -280,25 +310,6 @@
                 validate:floatmaxNumber="270.0"
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange" />
-
-
-        <SwitchPreference
-                android:defaultValue="false"
-                android:key="key_use_enw_overnight"
-                android:title="Allow ENW Overnight"
-                android:summary="ENW will be active after EN End Time with COB or EN-TT." />
-
-            <SwitchPreference
-                android:defaultValue="false"
-                android:key="key_use_ghostcob"
-                android:title="Use GhostCOB after ENW"
-                android:summary="Ignore COB after EN Window and rely on UAM predictions." />
-
-            <SwitchPreference
-                android:defaultValue="false"
-                android:key="key_use_ghostcob_always"
-                android:title="Use GhostCOB Always"
-                android:summary="Always ignore COB." />
 
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"
@@ -345,15 +356,23 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
-<!--            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference-->
-<!--                android:defaultValue="0"-->
-<!--                android:inputType="number"-->
-<!--                android:key="@string/key_eatingnow_duration"-->
-<!--                android:title="EN TT Duration"-->
-<!--                android:dialogMessage="Time in minutes for EN Window when using the Eating Now TT button."-->
-<!--                validate:maxNumber="180"-->
-<!--                validate:minNumber="15"-->
-<!--                validate:testType="numericRange" />-->
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="key_use_enw_overnight"
+                android:title="Allow ENW Overnight"
+                android:summary="ENW will be active after EN End Time with COB or EN-TT." />
+
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="key_use_ghostcob"
+                android:title="Use GhostCOB after ENW"
+                android:summary="Ignore COB after EN Window and rely on UAM predictions." />
+
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="key_use_ghostcob_always"
+                android:title="Use GhostCOB Always"
+                android:summary="Always ignore COB." />
 
             <Preference android:summary="The first manual bolus or carb entry is considered breakfast, or the first meal of the day.\nThe time of the first meal of the day may vary. ISF and CR scaling can be applied to a single ISF/CR profile entry allowing flexibility without profile shifts."></Preference>
 
