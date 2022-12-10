@@ -1634,7 +1634,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             insulinReq = max_iob - iob_data.iob;
         } else if (max_iob_en > 0 && insulinReq > max_iob_en - iob_data.iob) {
             rT.reason += "max_iob_en " + max_iob_en + ", ";
-            insulinReq = max_iob_en - iob_data.iob;
+            //insulinReq = max_iob_en - iob_data.iob;
         }
 
 
