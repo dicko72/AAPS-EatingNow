@@ -124,7 +124,7 @@
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
             android:hint="@string/reason"
-            android:visibility="gone">
+            android:visibility="">
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/reasonList"
@@ -151,8 +151,7 @@
                 android:paddingStart="5dp"
                 android:paddingEnd="5dp"
                 android:text="@string/cancel"
-                android:textColor="?attr/tempTargetConfirmation"
-                android:visibility="gone" />
+                android:textColor="?attr/tempTargetConfirmation" />
 
             <info.nightscout.androidaps.utils.ui.SingleClickButton
                 android:id="@+id/eating_soon"
@@ -164,9 +163,8 @@
                 android:drawableTop="@drawable/ic_target_eatingsoon"
                 android:paddingStart="5dp"
                 android:paddingEnd="5dp"
-                android:text="@string/eatingsoon"
-                android:textColor="?attr/carbsColor"
-                android:visibility="gone" />
+                android:text="Small"
+                android:textColor="?attr/carbsColor" />
 
             <info.nightscout.androidaps.utils.ui.SingleClickButton
                 android:id="@+id/activity"
@@ -178,9 +176,8 @@
                 android:drawableTop="@drawable/ic_target_activity"
                 android:paddingStart="5dp"
                 android:paddingEnd="5dp"
-                android:text="@string/activity"
-                android:textColor="?attr/exerciseColor"
-                android:visibility="gone" />
+                android:text="Medium"
+                android:textColor="?attr/exerciseColor" />
 
             <info.nightscout.androidaps.utils.ui.SingleClickButton
                 android:id="@+id/hypo"
@@ -191,9 +188,8 @@
                 android:drawableTop="@drawable/ic_target_hypo"
                 android:paddingStart="5dp"
                 android:paddingEnd="5dp"
-                android:text="@string/hypo"
-                android:textColor="?attr/lowColor"
-                android:visibility="gone" />
+                android:text="Large"
+                android:textColor="?attr/lowColor" />
 
         </LinearLayout>
         
