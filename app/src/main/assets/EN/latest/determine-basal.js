@@ -480,7 +480,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     TIRB2 = (bg > normalTarget ? 1 + (TIRB2 * TIRH_percent) : 1);
 
     // TIRB1 - The TIR for the lower band just above normalTarget (+9/0.5)
-    if (TIRH_percent) {
+    if (TIRH_percent && delta >= -4 && delta <= 4 && bg > normalTarget + 18) {
         if (meal_data.TIRTW1H > 25) TIRB1 = meal_data.TIRTW1H / 100;
         if (meal_data.TIRTW2H > 0) TIRB1 += meal_data.TIRTW2H / 100;
         if (meal_data.TIRTW3H > 0) TIRB1 += meal_data.TIRTW3H / 100;
