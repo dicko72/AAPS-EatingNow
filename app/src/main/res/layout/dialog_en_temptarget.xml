@@ -150,8 +150,8 @@
                 android:drawableTop="@drawable/ic_target_cancel"
                 android:paddingStart="5dp"
                 android:paddingEnd="5dp"
-                android:text="@string/cancel"
-                android:textColor="?attr/tempTargetConfirmation" />
+                android:textColor="?attr/tempTargetConfirmation"
+                android:visibility="gone" />
 
             <info.nightscout.androidaps.utils.ui.SingleClickButton
                 android:id="@+id/eating_soon"
@@ -163,8 +163,9 @@
                 android:drawableTop="@drawable/ic_target_eatingsoon"
                 android:paddingStart="5dp"
                 android:paddingEnd="5dp"
-                android:text="Small"
-                android:textColor="?attr/carbsColor" />
+                android:text="@string/eatingsoon"
+                android:textColor="?attr/carbsColor"
+                android:visibility="gone" />
 
             <info.nightscout.androidaps.utils.ui.SingleClickButton
                 android:id="@+id/activity"
@@ -176,8 +177,9 @@
                 android:drawableTop="@drawable/ic_target_activity"
                 android:paddingStart="5dp"
                 android:paddingEnd="5dp"
-                android:text="Medium"
-                android:textColor="?attr/exerciseColor" />
+                android:text="@string/activity"
+                android:textColor="?attr/exerciseColor"
+                android:visibility="gone" />
 
             <info.nightscout.androidaps.utils.ui.SingleClickButton
                 android:id="@+id/hypo"
@@ -188,8 +190,9 @@
                 android:drawableTop="@drawable/ic_target_hypo"
                 android:paddingStart="5dp"
                 android:paddingEnd="5dp"
-                android:text="Large"
-                android:textColor="?attr/lowColor" />
+                android:text="@string/hypo"
+                android:textColor="?attr/lowColor"
+                android:visibility="gone" />
 
         </LinearLayout>
         
