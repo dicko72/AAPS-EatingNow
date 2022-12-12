@@ -1231,7 +1231,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // minPredBG and eventualBG based dosing - insulinReq_bg
     // insulinReq_sens is calculated using a percentage of eventualBG (eBGweight) with the rest as minPredBG, to reduce the risk of overdosing.
-    var insulinReq_bg_orig = Math.min(minPredBG, eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), eBGweight = eBGweight_orig, AllowZT = true;
+    var insulinReq_bg_orig = Math.min(minPredBG, eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), minBG = minPredBG, eBGweight = eBGweight_orig, AllowZT = true;
     var insulinReq_sens = sens_normalTarget, insulinReq_sens_normalTarget = sens_normalTarget_orig;
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
@@ -1284,6 +1284,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // SAFETY: UAM+ fast delta with higher bg lowers eBGw
             eBGweight = (bg > ISFbgMax && delta >= 15 ? 0.30 : eBGweight);
             AllowZT = false; // disable ZT for UAM+
+            minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
 
             // when no ENW and UAM+ enable ENW when bg is higher or bg is rising fast
             if (!ENWindowOK && ENactive) ENWindowOK = (bg > target_bg + 18 || bg < ISFbgMax && delta >=15);
@@ -1335,7 +1336,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
-        insulinReq_bg = (Math.max(minPredBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight);
+        //insulinReq_bg = (Math.max(minPredBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight);
+        insulinReq_bg = (Math.max(minBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight);
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
         //insulinReq_sens = (sens_predType == "PRE" ? sens : dynISF(insulinReq_bg,normalTarget,sens_normalTarget,ins_val)); // dynISF
