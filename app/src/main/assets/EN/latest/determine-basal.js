@@ -523,7 +523,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // SR_TDD ********************************
     //var SR_TDD = TDD / meal_data.TDDLastCannula;
     var SR_TDD = meal_data.TDD8h_exp / meal_data.TDDAvg7d;
-    var endebug = "sr_tdd8h:" + round(SR_TDD,2);
+    //var endebug = "sr_tdd8h:" + round(SR_TDD,2);
     var SR_TDD = meal_data.TDDLastCannula / meal_data.TDDAvg7d;
 
 
@@ -910,7 +910,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         remainingCATime = round(remainingCATime, 1);
         //console.error(fractionCOBAbsorbed, remainingCATimeAdjustment, remainingCATime)
         console.error("Last carbs", lastCarbAge, "minutes ago; remainingCATime:", remainingCATime, "hours;", round(fractionCOBAbsorbed * 100) + "% carbs absorbed");
-        endebug += ",COBabsorbed%:"+round(fractionCOBAbsorbed * 100)+",HrsLeft:"+remainingCATime;
+        //endebug += ",COBabsorbed%:"+round(fractionCOBAbsorbed * 100)+",HrsLeft:"+remainingCATime;
     }
 
     // calculate the number of carbs absorbed over remainingCATime hours at current CI
@@ -1236,6 +1236,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
     var UAMBGPreBolus = (ENWindowRunTime < ENWindowDuration && ENWindowRunTime < lastBolusAge);
+    var UAMBGPreBolused = (ENWindowRunTime < ENWindowDuration && ENWindowRunTime > lastBolusAge && profile.UAMbgBoost > 0);
+    var endebug = "UAMBGP:" + UAMBGPreBolused;
+
     var insulinReq_bg_boost = (UAMBGPreBolus ? profile.UAMbgBoost : 0);
 
     // categorize the eventualBG prediction type for more accurate weighting
