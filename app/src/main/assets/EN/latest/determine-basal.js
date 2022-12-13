@@ -1757,8 +1757,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 } else {
                     // Default insulinReqPct at night
                     insulinReqPct = insulinReqPctDefault;
-                    // default SMB
-                    maxBolus = round(maxBolus, 1);
+                    // default SMB unless TBR
+                    maxBolus = (sens_predType == "TBR" ? 0 : round(maxBolus, 1));
                 }
 
                 /*
