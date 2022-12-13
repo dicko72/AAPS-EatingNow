@@ -509,7 +509,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // TIR_sum will use relevant TIR band for BG+
     var TIRB_sum = (bg < 150 ? TIRB1_sum : TIRB2_sum);
 
-    //var endebug = "TIRB012:" + round(TIRB0,2) + "," + round(TIRB1,2) + "," + round(TIRB2,2) + "@" + profile.resistancePerHr + "%" + "=" + round(TIR_sens,2);
     // apply autosens limit to TIR_sens_limited
     TIR_sens_limited = Math.min(TIR_sens, profile.autosens_max);
     TIR_sens_limited = Math.max(TIR_sens_limited, profile.autosens_min);
@@ -523,15 +522,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // SR_TDD ********************************
     //var SR_TDD = TDD / meal_data.TDDLastCannula;
     var SR_TDD = meal_data.TDD8h_exp / meal_data.TDDAvg7d;
-    //var endebug = "sr_tdd8h:" + round(SR_TDD,2);
     var SR_TDD = meal_data.TDDLastCannula / meal_data.TDDAvg7d;
 
 
     var sens_LCTDD = 1800 / (meal_data.TDDLastCannula * (Math.log((normalTarget / ins_val) + 1)));
     sens_LCTDD = sens_LCTDD / (profile.sens_TDD_scale / 100);
-
-    //var SR_TDD = meal_data.TDDLastCannula / meal_data.TDDAvgtoCannula;
-    //var endebug = "AtoC=" + round(meal_data.TDDAvgtoCannula,2) + " LC=" + round(meal_data.TDDLastCannula,2);
 
     // ISF based on TDD
     var sens_TDD = 1800 / (TDD * (Math.log((normalTarget / ins_val) + 1)));
@@ -663,8 +658,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         //circadian_sensitivity = 1.2;
         circadian_sensitivity = (0.000125*Math.pow(nowdec,3))-(0.0015*Math.pow(nowdec,2))-(0.0045*nowdec)+1.2;
     }
-    //endebug += ", nowdec:" + nowdec + ", circSens:" + circadian_sensitivity;
-
 
     // experimenting with basal rate from 3PM
     var sens_circadian_now = (profile.enableBasalAt3PM ? round(profile.current_basal / profile.BasalAt3PM, 2) : 1);
@@ -910,7 +903,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         remainingCATime = round(remainingCATime, 1);
         //console.error(fractionCOBAbsorbed, remainingCATimeAdjustment, remainingCATime)
         console.error("Last carbs", lastCarbAge, "minutes ago; remainingCATime:", remainingCATime, "hours;", round(fractionCOBAbsorbed * 100) + "% carbs absorbed");
-        //endebug += ",COBabsorbed%:"+round(fractionCOBAbsorbed * 100)+",HrsLeft:"+remainingCATime;
     }
 
     // calculate the number of carbs absorbed over remainingCATime hours at current CI
@@ -1237,7 +1229,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
     var UAMBGPreBolus = (ENWindowRunTime < ENWindowDuration && ENWindowRunTime < lastBolusAge);
     var UAMBGPreBolused = (ENWindowRunTime < ENWindowDuration && ENWindowRunTime > lastBolusAge && profile.UAMbgBoost > 0);
-    var endebug = "PreBolused:" + UAMBGPreBolused + ", lastBolusAge:"+lastBolusAge;
 
     var insulinReq_bg_boost = (UAMBGPreBolus ? profile.UAMbgBoost : 0);
 
