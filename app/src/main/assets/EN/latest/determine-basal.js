@@ -342,7 +342,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (meal_data.mealCOB || ENTTActive) ENactive = true;
         // SAFETY: Disable EN with a TT other than normal target when SMB is active
         //if (profile.temptargetSet && !ENTTActive) ENactive = false;
-        if (profile.temptargetSet && !ENTTActive && enableSMB) ENactive = false;
+        //if (profile.temptargetSet && !ENTTActive && enableSMB) ENactive = false;
+        // TBR for tt that isn't EN at normal target
+        if (profile.temptargetSet && !ENTTActive && target_bg > normalTarget && enableSMB) ENactive = false;
 
         // SAFETY: Disable EN overnight after EN hours and no override in prefs
         if (!ENtimeOK && ENactive && !profile.allowENWovernight) ENactive = false;
@@ -1248,6 +1250,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // PREbolus active
     if (UAMBGPreBolus) sens_predType = "PRE";
+
+    // TBR for tt that isn't EN at normal target
+    if (profile.temptargetSet && !ENTTActive && target_bg == normalTarget) sens_predType = "TBR";
 
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
     if (ENactive || ENSleepModeNoSMB || TIR_sens_limited > 1) {
