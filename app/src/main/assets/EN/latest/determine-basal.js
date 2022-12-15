@@ -1277,10 +1277,17 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (sens_predType == "UAM+") {
             // set initial eBGw at 50% unless bg is in range and accelerating or preBolus
             eBGweight = (bg < ISFbgMax && eventualBG > bg ? 0.75 : 0.50);
-            // SAFETY: UAM+ fast delta with higher bg lowers eBGw
-            eBGweight = (bg > ISFbgMax && delta >= 15 ? 0.30 : eBGweight);
-            AllowZT = false; // disable ZT for UAM+
             minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
+
+            // SAFETY: UAM+ fast delta with higher bg lowers eBG
+            if (bg > ISFbgMax && delta >= 15) {
+                //eBGweight = 0.30;
+                minBG = Math.min(minPredBG,minGuardBG); // override with the smallest value
+                eventualBG = Math.min(eventualBG,minGuardBG);
+            }
+
+
+            AllowZT = false; // disable ZT for UAM+
 
             // when no ENW and UAM+ enable ENW when bg is higher or bg is rising fast
             if (!ENWindowOK && ENactive) ENWindowOK = (bg > target_bg + 18 || bg < ISFbgMax && delta >=15);
