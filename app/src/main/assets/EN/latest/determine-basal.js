@@ -1285,8 +1285,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 minBG = Math.min(minPredBG,minGuardBG); // override with the smallest value
                 eventualBG = Math.min(eventualBG,minGuardBG);
             }
-
-
             AllowZT = false; // disable ZT for UAM+
 
             // when no ENW and UAM+ enable ENW when bg is higher or bg is rising fast
@@ -1313,7 +1311,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // positive or negative delta with acceleration and UAM default
             eBGweight = (DeltaPctS > 1.0 && sens_predType == "COB" && bg > threshold ? 0.75 : 0.50);
             eBGweight = (DeltaPctS > 1.0 && sens_predType == "UAM" && bg > threshold ? 0.50 : eBGweight);
-            AllowZT = eBGweight == eBGweight_orig; // disable ZT when eBGw is stronger
 
             // BG+ predtype when stuck high set a higher eventualBG
             sens_predType = (delta >= 0 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens_limited > 1 ? "BG+" : sens_predType);
@@ -1741,9 +1738,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // if ENMaxSMB is -1 no SMB
                 ENMaxSMB = (ENMaxSMB == -1 ? 0 : ENMaxSMB);
 
-                // TBR only
-                ENMaxSMB = (sens_predType == "TBR" ? 0 : ENMaxSMB);
-
                 // BG+ provides 20 min blocks of SMB based on TIR
                 //ENMaxSMB = (sens_predType == "BG+" ? profile.current_basal * 20/60 : ENMaxSMB);
                 ENMaxSMB = (sens_predType == "BG+" ? profile.current_basal * (20 * TIRB_sum) / 60 : ENMaxSMB);
@@ -1754,17 +1748,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // IOB > EN max IOB fallback to AAPS maxBolus (default) or TBR
                 if (max_iob_en > 0 && iob_data.iob > max_iob_en) ENMaxSMB = (profile.EN_max_iob_allow_smb ? maxBolus : 0);
 
-                // if loop ran again without a new bg dont allow a large SMB, use maxBolus, allow 90 seconds
-                // ENMaxSMB = (minAgo > 1.5 && !ENTTActive ? maxBolus : ENMaxSMB);
-
-                // ============== DELTA & IOB BASED RESTRICTIONS ==============
-                // if the delta is less than 4 and insulinReq_sens is stronger restrict larger SMB
-                //if (insulinReq_sens < sens_normalTarget && delta <= 4 && !firstMealScaling) ENMaxSMB = Math.min(maxBolus,ENMaxSMB); // use the most restrictive
-                // ===================================================
-
+                // ============== TIME BASED RESTRICTIONS ==============
                 if (ENtimeOK) {
                     // increase maxbolus if we are within the hours specified
-                    maxBolus = round(ENMaxSMB, 1);
+                    maxBolus = (sens_predType == "TBR" ? 0 : round(ENMaxSMB, 1));
                     insulinReqPct = insulinReqPct;
                 } else {
                     // Default insulinReqPct at night
