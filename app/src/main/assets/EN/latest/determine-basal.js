@@ -1249,7 +1249,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     // PREbolus active
-    if (UAMBGPreBolus) sens_predType = "PRE";
+    if (UAMBGPreBolus) sens_predType = "PB";
 
     // TBR for tt that isn't EN at normal target
     if (profile.temptargetSet && !ENTTActive && target_bg == normalTarget) sens_predType = "TBR";
@@ -1260,7 +1260,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         var preBolusBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
 
         // PREbolus active
-        if (sens_predType == "PRE") {
+        if (sens_predType == "PB") {
             // increase predictions to force a prebolus when allowed
             minPredBG = preBolusBG;
             eventualBG = preBolusBG;
@@ -1343,8 +1343,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq_bg = (Math.max(minBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight);
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
-        //insulinReq_sens = (sens_predType == "PRE" ? sens : dynISF(insulinReq_bg,normalTarget,sens_normalTarget,ins_val)); // dynISF
-        insulinReq_sens = (sens_predType == "PRE" ? sens : dynISF(insulinReq_bg,normalTarget,insulinReq_sens_normalTarget,ins_val)); // dynISF
+        //insulinReq_sens = (sens_predType == "PB" ? sens : dynISF(insulinReq_bg,normalTarget,sens_normalTarget,ins_val)); // dynISF
+        insulinReq_sens = (sens_predType == "PB" ? sens : dynISF(insulinReq_bg,normalTarget,insulinReq_sens_normalTarget,ins_val)); // dynISF
 
         // use the strongest ISF when ENW active
         insulinReq_sens = (!firstMealWindow && !COB && ENWindowRunTime <= ENWindowDuration ? Math.min(insulinReq_sens, sens) : insulinReq_sens);
@@ -1771,18 +1771,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     insulinReqPct = insulinReqPctDefault;
                     // default SMB unless TBR
                     maxBolus = (sens_predType == "TBR" ? 0 : round(maxBolus, 1));
-                //}
-
-                /*
-                // ============== IOB RESTRICTION  ==============
-                if (insulinReq > max_iob - iob_data.iob) {
-                    insulinReq = round(max_iob - iob_data.iob, 2);
                 }
-                if (insulinReq > max_iob_en - iob_data.iob) {
+
+                // ============== IOB RESTRICTION  ==============
+                if (sens_predType != "PB" && max_iob_en > 0 && insulinReq > max_iob_en - iob_data.iob) {
                     insulinReq = round(max_iob_en - iob_data.iob, 2);
                 }
-                */
-            }
+
+            //}
             // END === if we are eating now and BGL prediction is higher than normal target ===
             // ============  EATING NOW MODE  ==================== END ===
 
