@@ -340,6 +340,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.let { activeENTempTarget ->
             this.mealData.put("activeENTempTargetStartTime",activeENTempTarget.timestamp)
             this.mealData.put("activeENTempTargetDuration",activeENTempTarget.duration/60000)
+            // get the IOB at the start of the EN TT
+            this.mealData.put("activeENTempTargetStartIOB",iobCobCalculator.calculateFromTreatmentsAndTemps(activeENTempTarget.timestamp,profile).iob)
         }
 
         // get the LAST bolus time since EN activation
