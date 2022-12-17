@@ -350,6 +350,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (!ENtimeOK && ENactive && !profile.allowENWovernight) ENactive = false;
     }
 
+    var ENTTActiveIOB = (ENTTActive ?  meal_data.activeENTempTargetStartIOB - iob_data.iob : 0);
+    var endebug = "ENTTActiveIOB:"+ENTTActiveIOB;
+
     //ENactive = false; //DEBUG
     enlog += "ENactive: " + ENactive + ", ENtimeOK: " + ENtimeOK + "\n";
     enlog += "ENmaxIOBOK: " + ENmaxIOBOK + ", max_iob: " + max_iob + "\n";
