@@ -1310,7 +1310,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = (bg > ISFbgMax && delta >= 15 ? 0.30 : eBGweight);
 
             // BG+ predtype when stuck high set a higher eventualBG
-            sens_predType = (delta >= 0 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens_limited > 1 ? "BG+" : sens_predType);
+            sens_predType = (delta >= 0 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens_limited > 1 && lastBolusAge >= 5 ? "BG+" : sens_predType);
         }
 
         // COB predictions or UAM with COB
@@ -1320,7 +1320,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = (DeltaPctS > 1.0 && sens_predType == "UAM" && bg > threshold ? 0.50 : eBGweight);
 
             // BG+ predtype when stuck high set a higher eventualBG
-            sens_predType = (delta >= 0 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens_limited > 1 ? "BG+" : sens_predType);
+            sens_predType = (delta >= 0 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens_limited > 1 && lastBolusAge >= 5 ? "BG+" : sens_predType);
         }
 
         // BG+ bg is stuck with resistance or UAM+ activated with minGuardBG
@@ -1328,10 +1328,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eventualBG = preBolusBG;
             minGuardBG = threshold;
             eBGweight = 1; // 100% eBGw as insulin delivery is restricted
-            AllowZT = false;
+            //AllowZT = false;
             // When resistant and insulin delivery is restricted allow the SR adjusted sens_normalTarget
             if (TIR_sens_limited > 1 && ENactive && !firstMealScaling) insulinReq_sens_normalTarget = sens_normalTarget;
-            if (lastBolusAge <= 5) sens_predType = "TBR"; // try spacing out BG+ with TBR
+            //if (lastBolusAge <= 5) sens_predType = "TBR"; // try spacing out BG+ with TBR
         }
 
         // TBR only
