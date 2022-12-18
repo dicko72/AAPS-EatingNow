@@ -474,7 +474,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var TIRB0 = 0, TIRB1 = 0, TIRB2 = 0, TIRH_percent = profile.resistancePerHr / 100, TIR_sens = 0, TIR_sens_limited = 0;
 
     // TIRB2 - The TIR for the higher band above 150/8.3
-    if (TIRH_percent && delta >= -4 && delta <= 4) {
+    if (TIRH_percent) {
         if (meal_data.TIRW1H > 25) TIRB2 = meal_data.TIRW1H / 100;
         if (meal_data.TIRW2H > 0 && TIRB2 == 1) TIRB2 += meal_data.TIRW2H / 100;
         if (meal_data.TIRW3H > 0 && TIRB2 == 2) TIRB2 += meal_data.TIRW3H / 100;
@@ -482,10 +482,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
     var TIRB2_sum = Math.max(TIRB2,1); // use this for BG+ later
     // dont use TIRB2 when lower than target
-    TIRB2 = (bg > normalTarget ? 1 + (TIRB2 * TIRH_percent) : 1);
+    TIRB2 = (bg > normalTarget && delta >= -4 && delta <= 4 ? 1 + (TIRB2 * TIRH_percent) : 1);
 
-    // TIRB1 - The TIR for the lower band just above normalTarget (+9/0.5)
-    if (TIRH_percent && delta >= -4 && delta <= 4 && bg > normalTarget + 18) {
+    // TIRB1 - The TIR for the lower band just above normalTarget (+18/1.0)
+    if (TIRH_percent) {
         if (meal_data.TIRTW1H > 25) TIRB1 = meal_data.TIRTW1H / 100;
         if (meal_data.TIRTW2H > 0) TIRB1 += meal_data.TIRTW2H / 100;
         if (meal_data.TIRTW3H > 0) TIRB1 += meal_data.TIRTW3H / 100;
@@ -493,7 +493,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
     // dont use TIRB1 when lower than target
     var TIRB1_sum = Math.max(TIRB1,1); // use this for BG+ later
-    TIRB1 = (bg > normalTarget ? 1 + (TIRB1 * TIRH_percent) : 1);
+    TIRB1 = (bg > normalTarget && delta >= -4 && delta <= 4 ? 1 + (TIRB1 * TIRH_percent) : 1);
 
     // TIRB0 - The TIR for the lowest band below normalTarget (-9/0.5)
     if (TIRH_percent) {
@@ -1259,7 +1259,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (profile.temptargetSet && !ENTTActive && target_bg == normalTarget) sens_predType = "TBR";
 
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
-    if (ENactive || ENSleepModeNoSMB || TIR_sens_limited > 1) {
+    //if (ENactive || ENSleepModeNoSMB || TIR_sens_limited > 1) {
+    // evaluate prediction type and weighting - Only use during day or when TIR is above threshold for relevant band
+    if (ENactive || TIRB_sum > 1) {
+
         // prebolus exaggerated bg
         var preBolusBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
 
