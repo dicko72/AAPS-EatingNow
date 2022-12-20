@@ -479,11 +479,21 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
+            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:inputType="numberDecimal"
+                android:key="@string/key_eatingnow_uamplus_maxbolus"
+                android:title="UAM+ maxBolus"
+                android:dialogMessage="UAM+ maxBolus for accelerated UAM BG rise within the EN-TT Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will disable UAM+ and fallback to usual UAM prediction."
+                validate:floatmaxNumber="200"
+                validate:floatminNumber="0"
+                validate:testType="floatNumericRange"/>
+
             <SwitchPreference
                 android:defaultValue="false"
                 android:key="key_use_uamplus_noenw"
                 android:title="Enable UAM+ outside ENW"
-                android:summary="Allow UAM+ to provide an EN UAM maxBolus when not within ENW.\nSimilar to Boost plugin this will activate with sufficient delta and acceleration." />
+                android:summary="Allow UAM+ to provide an EN UAM+ maxBolus when not within ENW.\nSimilar to Boost plugin this will activate with sufficient delta and acceleration." />
 
         </PreferenceCategory>
 <!--        <PreferenceCategory-->
