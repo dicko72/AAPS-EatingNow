@@ -350,9 +350,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (!ENtimeOK && ENactive && !profile.allowENWovernight) ENactive = false;
     }
 
-    var ENTTActiveIOB = (ENTTActive ?  round(meal_data.activeENTempTargetStartIOB,2) : 0);
-    //var endebug = "ENTTActiveIOB:"+ENTTActiveIOB;
-
     //ENactive = false; //DEBUG
     enlog += "ENactive: " + ENactive + ", ENtimeOK: " + ENtimeOK + "\n";
     enlog += "ENmaxIOBOK: " + ENmaxIOBOK + ", max_iob: " + max_iob + "\n";
@@ -431,6 +428,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // ENWindowOK is when there is a recent COB entry or manual bolus
     ENWindowOK = (ENactive && ENWindowRunTime < ENWindowDuration || ENWTriggerOK);
+
+    var ENW_max_tdd = (firstMealWindow ? profile.ENW_breakfast_max_tdd : profile.ENW_max_tdd);
+    ENW_max_tdd = (ENWindowOK && ENWindowRunTime <= ENWindowDuration ? ENW_max_tdd : 0); // reset to 0 if not within ENW
 
     // stronger CR and ISF can be used when firstmeal is within 2h window
     var firstMealScaling = (firstMealWindow && !profile.use_sens_TDD && profile.sens == profile.sens_midnight && profile.carb_ratio == profile.carb_ratio_midnight);
@@ -1385,6 +1385,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += (ENWindowOK && ENWindowRunTime <= ENWindowDuration ? " " + round(ENWindowRunTime) + "/" + ENWindowDuration + "m" : "");
     rT.reason += (!ENWindowOK && !ENWTriggerOK && ENtimeOK ? " IOB&lt;" + round(ENWIOBThreshU, 2) : "");
     rT.reason += (ENWindowOK && ENWTriggerOK ? " IOB&gt;" + round(ENWIOBThreshU, 2) : "");
+    rT.reason += (ENW_max_tdd > 0 ? ", ENWTDD:" + round(meal_data.ENWTDD,2) + "/" + ENW_max_tdd : "");
 
     // other EN stuff
     rT.reason += ", eBGw: " + (sens_predType != "NA" ? sens_predType + " " : "") + convert_bg(insulinReq_bg, profile) + " " + round(eBGweight * 100) + "%";
@@ -1752,6 +1753,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // IOB > EN max IOB fallback to AAPS maxBolus (default) or TBR
                 if (max_iob_en > 0 && iob_data.iob > max_iob_en) ENMaxSMB = (profile.EN_max_iob_allow_smb ? maxBolus : 0);
 
+                // restrict maxBolus when ENWTDD exceeded
+                if (ENW_max_tdd > 0 && meal_data.ENWTDD > ENW_max_tdd) ENMaxSMB = maxBolus;
+
                 // ============== TIME BASED RESTRICTIONS ==============
                 if (ENtimeOK) {
                     // increase maxbolus if we are within the hours specified
@@ -1835,6 +1839,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (lastBolusAge > SMBInterval) {
                 if (microBolus > 0) {
                     rT.units = microBolus;
+                    rT.reason += (!ENactive || !ENtimeOK || maxBolus == maxBolusOrig ? "No EN SMB: " : "");
                     rT.reason += "Microbolusing " + microBolus + "/" + maxBolus + "U.";
                 }
             } else {

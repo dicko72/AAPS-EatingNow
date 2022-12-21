@@ -417,6 +417,16 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
+            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:dialogMessage="Max TDD for Breakfast ENW. Once reached the maxBolus will fallback to either AAPS maxBolus."
+                android:inputType="numberDecimal"
+                android:key="key_enw_breakfast_max_tdd"
+                android:title="Maximum Breakfast ENW TDD"
+                validate:floatmaxNumber="50.0"
+                validate:floatminNumber="0"
+                validate:testType="floatNumericRange" />
+
             <Preference android:summary="An ENW duration, larger COB and UAM maxBolus may also be defined within the EN Window for subsequent meals."></Preference>
 
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
@@ -449,6 +459,16 @@
                 validate:floatmaxNumber="200"
                 validate:floatminNumber="-1"
                 validate:testType="floatNumericRange"/>
+
+            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:dialogMessage="Max TDD for ENW after breakfast. Once reached the maxBolus will fallback to either AAPS maxBolus."
+                android:inputType="numberDecimal"
+                android:key="key_enw_max_tdd"
+                android:title="Maximum ENW TDD"
+                validate:floatmaxNumber="50.0"
+                validate:floatminNumber="0"
+                validate:testType="floatNumericRange" />
 
         </PreferenceCategory>
 

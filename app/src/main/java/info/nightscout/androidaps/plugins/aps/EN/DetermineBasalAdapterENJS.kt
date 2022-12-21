@@ -35,6 +35,8 @@ import java.io.IOException
 import java.lang.reflect.InvocationTargetException
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
+import kotlin.math.min
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 class DetermineBasalAdapterENJS internal constructor(private val scriptReader: ScriptReader, private val injector: HasAndroidInjector) : DetermineBasalAdapterInterface {
@@ -320,6 +322,10 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val lastCarbTime = if (getlastCarbs is ValueWrapper.Existing) getlastCarbs.value.timestamp else 0L
         this.mealData.put("lastNormalCarbTime", lastCarbTime)
 
+        // determine the max of the treatment times for ENWStartTime
+        var ENWStartTime: Long = 0
+        if (lastCarbTime > 0) ENWStartTime = lastCarbTime
+
         // get the first carb time since EN activation
         val ENStartTime = 3600000 * sp.getInt(R.string.key_eatingnow_timestart, 9) + MidnightTime.calc(now)
         val getCarbsSinceENStart = repository.getCarbsDataFromTime(ENStartTime,true).blockingGet()
@@ -340,16 +346,23 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         // get the current EN TT info
         repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.let { activeENTempTarget ->
             this.mealData.put("activeENTempTargetStartTime",activeENTempTarget.timestamp)
+            if (activeENTempTarget.timestamp > 0) ENWStartTime = max(ENWStartTime,activeENTempTarget.timestamp)
             this.mealData.put("activeENTempTargetDuration",activeENTempTarget.duration/60000)
-            // get the IOB at the start of the EN TT
-            this.mealData.put("activeENTempTargetStartIOB",iobCobCalculator.calculateFromTreatmentsAndTemps(activeENTempTarget.timestamp,profile).iob)
         }
 
         // get the LAST bolus time since EN activation
         repository.getENBolusFromTimeOfType(ENStartTime, false, Bolus.Type.NORMAL, enwMinBolus).blockingGet().lastOrNull()?.let { it ->
             this.mealData.put("lastENBolusTime", it.timestamp)
+            if (it.timestamp > 0) ENWStartTime = max(ENWStartTime,it.timestamp)
             this.mealData.put("lastENBolusUnits", it.amount)
         }
+
+        // get the TDD since ENW Start
+        //this.mealData.put("ENWTDD", tddCalculator.calculate(ENWStartTime, min(ENWStartTime+(3*3600000), now)).totalAmount)
+        this.mealData.put("ENWStartTime", ENWStartTime)
+        this.mealData.put("ENWTDD", tddCalculator.calculate(ENWStartTime, now).totalAmount)
+        this.profile.put("ENW_breakfast_max_tdd", sp.getDouble(R.string.key_enw_breakfast_max_tdd, 0.0))
+        this.profile.put("ENW_max_tdd", sp.getDouble(R.string.key_enw_max_tdd, 0.0))
 
         // 3PM is used as a low basal point at which the rest of the day leverages for ISF variance when using one ISF in the profile
         this.profile.put("enableBasalAt3PM", sp.getBoolean(R.string.key_use_3pm_basal, false))

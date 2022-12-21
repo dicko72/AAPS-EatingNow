@@ -1272,6 +1272,8 @@
     <string name="key_eatingnow_cobboost_maxbolus_breakfast">key_eatingnow_cobboost_maxbolus_breakfast</string>
     <string name="key_eatingnow_breakfastpct">key_eatingnow_breakfastpct</string>
     <string name="key_eatingnow_uam_maxbolus_breakfast">key_eatingnow_uam_maxbolus_breakfast</string>
+    <string name="key_enw_breakfast_max_tdd">key_enw_breakfast_max_tdd</string>
+    <string name="key_enw_max_tdd">key_enw_max_tdd</string>
     <string name="key_eatingnow_cobboost_maxbolus">key_eatingnow_cobboost_maxbolus</string>
     <string name="key_eatingnow_uamboost_maxbolus">key_eatingnow_uamboost_maxbolus</string>
     <string name="key_eatingnow_uambgboost">key_eatingnow_uambgboost</string>
