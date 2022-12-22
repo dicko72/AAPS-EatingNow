@@ -320,11 +320,13 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val ENStartTime = 3600000 * sp.getInt(R.string.key_eatingnow_timestart, 9) + MidnightTime.calc(now)
         // Create array to contain treatment times for ENWStartTime for today
         var ENWStartTimeArray: Array<Long> = arrayOf()
+        var ENStartedArray: Array<Long> = arrayOf() // Create array to contain first treatment times for ENStartTime for today
 
         // get the FIRST and LAST carb time since EN activation
         repository.getCarbsDataFromTime(ENStartTime,true).blockingGet().let { ENCarbs->
             val firstENCarbTime = with(ENCarbs.firstOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("firstENCarbTime",firstENCarbTime)
+            if (firstENCarbTime >0) ENStartedArray += firstENCarbTime
 
             val lastENCarbTime = with(ENCarbs.lastOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("lastENCarbTime",lastENCarbTime)
@@ -347,6 +349,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().let { ENBolus->
             val firstENBolusTime = with(ENBolus.firstOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("firstENBolusTime",firstENBolusTime)
+            if (firstENBolusTime >0) ENStartedArray += firstENBolusTime
             val firstENBolusUnits = with(ENBolus.firstOrNull()?.amount) { this ?: 0 }
             this.mealData.put("firstENBolusUnits",firstENBolusUnits)
 
@@ -374,7 +377,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         repository.getENTemporaryTargetDataFromTime(ENStartTime,true).blockingGet().let { ENTempTarget ->
             val firstENTempTargetTime = with(ENTempTarget.firstOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("firstENTempTargetTime",firstENTempTargetTime)
-            ENWStartTimeArray += (firstENTempTargetTime)
+            if (firstENTempTargetTime >0) ENStartedArray += firstENTempTargetTime
             val lastENTempTargetTime = with(ENTempTarget.lastOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("lastENTempTargetTime",lastENTempTargetTime)
             ENWStartTimeArray += (lastENTempTargetTime)
@@ -386,11 +389,13 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             this.mealData.put("activeENTempTargetDuration",activeENTempTarget.duration/60000)
         }
 
+        val ENStartedTime = ENStartedArray.min()
+        this.mealData.put("ENStartedTime", ENStartedTime) // the time EN started today
+
         // get the maximum (latest) time from the array
         val ENWStartTime = ENWStartTimeArray.max()
 
         // get the TDD since ENW Start
-        //this.mealData.put("ENWTDD", tddCalculator.calculate(ENWStartTime, min(ENWStartTime+(3*3600000), now)).totalAmount)
         this.mealData.put("ENWStartTime", ENWStartTime)
         this.mealData.put("ENWTDD", if (ENWStartTime >= ENStartTime) tddCalculator.calculate(max(ENWStartTime,now), now).totalAmount else 0)
         // this.mealData.put("ENWTDD", tddCalculator.calculate(max(ENWStartTime,now), now).totalAmount)
