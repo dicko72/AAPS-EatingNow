@@ -318,20 +318,30 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         // set the EN start time based on prefs
         val ENStartTime = 3600000 * sp.getInt(R.string.key_eatingnow_timestart, 9) + MidnightTime.calc(now)
-
-        // get the last carb time since EN activation
-        val getlastCarbs = repository.getLastCarbsRecordWrapped().blockingGet()
-        val lastNormalCarbTime = if (getlastCarbs is ValueWrapper.Existing) getlastCarbs.value.timestamp else 0L
-        this.mealData.put("lastNormalCarbTime", lastNormalCarbTime)
-
-        // Create array to contain treatment times for ENWStartTime
+        // Create array to contain treatment times for ENWStartTime for today
         var ENWStartTimeArray: Array<Long> = arrayOf()
-        if (lastNormalCarbTime >= ENStartTime) ENWStartTimeArray += lastNormalCarbTime
+
+        // get the FIRST and LAST carb time since EN activation
+        repository.getCarbsDataFromTime(ENStartTime,true).blockingGet().let { ENCarbs->
+            val firstENCarbTime = with(ENCarbs.firstOrNull()?.timestamp) { this ?: 0 }
+            this.mealData.put("firstENCarbTime",firstENCarbTime)
+
+            val lastENCarbTime = with(ENCarbs.lastOrNull()?.timestamp) { this ?: 0 }
+            this.mealData.put("lastENCarbTime",lastENCarbTime)
+            ENWStartTimeArray += lastENCarbTime
+        }
 
         // get the first carb time since EN activation
-        val getCarbsSinceENStart = repository.getCarbsDataFromTime(ENStartTime,true).blockingGet()
-        val firstCarbTime = getCarbsSinceENStart.lastOrNull()?.timestamp
-        this.mealData.put("firstCarbTime",firstCarbTime)
+        // val getCarbsSinceENStart = repository.getCarbsDataFromTime(ENStartTime,true).blockingGet()
+        // val firstCarbTime = getCarbsSinceENStart.lastOrNull()?.timestamp
+        // this.mealData.put("firstCarbTime",firstCarbTime)
+
+        // // get the last carb time since EN activation
+        // val getlastCarbs = repository.getLastCarbsRecordWrapped().blockingGet()
+        // val lastNormalCarbTime = if (getlastCarbs is ValueWrapper.Existing) getlastCarbs.value.timestamp else 0L
+        // this.mealData.put("lastNormalCarbTime", lastNormalCarbTime)
+
+        // if (lastNormalCarbTime >= ENStartTime) ENWStartTimeArray += lastNormalCarbTime
 
         // get the FIRST and LAST bolus time since EN activation
         repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().let { ENBolus->
