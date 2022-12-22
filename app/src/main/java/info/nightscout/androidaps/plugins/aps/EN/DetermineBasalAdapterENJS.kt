@@ -333,13 +333,34 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val firstCarbTime = getCarbsSinceENStart.lastOrNull()?.timestamp
         this.mealData.put("firstCarbTime",firstCarbTime)
 
-        // get the FIRST bolus time since EN activation
-        repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.let { firstENBolus->
-            this.mealData.put("firstENBolusTime", firstENBolus.timestamp)
-            this.mealData.put("firstENBolusUnits", firstENBolus.amount)
+        // get the FIRST and LAST bolus time since EN activation
+        repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().let { ENBolus->
+            val firstENBolusTime = with(ENBolus.firstOrNull()?.timestamp) { this ?: 0 }
+            this.mealData.put("firstENBolusTime",firstENBolusTime)
+            val firstENBolusUnits = with(ENBolus.firstOrNull()?.amount) { this ?: 0 }
+            this.mealData.put("firstENBolusUnits",firstENBolusUnits)
+
+            val lastENBolusTime = with(ENBolus.lastOrNull()?.timestamp) { this ?: 0 }
+            this.mealData.put("lastENBolusTime",lastENBolusTime)
+            ENWStartTimeArray += (lastENBolusTime)
+            val lastENBolusUnits = with(ENBolus.lastOrNull()?.amount) { this ?: 0 }
+            this.mealData.put("lastENBolusUnits",lastENBolusUnits)
         }
 
-        // get the FIRST EN TT time since EN activation
+        // // get the FIRST bolus time since EN activation
+        // repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.let { firstENBolus->
+        //     this.mealData.put("firstENBolusTime", firstENBolus.timestamp)
+        //     this.mealData.put("firstENBolusUnits", firstENBolus.amount)
+        // }
+        //
+        // // get the LAST bolus time since EN activation
+        // repository.getENBolusFromTimeOfType(ENStartTime, false, Bolus.Type.NORMAL, enwMinBolus).blockingGet().lastOrNull()?.let { it ->
+        //     this.mealData.put("lastENBolusTime", it.timestamp)
+        //     if (it.timestamp > 0) ENWStartTimeArray += it.timestamp
+        //     this.mealData.put("lastENBolusUnits", it.amount)
+        // }
+
+        // get the FIRST and LAST ENTempTarget time since EN activation
         repository.getENTemporaryTargetDataFromTime(ENStartTime,true).blockingGet().let { ENTempTarget ->
             val firstENTempTargetTime = with(ENTempTarget.firstOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("firstENTempTargetTime",firstENTempTargetTime)
@@ -352,15 +373,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         // get the current EN TT info
         repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.let { activeENTempTarget ->
             this.mealData.put("activeENTempTargetStartTime",activeENTempTarget.timestamp)
-            // if (activeENTempTarget.timestamp > 0) ENWStartTime = max(ENWStartTime,activeENTempTarget.timestamp)
             this.mealData.put("activeENTempTargetDuration",activeENTempTarget.duration/60000)
-        }
-
-        // get the LAST bolus time since EN activation
-        repository.getENBolusFromTimeOfType(ENStartTime, false, Bolus.Type.NORMAL, enwMinBolus).blockingGet().lastOrNull()?.let { it ->
-            this.mealData.put("lastENBolusTime", it.timestamp)
-            if (it.timestamp > 0) ENWStartTimeArray += it.timestamp
-            this.mealData.put("lastENBolusUnits", it.amount)
         }
 
         // get the maximum (latest) time from the array
