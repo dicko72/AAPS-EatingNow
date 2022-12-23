@@ -320,10 +320,10 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         // set the EN start time based on prefs
         val ENStartTime = 3600000 * sp.getInt(R.string.key_eatingnow_timestart, 9) + MidnightTime.calc(now)
         // Create array to contain treatment times for ENWStartTime for today
-        var ENWStartTimeArray: Array<Long> = arrayOf()
+        var ENWStartTimeArray: Array<Long> = arrayOf() // Create array to contain last treatment times for ENW for today
         var ENStartedArray: Array<Long> = arrayOf() // Create array to contain first treatment times for ENStartTime for today
 
-        // get the FIRST and LAST carb time since EN activation
+        // get the FIRST and LAST carb time since EN activation NEW
         repository.getCarbsDataFromTime(ENStartTime,true).blockingGet().let { ENCarbs->
             val firstENCarbTime = with(ENCarbs.firstOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("firstENCarbTime",firstENCarbTime)
@@ -334,54 +334,32 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             ENWStartTimeArray += lastENCarbTime
         }
 
-        // get the first carb time since EN activation
-        // val getCarbsSinceENStart = repository.getCarbsDataFromTime(ENStartTime,true).blockingGet()
-        // val firstCarbTime = getCarbsSinceENStart.lastOrNull()?.timestamp
-        // this.mealData.put("firstCarbTime",firstCarbTime)
-
-        // // get the last carb time since EN activation
-        // val getlastCarbs = repository.getLastCarbsRecordWrapped().blockingGet()
-        // val lastNormalCarbTime = if (getlastCarbs is ValueWrapper.Existing) getlastCarbs.value.timestamp else 0L
-        // this.mealData.put("lastNormalCarbTime", lastNormalCarbTime)
-
-        // if (lastNormalCarbTime >= ENStartTime) ENWStartTimeArray += lastNormalCarbTime
-
-        // get the FIRST and LAST bolus time since EN activation
+        // get the FIRST and LAST bolus time since EN activation NEW
         repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().let { ENBolus->
             val firstENBolusTime = with(ENBolus.firstOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("firstENBolusTime",firstENBolusTime)
             if (firstENBolusTime >0) ENStartedArray += firstENBolusTime
+
             val firstENBolusUnits = with(ENBolus.firstOrNull()?.amount) { this ?: 0 }
             this.mealData.put("firstENBolusUnits",firstENBolusUnits)
 
             val lastENBolusTime = with(ENBolus.lastOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("lastENBolusTime",lastENBolusTime)
-            ENWStartTimeArray += (lastENBolusTime)
+            ENWStartTimeArray += lastENBolusTime
+
             val lastENBolusUnits = with(ENBolus.lastOrNull()?.amount) { this ?: 0 }
             this.mealData.put("lastENBolusUnits",lastENBolusUnits)
         }
 
-        // // get the FIRST bolus time since EN activation
-        // repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.let { firstENBolus->
-        //     this.mealData.put("firstENBolusTime", firstENBolus.timestamp)
-        //     this.mealData.put("firstENBolusUnits", firstENBolus.amount)
-        // }
-        //
-        // // get the LAST bolus time since EN activation
-        // repository.getENBolusFromTimeOfType(ENStartTime, false, Bolus.Type.NORMAL, enwMinBolus).blockingGet().lastOrNull()?.let { it ->
-        //     this.mealData.put("lastENBolusTime", it.timestamp)
-        //     if (it.timestamp > 0) ENWStartTimeArray += it.timestamp
-        //     this.mealData.put("lastENBolusUnits", it.amount)
-        // }
-
-        // get the FIRST and LAST ENTempTarget time since EN activation
+        // get the FIRST and LAST ENTempTarget time since EN activation NEW
         repository.getENTemporaryTargetDataFromTime(ENStartTime,true).blockingGet().let { ENTempTarget ->
             val firstENTempTargetTime = with(ENTempTarget.firstOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("firstENTempTargetTime",firstENTempTargetTime)
             if (firstENTempTargetTime >0) ENStartedArray += firstENTempTargetTime
+
             val lastENTempTargetTime = with(ENTempTarget.lastOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("lastENTempTargetTime",lastENTempTargetTime)
-            ENWStartTimeArray += (lastENTempTargetTime)
+            ENWStartTimeArray += lastENTempTargetTime
         }
 
         // get the current EN TT info
@@ -390,16 +368,15 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             this.mealData.put("activeENTempTargetDuration",activeENTempTarget.duration/60000)
         }
 
-        val ENStartedTime = ENStartedArray.min()
+        val ENStartedTime = if (ENStartedArray.isNotEmpty()) ENStartedArray.min() else 0 // get the minimum (earliest) time from the array or make it 0
         this.mealData.put("ENStartedTime", ENStartedTime) // the time EN started today
 
-        // get the maximum (latest) time from the array
-        val ENWStartTime = ENWStartTimeArray.max()
+        val ENWStartTime = if (ENWStartTimeArray.isNotEmpty()) ENWStartTimeArray.max() else 0 // get the maximum (latest) time from the array or make it 0
 
         // get the TDD since ENW Start
         this.mealData.put("ENWStartTime", ENWStartTime)
         this.mealData.put("ENWTDD", if (now <= ENWStartTime+(3*3600000)) tddCalculator.calculate(ENWStartTime, now).totalAmount else 0)
-        // this.mealData.put("ENWTDD", tddCalculator.calculate(max(ENWStartTime,now), now).totalAmount)
+        // this.mealData.put("ENWTDD", 0)
         this.profile.put("ENW_breakfast_max_tdd", sp.getDouble(R.string.key_enw_breakfast_max_tdd, 0.0))
         this.profile.put("ENW_max_tdd", sp.getDouble(R.string.key_enw_max_tdd, 0.0))
 
