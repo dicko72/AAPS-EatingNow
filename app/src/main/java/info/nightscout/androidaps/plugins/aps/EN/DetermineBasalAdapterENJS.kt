@@ -36,6 +36,7 @@ import java.lang.reflect.InvocationTargetException
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 class DetermineBasalAdapterENJS internal constructor(private val scriptReader: ScriptReader, private val injector: HasAndroidInjector) : DetermineBasalAdapterInterface {
@@ -397,7 +398,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         // get the TDD since ENW Start
         this.mealData.put("ENWStartTime", ENWStartTime)
-        this.mealData.put("ENWTDD", if (ENWStartTime >= ENStartTime) tddCalculator.calculate(max(ENWStartTime,now), now).totalAmount else 0)
+        this.mealData.put("ENWTDD", if (ENWStartTime >= ENStartTime) tddCalculator.calculate(ENWStartTime, min(now,ENWStartTime+(3*3600000))).totalAmount else 0)
         // this.mealData.put("ENWTDD", tddCalculator.calculate(max(ENWStartTime,now), now).totalAmount)
         this.profile.put("ENW_breakfast_max_tdd", sp.getDouble(R.string.key_enw_breakfast_max_tdd, 0.0))
         this.profile.put("ENW_max_tdd", sp.getDouble(R.string.key_enw_max_tdd, 0.0))
