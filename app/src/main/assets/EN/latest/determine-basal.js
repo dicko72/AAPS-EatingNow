@@ -436,8 +436,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // ENWindowOK is when there is a recent COB entry or manual bolus
     ENWindowOK = (ENactive && ENWindowRunTime < ENWindowDuration || ENWTriggerOK);
 
-    var ENW_max_tdd = (firstMealWindow ? profile.ENW_breakfast_max_tdd : profile.ENW_max_tdd);
-    ENW_max_tdd = (ENWindowOK && ENWindowRunTime <= ENWindowDuration ? ENW_max_tdd : 0); // reset to 0 if not within ENW
+    //var ENW_max_tdd = (firstMealWindow ? profile.ENW_breakfast_max_tdd : profile.ENW_max_tdd);
+    var ENW_max_tdd = (firstMealWindowFinish > meal_data.ENWStartTime ? profile.ENW_breakfast_max_tdd : profile.ENW_max_tdd); // when EN started + breakfast window time is greater than the latest ENWstartTime there has been no other ENW so still firstmeal only
+    //ENW_max_tdd = (ENWindowOK && ENWindowRunTime <= ENWindowDuration ? ENW_max_tdd : 0); // reset to 0 if not within ENW
+    ENW_max_tdd = (ENWindowOK && meal_data.ENWTDD > 0 ? ENW_max_tdd : 0); // reset to 0 if not within an ENW max at 4h by DetermineBasalAdapter
 
     // stronger CR and ISF can be used when firstmeal is within 2h window
     var firstMealScaling = (firstMealWindow && !profile.use_sens_TDD && profile.sens == profile.sens_midnight && profile.carb_ratio == profile.carb_ratio_midnight);

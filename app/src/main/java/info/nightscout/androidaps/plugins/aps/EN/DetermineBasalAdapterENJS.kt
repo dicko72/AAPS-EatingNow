@@ -375,7 +375,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         // get the TDD since ENW Start
         this.mealData.put("ENWStartTime", ENWStartTime)
-        this.mealData.put("ENWTDD", if (now <= ENWStartTime+(3*3600000)) tddCalculator.calculate(ENWStartTime, now).totalAmount else 0)
+        this.mealData.put("ENWTDD", if (now <= ENWStartTime+(4*3600000)) tddCalculator.calculate(ENWStartTime, now).totalAmount else 0)
         // this.mealData.put("ENWTDD", 0)
         this.profile.put("ENW_breakfast_max_tdd", sp.getDouble(R.string.key_enw_breakfast_max_tdd, 0.0))
         this.profile.put("ENW_max_tdd", sp.getDouble(R.string.key_enw_max_tdd, 0.0))
