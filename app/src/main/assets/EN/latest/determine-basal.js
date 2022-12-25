@@ -1274,8 +1274,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // evaluate prediction type and weighting - Only use during day or when TIR is above threshold for relevant band
     if (ENactive || TIRB_sum > 1) {
 
-        // prebolus exaggerated bg
+        // prebolus exaggerated bg max at 360
         var preBolusBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
+        preBolusBG = Math.max(preBolusBG,360);
 
         // PREbolus active
         if (sens_predType == "PB") {
@@ -1294,7 +1295,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // UAM+ predictions, stronger eBGw
         if (sens_predType == "UAM+") {
             // set initial eBGw at 50% unless bg is in range and accelerating or preBolus
-            eBGweight = (bg < ISFbgMax && eventualBG > bg ? 0.75 : 0.50);
+            //eBGweight = (bg < ISFbgMax && eventualBG > bg ? 0.75 : 0.50);
             minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
 
             // SAFETY: UAM+ fast delta with higher bg lowers eBG
