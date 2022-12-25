@@ -1298,7 +1298,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
 
             // SAFETY: UAM+ fast delta with higher bg lowers eBG
-            if (bg > ISFbgMax && delta >= 15) {
+            if (bg > ISFbgMax && delta >= 15 && ENW_max_tdd == 0) {
                 //eBGweight = 0.30;
                 minBG = Math.min(minPredBG,minGuardBG); // override with the smallest value
                 eventualBG = Math.min(eventualBG,minGuardBG);
@@ -1318,7 +1318,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = (DeltaPctS > 1.0 || eventualBG > bg ? 0.50 : eBGweight);
 
             // SAFETY: UAM fast delta with higher bg lowers eBGw
-            eBGweight = (bg > ISFbgMax && delta >= 15 ? 0.30 : eBGweight);
+            eBGweight = (bg > ISFbgMax && delta >= 15 && ENW_max_tdd == 0 ? 0.30 : eBGweight);
 
             // BG+ predtype when stuck high set a higher eventualBG
             sens_predType = (delta >= 0 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens_limited > 1 && lastBolusAge >= 5 ? "BG+" : sens_predType);
