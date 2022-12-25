@@ -1766,8 +1766,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // IOB > EN max IOB fallback to AAPS maxBolus (default) or TBR
                 if (max_iob_en > 0 && iob_data.iob > max_iob_en) ENMaxSMB = (profile.EN_max_iob_allow_smb ? maxBolus : 0);
 
-                // restrict maxBolus when ENWTDD exceeded
+                // restrict maxBolus when ENWTDD will be exceeded by SMB
+                if (ENW_max_tdd > 0 && meal_data.ENWTDD + insulinReq > ENW_max_tdd) ENMaxSMB = Math.min(ENW_max_tdd-meal_data.ENWTDD, ENMaxSMB);
                 if (ENW_max_tdd > 0 && meal_data.ENWTDD > ENW_max_tdd) ENMaxSMB = maxBolus;
+
 
                 // ============== TIME BASED RESTRICTIONS ==============
                 if (ENtimeOK) {
