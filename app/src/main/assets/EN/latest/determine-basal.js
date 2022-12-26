@@ -1244,10 +1244,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var insulinReq_sens = sens_normalTarget, insulinReq_sens_normalTarget = sens_normalTarget_orig;
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
-    var UAMBGPreBolus = (ENTTActive && ENWindowRunTime < ENWindowDuration && ENWindowRunTime < lastBolusAge);
-    var UAMBGPreBolused = (ENWindowRunTime < ENWindowDuration && ENWindowRunTime > lastBolusAge && profile.UAMbgBoost > 0);
-
-    var insulinReq_bg_boost = (UAMBGPreBolus ? profile.UAMbgBoost : 0);
+    var UAMBGPreBolus = (profile.UAMbgBoost > 0 && ENTTActive && ENWindowRunTime < ENWindowDuration && ENWindowRunTime < lastBolusAge);
+    var UAMBGPreBolused = (profile.UAMbgBoost > 0 && ENWindowRunTime < ENWindowDuration && ENWindowRunTime > lastBolusAge && profile.UAMbgBoost);
 
     // categorize the eventualBG prediction type for more accurate weighting
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
@@ -1274,12 +1272,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // evaluate prediction type and weighting - Only use during day or when TIR is above threshold for relevant band
     if (ENactive || TIRB_sum > 1) {
 
-        // prebolus exaggerated bg max at 360
-        var preBolusBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
-        preBolusBG = Math.max(preBolusBG,360);
-
         // PREbolus active
         if (sens_predType == "PB") {
+            // prebolus exaggerated bg max
+            var insulinReq_bg_boost = profile.UAMbgBoost;
+            var preBolusBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
+
             // increase predictions to force a prebolus when allowed
             minPredBG = preBolusBG;
             eventualBG = preBolusBG;
@@ -1337,7 +1335,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // BG+ bg is stuck with resistance or UAM+ activated with minGuardBG
         if (sens_predType == "BG+") {
-            eventualBG = preBolusBG;
+            eventualBG = bg;
             minGuardBG = threshold;
             eBGweight = 1; // 100% eBGw as insulin delivery is restricted
             //AllowZT = false;
@@ -1824,7 +1822,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 smbLowTempReq = round(basal * durationReq / 30, 2);
                 durationReq = 30;
             }
-            rT.reason += " insulinReq" + (insulinReq_bg_boost > 0 ? "+ " : " ") + insulinReq + (insulinReq != insulinReqOrig ? "(" + insulinReqOrig + ")" : "") + "@" + round(insulinReqPct * 100, 0) + "%";
+            rT.reason += " insulinReq" + (UAMBGPreBolus ? "+ " : " ") + insulinReq + (insulinReq != insulinReqOrig ? "(" + insulinReqOrig + ")" : "") + "@" + round(insulinReqPct * 100, 0) + "%";
             if (ENSleepModeNoSMB || ENDayModeNoSMB) rT.reason += "; No SMB < " + convert_bg( (ENSleepModeNoSMB ? SMBbgOffset_night : SMBbgOffset_day) , profile);
 
             /*
