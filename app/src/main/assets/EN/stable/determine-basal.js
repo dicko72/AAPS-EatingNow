@@ -1397,7 +1397,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += (ENWindowOK && ENWindowRunTime <= ENWindowDuration ? " " + round(ENWindowRunTime) + "/" + ENWindowDuration + "m" : "");
     rT.reason += (!ENWindowOK && !ENWTriggerOK && ENtimeOK ? " IOB&lt;" + round(ENWIOBThreshU, 2) : "");
     rT.reason += (ENWindowOK && ENWTriggerOK ? " IOB&gt;" + round(ENWIOBThreshU, 2) : "");
-    rT.reason += ", ENWTDD:" + round(meal_data.ENWTDD,2) + (ENW_max_tdd > 0 ? "/" + ENW_max_tdd : "");
+    rT.reason += ", ENWTU:" + round(meal_data.ENWTDD,2) + (ENW_max_tdd > 0 ? "/" + ENW_max_tdd : "");
 
     // other EN stuff
     rT.reason += ", eBGw: " + (sens_predType != "NA" ? sens_predType + " " : "") + convert_bg(insulinReq_bg, profile) + " " + round(eBGweight * 100) + "%";
