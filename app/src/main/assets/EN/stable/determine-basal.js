@@ -1294,6 +1294,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (sens_predType == "UAM+") {
             // set initial eBGw at 50% unless bg is in range and accelerating or preBolus
             //eBGweight = (bg < ISFbgMax && eventualBG > bg ? 0.75 : 0.50);
+            eBGweight = 0.50;
             minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
 
             // SAFETY: UAM+ fast delta with higher bg lowers eBG
@@ -1358,7 +1359,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
         //insulinReq_sens = (sens_predType == "PB" ? sens : dynISF(insulinReq_bg,normalTarget,insulinReq_sens_normalTarget,ins_val)); // dynISF
-        insulinReq_sens = (sens_predType == "PB" ? sens : dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val)); // dynISF
+        //insulinReq_sens = (sens_predType == "PB" ? sens : dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val)); // dynISF
+        insulinReq_sens = dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val); // dynISF
 
         // use the strongest ISF when ENW active
         insulinReq_sens = (!firstMealWindow && !COB && ENWindowRunTime <= ENWindowDuration ? Math.min(insulinReq_sens, sens) : insulinReq_sens);
@@ -1767,7 +1769,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
                 // restrict maxBolus when ENWTDD will be exceeded by SMB
                 if (ENW_max_tdd > 0 && meal_data.ENWTDD + insulinReq > ENW_max_tdd) ENMaxSMB = Math.min(ENW_max_tdd-meal_data.ENWTDD, ENMaxSMB);
-                if (ENW_max_tdd > 0 && meal_data.ENWTDD > ENW_max_tdd) ENMaxSMB = maxBolus;
+                if (ENW_max_tdd > 0 && meal_data.ENWTDD >= ENW_max_tdd) ENMaxSMB = maxBolus;
 
 
                 // ============== TIME BASED RESTRICTIONS ==============
