@@ -1294,6 +1294,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (sens_predType == "UAM+") {
             // set initial eBGw at 50% unless bg is in range and accelerating or preBolus
             //eBGweight = (bg < ISFbgMax && eventualBG > bg ? 0.75 : 0.50);
+            eBGweight = 0.50;
             minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
 
             // SAFETY: UAM+ fast delta with higher bg lowers eBG
