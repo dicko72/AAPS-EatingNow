@@ -695,15 +695,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     //var sens_currentBG = dynISF(bg,normalTarget,sens_normalTarget,ins_val);
 
     enlog += "sens_currentBG:" + convert_bg(sens_currentBG, profile) + "\n";
-    sens_currentBG = sens_currentBG * (profile.useDynISF ? ISFBGscaler : 1);
+    sens_currentBG = sens_currentBG * ISFBGscaler;
     enlog += "sens_currentBG with ISFBGscaler:" + sens_currentBG + "\n";
 
     // SAFETY: if below target at night use normal ISF otherwise use dynamic ISF
     sens_currentBG = (bg < target_bg && ENSleepModeNoSMB ? sens_normalTarget : sens_currentBG);
-
-    // EXPERIMENT * APPLY TIR
-    //sens_currentBG /= (bg > normalTarget ? TIR_limited : 1);
-
 
     sens_currentBG = round(sens_currentBG, 1);
     enlog += "sens_currentBG final result:" + convert_bg(sens_currentBG, profile) + "\n";
@@ -713,6 +709,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // at night use sens_currentBG, additional scaling from ISFBGscaler has been reduced earlier
     sens = (!ENactive && !ENtimeOK ? sens_currentBG : sens);
     enlog += "sens final result:" + sens + "=" + convert_bg(sens, profile) + "\n";
+
+    // if not using dynISF
+    sens = (profile.useDynISF ? sens_currentBG : sens_normalTarget);
 
     // compare currenttemp to iob_data.lastTemp and cancel temp if they don't match
     var lastTempAge;
@@ -993,12 +992,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // for IOBpredBGs, predicted deviation impact drops linearly from current deviation down to zero
             // over 60 minutes (data points every 5m)
             var predDev = ci * (1 - Math.min(1, IOBpredBGs.length / (60 / 5)));
-            //IOBpredBG = IOBpredBGs[IOBpredBGs.length-1] + predBGI + predDev;
-            IOBpredBG = IOBpredBGs[IOBpredBGs.length - 1] + (round((-iobTick.activity * (dynISF(Math.max(IOBpredBGs[IOBpredBGs.length - 1], 39),normalTarget,sens_normalTarget,ins_val)) * 5), 2)) + predDev; //dynISF
+            //IOBpredBG = IOBpredBGs[IOBpredBGs.length-1] + predBGI + predDev; // original
+            IOBpredBG = IOBpredBGs[IOBpredBGs.length - 1];
+            IOBpredBG += (profile.useDynISF ? (round((-iobTick.activity * (dynISF(Math.max(IOBpredBGs[IOBpredBGs.length - 1], 39),normalTarget,sens_normalTarget,ins_val)) * 5), 2)) + predDev : predBGI + predDev); //dynISF?
             // calculate predBGs with long zero temp without deviations
-            //var ZTpredBG = ZTpredBGs[ZTpredBGs.length-1] + predZTBGI;
-            var ZTpredBG = ZTpredBGs[ZTpredBGs.length-1] + (round(( -iobTick.iobWithZeroTemp.activity * (dynISF(Math.max(ZTpredBGs[ZTpredBGs.length-1],39),normalTarget,sens_normalTarget,ins_val)) * 5 ), 2)); //dynISF
-
+            //var ZTpredBG = ZTpredBGs[ZTpredBGs.length-1] + predZTBGI; // original
+            var ZTpredBG = ZTpredBGs[ZTpredBGs.length-1];
+            ZTpredBG += (profile.useDynISF ? (round(( -iobTick.iobWithZeroTemp.activity * (dynISF(Math.max(ZTpredBGs[ZTpredBGs.length-1],39),normalTarget,sens_normalTarget,ins_val)) * 5 ), 2)) : predZTBGI) ; //dynISF?
             // for COBpredBGs, predicted carb impact drops linearly from current carb impact down to zero
             // eventually accounting for all carbs (if they can be absorbed over DIA)
             var predCI = Math.max(0, Math.max(0, ci) * (1 - COBpredBGs.length / Math.max(cid * 2, 1)));
@@ -1027,9 +1027,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 //console.error(UAMpredBGs.length,slopeFromDeviations, predUCI);
                 UAMduration = round((UAMpredBGs.length + 1) * 5 / 60, 1);
             }
-            //UAMpredBG = UAMpredBGs[UAMpredBGs.length-1] + predBGI + Math.min(0, predDev) + predUCI;
-            UAMpredBG = UAMpredBGs[UAMpredBGs.length-1] + (round(( -iobTick.activity * (dynISF(Math.max(UAMpredBGs[UAMpredBGs.length-1],39),normalTarget,sens_normalTarget,ins_val)) * 5 ),2)) + Math.min(0, predDev) + predUCI; //dynISF
-
+            //UAMpredBG = UAMpredBGs[UAMpredBGs.length-1] + predBGI + Math.min(0, predDev) + predUCI; // original
+            UAMpredBG = UAMpredBGs[UAMpredBGs.length-1];
+            UAMpredBG += (profile.useDynISF ? (round(( -iobTick.activity * (dynISF(Math.max(UAMpredBGs[UAMpredBGs.length-1],39),normalTarget,sens_normalTarget,ins_val)) * 5 ),2)) + Math.min(0, predDev) + predUCI : predBGI + Math.min(0, predDev) + predUCI); //dynISF?
             //console.error(predBGI, predCI, predUCI);
             // truncate all BG predictions at 4 hours
             if (IOBpredBGs.length < 48) { IOBpredBGs.push(IOBpredBG); }
@@ -1360,7 +1360,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // insulinReq_sens determines the ISF used for final insulinReq calc
         //insulinReq_sens = (sens_predType == "PB" ? sens : dynISF(insulinReq_bg,normalTarget,insulinReq_sens_normalTarget,ins_val)); // dynISF
         //insulinReq_sens = (sens_predType == "PB" ? sens : dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val)); // dynISF
-        insulinReq_sens = dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val); // dynISF
+        insulinReq_sens = (profile.useDynISF ? dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val) : sens_normalTarget); // dynISF?
 
         // use the strongest ISF when ENW active
         insulinReq_sens = (!firstMealWindow && !COB && ENWindowRunTime <= ENWindowDuration ? Math.min(insulinReq_sens, sens) : insulinReq_sens);
