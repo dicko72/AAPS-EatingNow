@@ -275,6 +275,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("EN_UAMPlus_PreBolus", sp.getDouble(R.string.key_eatingnow_uambgboost_maxbolus, 0.0))
         this.profile.put("EN_UAMPlus_NoENW", sp.getBoolean(R.string.key_use_uamplus_noenw, false))
         this.profile.put("EN_UAMPlus_maxBolus", sp.getDouble(R.string.key_eatingnow_uamplus_maxbolus, 0.0))
+        this.profile.put("EN_BGPlus_maxBolus", sp.getDouble(R.string.key_eatingnow_bgplus_maxbolus, 0.0))
 
         this.profile.put("SMBbgOffset", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset, 0.0),profileFunction.getUnits()))
         this.profile.put("SMBbgOffset_day", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset_day, 0.0),profileFunction.getUnits()))

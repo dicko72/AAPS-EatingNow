@@ -1730,12 +1730,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 }
 
                 // UAM+ PreBolus gets 100% insulinReqPct
-                insulinReqPct = (UAMBGPreBolus ? 1 : insulinReqPct);
+                insulinReqPct = (sens_predType == "PB"  ? 1 : insulinReqPct);
+
+                // BG+ gets insulinReqPctDefault
+                insulinReqPct = (sens_predType == "BG+" ? insulinReqPctDefault : insulinReqPct);
 
                 // set EN SMB limit for COB or UAM or UAM+
                 ENMaxSMB = (sens_predType == "COB" ? profile.EN_COB_maxBolus : profile.EN_UAM_maxBolus);
                 ENMaxSMB = (sens_predType == "UAM+" ? profile.EN_UAMPlus_maxBolus : ENMaxSMB);
-                
+                ENMaxSMB = (sens_predType == "BG+" ? profile.EN_BGPlus_maxBolus : ENMaxSMB);
+
                 // if ENWindowOK allow further increase max of SMB within the window
                 if (ENWindowOK) {
                     if (COB) {
@@ -1759,7 +1763,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
                 // BG+ provides 20 min blocks of SMB based on TIR
                 //ENMaxSMB = (sens_predType == "BG+" ? profile.current_basal * 20/60 : ENMaxSMB);
-                ENMaxSMB = (sens_predType == "BG+" ? profile.current_basal * (20 * TIRB_sum) / 60 : ENMaxSMB);
+                //ENMaxSMB = (sens_predType == "BG+" ? profile.current_basal * (20 * TIRB_sum) / 60 : ENMaxSMB);
 
                 // if bg numbers resumed after sensor errors dont allow a large SMB
                 ENMaxSMB = (minAgo < 1 && delta == 0 && glucose_status.short_avgdelta == 0 ? maxBolus : ENMaxSMB);
