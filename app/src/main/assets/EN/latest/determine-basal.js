@@ -489,20 +489,24 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (meal_data.TIRW3H > 0 && TIRB2 == 2) TIRB2 += meal_data.TIRW3H / 100;
         if (meal_data.TIRW4H > 0 && TIRB2 == 3) TIRB2 += meal_data.TIRW4H / 100;
     }
-    var TIRB2_sum = Math.max(TIRB2,1); // use this for BG+ later
+    //var TIRB2_sum = Math.max(TIRB2,1); // use this for BG+ later
+    var TIRB2_sum = TIRB2; // use this for BG+ later
     // dont use TIRB2 when lower than target
-    TIRB2 = (bg > normalTarget && delta >= -4 && delta <= 4 ? 1 + (TIRB2 * TIRH_percent) : 1);
+    //TIRB2 = (bg > normalTarget && delta >= -4 && delta <= 4 ? 1 + (TIRB2 * TIRH_percent) : 1);
+    TIRB2 = (bg > normalTarget && delta >= -4 && delta <= 9 ? 1 + (TIRB2 * TIRH_percent) : 1);
 
     // TIRB1 - The TIR for the lower band just above normalTarget (+18/1.0)
     if (TIRH_percent) {
         if (meal_data.TIRTW1H > 25) TIRB1 = meal_data.TIRTW1H / 100;
-        if (meal_data.TIRTW2H > 0) TIRB1 += meal_data.TIRTW2H / 100;
-        if (meal_data.TIRTW3H > 0) TIRB1 += meal_data.TIRTW3H / 100;
-        if (meal_data.TIRTW4H > 0) TIRB1 += meal_data.TIRTW4H / 100;
+        if (meal_data.TIRTW2H > 0 && TIRB1 == 1) TIRB1 += meal_data.TIRTW2H / 100;
+        if (meal_data.TIRTW3H > 0 && TIRB1 == 2) TIRB1 += meal_data.TIRTW3H / 100;
+        if (meal_data.TIRTW4H > 0 && TIRB1 == 3) TIRB1 += meal_data.TIRTW4H / 100;
     }
     // dont use TIRB1 when lower than target
-    var TIRB1_sum = Math.max(TIRB1,1); // use this for BG+ later
-    TIRB1 = (bg > normalTarget && delta >= -4 && delta <= 4 ? 1 + (TIRB1 * TIRH_percent) : 1);
+    //var TIRB1_sum = Math.max(TIRB1,1); // use this for BG+ later
+    var TIRB1_sum = TIRB1; // use this for BG+ later
+    //TIRB1 = (bg > normalTarget && delta >= -4 && delta <= 4 ? 1 + (TIRB1 * TIRH_percent) : 1);
+    TIRB1 = (bg > normalTarget && delta >= -4 && delta <= 9 ? 1 + (TIRB1 * TIRH_percent) : 1);
 
     // TIRB0 - The TIR for the lowest band below normalTarget (-9/0.5)
     if (TIRH_percent) {
@@ -522,6 +526,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // TIR_sum will use relevant TIR band for BG+
     var TIRB_sum = (bg < 150 ? TIRB1_sum : TIRB2_sum);
+    var endebug = "TIRB_sum:"+round(TIRB_sum,2);
+    endebug += "/" + round(meal_data.TIRTW1H,2) + "," + round(meal_data.TIRTW2H,2) + "," + round(meal_data.TIRTW3H,2) + "," + round(meal_data.TIRTW4H,2);
+    endebug += "/" + round(meal_data.TIRW1H,2) + "," + round(meal_data.TIRW2H,2) + "," + round(meal_data.TIRW3H,2) + "," + round(meal_data.TIRW4H,2);
+
 
     // apply autosens limit to TIR_sens_limited
     TIR_sens_limited = Math.min(TIR_sens, profile.autosens_max);
@@ -613,7 +621,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // apply TIRS to ISF only when delta is slight or bg higher
     if (TIR_sens_limited !=1) {
         //sens_normalTarget = (delta >= -4 && delta <= 4 || TIR_sens_limited < 1 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
-        sens_normalTarget = (delta >= -4 && delta <= 4 || TIR_sens_limited < 1 || bg > ISFbgMax && TIRB2 > 1 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
+        //sens_normalTarget = (delta >= -4 && delta <= 4 || TIR_sens_limited < 1 || bg > ISFbgMax && TIRB2_sum > 1 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
+        sens_normalTarget = (TIR_sens_limited < 1 || TIRB_sum > 1 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
         TIR_sens_limited = profile_sens / sens_normalTarget;
     }
 
@@ -1772,7 +1781,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (max_iob_en > 0 && iob_data.iob > max_iob_en) ENMaxSMB = (profile.EN_max_iob_allow_smb ? maxBolus : 0);
 
                 // restrict maxBolus when ENWTDD will be exceeded by SMB
-                if (ENW_max_tdd > 0 && meal_data.ENWTDD + insulinReq > ENW_max_tdd) ENMaxSMB = Math.min(ENW_max_tdd-meal_data.ENWTDD, ENMaxSMB);
+                //if (ENW_max_tdd > 0 && meal_data.ENWTDD + insulinReq > ENW_max_tdd) ENMaxSMB = Math.max(ENW_max_tdd-meal_data.ENWTDD, maxBolus);
+                if (ENW_max_tdd > 0 && meal_data.ENWTDD + Math.min(insulinReq,ENMaxSMB) > ENW_max_tdd) ENMaxSMB = Math.max(ENW_max_tdd-meal_data.ENWTDD, maxBolus);
                 if (ENW_max_tdd > 0 && meal_data.ENWTDD >= ENW_max_tdd) ENMaxSMB = maxBolus;
 
 
