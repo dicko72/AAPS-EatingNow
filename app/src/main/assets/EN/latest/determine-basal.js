@@ -1317,8 +1317,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // when no ENW and UAM+ enable ENW when bg is higher or bg is rising fast
             // if (!ENWindowOK && ENactive) ENWindowOK = (bg > target_bg + 18 || bg < ISFbgMax && delta >=15);
 
-            // when UAM+ is triggered but minGuardBG is below threshold force BG+
-            if (minGuardBG < threshold) sens_predType = "BG+";
+            // when UAM+ is triggered but minGuardBG is below threshold force UAM-BG+
+            if (minGuardBG < threshold) sens_predType = "UAM-BG+";
         }
 
         // UAM predictions, no COB or GhostCOB
@@ -1344,11 +1344,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
 
         // BG+ bg is stuck with resistance or UAM+ activated with minGuardBG
-        if (sens_predType == "BG+") {
+        if (sens_predType == "BG+" || sens_predType == "UAM-BG+") {
             eventualBG = bg;
             minGuardBG = threshold;
             eBGweight = 1; // 100% eBGw as insulin delivery is restricted
-            //AllowZT = false;
+            AllowZT = true;
             // When resistant and insulin delivery is restricted allow the SR adjusted sens_normalTarget
             if (TIR_sens_limited > 1 && ENactive && !firstMealScaling) insulinReq_sens_normalTarget = sens_normalTarget;
             //if (lastBolusAge <= 5) sens_predType = "TBR"; // try spacing out BG+ with TBR
@@ -1743,11 +1743,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
                 // BG+ gets insulinReqPctDefault
                 insulinReqPct = (sens_predType == "BG+" ? insulinReqPctDefault : insulinReqPct);
+                insulinReqPct = (sens_predType == "UAM-BG+" ? insulinReqPctDefault : insulinReqPct);
 
                 // set EN SMB limit for COB or UAM or UAM+
                 ENMaxSMB = (sens_predType == "COB" ? profile.EN_COB_maxBolus : profile.EN_UAM_maxBolus);
                 ENMaxSMB = (sens_predType == "UAM+" ? profile.EN_UAMPlus_maxBolus : ENMaxSMB);
                 ENMaxSMB = (sens_predType == "BG+" ? profile.EN_BGPlus_maxBolus : ENMaxSMB);
+                ENMaxSMB = (sens_predType == "UAM-BG+" ? profile.EN_BGPlus_maxBolus : ENMaxSMB);
 
                 // if ENWindowOK allow further increase max of SMB within the window
                 if (ENWindowOK) {
