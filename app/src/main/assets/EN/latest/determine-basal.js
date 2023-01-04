@@ -1742,10 +1742,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 insulinReqPct = (sens_predType == "PB"  ? 1 : insulinReqPct);
 
                 // BG+ gets insulinReqPctDefault
-                insulinReqPct = (sens_predType == "BG+" ? insulinReqPctDefault : insulinReqPct);
-                insulinReqPct = (sens_predType == "UAM-BG+" ? insulinReqPctDefault : insulinReqPct);
+                //insulinReqPct = (sens_predType == "BG+" ? insulinReqPctDefault : insulinReqPct);
+                //insulinReqPct = (sens_predType == "UAM-BG+" ? insulinReqPctDefault : insulinReqPct);
 
-                // set EN SMB limit for COB or UAM or UAM+
+                // set EN SMB limit for appropriate prediction type
                 ENMaxSMB = (sens_predType == "COB" ? profile.EN_COB_maxBolus : profile.EN_UAM_maxBolus);
                 ENMaxSMB = (sens_predType == "UAM+" ? profile.EN_UAMPlus_maxBolus : ENMaxSMB);
                 ENMaxSMB = (sens_predType == "BG+" ? profile.EN_BGPlus_maxBolus : ENMaxSMB);
@@ -1764,8 +1764,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // ============== MAXBOLUS RESTRICTIONS ==============
                 // if ENMaxSMB is more than AAPS safety maxbolus then consider the setting to be minutes
                 if (ENMaxSMB > profile.safety_maxbolus) ENMaxSMB = (UAMBGPreBolus ? profile.current_basal : basal) * ENMaxSMB / 60;
-                //ENMaxSMB = (ENMaxSMB > profile.safety_maxbolus ? basal * ENMaxSMB / 60 : ENMaxSMB);
-                //ENMaxSMB = (ENMaxSMB > profile.safety_maxbolus ? profile.current_basal * ENMaxSMB / 60 : ENMaxSMB);
+
                 // if ENMaxSMB is more than 0 use ENMaxSMB else use AAPS max minutes
                 ENMaxSMB = (ENMaxSMB == 0 ? maxBolus : ENMaxSMB);
 
