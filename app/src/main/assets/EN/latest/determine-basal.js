@@ -1281,8 +1281,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // increase predictions to force a prebolus when allowed
             minPredBG = preBolusBG;
             eventualBG = preBolusBG;
-            // EXPERIMENT: minGuardBG prevents early prebolus with UAM force higher until SMB given when on or above target
-            minGuardBG = (minGuardBG < threshold && bg > threshold ? threshold: minGuardBG);
+            minGuardBG = preBolusBG;
             eBGweight = 1; // 100% eBGw as unrestricted insulin delivery is required
             AllowZT = false; // disable ZT
 
