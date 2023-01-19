@@ -150,8 +150,8 @@ import kotlin.math.roundToInt
             .subscribeOn(Schedulers.io())
 
     // Eating Now: Get the first EN TT since EN start time
-    fun getENTemporaryTargetDataFromTime(timestamp: Long, ascending: Boolean): Single<List<TemporaryTarget>> =
-        database.temporaryTargetDao.getENTemporaryTargetDataFromTime(timestamp, TemporaryTarget.Reason.EATING_NOW)
+    fun getENTemporaryTargetDataFromTimetoTime(timestamp: Long, to: Long, ascending: Boolean): Single<List<TemporaryTarget>> =
+        database.temporaryTargetDao.getENTemporaryTargetDataFromTimetoTime(timestamp, to, TemporaryTarget.Reason.EATING_NOW)
             .map { if (!ascending) it.reversed() else it }
             .subscribeOn(Schedulers.io())
 
