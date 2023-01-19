@@ -473,6 +473,16 @@
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
+                android:key="@string/key_eatingnow_noenw_maxbolus"
+                android:title="Outside ENW maxBolus"
+                android:dialogMessage="maxBolus for BGL rises outside the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing AAPS maxBolus limit and -1 will only disable SMB and use TBR only."
+                validate:floatmaxNumber="200"
+                validate:floatminNumber="-1"
+                validate:testType="floatNumericRange"/>
+
+            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_bgplus_maxbolus"
                 android:title="BG+ maxBolus"
                 android:dialogMessage="BG+ maxBolus for when there is resistance and BG is stuck higher than target.\n0 will use AAPS maxBolus limit and -1 will disable SMB and use TBR only."
