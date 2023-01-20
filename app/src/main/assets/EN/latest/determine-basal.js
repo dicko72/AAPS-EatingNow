@@ -1259,7 +1259,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // reset to UAM prediction when COB are not mostly absorbed
         if (meal_data.carbs && fractionCOBAbsorbed < 75) sens_predType = "UAM";
         // if there is no ENW it means UAM+ is allowed outside ENW so formally enable the ENW to allow the larger SMB later
-        if (sens_predType = "UAM+" && !ENWindowOK) ENWindowOK = true;
+        if (sens_predType == "UAM+" && !ENWindowOK) ENWindowOK = true;
     }
 
     // PREbolus active
