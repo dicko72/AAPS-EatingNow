@@ -326,7 +326,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         var ENStartedArray: Array<Long> = arrayOf() // Create array to contain first treatment times for ENStartTime for today
 
         // get the FIRST and LAST carb time since EN activation NEW
-        repository.getCarbsDataFromTimeToTimeExpanded(ENStartTime,now,false).blockingGet().let { ENCarbs->
+        repository.getCarbsDataFromTimeToTime(ENStartTime,now,false).blockingGet().let { ENCarbs->
         // repository.getCarbsDataFromTime(ENStartTime,false).blockingGet().let { ENCarbs->
 
             val firstENCarbTime = with(ENCarbs.firstOrNull()?.timestamp) { this ?: 0 }
