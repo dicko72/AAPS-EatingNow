@@ -1257,7 +1257,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (DeltaPctS > 1 && DeltaPctL > 1.5) sens_predType = "UAM+"; // with acceleration
         if (eventualBG > ISFbgMax && bg < ISFbgMax) sens_predType = "UAM+"; // when predicted high and bg is lower
         // reset to UAM prediction when COB are not mostly absorbed
-        if (meal_data.carbs && fractionCOBAbsorbed < 75) sens_predType = "UAM";
+        if (meal_data.carbs && fractionCOBAbsorbed < 0.75) sens_predType = "UAM";
         //if (sens_predType == "UAM+") ENDayModeNoSMB = false; // allow SMB with UAM+
     }
 
