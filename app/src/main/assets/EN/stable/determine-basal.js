@@ -448,10 +448,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
 //    enlog += "ENTime: " + ENTime + "\n";
     enlog += "------ ENWindow ------" + "\n";
+    enlog += "nowUTC:" + nowUTC + ", ENWStartTime:" + meal_data.ENWStartTime + "\n";
     enlog += "ENWindowOK:" + ENWindowOK + ", ENWindowRunTime:" + ENWindowRunTime + ", ENWindowDuration:" + ENWindowDuration + "\n";
+    enlog += "ENTTActive:" + ENTTActive + ", ENWttDuration:" + ENWttDuration + "\n";
     enlog += "ENWIOBThreshU:" + ENWIOBThreshU + ", IOB:" + iob_data.iob + "\n";
-    enlog += "ENTTActive:" + ENTTActive + "\n";
-//    enlog += "b1Time:" + b1Time + ", c1Time:" + c1Time + ", bTime:" + bTime + ", cTime:" + cTime + "\n";
     enlog += "firstMealWindow:" + firstMealWindow + ", firstMealScaling:" + firstMealScaling + "\n";
     enlog += "-----------------------" + "\n";
 
@@ -1258,7 +1258,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (eventualBG > ISFbgMax && bg < ISFbgMax) sens_predType = "UAM+"; // when predicted high and bg is lower
         // reset to UAM prediction when COB are not mostly absorbed
         if (meal_data.carbs && fractionCOBAbsorbed < 0.75) sens_predType = "UAM";
-        //if (sens_predType == "UAM+") ENDayModeNoSMB = false; // allow SMB with UAM+
+        // if there is no ENW it means UAM+ is allowed outside ENW so formally enable the ENW to allow the larger SMB later
+        if (sens_predType == "UAM+" && !ENWindowOK) ENWindowOK = true;
     }
 
     // PREbolus active
@@ -1270,7 +1271,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // evaluate prediction type and weighting - Only use during day or when its night and TBR only
     //if (ENactive || ENSleepModeNoSMB || TIR_sens_limited > 1) {
     // evaluate prediction type and weighting - Only use during day or when TIR is above threshold for relevant band
-    if (ENactive || TIRB_sum > 1) {
+    if (ENactive || TIRB_sum > 1 || !ENtimeOK && eventualBG > target_bg) {
 
         // PREbolus active
         if (sens_predType == "PB") {
@@ -1292,7 +1293,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // UAM+ predictions, stronger eBGw
         if (sens_predType == "UAM+") {
             // set initial eBGw at 50% unless bg is in range and accelerating or preBolus
-            //eBGweight = (bg < ISFbgMax && eventualBG > bg ? 0.75 : 0.50);
             eBGweight = 0.50;
             minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
 
@@ -1309,15 +1309,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
             // when UAM+ is triggered but minGuardBG is below threshold force BG+
             if (minGuardBG < threshold) sens_predType = "BG+";
-
-            // if there is no ENW but still UAM+ was triggered then its OK to enable the ENW to allow the larger SMB later
-            ENWindowOK = true;
         }
 
         // UAM predictions, no COB or GhostCOB
         if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
             // positive or negative delta with acceleration and default
-            eBGweight = (DeltaPctS > 1.0 || eventualBG > bg ? 0.50 : eBGweight);
+            //eBGweight = (DeltaPctS > 1.0 || eventualBG > bg ? 0.50 : eBGweight);
+            eBGweight = (ENWindowOK ? 0.50 : eBGweight);
 
             // SAFETY: UAM fast delta with higher bg lowers eBGw
             eBGweight = (bg > ISFbgMax && delta >= 15 && ENW_max_tdd == 0 ? 0.30 : eBGweight);
@@ -1723,11 +1721,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // ENW gets 85%
             if (ENWindowOK) insulinReqPct = ENWinsulinReqPct;
             // SAFETY: Restrict insulinReq when not ENW to lower dynamic insulinReq unless high
-            if (!ENWindowOK && TIR_sens_limited ==1) {
-                insulinReqPct = Math.max(insulinReqOrig/insulinReq,maxBolusOrig/insulinReq); // minimum SMB is maxBolusOrig
-                insulinReqPct = Math.max(insulinReqPct,0); // minimum 0% when original insulinReq is much lower
-                insulinReqPct = Math.min(insulinReqPct,1); // maximum 100% when original insulinReq is much higher
-            }
+//            if (!ENWindowOK && TIR_sens_limited ==1) {
+//                insulinReqPct = Math.max(insulinReqOrig/insulinReq,maxBolusOrig/insulinReq); // minimum SMB is maxBolusOrig
+//                insulinReqPct = Math.max(insulinReqPct,0); // minimum 0% when original insulinReq is much lower
+//                insulinReqPct = Math.min(insulinReqPct,1); // maximum 100% when original insulinReq is much higher
+//            }
 
             // UAM+ PreBolus gets 100% insulinReqPct
             insulinReqPct = (sens_predType == "PB"  ? 1 : insulinReqPct);
@@ -1745,6 +1743,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
                 // UAM+ uses different SMB when configured
                 if (sens_predType == "UAM+") ENMaxSMB = profile.EN_UAMPlus_maxBolus;
+            } else {
+                ENMaxSMB = profile.EN_NoENW_maxBolus;
             }
 
             // BG+ is the only EN prediction type allowed outside of ENW
