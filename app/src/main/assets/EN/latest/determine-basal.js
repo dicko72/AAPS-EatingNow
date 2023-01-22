@@ -1308,7 +1308,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // if (!ENWindowOK && ENactive) ENWindowOK = (bg > target_bg + 18 || bg < ISFbgMax && delta >=15);
 
             // when UAM+ is triggered but minGuardBG is below threshold force BG+
-            if (minGuardBG < threshold) sens_predType = "BG+";
+            //if (minGuardBG < threshold) sens_predType = "BG+";
         }
 
         // UAM predictions, no COB or GhostCOB
