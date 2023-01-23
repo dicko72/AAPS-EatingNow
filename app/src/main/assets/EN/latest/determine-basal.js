@@ -491,18 +491,20 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
     var TIRB2_sum = Math.max(TIRB2,1); // use this for BG+ later
     // dont use TIRB2 when lower than target
-    TIRB2 = (bg > normalTarget && delta >= -4 && delta <= 4 ? 1 + (TIRB2 * TIRH_percent) : 1);
+    //TIRB2 = (bg > normalTarget && (delta >= -4 && delta <= 4 || !ENtimeOK) ? 1 + (TIRB2 * TIRH_percent) : 1); // experiment for overnight BG control regardless of delta
+    TIRB2 = (bg >= 150 ? 1 + (TIRB2 * TIRH_percent) : 1); // experiment for no delta condition
 
     // TIRB1 - The TIR for the lower band just above normalTarget (+18/1.0)
     if (TIRH_percent) {
         if (meal_data.TIRTW1H > 25) TIRB1 = meal_data.TIRTW1H / 100;
-        if (meal_data.TIRTW2H > 0) TIRB1 += meal_data.TIRTW2H / 100;
-        if (meal_data.TIRTW3H > 0) TIRB1 += meal_data.TIRTW3H / 100;
-        if (meal_data.TIRTW4H > 0) TIRB1 += meal_data.TIRTW4H / 100;
+        if (meal_data.TIRTW2H > 0 && TIRB1 ==1) TIRB1 += meal_data.TIRTW2H / 100;
+        if (meal_data.TIRTW3H > 0 && TIRB1 ==2) TIRB1 += meal_data.TIRTW3H / 100;
+        if (meal_data.TIRTW4H > 0 && TIRB1 ==3) TIRB1 += meal_data.TIRTW4H / 100;
     }
     // dont use TIRB1 when lower than target
     var TIRB1_sum = Math.max(TIRB1,1); // use this for BG+ later
-    TIRB1 = (bg > normalTarget && delta >= -4 && delta <= 4 ? 1 + (TIRB1 * TIRH_percent) : 1);
+    TIRB1 = (bg > normalTarget && (delta >= -4 && delta <= 4 || !ENtimeOK) ? 1 + (TIRB1 * TIRH_percent) : 1); // experiment for overnight BG control regardless of delta
+    var endebug = "TIRB1:" + round(meal_data.TIRTW4H) + "/" + round(meal_data.TIRTW3H) + "/" + round(meal_data.TIRTW2H) + "/" + round(meal_data.TIRTW1H) + "=" + TIRB1 + "sum:" + TIRB1_sum;
 
     // TIRB0 - The TIR for the lowest band below normalTarget (-9/0.5)
     if (TIRH_percent) {
@@ -611,9 +613,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     // apply TIRS to ISF only when delta is slight or bg higher
-    if (TIR_sens_limited !=1) {
+    if (TIR_sens_limited !=1 && TIR_sens !=1) {
         //sens_normalTarget = (delta >= -4 && delta <= 4 || TIR_sens_limited < 1 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
-        sens_normalTarget = (delta >= -4 && delta <= 4 || TIR_sens_limited < 1 || bg > ISFbgMax && TIRB2 > 1 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
+        //sens_normalTarget = (delta >= -4 && delta <= 4 || TIR_sens_limited < 1 || bg > ISFbgMax && TIRB2 > 1 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
+        sens_normalTarget = sens_normalTarget / TIR_sens_limited;
         TIR_sens_limited = profile_sens / sens_normalTarget;
     }
 
