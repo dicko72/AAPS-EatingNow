@@ -113,7 +113,6 @@
     <string name="sort_automation">Sortuj automatyzację</string>
     <string name="remove_selected_items">Usuń wybrane pozycje</string>
     <string name="count_selected">Wybrany %1$d</string>
-    <string name="confirm_remove_multiple_items">Czy na pewno chcesz usunąć %1$d pozycji</string>
     <string name="system_automation">Automatyzacja systemowa</string>
     <!-- WeekdayPicker -->
     <string name="monday_short">P</string>
@@ -123,4 +122,6 @@
     <string name="friday_short">P</string>
     <string name="saturday_short">S</string>
     <string name="sunday_short">N</string>
+    <!--    Reminders-->
+    <string name="time_to_bolus">Czas na bolus!\nUruchom Kalkulator bolusa aby ponownie wykonać obliczenia.</string>
 </resources>

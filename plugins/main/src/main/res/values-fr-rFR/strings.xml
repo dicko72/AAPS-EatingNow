@@ -88,6 +88,9 @@
     <string name="smscommunicator_message_body">Message invalide</string>
     <string name="smscommunicator_report_pump_unreachable_summary">Envoyer un SMS si l\'événement Pompe hors de portée est déclenché</string>
     <string name="smscommunicator_pump_unreachable">Signaler Pompe hors de portée</string>
+    <string name="smscommunicator_set_lgs_reply_with_code">Afin de basculer du mode Boucle vers AGB (Arrêt pour Glycémie Basse) répondre avec le code %1$s</string>
+    <string name="smscommunicator_set_closed_loop_reply_with_code">Afin de basculer en mode Boucle Fermée répondre avec le code %1$s</string>
+    <string name="smscommunicator_current_loop_mode">Mode de boucle actuelle: %1$s</string>
     <string name="wrong_format">Format incorrect</string>
     <string name="sms_actual_bg">Gly:</string>
     <string name="sms_last_bg">Dernière Gly:</string>
@@ -101,21 +104,6 @@
     <string name="sms_profile_switch_created">Changement de profil effectué</string>
     <string name="sms_wrong_tbr_duration">La durée du DBT doit être un multiple de %1$d minutes et supérieure à 0.</string>
     <string name="a11y_otp_qr_code">QR Code pour configurer un mot de passe à usage unique</string>
-    <!-- Insulin -->
-    <string name="lyumjev">Lyumjev</string>
-    <string name="description_insulin_rapid">Réglages pour les insulines Humalog et NovoRapid / NovoLog</string>
-    <string name="description_insulin_ultra_rapid">Réglages pour l\'insuline Fiasp</string>
-    <string name="description_insulin_lyumjev">Réglages pour l\'insuline Lyumjev</string>
-    <string name="description_insulin_free_peak">Permet de définir le pic de l’activité de l’insuline et ne doit être utilisé que par les utilisateurs avancés</string>
-    <string name="insulin_shortname">INS</string>
-    <string name="insulin_oref_peak">Durée du Pic de la Courbe IA</string>
-    <string name="insulin_peak_time">Temps du Pic [min]</string>
-    <string name="free_peak_oref">Profil d\'insuline ajustable Oref</string>
-    <string name="rapid_acting_oref">Insuline à Action Rapide Oref </string>
-    <string name="ultra_rapid_oref">Insuline Ultra Rapide Oref</string>
-    <string name="dia_too_short">Durée d’Action pour %1$f trop courte - utiliser %2$f à la place !</string>
-    <string name="fast_acting_insulin_comment">Novorapid, Novolog, Humalog</string>
-    <string name="ultra_fast_acting_insulin_comment">Fiasp</string>
     <!-- xDrip status line -->
     <!-- StatusLine -->
     <string name="xdrip_status">Barre d\'état pour xDrip+ (Montre)</string>
@@ -171,23 +159,6 @@
     <string name="dia_short">DAI</string>
     <string name="target_short">CIBLE</string>
     <string name="basal_short">BAS</string>
-    <!-- Objectives -->
-    <string name="completed_well_done">Terminé, félicitations !</string>
-    <string name="not_completed_yet">Pas encore terminé</string>
-    <string name="time_elapsed">Temps écoulé</string>
-    <string name="maxiobset">Maximum IA réglé correctement</string>
-    <string name="hasbgdata">Glycémie disponible depuis la source sélectionnée</string>
-    <string name="synchaswritepermission">Le service de synchronisation a l\'autorisation d\'écriture</string>
-    <string name="loopenabled">Boucle activée</string>
-    <string name="apsselected">APS Sélectionné</string>
-    <string name="closedmodeenabled">Mode boucle fermée activé</string>
-    <string name="objectives_shortname">OBJ</string>
-    <string name="description_objectives">Programme d’apprentissage</string>
-    <string name="doyouwantresetstart">Voulez-vous réinitialiser le début de l\'objectif ? Vous risquez de perdre vos progrès.</string>
-    <string name="objectives_next_button">Suivant</string>
-    <string name="objectives_previous_button">Préc</string>
-    <string name="objectives_button_unfinish">Refaire l\'objectif</string>
-    <string name="objectives_button_unstart">Suppression démarrée</string>
     <!-- Actions -->
     <string name="actions">Actions</string>
     <string name="description_actions">Quelques boutons pour accéder rapidement aux fonctions communes</string>
@@ -204,22 +175,9 @@
     <string name="pb_label">Pile pompe</string>
     <string name="cannula">Canule</string>
     <string name="ebstopsloop">L\'utilisation du bolus étendu arrètera la boucle fermée pour la durée d\'exécution du bolus étendu. Voulez-vous vraiment le faire ?</string>
-    <string name="extendedbolusdeliveryerror">Erreur administration bolus étendu</string>
     <string name="statuslights_cannula_age">âge canule</string>
     <string name="statuslights_patch_pump_age">âge pompe patch</string>
     <string name="patch_pump">Pompe patch</string>
-    <!-- Safety -->
-    <string name="limitingextendedbolus">Limiter les bolus prolongé à %1$.1f U à cause de %2$s</string>
-    <string name="limitingcarbs">Limiter les glucides %1$d g à cause de %2$s</string>
-    <string name="pumpisnottempbasalcapable">Pompe n’est pas capable de basals temporaires</string>
-    <string name="closedmodedisabledinpreferences">Mode de Boucle Fermée désactivé dans les préférences</string>
-    <string name="closed_loop_disabled_on_dev_branch">Version Dev. La Boucle Fermée est désactivée.</string>
-    <string name="closed_loop_disabled_with_eb">Boucle fermée désactivée à cause du bolus étendu</string>
-    <string name="smbalwaysdisabled">SMB toujours et post-ingestion de glucides désactivé car la source de glycémies actuelle ne supporte pas de filtrage avancé</string>
-    <string name="smbnotallowedinopenloopmode">SMB non autorisé en mode boucle ouverte</string>
-    <string name="maxvalueinpreferences">valeur Max dans les préférences</string>
-    <string name="hardlimit">limite fixée</string>
-    <string name="treatmentssafety_title">Traitements de sécurité</string>
     <!-- Overview -->
     <string name="show_statuslights">Afficher les voyants d\'état sur l\'écran d\'accueil</string>
     <string name="statuslights_cage_warning">Seuil d\'alerte âge canule [h]</string>
@@ -243,18 +201,11 @@
     <string name="a11y_bg_quality">qualité de la glycémie</string>
     <string name="a11y_blood_glucose">glycémie</string>
     <string name="a11y_bg_outdated">obsolète</string>
-    <string name="aps_mode_title">Mode APS</string>
     <string name="set_basal_question">Accepter nouveau basal temp. :</string>
     <string name="overview_cgm">MGC</string>
-    <string name="quickwizard">Assistant Rapide</string>
-    <string name="a11y_only_on_watch">uniquement sur la montre</string>
-    <string name="a11y_only_on_phone">uniquement sur le téléphone</string>
     <string name="overview">Aperçu</string>
     <string name="overview_shortname">ACCUEIL</string>
     <string name="description_overview">Affiche l’état actuel de votre boucle et des boutons d’actions les plus courantes</string>
-    <string name="overview_editquickwizard_usecob">Calcul GA</string>
-    <string name="overview_editquickwizard_usetemptarget">Calcul de la cible temporaire</string>
-    <string name="overview_editquickwizard_usepercentage">Calcul du pourcentage</string>
     <string name="overview_buttons_selection">Boutons</string>
     <string name="show_calibration_button_summary">Envoie un étalonnage à xDrip+ ou ouvre la boîte de dialogue de calibration de BYODA</string>
     <string name="show_cgm_button_summary">Ouvre xDrip+ ou BYODA, le bouton de retour renverra vers AAPS</string>
@@ -268,25 +219,6 @@
     <string name="uploader">Logiciel pour télécharger vers Internet</string>
     <string name="data_status">État des données Gly</string>
     <string name="quickwizard_settings">Paramètres de l\'Assistant Rapide</string>
-    <string name="overview_edit_quickwizard_button_text">Texte du bouton :</string>
-    <string name="overview_edit_quickwizard_carbs">Glucides :</string>
-    <string name="overview_edit_quickwizard_valid">Valide:</string>
-    <string name="overview_edit_quickwizard_list_activity_add">Ajouter</string>
-    <string name="overview_quickwizard_item_edit_button">Éditer</string>
-    <string name="overview_edit_quickwizard_show_on_device">Afficher l\'entrée sur l\'appareil :</string>
-    <string name="overview_edit_quickwizard_use_bg">Calcul de Glycémie</string>
-    <string name="overview_edit_quickwizard_use_bolus_iob">Calcul IA du Bolus</string>
-    <string name="overview_edit_quickwizard_use_basal_iob">Calcul IA du Basal</string>
-    <string name="overview_edit_quickwizard_use_trend">Calcul de tendance</string>
-    <string name="overview_edit_quickwizard_use_superbolus">Calcul SuperBolus</string>
-    <string name="overview_edit_quickwizard_percentage">Pourcentage</string>
-    <string name="device_all">Tous</string>
-    <string name="device_phone">Téléphone</string>
-    <string name="device_watch">Montre</string>
-    <string name="positive_only">Positif uniquement</string>
-    <string name="negative_only">Négatif uniquement</string>
-    <string name="app_default">Application par défaut</string>
-    <string name="a11y_drag_and_drop_handle">glissez déposez ici</string>
     <string name="keep_screen_on_title">Garder l\'écran allumé</string>
     <string name="keep_screen_on_summary">Empêcher Android d\'éteindre l\'écran. Ceci consommera beaucoup de batterie lorsque vous n’êtes pas connecté à une prise de courant.</string>
     <string name="treatments">Traitements</string>
@@ -347,82 +279,12 @@
     <string name="sensitivity_shortname">SENS</string>
     <string name="graph_scale">Échelle du graph.</string>
     <string name="graph_menu_divider_header">Graph</string>
-    <!-- VirtualPump -->
-    <string name="virtual_pump_type">Type de pompe virtuelle</string>
-    <string name="virtual_pump_definition">Définition de pompe</string>
-    <string name="virtual_pump_pump_def">Bolus : Étape =%1$s\nExtended Bolus : [Étape =%2$s, Durée =%3$smin -%4$sh]\nBasal : Étape =%5$s\nTBR : %6$s (par %7$s), Durée =%8$smin -%9$sh\n%10$s</string>
-    <string name="virtual_pump_shortname">POMPEV</string>
-    <string name="description_pump_virtual">Intégration pour les pompes qui n’ont pas encore de pilote (Boucle Ouverte)</string>
-    <string name="virtual_pump_label">POMPE VIRTUELLE</string>
-    <string name="virtualpump_settings">Paramètres pompe virtuelle</string>
-    <string name="virtualpump_uploadstatus_title">Remontée des informations vers NS</string>
-    <!-- Source -->
-    <string name="ns_client_bg">Glycémie NSClient</string>
-    <string name="ns_client_bg_short">Gly NS</string>
-    <string name="description_source_ns_client">Télécharge les glycémies depuis Nightscout</string>
-    <string name="xdrip">xDrip+</string>
-    <string name="description_source_xdrip">Recevoir les glycémies depuis xDrip+.</string>
-    <string name="dexcom_app_patched">BYODA</string>
-    <string name="dexcom_short">BYODA</string>
-    <string name="description_source_dexcom">Recevoir les valeurs de glycémie de l’application Dexcom patchée (BYODA).</string>
-    <string name="eversense">App Eversense (patché)</string>
-    <string name="description_source_eversense">Recevoir les valeurs de glycémie de l’app Eversense patchée.</string>
-    <string name="glimp">Glimp</string>
-    <string name="description_source_glimp">Recevoir les glycémies depuis Glimp.</string>
-    <string name="mm640g">Medtronic 640g</string>
-    <string name="description_source_mm640g">Recevoir les glycémies depuis le 600SeriesAndroidUploder.</string>
-    <string name="poctech">Poctech</string>
-    <string name="description_source_poctech">Recevoir les glycémies depuis l\'app Poctech</string>
-    <string name="glunovo">Glunovo</string>
-    <string name="description_source_glunovo">Recevoir des valeurs de l\'application Glunovo</string>
-    <string name="intelligo">Intelligo</string>
-    <string name="description_source_intelligo">Recevoir des valeurs depuis l\'application Intelligo</string>
-    <string name="tomato">Tomato (MiaoMiao)</string>
-    <string name="tomato_short">Tomato</string>
-    <string name="description_source_tomato">Recevoir les valeurs de glycémie de l\'application Tomato (appareil MiaoMiao)</string>
-    <string name="aidex">GlucoRx Aidex</string>
-    <string name="aidex_short">Aidex</string>
-    <string name="description_source_aidex">Recevoir les valeurs de glycémie du MGC GlucoRx Aidex.</string>
-    <string name="random_bg">Gly Aléatoire</string>
-    <string name="description_source_random_bg">Générer des glycémies aléatoires (mode démo uniquement)</string>
-    <string name="random_bg_short">Gly</string>
-    <string name="do_xdrip_upload_title">Transmettre les Gly vers xDrip+</string>
-    <string name="do_xdrip_upload_summary">Dans xDrip+ veuillez séléctionner 640g/Eversense comme source de données</string>
-    <string name="bgsource_upload">Paramètres de téléchargement des glycémies</string>
-    <string name="dexcom_log_ns_sensor_change_title">Enreg. du changement de capteur sur NS</string>
-    <string name="dexcom_log_ns_sensor_change_summary">Créer automatiquement un événement \"Changement de capteur\" dans NS au démarrage du capteur</string>
     <!-- Skins -->
     <string name="classic_description">Thème d\'origine</string>
     <string name="lowres_description">Basse résolution</string>
     <string name="buttonson_description">Boutons toujours en bas</string>
     <string name="largedisplay_description">Grand écran</string>
     <string name="skin">Thème</string>
-    <!--    Loop -->
-    <string name="executing">Exécution en cours</string>
-    <string name="run_now">Exécuter maintenant</string>
-    <string name="smb_frequency_exceeded">Un bolus a été délivré au cours des 3 dernières minutes, SMB ignoré</string>
-    <string name="pump_not_initialized">Pompe non initialisée !</string>
-    <string name="loop_shortname">BOUCLE</string>
-    <string name="description_loop">Activer ou désactiver la mise en œuvre déclenchant la Boucle.</string>
-    <string name="no_aps_selected">Pas d\'APS sélectionné ou pas de résultat fourni</string>
-    <string name="ignore5m">Ignorer 5m</string>
-    <string name="ignore15m">Ignorer 15m</string>
-    <string name="ignore30m">Ignorer 30m</string>
-    <string name="carbs_suggestion">Suggestion de glucides</string>
-    <string name="open_loop_new_suggestion">Nouvelle recommendation disponible</string>
-    <string name="basal_set_correctly">Basal configuré correctement</string>
-    <string name="last_run_label">Dernière exécution</string>
-    <string name="loop_aps_label">APS</string>
-    <string name="request_label">Requête</string>
-    <string name="loop_constraints_processed_label">Après applicaton des restrictions</string>
-    <string name="loop_tbr_request_time_label">Heure de demande basal temp</string>
-    <string name="loop_tbr_execution_time_label">Heure d\'exécution basal temp</string>
-    <string name="loop_tbr_set_by_pump_label">Basal temporaire défini par la pompe</string>
-    <string name="loop_smb_request_time_label">Heure de demande SMB</string>
-    <string name="loop_smb_execution_time_label">Heure d\'exécution SMB</string>
-    <string name="loop_smb_set_by_pump_label">SMB défini par la pompe</string>
-    <string name="loop_open_mode_min_change">Changement minimum [%]</string>
-    <string name="loop_open_mode_min_change_summary" formatted="false">Le fonctionnement de la Boucle demandera une confirmation uniquement si le changement est supérieur à cette valeur en %. Par défaut, la valeur est 20%</string>
     <!--    DataBroadcast-->
     <string name="cannula_usage">utilisation:</string>
     <!--    Iob-->
@@ -463,4 +325,30 @@
     <!--    PersistentNotification-->
     <string name="description_persistent_notification">Affiche une notification en cours avec un bref aperçu de ce que fait votre Boucle</string>
     <string name="old_data">DONNÉES ANCIENNES</string>
+    <string name="pump_fetching_data">tentative de récupération des données de la pompe.</string>
+    <string name="pump_old_data">DTQ: Données encore anciennes ! Impossible de charger depuis la pompe.</string>
+    <string name="grams_short">g</string>
+    <string name="hour_short">h</string>
+    <string name="no_active_profile">Aucun profil actif!</string>
+    <string name="profile_message">Profil :\n\nDécalage: %1$\nPourcentage : %2$d%\"</string>
+    <string name="tdd_line">%1$.2fU %1$.0f%</string>
+    <string name="no_profile">Aucun profil séléctionné</string>
+    <string name="aps_only">S\'applique uniquement en mode APS!</string>
+    <string name="last_aps_result_na">Dernier résultat non disponible!</string>
+    <string name="loop_status_closed">BOUCLE FERMÉE</string>
+    <string name="loop_status_open">BOUCLE OUVERTE</string>
+    <string name="loop_status_disabled">BOUCLE DÉSACTIVÉE</string>
+    <string name="aps">APS</string>
+    <string name="last_run">Dernière exécution</string>
+    <string name="last_enact">Dernière injection</string>
+    <string name="today">Aujourd’hui</string>
+    <string name="weighted">pondération</string>
+    <string name="target_only_aps_mode">Les cibles ne s\'appliquent qu\'en mode APS!</string>
+    <string name="no_history">Aucune donnée d\'historique!</string>
+    <string name="units_short">U</string>
+    <string name="temp_target">Cibles Temp</string>
+    <string name="until">jusqu\'à</string>
+    <string name="default_range">PLAGE PAR DEFAUT</string>
+    <string name="target">cible</string>
+    <string name="rate_duration">Taux: %1$.2fU/h (%2$.2f%) \nDurée: %3$d% min</string>
 </resources>

@@ -110,7 +110,7 @@ function enable_smb(
     return false;
 }
 
-var determine_basal = function determine_basal(glucose_status, currenttemp, iob_data, profile, autosens_data, meal_data, tempBasalFunctions, microBolusAllowed, reservoir_data, currentTime, isSaveCgmSource) {
+var determine_basal = function determine_basal(glucose_status, currenttemp, iob_data, profile, autosens_data, meal_data, tempBasalFunctions, microBolusAllowed, reservoir_data, currentTime, flatBGsDetected) {
     var rT = {}; //short for requestedTemp
 
     var deliverAt = new Date();
@@ -142,16 +142,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (minAgo > 12 || minAgo < -5) { // Dexcom data is too old, or way in the future
         rT.reason = "If current system time "+systemTime+" is correct, then BG data is too old. The last BG data was read "+minAgo+"m ago at "+bgTime;
     // if BG is too old/noisy, or is changing less than 1 mg/dL/5m for 45m, cancel any high temps and shorten any long zero temps
-    //cherry pick from oref upstream dev cb8e94990301277fb1016c778b4e9efa55a6edbc
-    } else if ( bg > 60 && glucose_status.delta == 0 && glucose_status.short_avgdelta > -1 && glucose_status.short_avgdelta < 1 && glucose_status.long_avgdelta > -1 && glucose_status.long_avgdelta < 1 && !isSaveCgmSource) {
+    } else if ( bg > 60 && flatBGsDetected) {
         if ( glucose_status.last_cal && glucose_status.last_cal < 3 ) {
             rT.reason = "CGM was just calibrated";
         } else {
             rT.reason = "Error: CGM data is unchanged for the past ~45m";
         }
     }
-    //cherry pick from oref upstream dev cb8e94990301277fb1016c778b4e9efa55a6edbc
-    if (bg <= 10 || bg === 38 || noise >= 3 || minAgo > 12 || minAgo < -5 || ( bg > 60 && glucose_status.delta == 0 && glucose_status.short_avgdelta > -1 && glucose_status.short_avgdelta < 1 && glucose_status.long_avgdelta > -1 && glucose_status.long_avgdelta < 1 ) && !isSaveCgmSource ) {
+    if (bg <= 10 || bg === 38 || noise >= 3 || minAgo > 12 || minAgo < -5 || ( bg > 60 && flatBGsDetected )) {
         if (currenttemp.rate > basal) { // high temp is running
             rT.reason += ". Replacing high temp basal of "+currenttemp.rate+" with neutral temp of "+basal;
             rT.deliverAt = deliverAt;
@@ -579,14 +577,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // for IOBpredBGs, predicted deviation impact drops linearly from current deviation down to zero
             // over 60 minutes (data points every 5m)
             var predDev = ci * ( 1 - Math.min(1,IOBpredBGs.length/(60/5)) );
-            //IOBpredBG = IOBpredBGs[IOBpredBGs.length-1] + predBGI + predDev;
-             IOBpredBG = IOBpredBGs[IOBpredBGs.length-1] + (round(( -iobTick.activity * (1800 / ( TDD * (Math.log((Math.max( IOBpredBGs[IOBpredBGs.length-1],39) / insulinDivisor ) + 1 ) ) ))
-             * 5 ),2)) + predDev;
+            if (!TDD) IOBpredBG = IOBpredBGs[IOBpredBGs.length-1] + predBGI + predDev;
+            else IOBpredBG = IOBpredBGs[IOBpredBGs.length-1] + (round(( -iobTick.activity * (1800 / ( TDD * (Math.log((Math.max( IOBpredBGs[IOBpredBGs.length-1],39) / insulinDivisor ) + 1 ) ) )) * 5 ),2)) + predDev;
 
             // calculate predBGs with long zero temp without deviations
-            //var ZTpredBG = ZTpredBGs[ZTpredBGs.length-1] + predZTBGI;
-            var ZTpredBG = ZTpredBGs[ZTpredBGs.length-1] + (round(( -iobTick.iobWithZeroTemp.activity * (1800 / ( TDD * (Math.log(( Math.max(ZTpredBGs[ZTpredBGs.length-1],39) /
-            insulinDivisor ) + 1 ) ) )) * 5 ), 2));
+            if (!TDD) var ZTpredBG = ZTpredBGs[ZTpredBGs.length-1] + predZTBGI;
+            else var ZTpredBG = ZTpredBGs[ZTpredBGs.length-1] + (round(( -iobTick.iobWithZeroTemp.activity * (1800 / ( TDD * (Math.log(( Math.max(ZTpredBGs[ZTpredBGs.length-1],39) / insulinDivisor ) + 1 ) ) )) * 5 ), 2));
             // for COBpredBGs, predicted carb impact drops linearly from current carb impact down to zero
             // eventually accounting for all carbs (if they can be absorbed over DIA)
             var predCI = Math.max(0, Math.max(0,ci) * ( 1 - COBpredBGs.length/Math.max(cid*2,1) ) );
@@ -615,9 +611,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 //console.error(UAMpredBGs.length,slopeFromDeviations, predUCI);
                 UAMduration=round((UAMpredBGs.length+1)*5/60,1);
             }
-            //UAMpredBG = UAMpredBGs[UAMpredBGs.length-1] + predBGI + Math.min(0, predDev) + predUCI;
-            UAMpredBG = UAMpredBGs[UAMpredBGs.length-1] + (round(( -iobTick.activity * (1800 / ( TDD
-             * (Math.log(( Math.max(UAMpredBGs[UAMpredBGs.length-1],39) / insulinDivisor ) + 1 ) ) )) * 5 ),2)) + Math.min(0, predDev) + predUCI;
+            if (!TDD) UAMpredBG = UAMpredBGs[UAMpredBGs.length-1] + predBGI + Math.min(0, predDev) + predUCI;
+            else UAMpredBG = UAMpredBGs[UAMpredBGs.length-1] + (round(( -iobTick.activity * (1800 / ( TDD * (Math.log(( Math.max(UAMpredBGs[UAMpredBGs.length-1],39) / insulinDivisor ) + 1 ) ) )) * 5 ),2)) + Math.min(0, predDev) + predUCI;
             //console.error(predBGI, predCI, predUCI);
             // truncate all BG predictions at 4 hours
             if ( IOBpredBGs.length < 48) { IOBpredBGs.push(IOBpredBG); }
@@ -729,27 +724,29 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     var fSensBG = Math.min(minPredBG,bg);
 
-     if (bg > target_bg && glucose_status.delta < 3 && glucose_status.delta > -3 && glucose_status.short_avgdelta > -3 && glucose_status.short_avgdelta < 3 && eventualBG > target_bg && eventualBG < bg ) {
-         var future_sens = ( 1800 / (Math.log((((fSensBG * 0.5) + (bg * 0.5))/insulinDivisor)+1)*TDD));
-         //var future_sens_old = ( 277700 / (TDD * ((bg * 0.5) + (eventualBG * 0.5 ))));
-         console.log("Future state sensitivity is " +future_sens+" based on eventual and current bg due to flat glucose level above target");
-         rT.reason += "Dosing sensitivity: " +future_sens+" using eventual BG;";
-     }
-
-     else if( glucose_status.delta > 0 && eventualBG > target_bg || eventualBG > bg) {
-         var future_sens = ( 1800 / (Math.log((bg/insulinDivisor)+1)*TDD));
-         //var future_sens_old = ( 277700 / (TDD * bg));
-         console.log("Future state sensitivity is " +future_sens+" using current bg due to small delta or variation");
-         rT.reason += "Dosing sensitivity: " +future_sens+" using current BG;";
+    if (TDD) {
+         if (bg > target_bg && glucose_status.delta < 3 && glucose_status.delta > -3 && glucose_status.short_avgdelta > -3 && glucose_status.short_avgdelta < 3 && eventualBG > target_bg && eventualBG < bg ) {
+             var future_sens = ( 1800 / (Math.log((((fSensBG * 0.5) + (bg * 0.5))/insulinDivisor)+1)*TDD));
+             //var future_sens_old = ( 277700 / (TDD * ((bg * 0.5) + (eventualBG * 0.5 ))));
+             console.log("Future state sensitivity is " +future_sens+" based on eventual and current bg due to flat glucose level above target");
+             rT.reason += "Dosing sensitivity: " +future_sens+" using eventual BG;";
          }
 
-     else {
-        var future_sens = ( 1800 / (Math.log((fSensBG/insulinDivisor)+1)*TDD));
-        //var future_sens_old = ( 277700 / (TDD * eventualBG));
-        console.log("Future state sensitivity is " +future_sens+" based on eventual bg due to -ve delta");
-        rT.reason += "Dosing sensitivity: " +future_sens+" using eventual BG;";
-     }
-     future_sens = round(future_sens,1);
+         else if( glucose_status.delta > 0 && eventualBG > target_bg || eventualBG > bg) {
+             var future_sens = ( 1800 / (Math.log((bg/insulinDivisor)+1)*TDD));
+             //var future_sens_old = ( 277700 / (TDD * bg));
+             console.log("Future state sensitivity is " +future_sens+" using current bg due to small delta or variation");
+             rT.reason += "Dosing sensitivity: " +future_sens+" using current BG;";
+             }
+
+         else {
+            var future_sens = ( 1800 / (Math.log((fSensBG/insulinDivisor)+1)*TDD));
+            //var future_sens_old = ( 277700 / (TDD * eventualBG));
+            console.log("Future state sensitivity is " +future_sens+" based on eventual bg due to -ve delta");
+            rT.reason += "Dosing sensitivity: " +future_sens+" using eventual BG;";
+         }
+         future_sens = round(future_sens,1);
+     } else future_sens = variable_sens
 
 
     var fractionCarbsLeft = meal_data.mealCOB/meal_data.carbs;

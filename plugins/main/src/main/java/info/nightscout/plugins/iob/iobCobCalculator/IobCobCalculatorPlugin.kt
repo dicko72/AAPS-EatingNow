@@ -6,7 +6,6 @@ import info.nightscout.androidaps.annotations.OpenForTesting
 import info.nightscout.core.extensions.convertedToAbsolute
 import info.nightscout.core.extensions.iobCalc
 import info.nightscout.core.extensions.toTemporaryBasal
-import info.nightscout.core.iob.iobCobCalculator.AutosensDataStoreObject
 import info.nightscout.core.graph.OverviewData
 import info.nightscout.core.iob.combine
 import info.nightscout.core.iob.copy
@@ -39,6 +38,7 @@ import info.nightscout.interfaces.profile.ProfileFunction
 import info.nightscout.interfaces.utils.DecimalFormatter
 import info.nightscout.interfaces.utils.MidnightTime
 import info.nightscout.plugins.R
+import info.nightscout.plugins.iob.iobCobCalculator.data.AutosensDataStoreObject
 import info.nightscout.rx.AapsSchedulers
 import info.nightscout.rx.bus.RxBus
 import info.nightscout.rx.events.Event
@@ -121,14 +121,14 @@ class IobCobCalculatorPlugin @Inject constructor(
             .toObservable(EventPreferenceChange::class.java)
             .observeOn(aapsSchedulers.io)
             .subscribe({ event ->
-                           if (event.isChanged(rh.gs(R.string.key_openapsama_autosens_period)) ||
-                               event.isChanged(rh.gs(R.string.key_age)) ||
-                               event.isChanged(rh.gs(R.string.key_absorption_maxtime)) ||
-                               event.isChanged(rh.gs(R.string.key_openapsama_min_5m_carbimpact)) ||
-                               event.isChanged(rh.gs(R.string.key_absorption_cutoff)) ||
-                               event.isChanged(rh.gs(R.string.key_openapsama_autosens_max)) ||
-                               event.isChanged(rh.gs(R.string.key_openapsama_autosens_min)) ||
-                               event.isChanged(rh.gs(R.string.key_insulin_oref_peak))
+                           if (event.isChanged(rh.gs(info.nightscout.core.utils.R.string.key_openapsama_autosens_period)) ||
+                               event.isChanged(rh.gs(info.nightscout.core.utils.R.string.key_age)) ||
+                               event.isChanged(rh.gs(info.nightscout.core.utils.R.string.key_absorption_maxtime)) ||
+                               event.isChanged(rh.gs(info.nightscout.core.utils.R.string.key_openapsama_min_5m_carbimpact)) ||
+                               event.isChanged(rh.gs(info.nightscout.core.utils.R.string.key_absorption_cutoff)) ||
+                               event.isChanged(rh.gs(info.nightscout.core.utils.R.string.key_openapsama_autosens_max)) ||
+                               event.isChanged(rh.gs(info.nightscout.core.utils.R.string.key_openapsama_autosens_min)) ||
+                               event.isChanged(rh.gs(info.nightscout.core.utils.R.string.key_insulin_oref_peak))
                            ) {
                                resetDataAndRunCalculation("onEventPreferenceChange", event)
                            }
@@ -150,15 +150,13 @@ class IobCobCalculatorPlugin @Inject constructor(
         clearCache()
         ads.reset()
         calculationWorkflow.runCalculation(
-            CalculationWorkflow.MAIN_CALCULATION,
-            this,
-            overviewData,
-            reason,
-            System.currentTimeMillis(),
-            bgDataReload = false,
-            limitDataToOldestAvailable = true,
-            cause = event,
-            runLoop = true
+            job = CalculationWorkflow.MAIN_CALCULATION,
+            iobCobCalculator = this,
+            overviewData = overviewData,
+            reason = reason,
+            end = System.currentTimeMillis(),
+            bgDataReload = true,
+            cause = event
         )
     }
 
@@ -294,10 +292,8 @@ class IobCobCalculatorPlugin @Inject constructor(
         return ads.getLastAutosensData(reason, aapsLogger, dateUtil)
     }
 
-    override fun getCobInfo(waitForCalculationFinish: Boolean, reason: String): CobInfo {
-        val autosensData =
-            if (waitForCalculationFinish) getLastAutosensDataWithWaitForCalculationFinish(reason)
-            else ads.getLastAutosensData(reason, aapsLogger, dateUtil)
+    override fun getCobInfo(reason: String): CobInfo {
+        val autosensData = ads.getLastAutosensData(reason, aapsLogger, dateUtil)
         var displayCob: Double? = null
         var futureCarbs = 0.0
         val now = dateUtil.now()
@@ -391,6 +387,10 @@ class IobCobCalculatorPlugin @Inject constructor(
             // cancel waiting task to prevent sending multiple posts
             scheduledHistoryPost?.cancel(false)
             // prepare task for execution in 1 sec
+            scheduledEvent?.let {
+                // set reload bg data if was not set
+                if (!event.reloadBgData) event.reloadBgData = it.reloadBgData
+            }
             scheduledEvent = event
             scheduledHistoryPost = historyWorker.schedule(
                 {
@@ -405,7 +405,7 @@ class IobCobCalculatorPlugin @Inject constructor(
                         scheduledEvent = null
                         scheduledHistoryPost = null
                     }
-                }, 1L, TimeUnit.SECONDS
+                }, 5L, TimeUnit.SECONDS
             )
         } else {
             // asked reload is newer -> adjust params only
@@ -447,7 +447,15 @@ class IobCobCalculatorPlugin @Inject constructor(
             }
             ads.newHistoryData(time, aapsLogger, dateUtil)
         }
-        calculationWorkflow.runCalculation(CalculationWorkflow.MAIN_CALCULATION, this, overviewData, event.javaClass.simpleName, System.currentTimeMillis(), bgDataReload, true, event, runLoop = true)
+        calculationWorkflow.runCalculation(
+            job = CalculationWorkflow.MAIN_CALCULATION,
+            iobCobCalculator = this,
+            overviewData = overviewData,
+            reason = event.javaClass.simpleName,
+            end = System.currentTimeMillis(),
+            bgDataReload = bgDataReload,
+            cause = event
+        )
         //log.debug("Releasing onNewHistoryData");
     }
 
@@ -481,7 +489,7 @@ class IobCobCalculatorPlugin @Inject constructor(
         val total = IobTotal(toTime)
         val profile = profileFunction.getProfile() ?: return total
         val dia = profile.dia
-        val divisor = sp.getDouble(R.string.key_openapsama_bolus_snooze_dia_divisor, 2.0)
+        val divisor = sp.getDouble(info.nightscout.core.utils.R.string.key_openapsama_bolus_snooze_dia_divisor, 2.0)
         assert(divisor > 0)
 
         val boluses = repository.getBolusesDataFromTime(toTime - range(), true).blockingGet()

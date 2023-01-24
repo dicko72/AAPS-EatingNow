@@ -12,7 +12,7 @@ import info.nightscout.interfaces.Config
 import info.nightscout.interfaces.pump.PumpEnactResult
 import info.nightscout.interfaces.queue.Callback
 import info.nightscout.interfaces.utils.JsonHelper
-import info.nightscout.interfaces.utils.TimerUtil
+import info.nightscout.automation.ui.TimerUtil
 import info.nightscout.rx.bus.RxBus
 import info.nightscout.shared.utils.DateUtil
 import org.json.JSONObject
@@ -32,16 +32,16 @@ class ActionAlarm(injector: HasAndroidInjector) : Action(injector) {
         this.text = InputString(text)
     }
 
-    override fun friendlyName(): Int = R.string.alarm
+    override fun friendlyName(): Int = info.nightscout.core.ui.R.string.alarm
     override fun shortDescription(): String = rh.gs(R.string.alarm_message, text.value)
-    @DrawableRes override fun icon(): Int = R.drawable.ic_access_alarm_24dp
+    @DrawableRes override fun icon(): Int = info.nightscout.core.main.R.drawable.ic_access_alarm_24dp
 
     override fun isValid(): Boolean = true // empty alarm will show app name
 
     override fun doAction(callback: Callback) {
         timerUtil.scheduleReminder(10, text.value.takeIf { it.isNotBlank() }
             ?: rh.gs(config.appName))
-        callback.result(PumpEnactResult(injector).success(true).comment(R.string.ok)).run()
+        callback.result(PumpEnactResult(injector).success(true).comment(info.nightscout.core.ui.R.string.ok)).run()
     }
 
     override fun toJSON(): String {

@@ -113,7 +113,6 @@
     <string name="sort_automation">Сортировать автоматизацию</string>
     <string name="remove_selected_items">Удалить выбранные элементы</string>
     <string name="count_selected">%1$d выбрано</string>
-    <string name="confirm_remove_multiple_items">Вы уверены, что хотите удалить %1$d элемент</string>
     <string name="system_automation">Автоматизация системы</string>
     <string name="run_automations">Запустить автоматизацию</string>
     <string name="add_automation">Добавить правило</string>
@@ -127,4 +126,8 @@
     <string name="friday_short">Пт</string>
     <string name="saturday_short">Сб</string>
     <string name="sunday_short">Вс</string>
+    <!--    Reminders-->
+    <string name="time_to_eat">Пора есть!\n Запустите помощник болюса снова для подсчета.</string>
+    <string name="time_to_bolus">Пора дать болюс!\nЗапустите помощник болюса и повторите расчет.</string>
+    <string name="error_setting_reminder">Ошибка при настройке будущего оповещения</string>
 </resources>

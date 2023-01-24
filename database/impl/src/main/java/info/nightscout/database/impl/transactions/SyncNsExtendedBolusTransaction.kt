@@ -7,7 +7,7 @@ import kotlin.math.abs
 /**
  * Sync the Extended bolus from NS
  */
-class SyncNsExtendedBolusTransaction(private val extendedBoluses: List<ExtendedBolus>) :
+class SyncNsExtendedBolusTransaction(private val extendedBoluses: List<ExtendedBolus>, private val nsClientMode: Boolean) :
     Transaction<SyncNsExtendedBolusTransaction.TransactionResult>() {
 
     override fun run(): TransactionResult {
@@ -28,7 +28,7 @@ class SyncNsExtendedBolusTransaction(private val extendedBoluses: List<ExtendedB
                         database.extendedBolusDao.updateExistingEntry(current)
                         result.invalidated.add(current)
                     }
-                    if (current.duration != extendedBolus.duration) {
+                    if (current.duration != extendedBolus.duration && nsClientMode) {
                         current.duration = extendedBolus.duration
                         current.amount = extendedBolus.amount
                         database.extendedBolusDao.updateExistingEntry(current)
@@ -39,7 +39,7 @@ class SyncNsExtendedBolusTransaction(private val extendedBoluses: List<ExtendedB
 
                 // not known nsId
                 val running = database.extendedBolusDao.getExtendedBolusActiveAt(extendedBolus.timestamp).blockingGet()
-                if (running != null && abs(running.timestamp - extendedBolus.timestamp) < 1000 && running.interfaceIDs.nightscoutId == null) { // allow missing milliseconds
+                if (running != null && abs(running.timestamp - extendedBolus.timestamp) < 1000) { // allow missing milliseconds
                     // the same record, update nsId only
                     running.interfaceIDs.nightscoutId = extendedBolus.interfaceIDs.nightscoutId
                     database.extendedBolusDao.updateExistingEntry(running)

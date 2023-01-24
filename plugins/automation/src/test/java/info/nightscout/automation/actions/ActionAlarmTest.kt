@@ -9,7 +9,7 @@ import info.nightscout.automation.elements.InputString
 import info.nightscout.interfaces.Config
 import info.nightscout.interfaces.pump.PumpEnactResult
 import info.nightscout.interfaces.queue.Callback
-import info.nightscout.interfaces.utils.TimerUtil
+import info.nightscout.automation.ui.TimerUtil
 import info.nightscout.rx.bus.RxBus
 import info.nightscout.shared.interfaces.ResourceHelper
 import info.nightscout.shared.utils.DateUtil
@@ -48,15 +48,15 @@ class ActionAlarmTest : TestBase() {
 
     @BeforeEach
     fun setup() {
-        `when`(context.getString(info.nightscout.core.main.R.string.ok)).thenReturn("OK")
-        `when`(context.getString(info.nightscout.core.main.R.string.alarm)).thenReturn("Alarm")
+        `when`(context.getString(info.nightscout.core.ui.R.string.ok)).thenReturn("OK")
+        `when`(context.getString(info.nightscout.core.ui.R.string.alarm)).thenReturn("Alarm")
         `when`(rh.gs(ArgumentMatchers.eq(R.string.alarm_message), ArgumentMatchers.anyString())).thenReturn("Alarm: %s")
         timerUtil = TimerUtil(context)
         sut = ActionAlarm(injector)
     }
 
     @Test fun friendlyNameTest() {
-        Assert.assertEquals(info.nightscout.core.main.R.string.alarm, sut.friendlyName())
+        Assert.assertEquals(info.nightscout.core.ui.R.string.alarm, sut.friendlyName())
     }
 
     @Test fun shortDescriptionTest() {

@@ -113,7 +113,6 @@
     <string name="sort_automation">Sortér automatisering</string>
     <string name="remove_selected_items">Fjern valgte emner</string>
     <string name="count_selected">%1$d valgt</string>
-    <string name="confirm_remove_multiple_items">Er du sikker på, at du vil fjerne %1$d elementer?</string>
     <string name="system_automation">System automatisering</string>
     <string name="run_automations">Kør automatisering</string>
     <string name="add_automation">Tilføj regel</string>
@@ -127,4 +126,6 @@
     <string name="friday_short">Fr</string>
     <string name="saturday_short">Lø</string>
     <string name="sunday_short">Sø</string>
+    <!--    Reminders-->
+    <string name="time_to_bolus">Tid til bolus!\nKør Bolus-guiden og lav beregningen igen.</string>
 </resources>

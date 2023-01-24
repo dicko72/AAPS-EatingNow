@@ -1,7 +1,7 @@
 package info.nightscout.core.graph.data
 
 import android.content.Context
-import info.nightscout.core.graph.R
+import android.graphics.Paint
 import info.nightscout.database.entities.EffectiveProfileSwitch
 import info.nightscout.shared.interfaces.ResourceHelper
 import info.nightscout.shared.utils.T
@@ -19,11 +19,12 @@ class EffectiveProfileSwitchDataPoint(
         get() = "" +
             (if (data.originalPercentage != 100) "${data.originalPercentage}%" else "") +
             (if (data.originalPercentage != 100 && data.originalTimeshift != 0L) "," else "") +
-            (if (data.originalTimeshift != 0L) (T.msecs(data.originalTimeshift).hours().toString() + rh.gs(R.string.shorthour)) else "")
+            (if (data.originalTimeshift != 0L) (T.msecs(data.originalTimeshift).hours().toString() + rh.gs(info.nightscout.shared.R.string.shorthour)) else "")
     override val duration = 0L
     override val shape = PointsWithLabelGraphSeries.Shape.PROFILE
     override val size = 2f
+    override val paintStyle: Paint.Style = Paint.Style.FILL // not used
     override fun color(context: Context?): Int {
-        return rh.gac(context, R.attr.profileSwitchColor)
+        return rh.gac(context, info.nightscout.core.ui.R.attr.profileSwitchColor)
     }
 }

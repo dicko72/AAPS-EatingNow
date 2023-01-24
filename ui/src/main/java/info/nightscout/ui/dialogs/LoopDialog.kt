@@ -21,6 +21,7 @@ import info.nightscout.database.impl.AppRepository
 import info.nightscout.database.impl.transactions.CancelCurrentOfflineEventIfAnyTransaction
 import info.nightscout.database.impl.transactions.InsertAndCancelCurrentOfflineEventTransaction
 import info.nightscout.interfaces.ConfigBuilder
+import info.nightscout.interfaces.ApsMode
 import info.nightscout.interfaces.aps.Loop
 import info.nightscout.interfaces.constraints.Constraint
 import info.nightscout.interfaces.constraints.Constraints
@@ -161,7 +162,7 @@ class LoopDialog : DaggerDialogFragment() {
         val closedLoopAllowed = constraintChecker.isClosedLoopAllowed(Constraint(true))
         val closedLoopAllowed2 = activePlugin.activeObjectives?.isAccomplished(Objectives.MAXIOB_OBJECTIVE) ?: false
         val lgsEnabled = constraintChecker.isLgsAllowed(Constraint(true))
-        val apsMode = sp.getString(R.string.key_aps_mode, "open")
+        val apsMode = ApsMode.fromString(sp.getString(info.nightscout.core.utils.R.string.key_aps_mode, ApsMode.OPEN.name))
         val pump = activePlugin.activePump
 
         binding.overviewDisconnect15m.visibility = pumpDescription.tempDurationStep15mAllowed.toVisibility()
@@ -200,7 +201,7 @@ class LoopDialog : DaggerDialogFragment() {
             loop.isSuspended                                       -> {
                 binding.overviewLoop.visibility = View.GONE
                 binding.overviewSuspend.visibility = View.VISIBLE
-                binding.overviewSuspendHeader.text = rh.gs(R.string.resumeloop)
+                binding.overviewSuspendHeader.text = rh.gs(info.nightscout.core.ui.R.string.resumeloop)
                 binding.overviewSuspendButtons.visibility = View.VISIBLE
                 binding.overviewResume.visibility = View.VISIBLE
                 binding.overviewPump.visibility = View.GONE
@@ -210,34 +211,34 @@ class LoopDialog : DaggerDialogFragment() {
             else                                                   -> {
                 binding.overviewLoop.visibility = View.VISIBLE
                 binding.overviewEnable.visibility = View.GONE
-                when {
-                    apsMode == "closed" -> {
+                when (apsMode) {
+                    ApsMode.CLOSED -> {
                         binding.overviewCloseloop.visibility = View.GONE
                         binding.overviewLgsloop.visibility = View.VISIBLE
                         binding.overviewOpenloop.visibility = View.VISIBLE
                     }
 
-                    apsMode == "lgs"    -> {
+                    ApsMode.LGS    -> {
                         binding.overviewCloseloop.visibility = closedLoopAllowed.value().toVisibility()   //show Close loop button only if Close loop allowed
                         binding.overviewLgsloop.visibility = View.GONE
                         binding.overviewOpenloop.visibility = View.VISIBLE
                     }
 
-                    apsMode == "open"   -> {
+                    ApsMode.OPEN   -> {
                         binding.overviewCloseloop.visibility =
                             closedLoopAllowed2.toVisibility()          //show CloseLoop button only if Objective 6 is completed (closedLoopAllowed always false in open loop mode)
                         binding.overviewLgsloop.visibility = lgsEnabled.value().toVisibility()
                         binding.overviewOpenloop.visibility = View.GONE
                     }
 
-                    else                -> {
+                    else           -> {
                         binding.overviewCloseloop.visibility = View.GONE
                         binding.overviewLgsloop.visibility = View.GONE
                         binding.overviewOpenloop.visibility = View.GONE
                     }
                 }
                 binding.overviewSuspend.visibility = View.VISIBLE
-                binding.overviewSuspendHeader.text = rh.gs(R.string.suspendloop)
+                binding.overviewSuspendHeader.text = rh.gs(info.nightscout.core.ui.R.string.suspendloop)
                 binding.overviewSuspendButtons.visibility = View.VISIBLE
                 binding.overviewResume.visibility = View.GONE
 
@@ -253,11 +254,11 @@ class LoopDialog : DaggerDialogFragment() {
     private fun onClickOkCancelEnabled(v: View): Boolean {
         var description = ""
         when (v.id) {
-            R.id.overview_closeloop      -> description = rh.gs(R.string.closedloop)
-            R.id.overview_lgsloop        -> description = rh.gs(R.string.lowglucosesuspend)
-            R.id.overview_openloop       -> description = rh.gs(R.string.openloop)
-            R.id.overview_disable        -> description = rh.gs(R.string.disableloop)
-            R.id.overview_enable         -> description = rh.gs(R.string.enableloop)
+            R.id.overview_closeloop      -> description = rh.gs(info.nightscout.core.ui.R.string.closedloop)
+            R.id.overview_lgsloop        -> description = rh.gs(info.nightscout.core.ui.R.string.lowglucosesuspend)
+            R.id.overview_openloop       -> description = rh.gs(info.nightscout.core.ui.R.string.openloop)
+            R.id.overview_disable        -> description = rh.gs(info.nightscout.core.ui.R.string.disableloop)
+            R.id.overview_enable         -> description = rh.gs(info.nightscout.core.ui.R.string.enableloop)
             R.id.overview_resume         -> description = rh.gs(R.string.resume)
             R.id.overview_reconnect      -> description = rh.gs(R.string.reconnect)
             R.id.overview_suspend_1h     -> description = rh.gs(R.string.suspendloopfor1h)
@@ -271,7 +272,7 @@ class LoopDialog : DaggerDialogFragment() {
             R.id.overview_disconnect_3h  -> description = rh.gs(R.string.disconnectpumpfor3h)
         }
         activity?.let { activity ->
-            OKDialog.showConfirmation(activity, rh.gs(R.string.confirm), description, Runnable {
+            OKDialog.showConfirmation(activity, rh.gs(info.nightscout.core.ui.R.string.confirm), description, Runnable {
                 onClick(v)
             })
         }
@@ -282,22 +283,22 @@ class LoopDialog : DaggerDialogFragment() {
         when (v.id) {
             R.id.overview_closeloop                       -> {
                 uel.log(UserEntry.Action.CLOSED_LOOP_MODE, UserEntry.Sources.LoopDialog)
-                sp.putString(R.string.key_aps_mode, "closed")
-                rxBus.send(EventPreferenceChange(rh.gs(R.string.closedloop)))
+                sp.putString(info.nightscout.core.utils.R.string.key_aps_mode, ApsMode.CLOSED.name)
+                rxBus.send(EventPreferenceChange(rh.gs(info.nightscout.core.ui.R.string.closedloop)))
                 return true
             }
 
             R.id.overview_lgsloop                         -> {
                 uel.log(UserEntry.Action.LGS_LOOP_MODE, UserEntry.Sources.LoopDialog)
-                sp.putString(R.string.key_aps_mode, "lgs")
-                rxBus.send(EventPreferenceChange(rh.gs(R.string.lowglucosesuspend)))
+                sp.putString(info.nightscout.core.utils.R.string.key_aps_mode, ApsMode.LGS.name)
+                rxBus.send(EventPreferenceChange(rh.gs(info.nightscout.core.ui.R.string.lowglucosesuspend)))
                 return true
             }
 
             R.id.overview_openloop                        -> {
                 uel.log(UserEntry.Action.OPEN_LOOP_MODE, UserEntry.Sources.LoopDialog)
-                sp.putString(R.string.key_aps_mode, "open")
-                rxBus.send(EventPreferenceChange(rh.gs(R.string.lowglucosesuspend)))
+                sp.putString(info.nightscout.core.utils.R.string.key_aps_mode, ApsMode.OPEN.name)
+                rxBus.send(EventPreferenceChange(rh.gs(info.nightscout.core.ui.R.string.lowglucosesuspend)))
                 return true
             }
 
@@ -310,7 +311,7 @@ class LoopDialog : DaggerDialogFragment() {
                 commandQueue.cancelTempBasal(true, object : Callback() {
                     override fun run() {
                         if (!result.success) {
-                            ToastUtils.errorToast(ctx, rh.gs(R.string.temp_basal_delivery_error))
+                            ToastUtils.errorToast(ctx, rh.gs(info.nightscout.core.ui.R.string.temp_basal_delivery_error))
                         }
                     }
                 })
@@ -351,11 +352,11 @@ class LoopDialog : DaggerDialogFragment() {
                 commandQueue.cancelTempBasal(true, object : Callback() {
                     override fun run() {
                         if (!result.success) {
-                            uiInteraction.runAlarm(result.comment, rh.gs(R.string.temp_basal_delivery_error), R.raw.boluserror)
+                            uiInteraction.runAlarm(result.comment, rh.gs(info.nightscout.core.ui.R.string.temp_basal_delivery_error), info.nightscout.core.ui.R.raw.boluserror)
                         }
                     }
                 })
-                sp.putBoolean(R.string.key_objectiveusereconnect, true)
+                sp.putBoolean(info.nightscout.core.utils.R.string.key_objectiveusereconnect, true)
                 return true
             }
 
@@ -411,7 +412,7 @@ class LoopDialog : DaggerDialogFragment() {
                     loop.goToZeroTemp(T.hours(1).mins().toInt(), profile, OfflineEvent.Reason.DISCONNECT_PUMP)
                     rxBus.send(EventRefreshOverview("suspend_menu"))
                 }
-                sp.putBoolean(R.string.key_objectiveusedisconnect, true)
+                sp.putBoolean(info.nightscout.core.utils.R.string.key_objectiveusedisconnect, true)
                 return true
             }
 
@@ -449,7 +450,7 @@ class LoopDialog : DaggerDialogFragment() {
 
     override fun onResume() {
         super.onResume()
-        if(!queryingProtection) {
+        if (!queryingProtection) {
             queryingProtection = true
             activity?.let { activity ->
                 val cancelFail = {

@@ -9,13 +9,14 @@ import androidx.work.WorkContinuation
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dagger.android.HasAndroidInjector
-import info.nightscout.androidaps.R
 import info.nightscout.core.graph.OverviewData
 import info.nightscout.core.utils.fabric.FabricPrivacy
 import info.nightscout.core.utils.receivers.DataWorkerStorage
+import info.nightscout.core.utils.worker.then
 import info.nightscout.core.workflow.CalculationWorkflow
 import info.nightscout.core.workflow.CalculationWorkflow.Companion.JOB
 import info.nightscout.core.workflow.CalculationWorkflow.Companion.MAIN_CALCULATION
+import info.nightscout.core.workflow.CalculationWorkflow.Companion.PASS
 import info.nightscout.interfaces.iob.IobCobCalculator
 import info.nightscout.interfaces.plugin.ActivePlugin
 import info.nightscout.plugins.iob.iobCobCalculator.IobCobCalculatorPlugin
@@ -89,11 +90,11 @@ class CalculationWorkflowImpl @Inject constructor(
             .toObservable(EventPreferenceChange::class.java)
             .observeOn(aapsSchedulers.io)
             .subscribe({ event ->
-                           if (event.isChanged(rh.gs(R.string.key_units))) {
+                           if (event.isChanged(rh.gs(info.nightscout.core.utils.R.string.key_units))) {
                                overviewData.reset()
                                rxBus.send(EventNewHistoryData(0, false))
                            }
-                           if (event.isChanged(rh.gs(R.string.key_rangetodisplay))) {
+                           if (event.isChanged(rh.gs(info.nightscout.core.utils.R.string.key_rangetodisplay))) {
                                overviewData.initRange()
                                runOnScaleChanged()
                                rxBus.send(EventNewHistoryData(0, false))
@@ -111,9 +112,7 @@ class CalculationWorkflowImpl @Inject constructor(
                         "onEventAppInitialized",
                         System.currentTimeMillis(),
                         bgDataReload = true,
-                        limitDataToOldestAvailable = true,
-                        cause = it,
-                        runLoop = true
+                        cause = it
                     )
                 },
                 fabricPrivacy::logException
@@ -134,14 +133,12 @@ class CalculationWorkflowImpl @Inject constructor(
         job: String,
         iobCobCalculator: IobCobCalculator,
         overviewData: OverviewData,
-        from: String,
+        reason: String,
         end: Long,
         bgDataReload: Boolean,
-        limitDataToOldestAvailable: Boolean,
-        cause: Event?,
-        runLoop: Boolean
+        cause: Event?
     ) {
-        aapsLogger.debug(LTag.AUTOSENS, "Starting calculation worker: $from to ${dateUtil.dateAndTimeAndSecondsString(end)}")
+        aapsLogger.debug(LTag.AUTOSENS, "Starting calculation worker: $reason to ${dateUtil.dateAndTimeAndSecondsString(end)}")
 
         WorkManager.getInstance(context)
             .beginUniqueWork(
@@ -161,7 +158,7 @@ class CalculationWorkflowImpl @Inject constructor(
             )
             .then(
                 OneTimeWorkRequest.Builder(UpdateGraphWorker::class.java)
-                    .setInputData(Data.Builder().putString(JOB, job).build())
+                    .setInputData(Data.Builder().putString(JOB, job).putInt(PASS, CalculationWorkflow.ProgressData.DRAW_BG.pass).build())
                     .build()
             )
             .then(
@@ -181,17 +178,17 @@ class CalculationWorkflowImpl @Inject constructor(
             )
             .then(
                 OneTimeWorkRequest.Builder(UpdateGraphWorker::class.java)
-                    .setInputData(Data.Builder().putString(JOB, job).build())
+                    .setInputData(Data.Builder().putString(JOB, job).putInt(PASS, CalculationWorkflow.ProgressData.DRAW_TT.pass).build())
                     .build()
             )
             .then(
                 if (activePlugin.activeSensitivity.isOref1)
                     OneTimeWorkRequest.Builder(IobCobOref1Worker::class.java)
-                        .setInputData(dataWorkerStorage.storeInputData(IobCobOref1Worker.IobCobOref1WorkerData(injector, iobCobCalculator, from, end, limitDataToOldestAvailable, cause)))
+                        .setInputData(dataWorkerStorage.storeInputData(IobCobOref1Worker.IobCobOref1WorkerData(injector, iobCobCalculator, reason, end, job == MAIN_CALCULATION, cause)))
                         .build()
                 else
                     OneTimeWorkRequest.Builder(IobCobOrefWorker::class.java)
-                        .setInputData(dataWorkerStorage.storeInputData(IobCobOrefWorker.IobCobOrefWorkerData(injector, iobCobCalculator, from, end, limitDataToOldestAvailable, cause)))
+                        .setInputData(dataWorkerStorage.storeInputData(IobCobOrefWorker.IobCobOrefWorkerData(injector, iobCobCalculator, reason, end, job == MAIN_CALCULATION, cause)))
                         .build()
             )
             .then(OneTimeWorkRequest.Builder(UpdateIobCobSensWorker::class.java).build())
@@ -201,32 +198,30 @@ class CalculationWorkflowImpl @Inject constructor(
                     .build()
             )
             .then(
+                job == MAIN_CALCULATION,
                 OneTimeWorkRequest.Builder(UpdateGraphWorker::class.java)
-                    .setInputData(Data.Builder().putString(JOB, job).build())
+                    .setInputData(Data.Builder().putString(JOB, job).putInt(PASS, CalculationWorkflow.ProgressData.DRAW_IOB.pass).build())
                     .build()
             )
             .then(
-                runLoop,
+                job == MAIN_CALCULATION,
                 OneTimeWorkRequest.Builder(InvokeLoopWorker::class.java)
                     .setInputData(dataWorkerStorage.storeInputData(InvokeLoopWorker.InvokeLoopData(cause)))
                     .build()
             )
             .then(
-                runLoop,
+                job == MAIN_CALCULATION,
                 OneTimeWorkRequest.Builder(PreparePredictionsWorker::class.java)
                     .setInputData(dataWorkerStorage.storeInputData(PreparePredictionsWorker.PreparePredictionsData(overviewData)))
                     .build()
             )
             .then(
-                runLoop, OneTimeWorkRequest.Builder(UpdateGraphWorker::class.java)
-                    .setInputData(Data.Builder().putString(JOB, job).build())
+                OneTimeWorkRequest.Builder(UpdateGraphWorker::class.java)
+                    .setInputData(Data.Builder().putString(JOB, job).putInt(PASS, CalculationWorkflow.ProgressData.DRAW_FINAL.pass).build())
                     .build()
             )
             .enqueue()
     }
-
-    fun WorkContinuation.then(shouldAdd: Boolean, work: OneTimeWorkRequest): WorkContinuation =
-        if (shouldAdd) then(work) else this
 
     private fun runOnEventTherapyEventChange() {
         WorkManager.getInstance(context)
@@ -238,6 +233,7 @@ class CalculationWorkflowImpl @Inject constructor(
             )
             .then(
                 OneTimeWorkRequest.Builder(UpdateGraphWorker::class.java)
+                    .setInputData(Data.Builder().putInt(PASS, CalculationWorkflow.ProgressData.DRAW_FINAL.pass).build())
                     .build()
             )
             .enqueue()
@@ -259,6 +255,7 @@ class CalculationWorkflowImpl @Inject constructor(
             )
             .then(
                 OneTimeWorkRequest.Builder(UpdateGraphWorker::class.java)
+                    .setInputData(Data.Builder().putInt(PASS, CalculationWorkflow.ProgressData.DRAW_FINAL.pass).build())
                     .build()
             )
             .enqueue()

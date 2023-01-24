@@ -7,7 +7,7 @@ import kotlin.math.abs
 /**
  * Sync the Temporary Basal from NS
  */
-class SyncNsTemporaryBasalTransaction(private val temporaryBasals: List<TemporaryBasal>) : Transaction<SyncNsTemporaryBasalTransaction.TransactionResult>() {
+class SyncNsTemporaryBasalTransaction(private val temporaryBasals: List<TemporaryBasal>, private val nsClientMode: Boolean) : Transaction<SyncNsTemporaryBasalTransaction.TransactionResult>() {
 
     override fun run(): TransactionResult {
         val result = TransactionResult()
@@ -28,7 +28,7 @@ class SyncNsTemporaryBasalTransaction(private val temporaryBasals: List<Temporar
                         database.temporaryBasalDao.updateExistingEntry(current)
                         result.invalidated.add(current)
                     }
-                    if (current.duration != temporaryBasal.duration) {
+                    if (current.duration != temporaryBasal.duration && nsClientMode) {
                         current.duration = temporaryBasal.duration
                         database.temporaryBasalDao.updateExistingEntry(current)
                         result.updatedDuration.add(current)
@@ -38,7 +38,7 @@ class SyncNsTemporaryBasalTransaction(private val temporaryBasals: List<Temporar
 
                 // not known nsId
                 val running = database.temporaryBasalDao.getTemporaryBasalActiveAt(temporaryBasal.timestamp).blockingGet()
-                if (running != null && abs(running.timestamp - temporaryBasal.timestamp) < 1000 && running.interfaceIDs.nightscoutId == null) { // allow missing milliseconds
+                if (running != null && abs(running.timestamp - temporaryBasal.timestamp) < 1000) { // allow missing milliseconds
                     // the same record, update nsId only
                     running.interfaceIDs.nightscoutId = temporaryBasal.interfaceIDs.nightscoutId
                     database.temporaryBasalDao.updateExistingEntry(running)

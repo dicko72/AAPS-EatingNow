@@ -113,7 +113,6 @@
     <string name="sort_automation">Seřadit automatizace</string>
     <string name="remove_selected_items">Odstranit zvolené položky</string>
     <string name="count_selected">Vybráno: %1$d</string>
-    <string name="confirm_remove_multiple_items">Opravdu chcete odstranit %1$d položek</string>
     <string name="system_automation">Automatizace systému</string>
     <string name="run_automations">Spustit automatizace</string>
     <string name="add_automation">Přidat pravidlo</string>
@@ -127,4 +126,8 @@
     <string name="friday_short">Pá</string>
     <string name="saturday_short">So</string>
     <string name="sunday_short">Ne</string>
+    <!--    Reminders-->
+    <string name="time_to_eat">Čas k jídlu!\nSpusťte Bolusovou kalkulačku a proveďte výpočet znovu.</string>
+    <string name="time_to_bolus">Čas na bolus!\nSpusťte Bolusovou kalkulačku a proveďte výpočet znovu.</string>
+    <string name="error_setting_reminder">Chyba při nastavení budoucího budíku</string>
 </resources>

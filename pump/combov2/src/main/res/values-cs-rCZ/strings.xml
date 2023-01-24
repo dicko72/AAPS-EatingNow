@@ -39,7 +39,6 @@ Pokud po více než ~5 minutách není navázáno žádné spojení:\n\n
 1. Stiskněte tlačítko Zpět nebo tlačítko \"Zrušit párování\"\n
 2. Zrušte párování na Combo (současně stiskněte tlačítka „UP i MENU“ pro zrušení párování)\n
 3. Zkuste znovu spárovat</string>
-    <string name="combov2_pin_entry_hint">0123456789</string>
     <string name="combov2_enter_pin">Vložte PIN</string>
     <string name="combov2_cancel_pairing">Zrušit párování</string>
     <string name="combov2_pin_hint">10místný PIN</string>
@@ -87,16 +86,17 @@ Pokud po více než ~5 minutách není navázáno žádné spojení:\n\n
     <string name="combov2_incorrect_active_basal_profile">Nesprávný aktivní bazální profil; profil 1 musí být aktivní, ne profil %1$d</string>
     <string name="combov2_unrecognized_alert">Nerozpoznaná Combo výstraha</string>
     <string name="combov2_combo_alert">Combo výstraha</string>
-    <string name="combov2_last_bolus">%1$.1f %2$s (%3$s)</string>
     <string name="combov2_current_tbr">%1$d%% (zbývá %2$d min)</string>
     <string name="combov2_current_tbr_less_than_1min">%1$d%% (zbývá méně než 1 min)</string>
     <string name="combov2_load_tdds_cancelled">Načítání CDD zrušeno</string>
     <string name="combov2_retrieving_tdds_failed">Načítání CDD selhalo</string>
-    <string name="combov2_no_activity">{fa-bed}</string>
     <string name="combov2_battery_low_warning">Slabá baterie v pumpě</string>
     <string name="combov2_reservoir_low_warning">V zásobníku je málo inzulínu</string>
     <string name="combov2_setting_tbr_succeeded">Nastavení dočasného bazálu bylo úspěšné</string>
     <string name="combov2_setting_tbr_failed">Nastavení dočasného bazálu selhalo</string>
+    <string name="combov2_set_emulated_100_tbr">Nastavit emulovaný 100% dočasný bazál</string>
+    <string name="combov2_letting_emulated_100_tbr_finish">Nechávám emulovaný 100% dočasný bazál dokončit</string>
+    <string name="combov2_ignoring_redundant_100_tbr">Ignorování požadavku 100% dočasného bazálu</string>
     <string name="combov2_hit_unexpected_tbr_limit">Při úpravě dočasného bazálu došlo k neočekávanému limitu: vyžadováno %1$d%%, dosažen limit %1$d%%</string>
     <string name="combov2_cannot_set_absolute_tbr_if_basal_zero">Nelze nastavit absolutní dočasný bazál, pokud je bazální dávka nulová</string>
     <string name="combov2_pair_with_pump_summary">Párovat AndroidAPS a Android s momentálně nespárovanou pumpou Accu-Chek Combo</string>
@@ -120,4 +120,8 @@ Pokud po více než ~5 minutách není navázáno žádné spojení:\n\n
     <string name="combov2_datetime_changed">Datum a/nebo čas změněn</string>
     <string name="combov2_dst_started">Začal letní čas (DST)</string>
     <string name="combov2_dst_ended">Letní čas (DST) skončil</string>
+    <string name="combov2_cannot_connect_pump_error_observed">Nelze se připojit k pumpě, protože pumpa nahlásila chybu. Uživatel musí zpracovat chybu a poté počkat 5 minut nebo stisknout tlačítko Obnovit na kartě ovladače.</string>
+    <string name="combov2_refresh_pump_status_after_error">Obnovování stavu pumpy po nahlášení chyby</string>
+    <string name="combov2_go_back">Zpět</string>
+    <string name="combov2_cannot_pair_driver_not_initialized_explanation">Nelze provést párování, protože ovladač není inicializován. To se obvykle stává, protože nebyla udělena potřebná oprávnění Bluetooth. Jděte zpět, udělte oprávnění Bluetooth, pak zkuste znovu spárovat.</string>
 </resources>

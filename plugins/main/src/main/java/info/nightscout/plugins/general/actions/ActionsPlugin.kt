@@ -2,6 +2,7 @@ package info.nightscout.plugins.general.actions
 
 import dagger.android.HasAndroidInjector
 import info.nightscout.interfaces.Config
+import info.nightscout.interfaces.actions.Actions
 import info.nightscout.interfaces.plugin.PluginBase
 import info.nightscout.interfaces.plugin.PluginDescription
 import info.nightscout.interfaces.plugin.PluginType
@@ -23,9 +24,9 @@ class ActionsPlugin @Inject constructor(
         .fragmentClass(ActionsFragment::class.qualifiedName)
         .enableByDefault(config.APS || config.PUMPCONTROL)
         .visibleByDefault(config.APS || config.PUMPCONTROL)
-        .pluginIcon(R.drawable.ic_action)
+        .pluginIcon(info.nightscout.core.main.R.drawable.ic_action)
         .pluginName(R.string.actions)
         .shortName(R.string.actions_shortname)
         .description(R.string.description_actions),
     aapsLogger, rh, injector
-)
+), Actions

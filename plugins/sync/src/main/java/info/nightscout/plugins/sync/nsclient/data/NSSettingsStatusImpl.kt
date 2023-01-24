@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package info.nightscout.plugins.sync.nsclient.data
 
 import android.content.Context
@@ -63,7 +65,7 @@ import javax.inject.Singleton
      "showForecast": "ar2",
      "focusHours": 3,
      "heartbeat": 60,
-     "baseURL": "http:\/\/barascgm.sysop.cz:82",
+     "baseURL": "http:\/\/xxxxxxxxxxxx",
      "authDefaultRoles": "readable",
      "thresholds": {
          "bgHigh": 252,
@@ -150,7 +152,7 @@ class NSSettingsStatusImpl @Inject constructor(
     override fun handleNewData(status: JSONObject) {
         data = status
         aapsLogger.debug(LTag.NSCLIENT, "Got versions: Nightscout: ${getVersion()}")
-        if (getVersionNum() < config.SUPPORTEDNSVERSION) {
+        if (getVersionNum() < config.SUPPORTED_NS_VERSION) {
             uiInteraction.addNotification(Notification.OLD_NS, rh.gs(R.string.unsupported_ns_version), Notification.NORMAL)
         } else {
             rxBus.send(EventDismissNotification(Notification.OLD_NS))
@@ -177,7 +179,7 @@ class NSSettingsStatusImpl @Inject constructor(
         JsonHelper.safeGetJSONObject(data, "extendedSettings", null)
 
     // valid property is "warn" or "urgent"
-    // plugings "iage" "sage" "cage" "pbage"
+    // plugins "iage" "sage" "cage" "pbage"
     private fun getExtendedWarnValue(plugin: String, property: String): Double? {
         val extendedSettings = getExtendedSettings() ?: return null
         val pluginJson = extendedSettings.optJSONObject(plugin) ?: return null
@@ -236,18 +238,18 @@ class NSSettingsStatusImpl @Inject constructor(
 
     override fun copyStatusLightsNsSettings(context: Context?) {
         val action = Runnable {
-            getExtendedWarnValue("cage", "warn")?.let { sp.putDouble(R.string.key_statuslights_cage_warning, it) }
-            getExtendedWarnValue("cage", "urgent")?.let { sp.putDouble(R.string.key_statuslights_cage_critical, it) }
-            getExtendedWarnValue("iage", "warn")?.let { sp.putDouble(R.string.key_statuslights_iage_warning, it) }
-            getExtendedWarnValue("iage", "urgent")?.let { sp.putDouble(R.string.key_statuslights_iage_critical, it) }
-            getExtendedWarnValue("sage", "warn")?.let { sp.putDouble(R.string.key_statuslights_sage_warning, it) }
-            getExtendedWarnValue("sage", "urgent")?.let { sp.putDouble(R.string.key_statuslights_sage_critical, it) }
-            getExtendedWarnValue("bage", "warn")?.let { sp.putDouble(R.string.key_statuslights_bage_warning, it) }
-            getExtendedWarnValue("bage", "urgent")?.let { sp.putDouble(R.string.key_statuslights_bage_critical, it) }
+            getExtendedWarnValue("cage", "warn")?.let { sp.putDouble(info.nightscout.core.utils.R.string.key_statuslights_cage_warning, it) }
+            getExtendedWarnValue("cage", "urgent")?.let { sp.putDouble(info.nightscout.core.utils.R.string.key_statuslights_cage_critical, it) }
+            getExtendedWarnValue("iage", "warn")?.let { sp.putDouble(info.nightscout.core.utils.R.string.key_statuslights_iage_warning, it) }
+            getExtendedWarnValue("iage", "urgent")?.let { sp.putDouble(info.nightscout.core.utils.R.string.key_statuslights_iage_critical, it) }
+            getExtendedWarnValue("sage", "warn")?.let { sp.putDouble(info.nightscout.core.utils.R.string.key_statuslights_sage_warning, it) }
+            getExtendedWarnValue("sage", "urgent")?.let { sp.putDouble(info.nightscout.core.utils.R.string.key_statuslights_sage_critical, it) }
+            getExtendedWarnValue("bage", "warn")?.let { sp.putDouble(info.nightscout.core.utils.R.string.key_statuslights_bage_warning, it) }
+            getExtendedWarnValue("bage", "urgent")?.let { sp.putDouble(info.nightscout.core.utils.R.string.key_statuslights_bage_critical, it) }
             uel.log(Action.NS_SETTINGS_COPIED, UserEntry.Sources.NSClient)
         }
 
-        if (context != null) OKDialog.showConfirmation(context, rh.gs(R.string.statuslights), rh.gs(R.string.copy_existing_values), action)
+        if (context != null) OKDialog.showConfirmation(context, rh.gs(info.nightscout.core.ui.R.string.statuslights), rh.gs(R.string.copy_existing_values), action)
         else action.run()
     }
 }

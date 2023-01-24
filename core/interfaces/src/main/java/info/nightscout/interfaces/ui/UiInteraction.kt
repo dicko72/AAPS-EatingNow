@@ -21,6 +21,7 @@ interface UiInteraction {
     val singleFragmentActivity: Class<*>
     val preferencesActivity: Class<*>
     val myPreferenceFragment: Class<*>
+    val quickWizardListActivity: Class<*>
 
     val prefGeneral: Int
     /**
@@ -31,6 +32,9 @@ interface UiInteraction {
      * @param soundId sound resource. if == 0 alarm is not started
      */
     fun runAlarm(status: String, title: String, @RawRes soundId: Int = 0)
+
+    fun updateWidget(context: Context)
+
     fun runWizardDialog(fragmentManager: FragmentManager, carbs: Int? = null, name: String? = null)
     fun runLoopDialog(fragmentManager: FragmentManager, showOkCancel: Int)
     fun runProfileSwitchDialog(fragmentManager: FragmentManager, profileName: String? = null)

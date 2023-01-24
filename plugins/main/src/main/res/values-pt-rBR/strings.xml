@@ -1,10 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- SMS Communicator & OTP Authenticator -->
+    <string name="smscommunicator">Comunicador SMS</string>
     <string name="smscommunicator_shortname">SMS</string>
+    <string name="description_sms_communicator">Controle remotamente o AndroidAPS usando comandos SMS.</string>
+    <string name="smscommunicator_code_from_authenticator_for" comment="This is continuation of sentence: To [ACTION] reply with code">do aplicativo Autenticador para: %1$s seguido por PIN</string>
+    <string name="smscommunicator_otp_pin">PIN adicional obrigatório no fim do token</string>
+    <string name="smscommunicator_otp_pin_summary">Dígitos adicionais que devem ser memorizados e colados no final de cada Uma-Password-Única que seja gerada</string>
     <string name="smscommunicator_tab_otp_label">Configuração do Autenticador</string>
+    <string name="smscommunicator_code_verify_label">Código para verificar:</string>
+    <string name="smscommunicator_code_verify_hint">CÓDIGO + PIN</string>
+    <string name="smscommunicator_code_verify_info">O código de verificação consiste em 6 dígitos exibidos pelo app Autenticador (conhecido como OTP) seguido por 3 ou mais dígitos do PIN obrigatório.</string>
+    <string name="smscommunicator_otp_reset_btn">Repor Autenticadores</string>
+    <string name="smscommunicator_otp_reset_title">Repor Chave Autenticador</string>
+    <string name="smscommunicator_otp_reset_prompt">Tem certeza de redefinir chave Authenticador? Ele tornará todos os Authenticators configurados atualmente como inválidos, e precisará de os configurar novamente.</string>
+    <string name="smscommunicator_otp_reset_successful">Nova Chave do Autenticador foi gerada! Por favor, use o QRCode atualizado para os autenticadores.</string>
+    <string name="smscommunicator_otp_export_title">Exportando senha OTP</string>
+    <string name="smscommunicator_otp_export_prompt">Tem certeza de que deseja copiar a senha OTP para a área de transferência?\n\nGeralmente, isso somente é necessário se o aplicativo autenticador apresenta problemas para escanear o QRCode, se você quer inserir a senha manualmente ou se você deseja configurar um token físico (hardware) de OTP usando um aplicativo dedicado.</string>
+    <string name="smscommunicator_otp_export_successful">Senha OTP (no formato Base32) exportada e copiada para a área de transferência. Cole-a em um aplicativo autenticador ou gravador de dispositivo OTP físico!</string>
+    <string name="smscommunicator_otp_step1_install_header">1. Instalar Autenticador</string>
+    <string name="smscommunicator_otp_step2_provisioning_header">2. Escaneie o QR Code para configurar os códigos OTP do AAPS</string>
+    <string name="smscommunicator_otp_step3_test_header">3. Teste Uma-Password-Única</string>
+    <string name="smscommunicator_otp_reset_header">Repor Autenticadores</string>
+    <string name="smscommunicator_otp_install_info">Instalar uma app Autenticador que suporte Tokens RFC 6238 TOTP em cada telefone seguidor. Populares aplicativos gratuitos são:\n • Authy\n • o Google Authenticator\n • LastPass Autenticador\n • FreeOTP Autenticador</string>
+    <string name="smscommunicator_otp_reset_warning">Ao redefinir o autenticador, você torna todos os autenticadores já provisionados inválidos. Você precisará configurá-los novamente!</string>
     <string name="sms_wrong_code">Código errado. Comando cancelado.</string>
     <string name="sms_timeout_while_waiting">Excedido o tempo limite de espera ao aguardar o término da última comunicação com a bomba</string>
+    <string name="smscommunicator_allowednumbers">Números de telefone permitidos</string>
     <string name="smscommunicator_allowednumbers_summary">+XXXXXXXXXX;+YYYYYYYYYY</string>
     <string name="smscommunicator_bolus_reply_with_code">Para dar bolus %1$.2fU responder com código %2$s</string>
     <string name="smscommunicator_meal_bolus_reply_with_code">Para dar bólus %1$.2fU responder com código %2$s</string>
@@ -20,6 +42,8 @@
     <string name="smscommunicator_bolus_delivered">Bolus %1$.2f U aplicado com sucesso</string>
     <string name="smscommunicator_meal_bolus_delivered">Bolus da refeição %1$.2f U aplicado com sucesso</string>
     <string name="smscommunicator_meal_bolus_delivered_tt">Alvo %1$s para %2$d minutos</string>
+    <string name="smscommunicator_tt_set">Alvo %1$s para %2$d minutos definido com sucesso</string>
+    <string name="smscommunicator_tt_canceled">Alvo Temp cancelado com êxito</string>
     <string name="smscommunicator_remote_commands_allowed">Permitir comandos remotos via SMS</string>
     <string name="smscommunicator_loop_has_been_disabled">Loop foi desativado</string>
     <string name="smscommunicator_loop_has_been_enabled">Loop foi ativado</string>
@@ -28,6 +52,7 @@
     <string name="smscommunicator_pump_connect_fail">Conexão com a bomba falhou</string>
     <string name="smscommunicator_pump_disconnect_with_code">Para desconectar a bomba por %1$d minutos responda com código %2$s</string>
     <string name="smscommunicator_pump_disconnected">Bomba desconectada</string>
+    <string name="smscommunicator_reconnect">Bomba reconectada</string>
     <string name="smscommunicator_remote_command_not_allowed">O comando remoto não é permitido</string>
     <string name="smscommunicator_remote_bolus_not_allowed">O bolus remoto não está disponível. Tente novamente mais tarde.</string>
     <string name="smscommunicator_basal_reply_with_code">Para começar o basal %1$.2fU/h durante%2$d min responda com o código %3$s</string>
@@ -53,6 +78,7 @@
     <string name="smscommunicator_tempbasal_cancel_failed">Cancelamento do basal temporário falhou</string>
     <string name="smscommunicator_extended_cancel_failed">Falhou o cancelamento do bolus extendido</string>
     <string name="smscommunicator_unknown_command">Comando desconhecido ou resposta errada</string>
+    <string name="smscommunicator_another_bolus_in_queue">Há outra bolus na fila. Tente novamente mais tarde.</string>
     <string name="smscommunicator_wrong_duration">Duração errada</string>
     <string name="smscommunicator_loop_suspended">Loop suspenso</string>
     <string name="smscommunicator_loop_resumed">Loop retomado</string>
@@ -74,16 +100,12 @@
     <string name="sms_read_status_failed">Erro na leitura de estado</string>
     <string name="sms_profile_switch_created">Troca de perfil criada</string>
     <string name="sms_wrong_tbr_duration">A duração da basal temporária deve ser um múltiplo de %1$d minutos e maior que 0.</string>
-    <!-- Insulin -->
-    <string name="lyumjev">Lyumjev</string>
-    <string name="insulin_shortname">INS</string>
-    <string name="ultra_rapid_oref">Ultra-Rapid Oref</string>
-    <string name="fast_acting_insulin_comment">Novorapid, Novolog, Humalog</string>
-    <string name="ultra_fast_acting_insulin_comment">Fiasp</string>
+    <string name="a11y_otp_qr_code">Código QR para configuração de senha de uso único</string>
     <!-- xDrip status line -->
     <!-- StatusLine -->
     <string name="xdrip_status">Linha do estado do Xdrip+ (relógio)</string>
     <string name="xdrip_status_shortname">xds</string>
+    <string name="description_xdrip_status_line">Mostrar informações sobre o loop no watchface do xDrip+.</string>
     <string name="xdrip_status_detailed_iob_title">Mostrar detalhes da IA</string>
     <string name="xdrip_status_detailed_iob_summary">Dividir IA entre IA de bolus e de basal na face do relógio</string>
     <string name="disabled_loop">Loop Desativado</string>
@@ -92,36 +114,48 @@
     <string name="xdrip_status_settings">Estado do xDrip+ (relógio)</string>
     <!-- Food-->
     <string name="food_short">Alimentos</string>
+    <string name="description_food">Exibe as predefinições de comida definidas no Nightscout</string>
+    <string name="filter">Filtros</string>
+    <string name="food">Alimentos</string>
     <string name="short_kilo_joul">kJ</string>
     <string name="short_energy">En</string>
     <string name="short_protein">Pr</string>
     <string name="short_fat">Gor</string>
+    <string name="category">Categoria</string>
+    <string name="subcategory">Subcategoria</string>
     <string name="calculator_label">Calculadora</string>
     <!-- Theme switcher dark and light mode-->
     <string name="theme_switcher_summary">Escolha o tema escuro, claro ou para seguir o tema do dispositivo</string>
+    <string name="app_color_scheme">Esquema de cores do aplicativo</string>
+    <string name="dark_theme">Tema escuro</string>
+    <string name="light_theme">Tema claro</string>
+    <string name="follow_system_theme">Usar tema do dispositivo</string>
     <!-- Profile -->
     <string name="localprofile">Perfil</string>
+    <string name="localprofile_shortname">PL</string>
+    <string name="description_profile_local">Defina um perfil que está disponível offline.</string>
+    <string name="a11y_add_new_to_list">adicionar novo à lista</string>
     <string name="do_you_want_switch_profile">Deseja mudar de perfil e descartar as alterações feitas no perfil atual?</string>
     <string name="save_or_reset_changes_first">Guardar ou repor as alterações atuais primeiro</string>
     <string name="delete_current_profile">Eliminar perfil atual?</string>
+    <string name="units_colon">Unidades:</string>
+    <string name="missing_profile_name">Nome do perfil ausente</string>
+    <string name="error_in_ic_values">Erro nos valores de I:C</string>
+    <string name="error_in_basal_values">Erro nos valores da basal</string>
+    <string name="error_in_target_values">Erro nos valores de alvo</string>
+    <string name="error_in_isf_values">Erro nos valores de FSI</string>
     <string name="profile_name_contains_dot">Nome do perfil contém pontos.\nIsso não é suportado pelo NS.\nPerfil não foi enviado para o NS.</string>
+    <string name="invalid_profile_not_accepted">Perfil inválido %1$s não aceito do NS</string>
+    <string name="view">Visualização</string>
     <string name="errors">Erros</string>
+    <string name="select_profile">Selecione um perfil para editar</string>
+    <string name="profile_name">Nome do Perfil:</string>
+    <string name="a11y_add_new_profile">adicionar novo perfil</string>
+    <string name="a11y_clone_profile">clonar perfil atual</string>
+    <string name="a11y_delete_current_profile">excluir perfil atual</string>
     <string name="dia_short">DIA</string>
+    <string name="target_short">ALV</string>
     <string name="basal_short">BAS</string>
-    <!-- Objectives -->
-    <string name="completed_well_done">Terminado, parabéns!</string>
-    <string name="maxiobset">IOB máxima definida correctamente</string>
-    <string name="hasbgdata">Glicemia disponivel desde a fonte selecionada</string>
-    <string name="loopenabled">Loop activado</string>
-    <string name="apsselected">APS seleccionado</string>
-    <string name="closedmodeenabled">Modo fechado ativado</string>
-    <string name="objectives_shortname">OBJ</string>
-    <string name="description_objectives">Programa de aprendizagem</string>
-    <string name="doyouwantresetstart">Deseja reiniciar o objetivo? Pode perder seu progresso.</string>
-    <string name="objectives_next_button">Seguinte</string>
-    <string name="objectives_previous_button">Anterior</string>
-    <string name="objectives_button_unfinish">Limpeza terminado</string>
-    <string name="objectives_button_unstart">Limpeza iniciado</string>
     <!-- Actions -->
     <string name="actions">Ações</string>
     <string name="description_actions">Alguns botões para acessar rapidamente a funções comuns</string>
@@ -138,22 +172,9 @@
     <string name="pb_label">Bateria da bomba</string>
     <string name="cannula">Cânula</string>
     <string name="ebstopsloop">O uso do Bólus Estendido irá parar o modo Closed Loop no tempo do bólus estendido. Quer realmente isso?</string>
-    <string name="extendedbolusdeliveryerror">Erro na entrega Bólus Estendido</string>
     <string name="statuslights_cannula_age">idade da cânula</string>
     <string name="statuslights_patch_pump_age">Idade da bomba patch</string>
     <string name="patch_pump">Bomba patch</string>
-    <!-- Safety -->
-    <string name="limitingextendedbolus">A limitar bólus estendido para %1$.1f U porque %2$s</string>
-    <string name="limitingcarbs">A limitar hidratos para %1$d g porque %2$s</string>
-    <string name="pumpisnottempbasalcapable">A bomba não é capaz de basais temporárias</string>
-    <string name="closedmodedisabledinpreferences">Loop fecchado disabilitado nas preferências</string>
-    <string name="closed_loop_disabled_on_dev_branch">A correr a versão dev. O Loop fechado está desabilitado.</string>
-    <string name="closed_loop_disabled_with_eb">Closed Loop desabilitado por causa da execução do Bólus Estendido</string>
-    <string name="smbalwaysdisabled">SMB sempre e depois dos hidratos desactivado por fonte da Glicemia activa não suportar filtro avançado</string>
-    <string name="smbnotallowedinopenloopmode">SMB não permitido no modo open loop</string>
-    <string name="maxvalueinpreferences">valor máx nas preferências</string>
-    <string name="hardlimit">limite rígido</string>
-    <string name="treatmentssafety_title">Segurança do Tratamento</string>
     <!-- Overview -->
     <string name="show_statuslights">Mostrar luzes de estado no ecrã principal</string>
     <string name="statuslights_iage_warning">Aviso de limite da vida útil da insulina [h]</string>
@@ -175,18 +196,11 @@
     <string name="a11y_bg_quality">qualidade da glicemia</string>
     <string name="a11y_blood_glucose">glicemia</string>
     <string name="a11y_bg_outdated">desatualizado</string>
-    <string name="aps_mode_title">Modo APS</string>
     <string name="set_basal_question">Aceitar nova basal temporária:</string>
     <string name="overview_cgm">CGM</string>
-    <string name="quickwizard">Assistente Rápido</string>
-    <string name="a11y_only_on_watch">somente no smartwatch</string>
-    <string name="a11y_only_on_phone">somente no telefone</string>
     <string name="overview">Visão geral</string>
     <string name="overview_shortname">Início</string>
     <string name="description_overview">Exibe o estado atual do seu loop e botões para ações mais comuns</string>
-    <string name="overview_editquickwizard_usecob">Cálculo COB</string>
-    <string name="overview_editquickwizard_usetemptarget">Cálculo alvo temporário</string>
-    <string name="overview_editquickwizard_usepercentage">Cálculo do valor percentual</string>
     <string name="overview_buttons_selection">Botões</string>
     <string name="show_calibration_button_summary">Enviar uma calibração para o xDrip+ ou abrir diálogo de calibração BYODA</string>
     <string name="show_cgm_button_summary">Abre xDrip+ ou BYODA, botão \"voltar\" para retornar ao AAPS</string>
@@ -200,25 +214,6 @@
     <string name="uploader">Uploader</string>
     <string name="data_status">Estado dos dados de glicemia</string>
     <string name="quickwizard_settings">Definições do Assistente Rápido</string>
-    <string name="overview_edit_quickwizard_button_text">Texto do botão:</string>
-    <string name="overview_edit_quickwizard_carbs">Carbos:</string>
-    <string name="overview_edit_quickwizard_valid">Válido:</string>
-    <string name="overview_edit_quickwizard_list_activity_add">Adicionar</string>
-    <string name="overview_quickwizard_item_edit_button">Editar</string>
-    <string name="overview_edit_quickwizard_show_on_device">Mostrar entrada no dispositivo:</string>
-    <string name="overview_edit_quickwizard_use_bg">Cálculos Glic</string>
-    <string name="overview_edit_quickwizard_use_bolus_iob">Cálculo de Bólus IOB</string>
-    <string name="overview_edit_quickwizard_use_basal_iob">Cálculo de Basal IOB</string>
-    <string name="overview_edit_quickwizard_use_trend">Cálculo tendência</string>
-    <string name="overview_edit_quickwizard_use_superbolus">Cálculo de superbolus</string>
-    <string name="overview_edit_quickwizard_percentage">Porcentagem</string>
-    <string name="device_all">Todos</string>
-    <string name="device_phone">Telefone</string>
-    <string name="device_watch">Smartwatch</string>
-    <string name="positive_only">Positivo apenas</string>
-    <string name="negative_only">Negativo apenas</string>
-    <string name="app_default">Padrão do aplicativo</string>
-    <string name="a11y_drag_and_drop_handle">arraste e solte aqui</string>
     <string name="keep_screen_on_title">Manter a tela ligada</string>
     <string name="keep_screen_on_summary">Impedir Android de desligar o ecrã. Isto irá consumir muita bateria quando não ligado ao carregador.</string>
     <string name="treatments">Tratamentos</string>
@@ -280,82 +275,12 @@
     <string name="sensitivity_shortname">SENS</string>
     <string name="graph_scale">Escala do gráfico</string>
     <string name="graph_menu_divider_header">Gráfico</string>
-    <!-- VirtualPump -->
-    <string name="virtual_pump_type">Tipo da Bomba Virtual</string>
-    <string name="virtual_pump_definition">Definição da Bomba</string>
-    <string name="virtual_pump_pump_def">Bólus: Passo=%1$s\nBólus Estendido: [Passo=%2$s, Duração=%3$smin -%4$sh] \nBasal: Passo=%5$s\ nTBR: %6$s (por %7$s), Duração=%8$smin-%9$sh\n%10$s</string>
-    <string name="virtual_pump_shortname">BOMBAV</string>
-    <string name="description_pump_virtual">Integração para as bombas que não têm qualquer driver ainda (Open Loop)</string>
-    <string name="virtual_pump_label">BOMBA VIRTUAL</string>
-    <string name="virtualpump_settings">Definições da bomba virtual</string>
-    <string name="virtualpump_uploadstatus_title">Enviar estado para NS</string>
-    <!-- Source -->
-    <string name="ns_client_bg">Glic NSCliente</string>
-    <string name="ns_client_bg_short">NS glicemia</string>
-    <string name="description_source_ns_client">Downloads de dados de Glicose do Nightscout</string>
-    <string name="xdrip">xDrip+</string>
-    <string name="description_source_xdrip">Receber valores de glicose do xDrip+.</string>
-    <string name="dexcom_app_patched">BYODA</string>
-    <string name="dexcom_short">BYODA</string>
-    <string name="description_source_dexcom">Receber valores de glicemia do \'Build Your Own Dexcom App\'.</string>
-    <string name="eversense">Aplicação Eversense (com patch)</string>
-    <string name="description_source_eversense">Receber valores de Glicose da aplicação Eversense modificada.</string>
-    <string name="glimp">Glimp</string>
-    <string name="description_source_glimp">Receber valores BG do Glimp.</string>
-    <string name="mm640g">MM640g</string>
-    <string name="description_source_mm640g">Receber valores de Glucose do 600SeriesAndroidUploader.</string>
-    <string name="poctech">Poctech</string>
-    <string name="description_source_poctech">Receber valores Glucose da app Poctech</string>
-    <string name="glunovo">Glunovo</string>
-    <string name="description_source_glunovo">Receber valores GLIC do aplicativo Glunovo</string>
-    <string name="intelligo">Intelligo</string>
-    <string name="description_source_intelligo">Receber valores da app Intelligo</string>
-    <string name="tomato">Tomato (MiaoMiao)</string>
-    <string name="tomato_short">Tomato</string>
-    <string name="description_source_tomato">Receber valores de Glicose da aplicação Tomato (dispositivo MiaoMiao)</string>
-    <string name="aidex">GlucoRx Aidex</string>
-    <string name="aidex_short">Aidex</string>
-    <string name="description_source_aidex">Receber valores BG do GlucoRx Aidex CGMS.</string>
-    <string name="random_bg">Glic. Aleatória</string>
-    <string name="description_source_random_bg">Gerar dados de Glic. aleatórios (Somente modo de Demonstração)</string>
-    <string name="random_bg_short">GLIC</string>
-    <string name="do_xdrip_upload_title">Enviar dados Glic. para xDrip+</string>
-    <string name="do_xdrip_upload_summary">Seleccionar 640g/Eversense como fonte no xDrip+</string>
-    <string name="bgsource_upload">Configurações de upload de BG</string>
-    <string name="dexcom_log_ns_sensor_change_title">Registar mudança de sensor para NS</string>
-    <string name="dexcom_log_ns_sensor_change_summary">Criar evento \"Mudança de Sensor\" no NS automaticamente ao iniciar o sensor.</string>
     <!-- Skins -->
     <string name="classic_description">Tema original</string>
     <string name="lowres_description">Design de baixa resolução</string>
     <string name="buttonson_description">Botões são sempre exibidos na parte inferior da tela</string>
     <string name="largedisplay_description">Mostrador Grande</string>
     <string name="skin">Tema</string>
-    <!--    Loop -->
-    <string name="executing">Executando</string>
-    <string name="run_now">Executar agora</string>
-    <string name="smb_frequency_exceeded">Um bolus foi injectado nos últimos 3 minutos, saltando SMB</string>
-    <string name="pump_not_initialized">Bomba não inicializada!</string>
-    <string name="loop_shortname">LOOP</string>
-    <string name="description_loop">Ative ou desative a implementação ativando o loop.</string>
-    <string name="no_aps_selected">SEM APS SELECIONADO OU RESULTADO FORNECIDO</string>
-    <string name="ignore5m">Ignorar 5m</string>
-    <string name="ignore15m">Ignorar 15m</string>
-    <string name="ignore30m">Ignorar 30m</string>
-    <string name="carbs_suggestion">Sugestão de Carbs</string>
-    <string name="open_loop_new_suggestion">Nova sugestão disponível</string>
-    <string name="basal_set_correctly">Basal correctamente definida</string>
-    <string name="last_run_label">Última execução</string>
-    <string name="loop_aps_label">APS</string>
-    <string name="request_label">Pedido</string>
-    <string name="loop_constraints_processed_label">Depois das restrições processadas</string>
-    <string name="loop_tbr_request_time_label">Hora de solicitação Basal Temp</string>
-    <string name="loop_tbr_execution_time_label">Hora de execução Basal Temp</string>
-    <string name="loop_tbr_set_by_pump_label">Basal temporária definida pela bomba</string>
-    <string name="loop_smb_request_time_label">Hora de solicitação SMB</string>
-    <string name="loop_smb_execution_time_label">Hora de execução do SMB</string>
-    <string name="loop_smb_set_by_pump_label">SMB definido pela bomba</string>
-    <string name="loop_open_mode_min_change">Pedido de mudança mínima [%]</string>
-    <string name="loop_open_mode_min_change_summary" formatted="false">A app mostrará um pedido de alteração apenas se a mudança for superior a este valor em %. O valor padrão é 20%</string>
     <!--    DataBroadcast-->
     <!--    Iob-->
     <string name="send_logfiles">Enviar os ficheiros de registo do dia de hoje para os programadores. Situação inesperada.</string>

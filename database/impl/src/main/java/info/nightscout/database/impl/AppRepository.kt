@@ -880,7 +880,7 @@ import kotlin.math.roundToInt
             .subscribeOn(Schedulers.io())
             .toWrappedSingle()
 
-    fun createTotalDailyDose(tdd: TotalDailyDose) {
+    fun insertTotalDailyDose(tdd: TotalDailyDose) {
         database.totalDailyDoseDao.insert(tdd)
     }
 

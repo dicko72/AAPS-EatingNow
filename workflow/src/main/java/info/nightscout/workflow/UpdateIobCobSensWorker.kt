@@ -1,28 +1,24 @@
 package info.nightscout.workflow
 
 import android.content.Context
-import androidx.work.Worker
 import androidx.work.WorkerParameters
-import dagger.android.HasAndroidInjector
+import info.nightscout.core.utils.worker.LoggingWorker
 import info.nightscout.interfaces.plugin.ActivePlugin
 import info.nightscout.rx.bus.RxBus
 import info.nightscout.rx.events.EventUpdateOverviewIobCob
 import info.nightscout.rx.events.EventUpdateOverviewSensitivity
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 
 class UpdateIobCobSensWorker(
     context: Context,
     params: WorkerParameters
-) : Worker(context, params) {
+) : LoggingWorker(context, params, Dispatchers.IO) {
 
     @Inject lateinit var rxBus: RxBus
     @Inject lateinit var activePlugin: ActivePlugin
 
-    init {
-        (context.applicationContext as HasAndroidInjector).androidInjector().inject(this)
-    }
-
-    override fun doWork(): Result {
+    override suspend fun doWorkAndLog(): Result {
         activePlugin.activeOverview.overviewBus.send(EventUpdateOverviewIobCob("UpdateIobCobSensWorker"))
         activePlugin.activeOverview.overviewBus.send(EventUpdateOverviewSensitivity("UpdateIobCobSensWorker"))
         return Result.success()

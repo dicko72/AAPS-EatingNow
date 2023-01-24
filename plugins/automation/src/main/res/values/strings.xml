@@ -116,7 +116,6 @@
     <string name="sort_automation">Sort automation</string>
     <string name="remove_selected_items">Remove selected items</string>
     <string name="count_selected">%1$d selected</string>
-    <string name="confirm_remove_multiple_items">Are you sure you want to remove %1$d items</string>
     <string name="system_automation">System automation</string>
     <string name="run_automations">Run automations</string>
     <string name="add_automation">Add rule</string>
@@ -131,5 +130,10 @@
     <string name="friday_short">F</string>
     <string name="saturday_short">S</string>
     <string name="sunday_short">S</string>
+
+    <!--    Reminders-->
+    <string name="time_to_eat">Time to eat!\nRun Bolus wizard and do calculation again.</string>
+    <string name="time_to_bolus">Time to bolus!\nRun Bolus wizard and do calculation again.</string>
+    <string name="error_setting_reminder">Error while setting future alarm</string>
 
 </resources>

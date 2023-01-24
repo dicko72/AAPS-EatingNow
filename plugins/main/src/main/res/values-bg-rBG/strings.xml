@@ -1,9 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- SMS Communicator & OTP Authenticator -->
+    <string name="smscommunicator">SMS комуникатор</string>
     <string name="smscommunicator_shortname">SMS</string>
+    <string name="smscommunicator_code_from_authenticator_for" comment="This is continuation of sentence: To [ACTION] reply with code">от приложението AUTHENTICATOR за: %1$s , последвано от PIN</string>
+    <string name="smscommunicator_otp_pin">Допълнителен PIN в края на токен</string>
+    <string name="smscommunicator_otp_pin_summary">Допълнителни цифри, които следва да бъдат залепени в края на всяка генерирана еднократна парола</string>
+    <string name="smscommunicator_tab_otp_label">Настройка на удостоверителя</string>
+    <string name="smscommunicator_code_verify_label">Код за проверка:</string>
     <string name="smscommunicator_code_verify_hint">OTP + PIN</string>
+    <string name="smscommunicator_code_verify_info">Кодът за проверката се състои от 6 цифри, от приложението за аудиентикация (известно като OTP), следвани от 3 или повече цифри на задължителния PIN.</string>
+    <string name="smscommunicator_otp_reset_btn">Нулиране на удостоверители</string>
+    <string name="smscommunicator_otp_reset_title">Нулиране на ключва</string>
+    <string name="smscommunicator_otp_reset_prompt">Сигурни ли сте, че ще анулирате ключа на Authenticator? Той ще направи всички конфигурирани в момента аудиентикатори невалидни, и вие ще трябва да ги настроите отново.</string>
+    <string name="smscommunicator_otp_reset_successful">Генериран е нов ключ! Моля, използвайте актуализирания QRCode.</string>
+    <string name="smscommunicator_otp_export_title">Експортиране на OTP парола</string>
+    <string name="smscommunicator_otp_export_prompt">Сигурни ли сте, че искате да копирате OTP паролата в клипборда?\n\nВие може да се нуждаете само от това, ако вашето приложение за автентичност има проблеми със сканирането на QRCode, искате да го въведете ръчно или искате да конфигурирате хардуерен OTP токен чрез специално приложение.</string>
+    <string name="smscommunicator_otp_export_successful">OTP парола (във Base32 формат) е експортирана и копирана в клипборда. Поставете го в автентикатор или хардуерен OTP!</string>
+    <string name="smscommunicator_otp_step1_install_header">1. Инсталиране на удостоверител</string>
+    <string name="smscommunicator_otp_step3_test_header">3. Тест на еднократна парола</string>
+    <string name="smscommunicator_otp_reset_header">Нулиране на удостоверители</string>
+    <string name="smscommunicator_otp_install_info">На всеки следящ телефона инсталирайте приложение Аутентификатор, който поддържа RFC 6238 ТОТР токени. Популярни безплатни приложения:\n • Authy\n • Google Authenticator\n • LastPass Authenticator\n • FreeOTP Authenticator</string>
+    <string name="sms_wrong_code">Грешен код. Командата не е изпълнена.</string>
+    <string name="sms_timeout_while_waiting">Изтичане на времето на предишна комуникация с помпата</string>
+    <string name="smscommunicator_allowednumbers">Разрешени телефонни номера</string>
     <string name="smscommunicator_allowednumbers_summary">+XXXXXXXXXX;+YYYYYYYYYY</string>
+    <string name="smscommunicator_bolus_reply_with_code">За да доставите болус от %1$.2fЕ отговорете с код %2$s</string>
+    <string name="smscommunicator_meal_bolus_reply_with_code">За да стартирате болус от %1$.2fЕ отговорете с код %2$s</string>
     <string name="smscommunicator_temptarget_with_code">Зa zадаване на временна цел %1$s отговорете с код %2$s</string>
     <string name="smscommunicator_temptarget_cancel">За да спрете временната цел отговорете с код %1$s</string>
     <string name="smscommunicator_stops_ns_with_code">За да изключите услугата за отдалечен SMS контрол отговорете с код %1$s.\n\nИмайте предвид, че можете да го активирате само от AAPS смартфона.</string>
@@ -16,6 +39,8 @@
     <string name="smscommunicator_bolus_delivered">Болус от %1$.2fЕ доставен успешно</string>
     <string name="smscommunicator_meal_bolus_delivered">Болус от %1$.2fЕ доставен успешно</string>
     <string name="smscommunicator_meal_bolus_delivered_tt">Временна цел от %1$s за %2$d минути</string>
+    <string name="smscommunicator_tt_set">Временна цел от %1$s за %2$d минути стартирана успешно</string>
+    <string name="smscommunicator_tt_canceled">Временна цел успешно спряна</string>
     <string name="smscommunicator_remote_commands_allowed">Позволи отдалечени команди чрез SMS</string>
     <string name="smscommunicator_loop_has_been_disabled">APS е деактивиран</string>
     <string name="smscommunicator_loop_has_been_enabled">APS е активиран</string>
@@ -24,6 +49,7 @@
     <string name="smscommunicator_pump_connect_fail">Връзката с помпата е неуспешна</string>
     <string name="smscommunicator_pump_disconnect_with_code">За да спрете помпата за %1$d минути отговорете с код %2$s</string>
     <string name="smscommunicator_pump_disconnected">Помпата е разкачена</string>
+    <string name="smscommunicator_reconnect">Връзката с помпа е възстановена</string>
     <string name="smscommunicator_remote_command_not_allowed">Отдалеченото управление е забранено</string>
     <string name="smscommunicator_remote_bolus_not_allowed">Отдалечено стартиране на болус не е възможно. Опитайте отново по-късно.</string>
     <string name="smscommunicator_basal_reply_with_code">За да стартирате базал от %1$.2fЕ/ч за %2$d мин отговорете с код %3$s</string>
@@ -49,6 +75,7 @@
     <string name="smscommunicator_tempbasal_cancel_failed">Спирането на временния базал е неуспешно</string>
     <string name="smscommunicator_extended_cancel_failed">Неуспешно спиране на удължен болус</string>
     <string name="smscommunicator_unknown_command">Непозната команда или грешен отговор</string>
+    <string name="smscommunicator_another_bolus_in_queue">В момента се обработва друг болус. Моля опитай по-късни.</string>
     <string name="smscommunicator_wrong_duration">Грешна продължителност</string>
     <string name="smscommunicator_loop_suspended">Loop изключен</string>
     <string name="smscommunicator_loop_resumed">APS възобновен</string>
@@ -58,16 +85,23 @@
     <string name="smscommunicator_message_body">Невалиден текст на съобщение</string>
     <string name="smscommunicator_report_pump_unreachable_summary">Изпращане на SMS, ако помпата е недостъпна</string>
     <string name="smscommunicator_pump_unreachable">Докладвай недостъпна помпа</string>
+    <string name="wrong_format">Грешен формат</string>
+    <string name="sms_actual_bg">КЗ:</string>
+    <string name="sms_last_bg">Последна КЗ:</string>
+    <string name="sms_delta">Изменение (делта):</string>
     <string name="sms_iob">IOB:</string>
-    <!-- Insulin -->
-    <string name="lyumjev">Lyumjev</string>
-    <string name="ultra_rapid_oref">Ултра бързодействащ по Oref</string>
-    <string name="fast_acting_insulin_comment">Novorapid Novolog, Humalog</string>
-    <string name="ultra_fast_acting_insulin_comment">Fiasp</string>
+    <string name="sms_bolus">Болус:</string>
+    <string name="sms_basal">Базал:</string>
+    <string name="sms_min_ago">преди %1$d мин</string>
+    <string name="sms_loop_suspended_for">Изключен (%1$d мин)</string>
+    <string name="sms_read_status_failed">Четенето на статуса се провали</string>
+    <string name="sms_profile_switch_created">Създаден запис - Промяна на профил</string>
+    <string name="sms_wrong_tbr_duration">Продължителността на временния база; трябва да бъде кратна на %1$d минути и по-голяма от 0.</string>
     <!-- xDrip status line -->
     <!-- StatusLine -->
     <string name="xdrip_status">xDrip+ линия със статута (часовник)</string>
     <string name="xdrip_status_shortname">xds</string>
+    <string name="description_xdrip_status_line">Покажи информация за вашия APS на xDrip + циферблат на часовник.</string>
     <string name="xdrip_status_detailed_iob_title">Покажи подробен IOB</string>
     <string name="xdrip_status_detailed_iob_summary">Раздели IOB от болус и от базал на часовника</string>
     <string name="disabled_loop">Loop изключен</string>
@@ -76,33 +110,39 @@
     <string name="xdrip_status_settings">xDrip+ статус (часовник)</string>
     <!-- Food-->
     <string name="food_short">Храна</string>
+    <string name="description_food">Показва въведените в Nightscout храни</string>
+    <string name="filter">Филтър</string>
+    <string name="food">Храна</string>
     <string name="short_kilo_joul">килодж.</string>
     <string name="short_energy">Ен</string>
     <string name="short_protein">Бел.</string>
     <string name="short_fat">Маз.</string>
+    <string name="category">Категория</string>
+    <string name="subcategory">Подкатегория</string>
     <string name="calculator_label">Калкулатор</string>
     <!-- Theme switcher dark and light mode-->
     <!-- Profile -->
     <string name="localprofile">Профил</string>
+    <string name="localprofile_shortname">ЛПр</string>
+    <string name="description_profile_local">Този тип профил е достъпен в офлайн режим.</string>
     <string name="do_you_want_switch_profile">Искате да смените профила и премахнете на промените, направени в текущия профил?</string>
     <string name="save_or_reset_changes_first">Първо запазете или се откажете от промените</string>
     <string name="delete_current_profile">Изтриване на текущия профил?</string>
+    <string name="units_colon">Единици:</string>
+    <string name="missing_profile_name">Липсва име на профила</string>
+    <string name="error_in_ic_values">Грешка в стойността на ВЧ (IC)</string>
+    <string name="error_in_basal_values">Грешка в базалните стойности</string>
+    <string name="error_in_target_values">Грешка в стойностите за цел</string>
+    <string name="error_in_isf_values">Грешка в стойностите за чувствителност (ISF)</string>
     <string name="profile_name_contains_dot">Името на профила съдържа точка.\nТова не се поддържа от НС.\nПрофилът не е качен в НС.</string>
+    <string name="invalid_profile_not_accepted">Невалиден профил %1$s не приет от NS</string>
+    <string name="view">Изглед</string>
+    <string name="errors">Грешки</string>
+    <string name="profile_name">Име на профила:</string>
+    <string name="a11y_delete_current_profile">изтриване на текущия профил</string>
     <string name="dia_short">DIA</string>
-    <!-- Objectives -->
-    <string name="completed_well_done">Приключихме, Браво!</string>
-    <string name="maxiobset">Максимален IOB е зададен правилно</string>
-    <string name="hasbgdata">Има данни за КЗ от избрания източник</string>
-    <string name="loopenabled">APS разрешен</string>
-    <string name="apsselected">Избран APS</string>
-    <string name="closedmodeenabled">APS - Затворен кръг е позволен</string>
-    <string name="objectives_shortname">Цел</string>
-    <string name="description_objectives">Разучаване на програмата</string>
-    <string name="doyouwantresetstart">Искате ли да нулирате прогреса си?</string>
-    <string name="objectives_next_button">Следващ</string>
-    <string name="objectives_previous_button">Предишен</string>
-    <string name="objectives_button_unfinish">Изчисти приключение</string>
-    <string name="objectives_button_unstart">Изчисти стартираните</string>
+    <string name="target_short">Цел</string>
+    <string name="basal_short">БАЗА</string>
     <!-- Actions -->
     <string name="actions">Действия</string>
     <string name="description_actions">Бутони за бърз достъп до основни функции</string>
@@ -119,19 +159,6 @@
     <string name="pb_label">Батерия на помпата</string>
     <string name="cannula">Канюла</string>
     <string name="ebstopsloop">Използване на удължен болус ще спре режим затворен цикъл за времето на болуса. Сигурни ли сте?</string>
-    <string name="extendedbolusdeliveryerror">Грешка при доставяне на удължен болус</string>
-    <!-- Safety -->
-    <string name="limitingextendedbolus">Ограничение на удължен болус до %1$.1f Е поради %2$s</string>
-    <string name="limitingcarbs">Ограничаване на въглехидрати до %1$d гр. поради %2$s</string>
-    <string name="pumpisnottempbasalcapable">Помпата не поддържа временен базал</string>
-    <string name="closedmodedisabledinpreferences">Затворения кръг е забранен в настройките</string>
-    <string name="closed_loop_disabled_on_dev_branch">Използвате dev версия. Затворения кръг е недостъпен за Вас.</string>
-    <string name="closed_loop_disabled_with_eb">Затворен цикъл е недостъпен поради стартиран Удължен болус</string>
-    <string name="smbalwaysdisabled">SMB \"винаги включен\" и \"след въглехидрати\" е забранен, защото е активен източник на КЗ, който не поддържа необходимата филтрация</string>
-    <string name="smbnotallowedinopenloopmode">SMB не е позволен в режим Отворен кръг</string>
-    <string name="maxvalueinpreferences">макс. стойност в настройките</string>
-    <string name="hardlimit">твърд лимит</string>
-    <string name="treatmentssafety_title">Настройки на сигурността</string>
     <!-- Overview -->
     <string name="show_statuslights">Покажи статус светлини на началния екран</string>
     <string name="statuslights_iage_warning">Праг за инсулинова възраст [часа]</string>
@@ -150,16 +177,11 @@
     <string name="a11y_graph">графика</string>
     <string name="a11y_insulin_label">инсулин</string>
     <string name="chart_menu">Меню на графиката</string>
-    <string name="aps_mode_title">APS режим</string>
     <string name="set_basal_question">Приложи нов временен базал:</string>
     <string name="overview_cgm">CGM</string>
-    <string name="quickwizard">Бърз болус</string>
     <string name="overview">Общ</string>
     <string name="overview_shortname">ОСН</string>
     <string name="description_overview">Показва текущото състояние на вашия APS и бутони за най-често използваните действия</string>
-    <string name="overview_editquickwizard_usecob">Калкулиране на COB</string>
-    <string name="overview_editquickwizard_usetemptarget">Калкулиране на временни цели</string>
-    <string name="overview_editquickwizard_usepercentage">Процентно изчисление</string>
     <string name="overview_buttons_selection">Бутони</string>
     <string name="show_calibration_button_summary">Изпрати калибрация до xDrip+ или отвори BYODA калибрационнен диалог</string>
     <string name="show_cgm_button_summary">Отваря xDrip+ или BYODA, бутон назад те връща в AAPS</string>
@@ -173,20 +195,6 @@
     <string name="uploader">Uploader</string>
     <string name="data_status">Статус на данни за КЗ</string>
     <string name="quickwizard_settings">Настройки за бърз болус</string>
-    <string name="overview_edit_quickwizard_button_text">Текст на бутона:</string>
-    <string name="overview_edit_quickwizard_carbs">Вълехидрати:</string>
-    <string name="overview_edit_quickwizard_valid">Валиден от:</string>
-    <string name="overview_edit_quickwizard_list_activity_add">Добави</string>
-    <string name="overview_quickwizard_item_edit_button">Редакция</string>
-    <string name="overview_edit_quickwizard_use_bg">Калкулиране на КЗ</string>
-    <string name="overview_edit_quickwizard_use_bolus_iob">Калкулиране на Болус IOB</string>
-    <string name="overview_edit_quickwizard_use_basal_iob">Калкулиране на базален IOB</string>
-    <string name="overview_edit_quickwizard_use_trend">Калкулиране на тенденция КЗ</string>
-    <string name="overview_edit_quickwizard_use_superbolus">Калкулиране суперболус</string>
-    <string name="overview_edit_quickwizard_percentage">% от профила</string>
-    <string name="device_all">Всички</string>
-    <string name="positive_only">Само положителни</string>
-    <string name="negative_only">Само отрицателни</string>
     <string name="keep_screen_on_title">Винаги включен екран</string>
     <string name="keep_screen_on_summary">Предотвратяване на андроид да изключва екрана. Това ще доведе до консумацията на много енергия, когато устройството не е включено в контакта.</string>
     <string name="treatments">Лечения</string>
@@ -246,75 +254,12 @@
     <string name="treatments_shortname">Леч</string>
     <string name="sensitivity_shortname">ЧУВСТВ</string>
     <string name="graph_menu_divider_header">Графика</string>
-    <!-- VirtualPump -->
-    <string name="virtual_pump_type">Виртуална помпа тип</string>
-    <string name="virtual_pump_definition">Описание на помпата</string>
-    <string name="virtual_pump_pump_def">Болус: Стъпка =%1$s\Удължен болус: [стъпка =%2$s, продължителност =%3$smin -%4$sh] \nБазал: стъпка =%5$s\ nTBR: %6$s (от %7$s), продължителност =%8$sмин -%9$sh\n%10$s</string>
-    <string name="virtual_pump_shortname">ВП</string>
-    <string name="description_pump_virtual">За помпи, който все още не работят с AndroidAPS(Open Loop)</string>
-    <string name="virtual_pump_label">ВИРТУАЛНА ПОМПА</string>
-    <string name="virtualpump_settings">Настойки Виртуална Помпа</string>
-    <string name="virtualpump_uploadstatus_title">Качва статуса в NS</string>
-    <!-- Source -->
-    <string name="ns_client_bg">КЗ от NS</string>
-    <string name="ns_client_bg_short">NS КЗ</string>
-    <string name="description_source_ns_client">Изтегля стойности на КЗ от Nightscout</string>
-    <string name="xdrip">xDrip+</string>
-    <string name="description_source_xdrip">Получаване на данни за КЗ от xDrip+.</string>
-    <string name="dexcom_app_patched">BYODA</string>
-    <string name="dexcom_short">BYODA</string>
-    <string name="eversense">Eversense приложение(модифицирано)</string>
-    <string name="description_source_eversense">Получава данни за КЗ от модифицираното приложение на Eversense.</string>
-    <string name="glimp">Glimp</string>
-    <string name="description_source_glimp">Получава данни за КЗ от Glimp.</string>
-    <string name="mm640g">MM640g</string>
-    <string name="description_source_mm640g">Получават стойности на КЗ от 600SeriesAndroidUploader.</string>
-    <string name="poctech">Poctech</string>
-    <string name="description_source_poctech">Получавай данни за КЗ от Poctech апликацията.</string>
-    <string name="glunovo">Глуново</string>
-    <string name="description_source_glunovo">Получавай данните от Glunowo апликацията</string>
-    <string name="tomato">Tomato(MяоМяо)</string>
-    <string name="tomato_short">Tomato</string>
-    <string name="description_source_tomato">Получавай КЗ от Tomato апликация (устройство МяоМяо)</string>
-    <string name="random_bg">Произволна КЗ</string>
-    <string name="description_source_random_bg">Генерира произволни захари(демо режим)</string>
-    <string name="random_bg_short">КЗ</string>
-    <string name="do_xdrip_upload_title">Изпращай данни за КЗ към xDrip+</string>
-    <string name="do_xdrip_upload_summary">В xDrip+ изберете 640g/Eversense за източник на данни</string>
-    <string name="bgsource_upload">Настройки при качване на КЗ към Nightscout</string>
-    <string name="dexcom_log_ns_sensor_change_title">Записвай смяната на сензор в NS</string>
     <!-- Skins -->
     <string name="classic_description">Оригинален изглед</string>
     <string name="lowres_description">Скин за ниска резолюция</string>
     <string name="buttonson_description">Бутоните винаги се показват на дъното на екрана.</string>
     <string name="largedisplay_description">Голям екран</string>
     <string name="skin">Тема</string>
-    <!--    Loop -->
-    <string name="executing">Изпълнява</string>
-    <string name="run_now">Старт сега</string>
-    <string name="smb_frequency_exceeded">Има болус през последните 3 мин, пропускам SMB</string>
-    <string name="pump_not_initialized">Помпата не е инициализирана!</string>
-    <string name="loop_shortname">ЦИК</string>
-    <string name="description_loop">Включва или изключва затворения кръг (loop).</string>
-    <string name="no_aps_selected">НЕ Е ИЗБРАН APS ИЛИ НЯМА РЕЗУЛТАТ ОТ НЕГО</string>
-    <string name="ignore5m">Игнориране за 5 мин</string>
-    <string name="ignore15m">Игнориране за 15 мин</string>
-    <string name="ignore30m">Игнориране за 30 мин</string>
-    <string name="carbs_suggestion">Предложение</string>
-    <string name="open_loop_new_suggestion">Има ново предложение</string>
-    <string name="basal_set_correctly">Базалът е зададен коректно</string>
-    <string name="last_run_label">Последно изпълнение</string>
-    <string name="loop_aps_label">Алгоритъм за APS</string>
-    <string name="request_label">Искане</string>
-    <string name="loop_constraints_processed_label">След ограничения</string>
-    <string name="loop_tbr_request_time_label">Диапазон между временни базали</string>
-    <string name="loop_tbr_execution_time_label">Продължителност на временни базали</string>
-    <string name="loop_tbr_set_by_pump_label">Временният базал зададен от помпата</string>
-    <string name="loop_smb_request_time_label">Диапазон между изпълнение на SMB</string>
-    <string name="loop_smb_execution_time_label">Макс. време за изпълнение за SMB</string>
-    <string name="loop_smb_set_by_pump_label">SMB в помпата</string>
-    <string name="loop_open_mode_min_change">Минимална стойност за промяна [%]</string>
-    <string name="loop_open_mode_min_change_summary" formatted="false">AndroidAPS ще покаже запитването за промяна на базала само ако е по-голямо от тази стойност.(Стандартно 20%)</string>
     <!--    DataBroadcast-->
     <!--    Iob-->
     <string name="send_logfiles">Изпрати последните лог файлове на разработчиците. Непредвидена ситуация.</string>

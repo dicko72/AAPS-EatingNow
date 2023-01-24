@@ -15,7 +15,6 @@ import android.widget.RemoteViews
 import dagger.android.HasAndroidInjector
 import info.nightscout.core.extensions.directionToIcon
 import info.nightscout.core.extensions.valueToUnitsString
-import info.nightscout.core.iob.iobCobCalculator.GlucoseStatusProvider
 import info.nightscout.core.graph.OverviewData
 import info.nightscout.core.iob.displayText
 import info.nightscout.core.profile.ProfileSealed
@@ -26,6 +25,7 @@ import info.nightscout.interfaces.GlucoseUnit
 import info.nightscout.interfaces.aps.Loop
 import info.nightscout.interfaces.aps.VariableSensitivityResult
 import info.nightscout.interfaces.constraints.Constraints
+import info.nightscout.interfaces.iob.GlucoseStatusProvider
 import info.nightscout.interfaces.iob.IobCobCalculator
 import info.nightscout.interfaces.plugin.ActivePlugin
 import info.nightscout.interfaces.profile.Profile
@@ -35,6 +35,7 @@ import info.nightscout.interfaces.utils.TrendCalculator
 import info.nightscout.rx.logging.AAPSLogger
 import info.nightscout.rx.logging.LTag
 import info.nightscout.shared.extensions.toVisibility
+import info.nightscout.shared.extensions.toVisibilityKeepSpace
 import info.nightscout.shared.interfaces.ResourceHelper
 import info.nightscout.shared.sharedPreferences.SP
 import info.nightscout.shared.utils.DateUtil
@@ -125,20 +126,23 @@ class Widget : AppWidgetProvider() {
 
     private fun updateBg(views: RemoteViews) {
         val units = profileFunction.getUnits()
-        views.setTextViewText(R.id.bg, overviewData.lastBg?.valueToUnitsString(units) ?: rh.gs(R.string.value_unavailable_short))
+        views.setTextViewText(R.id.bg, overviewData.lastBg(iobCobCalculator.ads)?.valueToUnitsString(units) ?: rh.gs(info.nightscout.core.ui.R.string.value_unavailable_short))
         views.setTextColor(
             R.id.bg, when {
-                overviewData.isLow  -> rh.gc(R.color.widget_low)
-                overviewData.isHigh -> rh.gc(R.color.widget_high)
-                else                -> rh.gc(R.color.widget_inrange)
+                overviewData.isLow(iobCobCalculator.ads)  -> rh.gc(info.nightscout.core.ui.R.color.widget_low)
+                overviewData.isHigh(iobCobCalculator.ads) -> rh.gc(info.nightscout.core.ui.R.color.widget_high)
+                else                                      -> rh.gc(info.nightscout.core.ui.R.color.widget_inrange)
             }
         )
-        views.setImageViewResource(R.id.arrow, trendCalculator.getTrendArrow(overviewData.lastBg).directionToIcon())
+        trendCalculator.getTrendArrow(iobCobCalculator.ads)?.let {
+            views.setImageViewResource(R.id.arrow, it.directionToIcon())
+        }
+        views.setViewVisibility(R.id.arrow, (trendCalculator.getTrendArrow(iobCobCalculator.ads) != null).toVisibilityKeepSpace())
         views.setInt(
             R.id.arrow, "setColorFilter", when {
-                overviewData.isLow  -> rh.gc(R.color.widget_low)
-                overviewData.isHigh -> rh.gc(R.color.widget_high)
-                else                -> rh.gc(R.color.widget_inrange)
+                overviewData.isLow(iobCobCalculator.ads)  -> rh.gc(info.nightscout.core.ui.R.color.widget_low)
+                overviewData.isHigh(iobCobCalculator.ads) -> rh.gc(info.nightscout.core.ui.R.color.widget_high)
+                else                                      -> rh.gc(info.nightscout.core.ui.R.color.widget_inrange)
             }
         )
 
@@ -148,23 +152,23 @@ class Widget : AppWidgetProvider() {
             views.setTextViewText(R.id.avg_delta, Profile.toSignedUnitsString(glucoseStatus.shortAvgDelta, glucoseStatus.shortAvgDelta * Constants.MGDL_TO_MMOLL, units))
             views.setTextViewText(R.id.long_avg_delta, Profile.toSignedUnitsString(glucoseStatus.longAvgDelta, glucoseStatus.longAvgDelta * Constants.MGDL_TO_MMOLL, units))
         } else {
-            views.setTextViewText(R.id.delta, rh.gs(R.string.value_unavailable_short))
-            views.setTextViewText(R.id.avg_delta, rh.gs(R.string.value_unavailable_short))
-            views.setTextViewText(R.id.long_avg_delta, rh.gs(R.string.value_unavailable_short))
+            views.setTextViewText(R.id.delta, rh.gs(info.nightscout.core.ui.R.string.value_unavailable_short))
+            views.setTextViewText(R.id.avg_delta, rh.gs(info.nightscout.core.ui.R.string.value_unavailable_short))
+            views.setTextViewText(R.id.long_avg_delta, rh.gs(info.nightscout.core.ui.R.string.value_unavailable_short))
         }
 
         // strike through if BG is old
-        if (!overviewData.isActualBg) views.setInt(R.id.bg, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG or Paint.ANTI_ALIAS_FLAG)
+        if (!overviewData.isActualBg(iobCobCalculator.ads)) views.setInt(R.id.bg, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG or Paint.ANTI_ALIAS_FLAG)
         else views.setInt(R.id.bg, "setPaintFlags", Paint.ANTI_ALIAS_FLAG)
 
-        views.setTextViewText(R.id.time_ago, dateUtil.minAgo(rh, overviewData.lastBg?.timestamp))
+        views.setTextViewText(R.id.time_ago, dateUtil.minAgo(rh, overviewData.lastBg(iobCobCalculator.ads)?.timestamp))
         //views.setTextViewText(R.id.time_ago_short, "(" + dateUtil.minAgoShort(overviewData.lastBg?.timestamp) + ")")
     }
 
     private fun updateTemporaryBasal(views: RemoteViews) {
         views.setTextViewText(R.id.base_basal, overviewData.temporaryBasalText(iobCobCalculator))
-        views.setTextColor(R.id.base_basal, iobCobCalculator.getTempBasalIncludingConvertedExtended(dateUtil.now())?.let { rh.gc(R.color.widget_basal) }
-            ?: rh.gc(R.color.white))
+        views.setTextColor(R.id.base_basal, iobCobCalculator.getTempBasalIncludingConvertedExtended(dateUtil.now())?.let { rh.gc(info.nightscout.core.ui.R.color.widget_basal) }
+            ?: rh.gc(info.nightscout.core.ui.R.color.white))
         views.setImageViewResource(R.id.base_basal_icon, overviewData.temporaryBasalIcon(iobCobCalculator))
     }
 
@@ -177,7 +181,7 @@ class Widget : AppWidgetProvider() {
     private fun updateIobCob(views: RemoteViews) {
         views.setTextViewText(R.id.iob, overviewData.iobText(iobCobCalculator))
         // cob
-        var cobText = overviewData.cobInfo(iobCobCalculator).displayText(rh, dateUtil, isDev = false) ?: rh.gs(R.string.value_unavailable_short)
+        var cobText = overviewData.cobInfo(iobCobCalculator).displayText(rh, dateUtil, isDev = false) ?: rh.gs(info.nightscout.core.ui.R.string.value_unavailable_short)
 
         val constraintsProcessed = loop.lastRun?.constraintsProcessed
         val lastRun = loop.lastRun
@@ -185,7 +189,7 @@ class Widget : AppWidgetProvider() {
             if (constraintsProcessed.carbsReq > 0) {
                 //only display carbsreq when carbs have not been entered recently
                 if (overviewData.lastCarbsTime < lastRun.lastAPSRun) {
-                    cobText += " | " + constraintsProcessed.carbsReq + " " + rh.gs(R.string.required)
+                    cobText += " | " + constraintsProcessed.carbsReq + " " + rh.gs(info.nightscout.core.ui.R.string.required)
                 }
             }
         }
@@ -199,7 +203,7 @@ class Widget : AppWidgetProvider() {
             // this is crashing, use background as text for now
             //views.setTextColor(R.id.temp_target, rh.gc(R.color.ribbonTextWarning))
             //views.setInt(R.id.temp_target, "setBackgroundColor", rh.gc(R.color.ribbonWarning))
-            views.setTextColor(R.id.temp_target, rh.gc(R.color.widget_ribbonWarning))
+            views.setTextColor(R.id.temp_target, rh.gc(info.nightscout.core.ui.R.color.widget_ribbonWarning))
             views.setTextViewText(R.id.temp_target, Profile.toTargetRangeString(tempTarget.lowTarget, tempTarget.highTarget, GlucoseUnit.MGDL, units) + " " + dateUtil.untilString(tempTarget.end, rh))
         } else {
             // If the target is not the same as set in the profile then oref has overridden it
@@ -212,12 +216,12 @@ class Widget : AppWidgetProvider() {
                     // this is crashing, use background as text for now
                     //views.setTextColor(R.id.temp_target, rh.gc(R.color.ribbonTextWarning))
                     //views.setInt(R.id.temp_target, "setBackgroundResource", rh.gc(R.color.tempTargetBackground))
-                    views.setTextColor(R.id.temp_target, rh.gc(R.color.widget_ribbonWarning))
+                    views.setTextColor(R.id.temp_target, rh.gc(info.nightscout.core.ui.R.color.widget_ribbonWarning))
                 } else {
                     // this is crashing, use background as text for now
                     //views.setTextColor(R.id.temp_target, rh.gc(R.color.ribbonTextDefault))
                     //views.setInt(R.id.temp_target, "setBackgroundColor", rh.gc(R.color.ribbonDefault))
-                    views.setTextColor(R.id.temp_target, rh.gc(R.color.widget_ribbonTextDefault))
+                    views.setTextColor(R.id.temp_target, rh.gc(info.nightscout.core.ui.R.color.widget_ribbonTextDefault))
                     views.setTextViewText(R.id.temp_target, Profile.toTargetRangeString(profile.getTargetLowMgdl(), profile.getTargetHighMgdl(), GlucoseUnit.MGDL, units))
                 }
             }
@@ -229,14 +233,14 @@ class Widget : AppWidgetProvider() {
             profileFunction.getProfile()?.let {
                 if (it is ProfileSealed.EPS) {
                     if (it.value.originalPercentage != 100 || it.value.originalTimeshift != 0L || it.value.originalDuration != 0L)
-                        rh.gc(R.color.widget_ribbonWarning)
-                    else rh.gc(R.color.widget_ribbonTextDefault)
+                        rh.gc(info.nightscout.core.ui.R.color.widget_ribbonWarning)
+                    else rh.gc(info.nightscout.core.ui.R.color.widget_ribbonTextDefault)
                 } else if (it is ProfileSealed.PS) {
-                    rh.gc(R.color.widget_ribbonTextDefault)
+                    rh.gc(info.nightscout.core.ui.R.color.widget_ribbonTextDefault)
                 } else {
-                    rh.gc(R.color.widget_ribbonTextDefault)
+                    rh.gc(info.nightscout.core.ui.R.color.widget_ribbonTextDefault)
                 }
-            } ?: rh.gc(R.color.widget_ribbonCritical)
+            } ?: rh.gc(info.nightscout.core.ui.R.color.widget_ribbonCritical)
 
         views.setTextViewText(R.id.active_profile, profileFunction.getProfileNameWithRemainingTime())
         // this is crashing, use background as text for now
@@ -247,9 +251,9 @@ class Widget : AppWidgetProvider() {
 
     private fun updateSensitivity(views: RemoteViews) {
         if (constraintChecker.isAutosensModeEnabled().value())
-            views.setImageViewResource(R.id.sensitivity_icon, R.drawable.ic_swap_vert_black_48dp_green)
+            views.setImageViewResource(R.id.sensitivity_icon, info.nightscout.core.main.R.drawable.ic_swap_vert_black_48dp_green)
         else
-            views.setImageViewResource(R.id.sensitivity_icon, R.drawable.ic_x_swap_vert)
+            views.setImageViewResource(R.id.sensitivity_icon, info.nightscout.core.main.R.drawable.ic_x_swap_vert)
         views.setTextViewText(R.id.sensitivity, overviewData.lastAutosensData(iobCobCalculator)?.let { autosensData ->
             String.format(Locale.ENGLISH, "%.0f%%", autosensData.autosensResult.ratio * 100)
         } ?: "")

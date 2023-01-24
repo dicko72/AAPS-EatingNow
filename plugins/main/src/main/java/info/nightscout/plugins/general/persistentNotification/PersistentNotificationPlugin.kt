@@ -9,12 +9,12 @@ import androidx.core.app.RemoteInput
 import dagger.android.HasAndroidInjector
 import info.nightscout.core.extensions.toStringShort
 import info.nightscout.core.extensions.valueToUnitsString
-import info.nightscout.core.iob.iobCobCalculator.GlucoseStatusProvider
 import info.nightscout.core.iob.generateCOBString
 import info.nightscout.core.iob.round
 import info.nightscout.core.utils.fabric.FabricPrivacy
 import info.nightscout.interfaces.Constants
 import info.nightscout.interfaces.NotificationHolder
+import info.nightscout.interfaces.iob.GlucoseStatusProvider
 import info.nightscout.interfaces.iob.IobCobCalculator
 import info.nightscout.interfaces.plugin.ActivePlugin
 import info.nightscout.interfaces.plugin.PluginBase
@@ -135,7 +135,7 @@ class PersistentNotificationPlugin @Inject constructor(
                     line1aa += "$line1."
                 }
             } else {
-                line1aa = rh.gs(R.string.missed_bg_readings)
+                line1aa = rh.gs(info.nightscout.core.ui.R.string.missed_bg_readings)
                 line1 = line1aa
             }
             val activeTemp = iobCobCalculator.getTempBasalIncludingConvertedExtended(System.currentTimeMillis())
@@ -147,13 +147,11 @@ class PersistentNotificationPlugin @Inject constructor(
             val bolusIob = iobCobCalculator.calculateIobFromBolus().round()
             val basalIob = iobCobCalculator.calculateIobFromTempBasalsIncludingConvertedExtended().round()
             line2 =
-                rh.gs(R.string.treatments_iob_label_string) + " " + DecimalFormatter.to2Decimal(bolusIob.iob + basalIob.basaliob) + "U " + rh.gs(R.string.cob) + ": " + iobCobCalculator.getCobInfo(
-                    false,
+                rh.gs(info.nightscout.core.ui.R.string.treatments_iob_label_string) + " " + DecimalFormatter.to2Decimal(bolusIob.iob + basalIob.basaliob) + "U " + rh.gs(info.nightscout.core.ui.R.string.cob) + ": " + iobCobCalculator.getCobInfo(
                     "PersistentNotificationPlugin"
                 ).generateCOBString()
             val line2aa =
-                rh.gs(R.string.treatments_iob_label_string) + " " + DecimalFormatter.to2Decimal(bolusIob.iob + basalIob.basaliob) + "U. " + rh.gs(R.string.cob) + ": " + iobCobCalculator.getCobInfo(
-                    false,
+                rh.gs(info.nightscout.core.ui.R.string.treatments_iob_label_string) + " " + DecimalFormatter.to2Decimal(bolusIob.iob + basalIob.basaliob) + "U. " + rh.gs(info.nightscout.core.ui.R.string.cob) + ": " + iobCobCalculator.getCobInfo(
                     "PersistentNotificationPlugin"
                 ).generateCOBString() + "."
             line3 = DecimalFormatter.to2Decimal(pump.baseBasalRate) + " U/h"
@@ -194,7 +192,7 @@ class PersistentNotificationPlugin @Inject constructor(
             unreadConversationBuilder.addMessage(line3aa)
             /// End Android Auto
         } else {
-            line1 = rh.gs(R.string.no_profile_set)
+            line1 = rh.gs(info.nightscout.core.ui.R.string.no_profile_set)
         }
         val builder = NotificationCompat.Builder(context, notificationHolder.channelID)
         builder.setOngoing(true)

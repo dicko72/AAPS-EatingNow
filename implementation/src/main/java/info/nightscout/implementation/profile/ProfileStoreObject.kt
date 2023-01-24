@@ -45,7 +45,7 @@ class ProfileStoreObject(val injector: HasAndroidInjector, override val data: JS
     }
 
     override fun getStartDate(): Long {
-        val iso = JsonHelper.safeGetString(data, "startDate") ?: return 0
+        val iso = JsonHelper.safeGetString(data, "created_at") ?: JsonHelper.safeGetString(data, "startDate") ?: return 0
         return try {
             dateUtil.fromISODateString(iso)
         } catch (e: Exception) {
@@ -54,7 +54,8 @@ class ProfileStoreObject(val injector: HasAndroidInjector, override val data: JS
     }
 
     override fun getDefaultProfile(): PureProfile? = getDefaultProfileName()?.let { getSpecificProfile(it) }
-    override fun getDefaultProfileJson(): JSONObject? = getDefaultProfileName()?.let { getSpecificProfileJson(it) }
+    override fun getDefaultProfileJson(): JSONObject? =
+        getDefaultProfileName()?.let { getSpecificProfileJson(it) }
 
     override fun getDefaultProfileName(): String? {
         val defaultProfileName = data.optString("defaultProfile")

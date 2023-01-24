@@ -57,7 +57,7 @@ import info.nightscout.pump.diaconn.packet.TempBasalInquirePacket
 import info.nightscout.pump.diaconn.packet.TempBasalSettingPacket
 import info.nightscout.pump.diaconn.packet.TimeInquirePacket
 import info.nightscout.pump.diaconn.packet.TimeSettingPacket
-import info.nightscout.pump.diaconn.pumplog.PumplogUtil
+import info.nightscout.pump.diaconn.pumplog.PumpLogUtil
 import info.nightscout.rx.AapsSchedulers
 import info.nightscout.rx.bus.RxBus
 import info.nightscout.rx.events.EventAppExit
@@ -168,7 +168,7 @@ class DiaconnG8Service : DaggerService() {
 
             val pumpFirmwareVersion = sp.getString(rh.gs(R.string.pumpversion), "")
 
-            if (pumpFirmwareVersion.isNotEmpty() && PumplogUtil.isPumpVersionGe(pumpFirmwareVersion, 3, 0)) {
+            if (pumpFirmwareVersion.isNotEmpty() && PumpLogUtil.isPumpVersionGe(pumpFirmwareVersion, 3, 0)) {
                 sendMessage(BigAPSMainInfoInquirePacket(injector)) // APS Pump Main Info
             } else {
                 sendMessage(BasalLimitInquirePacket(injector)) // basal Limit
@@ -212,7 +212,7 @@ class DiaconnG8Service : DaggerService() {
                 if (abs(timeDiff) > 60 * 60 * 1.5) {
                     aapsLogger.debug(LTag.PUMPCOMM, "Pump time difference: $timeDiff seconds - large difference")
                     //If time-diff is very large, warn user until we can synchronize history readings properly
-                    uiInteraction.runAlarm(rh.gs(R.string.largetimediff), rh.gs(R.string.largetimedifftitle), R.raw.error)
+                    uiInteraction.runAlarm(rh.gs(R.string.largetimediff), rh.gs(R.string.largetimedifftitle), info.nightscout.core.ui.R.raw.error)
 
                     //de-initialize pump
                     diaconnG8Pump.reset()
@@ -295,18 +295,21 @@ class DiaconnG8Service : DaggerService() {
         if (apsWrappingCount == -1 && apsLastLogNum == 9999) {
             apsWrappingCount = pumpWrappingCount
             apsLastLogNum = if (pumpLastNum - 1 < 0) 0 else pumpLastNum - 2
+            aapsLogger.debug(LTag.PUMPCOMM, "first install app apsWrappingCount : $apsWrappingCount, apsLastLogNum : $apsLastLogNum")
         }
         // if another pump
         if (pumpSerialNo != diaconnG8Pump.serialNo) {
             apsWrappingCount = pumpWrappingCount
             apsLastLogNum = if (pumpLastNum - 1 < 0) 0 else pumpLastNum - 2
             sp.putInt(rh.gs(R.string.pumpserialno), diaconnG8Pump.serialNo)
+            aapsLogger.debug(LTag.PUMPCOMM, "Pump serialNo is different apsWrappingCount : $apsWrappingCount, apsLastLogNum : $apsLastLogNum")
         }
         // if pump reset
         if (apsIncarnationNum != diaconnG8Pump.pumpIncarnationNum) {
             apsWrappingCount = pumpWrappingCount
             apsLastLogNum = if (pumpLastNum - 1 < 0) 0 else pumpLastNum - 2
-            sp.putInt(R.string.apsIncarnationNo, apsIncarnationNum)
+            sp.putInt(R.string.apsIncarnationNo, diaconnG8Pump.pumpIncarnationNum)
+            aapsLogger.debug(LTag.PUMPCOMM, "Pump incarnationNum is different apsWrappingCount : $apsWrappingCount, apsLastLogNum : $apsLastLogNum")
         }
         aapsLogger.debug(LTag.PUMPCOMM, "apsWrappingCount : $apsWrappingCount, apsLastLogNum : $apsLastLogNum")
 
@@ -375,7 +378,7 @@ class DiaconnG8Service : DaggerService() {
         val end: Int // log sync end number1311
         aapsLogger.debug(LTag.PUMPCOMM, "lastLogNum : $lastLogNum, wrappingCount : $wrappingCount , pumpLastNum: $pumpLastNum, pumpWrappingCount : $pumpWrappingCount")
 
-        if (pumpWrappingCount > wrappingCount && lastLogNum < 9999) {
+        if (pumpWrappingCount > wrappingCount) {
             start = (lastLogNum + 1)
             end = 10000
         } else {
@@ -520,7 +523,7 @@ class DiaconnG8Service : DaggerService() {
                 sendMessage(InjectionSnackInquirePacket(injector), 2000) // last bolus
                 // 볼러스 결과 보고패킷에서 처리함.
                 bolusingEvent.percent = 100
-                rxBus.send(EventPumpStatusChanged(rh.gs(R.string.disconnecting)))
+                rxBus.send(EventPumpStatusChanged(rh.gs(info.nightscout.shared.R.string.disconnecting)))
             }
         })
         return !start.failed

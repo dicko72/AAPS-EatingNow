@@ -13,7 +13,7 @@
     <string name="alreadydisabled">Ya está deshabilitado</string>
     <string name="alreadysuspended">Ya está suspendido</string>
     <string name="notsuspended">No suspendido</string>
-    <string name="suspendloopforXmin">Suspender lazo durante %1$d min</string>
+    <string name="suspendloopforXmin">Suspender bucle durante %1$d min</string>
     <string name="notification_message">Notificación: %1$s</string>
     <string name="profilename">Cambiar perfil a</string>
     <string name="changengetoprofilename">Cambiar perfil a %1$s</string>
@@ -113,7 +113,6 @@
     <string name="sort_automation">Ordenar automatizaciones</string>
     <string name="remove_selected_items">Eliminar elementos seleccionados</string>
     <string name="count_selected">%1$d seleccionados</string>
-    <string name="confirm_remove_multiple_items">¿Estás seguro de que quieres eliminar %1$d elementos?</string>
     <string name="system_automation">Automatización del sistema</string>
     <string name="run_automations">Ejecutar automatizaciones</string>
     <string name="add_automation">Añadir regla</string>
@@ -127,4 +126,8 @@
     <string name="friday_short">V</string>
     <string name="saturday_short">S</string>
     <string name="sunday_short">D</string>
+    <!--    Reminders-->
+    <string name="time_to_eat">¡Hora de comer!\nEjecuta el asistente de bolo y calcula de nuevo.</string>
+    <string name="time_to_bolus">¡Hora de comer!\nEjecutar el asistente de bolo y calcular de nuevo.</string>
+    <string name="error_setting_reminder">Error al configurar la alarma en el futuro</string>
 </resources>

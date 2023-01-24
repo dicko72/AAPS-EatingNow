@@ -12,17 +12,17 @@ import info.nightscout.core.utils.extensions.copyString
 import info.nightscout.core.utils.receivers.DataWorkerStorage
 import info.nightscout.interfaces.receivers.Intents
 import info.nightscout.plugins.general.smsCommunicator.SmsCommunicatorPlugin
-import info.nightscout.plugins.source.AidexPlugin
-import info.nightscout.plugins.source.DexcomPlugin
-import info.nightscout.plugins.source.EversensePlugin
-import info.nightscout.plugins.source.GlimpPlugin
-import info.nightscout.plugins.source.MM640gPlugin
-import info.nightscout.plugins.source.PoctechPlugin
-import info.nightscout.plugins.source.TomatoPlugin
-import info.nightscout.plugins.source.XdripPlugin
 import info.nightscout.rx.logging.AAPSLogger
 import info.nightscout.rx.logging.BundleLogger
 import info.nightscout.rx.logging.LTag
+import info.nightscout.source.AidexPlugin
+import info.nightscout.source.DexcomPlugin
+import info.nightscout.source.EversensePlugin
+import info.nightscout.source.GlimpPlugin
+import info.nightscout.source.MM640gPlugin
+import info.nightscout.source.PoctechPlugin
+import info.nightscout.source.TomatoPlugin
+import info.nightscout.source.XdripSourcePlugin
 import javax.inject.Inject
 
 open class DataReceiver : DaggerBroadcastReceiver() {
@@ -37,7 +37,7 @@ open class DataReceiver : DaggerBroadcastReceiver() {
 
         when (intent.action) {
             Intents.ACTION_NEW_BG_ESTIMATE            ->
-                OneTimeWorkRequest.Builder(XdripPlugin.XdripWorker::class.java)
+                OneTimeWorkRequest.Builder(XdripSourcePlugin.XdripSourceWorker::class.java)
                     .setInputData(dataWorkerStorage.storeInputData(bundle, intent.action)).build()
             Intents.POCTECH_BG                        ->
                 OneTimeWorkRequest.Builder(PoctechPlugin.PoctechWorker::class.java)

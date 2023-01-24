@@ -26,7 +26,9 @@ import info.nightscout.database.entities.GlucoseValue
 import info.nightscout.database.entities.TemporaryTarget
 import info.nightscout.database.impl.AppRepository
 import info.nightscout.interfaces.aps.AutosensData
+import info.nightscout.interfaces.aps.AutosensDataStore
 import info.nightscout.interfaces.iob.CobInfo
+import info.nightscout.interfaces.iob.InMemoryGlucoseValue
 import info.nightscout.interfaces.iob.IobCobCalculator
 import info.nightscout.interfaces.iob.IobTotal
 import info.nightscout.interfaces.plugin.ActivePlugin
@@ -88,7 +90,7 @@ class OverviewDataImpl @Inject constructor(
     }
 
     override fun initRange() {
-        rangeToDisplay = sp.getInt(R.string.key_rangetodisplay, 6)
+        rangeToDisplay = sp.getInt(info.nightscout.core.utils.R.string.key_rangetodisplay, 6)
 
         val calendar = Calendar.getInstance().also {
             it.timeInMillis = System.currentTimeMillis()
@@ -119,43 +121,42 @@ class OverviewDataImpl @Inject constructor(
      * BG
      */
 
-    override val lastBg: GlucoseValue?
-        get() =
-            repository.getLastGlucoseValueWrapped().blockingGet().let { gvWrapped ->
-                if (gvWrapped is ValueWrapper.Existing) gvWrapped.value
-                else null
-            }
+    override fun lastBg(autosensDataStore: AutosensDataStore): InMemoryGlucoseValue? =
+        autosensDataStore.bucketedData?.let { if (it.size > 0) it[0] else null }
+    // repository.getLastGlucoseValueWrapped().blockingGet().let { gvWrapped ->
+    //     if (gvWrapped is ValueWrapper.Existing) gvWrapped.value
+    //     else null
+    // }
 
-    override val isLow: Boolean
-        get() = lastBg?.let { lastBg ->
+    override fun isLow(autosensDataStore: AutosensDataStore): Boolean =
+        lastBg(autosensDataStore)?.let { lastBg ->
             lastBg.valueToUnits(profileFunction.getUnits()) < defaultValueHelper.determineLowLine()
         } ?: false
 
-    override val isHigh: Boolean
-        get() = lastBg?.let { lastBg ->
+    override fun isHigh(autosensDataStore: AutosensDataStore): Boolean =
+        lastBg(autosensDataStore)?.let { lastBg ->
             lastBg.valueToUnits(profileFunction.getUnits()) > defaultValueHelper.determineHighLine()
         } ?: false
 
     @ColorInt
-    override fun lastBgColor(context: Context?): Int =
+    override fun lastBgColor(context: Context?, autosensDataStore: AutosensDataStore): Int =
         when {
-            isLow  -> rh.gac(context, R.attr.bgLow)
-            isHigh -> rh.gac(context, R.attr.highColor)
-            else   -> rh.gac(context, R.attr.bgInRange)
+            isLow(autosensDataStore)  -> rh.gac(context, info.nightscout.core.ui.R.attr.bgLow)
+            isHigh(autosensDataStore) -> rh.gac(context, info.nightscout.core.ui.R.attr.highColor)
+            else                      -> rh.gac(context, info.nightscout.core.ui.R.attr.bgInRange)
         }
 
-    override val lastBgDescription: String
-        get() = when {
-            isLow  -> rh.gs(R.string.a11y_low)
-            isHigh -> rh.gs(R.string.a11y_high)
-            else   -> rh.gs(R.string.a11y_inrange)
+    override fun lastBgDescription(autosensDataStore: AutosensDataStore): String =
+        when {
+            isLow(autosensDataStore)  -> rh.gs(info.nightscout.core.ui.R.string.a11y_low)
+            isHigh(autosensDataStore) -> rh.gs(info.nightscout.core.ui.R.string.a11y_high)
+            else                      -> rh.gs(info.nightscout.core.ui.R.string.a11y_inrange)
         }
 
-    override val isActualBg: Boolean
-        get() =
-            lastBg?.let { lastBg ->
-                lastBg.timestamp > dateUtil.now() - T.mins(9).msecs()
-            } ?: false
+    override fun isActualBg(autosensDataStore: AutosensDataStore): Boolean =
+        lastBg(autosensDataStore)?.let { lastBg ->
+            lastBg.timestamp > dateUtil.now() - T.mins(9).msecs()
+        } ?: false
 
     /*
      * TEMPORARY BASAL
@@ -166,17 +167,17 @@ class OverviewDataImpl @Inject constructor(
             var temporaryBasal = iobCobCalculator.getTempBasalIncludingConvertedExtended(dateUtil.now())
             if (temporaryBasal?.isInProgress == false) temporaryBasal = null
             temporaryBasal?.let { "T:" + it.toStringShort() }
-                ?: rh.gs(R.string.pump_base_basal_rate, profile.getBasal())
-        } ?: rh.gs(R.string.value_unavailable_short)
+                ?: rh.gs(info.nightscout.core.ui.R.string.pump_base_basal_rate, profile.getBasal())
+        } ?: rh.gs(info.nightscout.core.ui.R.string.value_unavailable_short)
 
     override fun temporaryBasalDialogText(iobCobCalculator: IobCobCalculator): String =
         profileFunction.getProfile()?.let { profile ->
             iobCobCalculator.getTempBasalIncludingConvertedExtended(dateUtil.now())?.let { temporaryBasal ->
-                "${rh.gs(R.string.base_basal_rate_label)}: ${rh.gs(R.string.pump_base_basal_rate, profile.getBasal())}" +
-                    "\n" + rh.gs(R.string.tempbasal_label) + ": " + temporaryBasal.toStringFull(profile, dateUtil)
+                "${rh.gs(info.nightscout.core.ui.R.string.base_basal_rate_label)}: ${rh.gs(info.nightscout.core.ui.R.string.pump_base_basal_rate, profile.getBasal())}" +
+                    "\n" + rh.gs(info.nightscout.core.ui.R.string.tempbasal_label) + ": " + temporaryBasal.toStringFull(profile, dateUtil)
             }
-                ?: "${rh.gs(R.string.base_basal_rate_label)}: ${rh.gs(R.string.pump_base_basal_rate, profile.getBasal())}"
-        } ?: rh.gs(R.string.value_unavailable_short)
+                ?: "${rh.gs(info.nightscout.core.ui.R.string.base_basal_rate_label)}: ${rh.gs(info.nightscout.core.ui.R.string.pump_base_basal_rate, profile.getBasal())}"
+        } ?: rh.gs(info.nightscout.core.ui.R.string.value_unavailable_short)
 
     @DrawableRes override fun temporaryBasalIcon(iobCobCalculator: IobCobCalculator): Int =
         profileFunction.getProfile()?.let { profile ->
@@ -192,11 +193,11 @@ class OverviewDataImpl @Inject constructor(
 
     @AttrRes override fun temporaryBasalColor(context: Context?, iobCobCalculator: IobCobCalculator): Int = iobCobCalculator.getTempBasalIncludingConvertedExtended(dateUtil.now())?.let {
         rh.gac(
-            context, R
+            context, info.nightscout.core.ui.R
                 .attr.basal
         )
     }
-        ?: rh.gac(context, R.attr.defaultTextColor)
+        ?: rh.gac(context, info.nightscout.core.ui.R.attr.defaultTextColor)
 
     /*
      * EXTENDED BOLUS
@@ -205,7 +206,7 @@ class OverviewDataImpl @Inject constructor(
     override fun extendedBolusText(iobCobCalculator: IobCobCalculator): String =
         iobCobCalculator.getExtendedBolus(dateUtil.now())?.let { extendedBolus ->
             if (!extendedBolus.isInProgress(dateUtil)) ""
-            else if (!activePlugin.activePump.isFakingTempsByExtendedBoluses) rh.gs(R.string.pump_base_basal_rate, extendedBolus.rate)
+            else if (!activePlugin.activePump.isFakingTempsByExtendedBoluses) rh.gs(info.nightscout.core.ui.R.string.pump_base_basal_rate, extendedBolus.rate)
             else ""
         } ?: ""
 
@@ -218,7 +219,7 @@ class OverviewDataImpl @Inject constructor(
 
     override fun bolusIob(iobCobCalculator: IobCobCalculator): IobTotal = iobCobCalculator.calculateIobFromBolus().round()
     override fun basalIob(iobCobCalculator: IobCobCalculator): IobTotal = iobCobCalculator.calculateIobFromTempBasalsIncludingConvertedExtended().round()
-    override fun cobInfo(iobCobCalculator: IobCobCalculator): CobInfo = iobCobCalculator.getCobInfo(true, "Overview COB")
+    override fun cobInfo(iobCobCalculator: IobCobCalculator): CobInfo = iobCobCalculator.getCobInfo("Overview COB")
 
     override val lastCarbsTime: Long
         get() = repository.getLastCarbsRecordWrapped().blockingGet().let { lastCarbs ->
@@ -226,12 +227,12 @@ class OverviewDataImpl @Inject constructor(
         }
 
     override fun iobText(iobCobCalculator: IobCobCalculator): String =
-        rh.gs(R.string.format_insulin_units, bolusIob(iobCobCalculator).iob + basalIob(iobCobCalculator).basaliob)
+        rh.gs(info.nightscout.interfaces.R.string.format_insulin_units, bolusIob(iobCobCalculator).iob + basalIob(iobCobCalculator).basaliob)
 
     override fun iobDialogText(iobCobCalculator: IobCobCalculator): String =
-        rh.gs(R.string.format_insulin_units, bolusIob(iobCobCalculator).iob + basalIob(iobCobCalculator).basaliob) + "\n" +
-            rh.gs(R.string.bolus) + ": " + rh.gs(R.string.format_insulin_units, bolusIob(iobCobCalculator).iob) + "\n" +
-            rh.gs(R.string.basal) + ": " + rh.gs(R.string.format_insulin_units, basalIob(iobCobCalculator).basaliob)
+        rh.gs(info.nightscout.interfaces.R.string.format_insulin_units, bolusIob(iobCobCalculator).iob + basalIob(iobCobCalculator).basaliob) + "\n" +
+            rh.gs(info.nightscout.core.ui.R.string.bolus) + ": " + rh.gs(info.nightscout.interfaces.R.string.format_insulin_units, bolusIob(iobCobCalculator).iob) + "\n" +
+            rh.gs(info.nightscout.core.ui.R.string.basal) + ": " + rh.gs(info.nightscout.interfaces.R.string.format_insulin_units, basalIob(iobCobCalculator).basaliob)
 
     /*
      * TEMP TARGET

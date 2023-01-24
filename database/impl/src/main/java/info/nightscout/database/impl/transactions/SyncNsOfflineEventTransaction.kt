@@ -7,7 +7,7 @@ import kotlin.math.abs
 /**
  * Sync the OfflineEvent from NS
  */
-class SyncNsOfflineEventTransaction(private val offlineEvents: List<OfflineEvent>) :
+class SyncNsOfflineEventTransaction(private val offlineEvents: List<OfflineEvent>, private val nsClientMode: Boolean) :
     Transaction<SyncNsOfflineEventTransaction.TransactionResult>() {
 
     override fun run(): TransactionResult {
@@ -28,7 +28,7 @@ class SyncNsOfflineEventTransaction(private val offlineEvents: List<OfflineEvent
                         database.offlineEventDao.updateExistingEntry(current)
                         result.invalidated.add(current)
                     }
-                    if (current.duration != offlineEvent.duration) {
+                    if (current.duration != offlineEvent.duration && nsClientMode) {
                         current.duration = offlineEvent.duration
                         database.offlineEventDao.updateExistingEntry(current)
                         result.updatedDuration.add(current)
@@ -38,7 +38,7 @@ class SyncNsOfflineEventTransaction(private val offlineEvents: List<OfflineEvent
 
                 // not known nsId
                 val running = database.offlineEventDao.getOfflineEventActiveAt(offlineEvent.timestamp).blockingGet()
-                if (running != null && abs(running.timestamp - offlineEvent.timestamp) < 1000 && running.interfaceIDs.nightscoutId == null) { // allow missing milliseconds
+                if (running != null && abs(running.timestamp - offlineEvent.timestamp) < 1000) { // allow missing milliseconds
                     // the same record, update nsId only
                     running.interfaceIDs.nightscoutId = offlineEvent.interfaceIDs.nightscoutId
                     database.offlineEventDao.updateExistingEntry(running)

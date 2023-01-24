@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.text.format.DateFormat
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.android.HasAndroidInjector
 import info.nightscout.core.utils.fabric.FabricPrivacy
@@ -26,6 +27,7 @@ import info.nightscout.interfaces.utils.DecimalFormatter.to2Decimal
 import info.nightscout.pump.common.data.PumpStatus
 import info.nightscout.pump.common.defs.PumpDriverState
 import info.nightscout.pump.common.sync.PumpDbEntryCarbs
+import info.nightscout.pump.common.sync.PumpSyncEntriesCreator
 import info.nightscout.pump.common.sync.PumpSyncStorage
 import info.nightscout.rx.AapsSchedulers
 import info.nightscout.rx.bus.RxBus
@@ -61,7 +63,7 @@ abstract class PumpPluginAbstract protected constructor(
     var aapsSchedulers: AapsSchedulers,
     var pumpSync: PumpSync,
     var pumpSyncStorage: PumpSyncStorage
-) : PumpPluginBase(pluginDescription, injector, aapsLogger, rh, commandQueue), Pump, Constraints, info.nightscout.pump.common.sync.PumpSyncEntriesCreator {
+) : PumpPluginBase(pluginDescription, injector, aapsLogger, rh, commandQueue), Pump, Constraints, PumpSyncEntriesCreator {
 
     protected val disposable = CompositeDisposable()
 
@@ -80,24 +82,21 @@ abstract class PumpPluginAbstract protected constructor(
             pumpDescription.fillFor(value)
         }
 
-    protected var gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
+    protected var gson: Gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
 
     abstract fun initPumpStatusData()
-
-    open fun hasService(): Boolean {
-        return true
-    }
 
     override fun onStart() {
         super.onStart()
         initPumpStatusData()
-        if (hasService()) {
+        serviceConnection?.let { serviceConnection ->
             val intent = Intent(context, serviceClass)
-            context.bindService(intent, serviceConnection!!, Context.BIND_AUTO_CREATE)
-            disposable.add(rxBus
-                               .toObservable(EventAppExit::class.java)
-                               .observeOn(aapsSchedulers.io)
-                               .subscribe({ _ -> context.unbindService(serviceConnection!!) }) { throwable: Throwable? -> fabricPrivacy.logException(throwable!!) }
+            context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+            disposable.add(
+                rxBus
+                    .toObservable(EventAppExit::class.java)
+                    .observeOn(aapsSchedulers.io)
+                    .subscribe({ context.unbindService(serviceConnection) }, fabricPrivacy::logException)
             )
         }
         serviceRunning = true
@@ -106,8 +105,8 @@ abstract class PumpPluginAbstract protected constructor(
 
     override fun onStop() {
         aapsLogger.debug(LTag.PUMP, model().model + " onStop()")
-        if (hasService()) {
-            context.unbindService(serviceConnection!!)
+        serviceConnection?.let { serviceConnection ->
+            context.unbindService(serviceConnection)
         }
         serviceRunning = false
         disposable.clear()
@@ -308,8 +307,7 @@ abstract class PumpPluginAbstract protected constructor(
             if (detailedBolusInfo.insulin == 0.0 && detailedBolusInfo.carbs == 0.0) {
                 // neither carbs nor bolus requested
                 aapsLogger.error("deliverTreatment: Invalid input")
-                PumpEnactResult(injector).success(false).enacted(false).bolusDelivered(0.0).carbsDelivered(0.0)
-                    .comment(R.string.invalid_input)
+                PumpEnactResult(injector).success(false).enacted(false).bolusDelivered(0.0).comment(info.nightscout.core.ui.R.string.invalid_input)
             } else if (detailedBolusInfo.insulin > 0) {
                 // bolus needed, ask pump to deliver it
                 deliverBolus(detailedBolusInfo)
@@ -324,8 +322,7 @@ abstract class PumpPluginAbstract protected constructor(
                 bolusingEvent.percent = 100
                 rxBus.send(bolusingEvent)
                 aapsLogger.debug(LTag.PUMP, "deliverTreatment: Carb only treatment.")
-                PumpEnactResult(injector).success(true).enacted(true).bolusDelivered(0.0)
-                    .carbsDelivered(detailedBolusInfo.carbs).comment(R.string.common_resultok)
+                PumpEnactResult(injector).success(true).enacted(true).bolusDelivered(0.0).comment(R.string.common_resultok)
             }
         } finally {
             triggerUIChange()
@@ -336,7 +333,7 @@ abstract class PumpPluginAbstract protected constructor(
         rxBus.send(EventCustomActionsChanged())
     }
 
-    override fun manufacturer(): ManufacturerType = pumpType.manufacturer!!
+    override fun manufacturer(): ManufacturerType = pumpType.manufacturer ?: ManufacturerType.AAPS
     override fun model(): PumpType = pumpType
     override fun canHandleDST(): Boolean = false
 

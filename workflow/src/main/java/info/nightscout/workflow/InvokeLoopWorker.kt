@@ -1,29 +1,25 @@
 package info.nightscout.workflow
 
 import android.content.Context
-import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import dagger.android.HasAndroidInjector
 import info.nightscout.core.utils.receivers.DataWorkerStorage
+import info.nightscout.core.utils.worker.LoggingWorker
 import info.nightscout.interfaces.aps.Loop
 import info.nightscout.interfaces.iob.IobCobCalculator
 import info.nightscout.rx.events.Event
 import info.nightscout.rx.events.EventNewBG
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 
 class InvokeLoopWorker(
     context: Context,
     params: WorkerParameters
-) : Worker(context, params) {
+) : LoggingWorker(context, params, Dispatchers.Default) {
 
     @Inject lateinit var dataWorkerStorage: DataWorkerStorage
     @Inject lateinit var iobCobCalculator: IobCobCalculator
     @Inject lateinit var loop: Loop
-
-    init {
-        (context.applicationContext as HasAndroidInjector).androidInjector().inject(this)
-    }
 
     class InvokeLoopData(
         val cause: Event?
@@ -36,7 +32,7 @@ class InvokeLoopWorker(
      the event causing the calculation is not EventNewBg.
      <p>
     */
-    override fun doWork(): Result {
+    override suspend fun doWorkAndLog(): Result {
 
         val data = dataWorkerStorage.pickupObject(inputData.getLong(DataWorkerStorage.STORE_KEY, -1)) as InvokeLoopData?
             ?: return Result.failure(workDataOf("Error" to "missing input data"))

@@ -3,35 +3,35 @@ package info.nightscout.workflow
 import android.content.Context
 import android.graphics.DashPathEffect
 import android.graphics.Paint
-import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.jjoe64.graphview.series.LineGraphSeries
-import dagger.android.HasAndroidInjector
 import info.nightscout.core.events.EventIobCalculationProgress
 import info.nightscout.core.graph.OverviewData
 import info.nightscout.core.graph.data.ScaledDataPoint
 import info.nightscout.core.utils.receivers.DataWorkerStorage
+import info.nightscout.core.utils.worker.LoggingWorker
 import info.nightscout.core.workflow.CalculationWorkflow
 import info.nightscout.interfaces.iob.IobCobCalculator
 import info.nightscout.interfaces.profile.ProfileFunction
 import info.nightscout.rx.bus.RxBus
 import info.nightscout.shared.interfaces.ResourceHelper
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 
 class PrepareBasalDataWorker(
     context: Context,
     params: WorkerParameters
-) : Worker(context, params) {
+) : LoggingWorker(context, params, Dispatchers.Default) {
 
     @Inject lateinit var dataWorkerStorage: DataWorkerStorage
     @Inject lateinit var profileFunction: ProfileFunction
     @Inject lateinit var rh: ResourceHelper
     @Inject lateinit var rxBus: RxBus
     private var ctx: Context
+
     init {
-        (context.applicationContext as HasAndroidInjector).androidInjector().inject(this)
-        ctx =  rh.getThemedCtx(context)
+        ctx = rh.getThemedCtx(context)
     }
 
     class PrepareBasalData(
@@ -39,7 +39,7 @@ class PrepareBasalDataWorker(
         val overviewData: OverviewData
     )
 
-    override fun doWork(): Result {
+    override suspend fun doWorkAndLog(): Result {
 
         val data = dataWorkerStorage.pickupObject(inputData.getLong(DataWorkerStorage.STORE_KEY, -1)) as PrepareBasalData?
             ?: return Result.failure(workDataOf("Error" to "missing input data"))
@@ -53,9 +53,11 @@ class PrepareBasalDataWorker(
         var lastAbsoluteLineBasal = -1.0
         var lastBaseBasal = 0.0
         var lastTempBasal = 0.0
-        var time = data.overviewData.fromTime
-        while (time < data.overviewData.toTime) {
-            val progress = (time - data.overviewData.fromTime).toDouble() / (data.overviewData.toTime - data.overviewData.fromTime) * 100.0
+        val endTime = data.overviewData.endTime
+        val fromTime = data.overviewData.fromTime
+        var time = fromTime
+        while (time < endTime) {
+            val progress = (time - fromTime).toDouble() / (endTime - fromTime) * 100.0
             rxBus.send(EventIobCalculationProgress(CalculationWorkflow.ProgressData.PREPARE_BASAL_DATA, progress.toInt(), null))
             val profile = profileFunction.getProfile(time)
             if (profile == null) {
@@ -105,20 +107,20 @@ class PrepareBasalDataWorker(
         }
 
         // final points
-        basalLineArray.add(ScaledDataPoint(data.overviewData.toTime, lastLineBasal, data.overviewData.basalScale))
-        baseBasalArray.add(ScaledDataPoint(data.overviewData.toTime, lastBaseBasal, data.overviewData.basalScale))
-        tempBasalArray.add(ScaledDataPoint(data.overviewData.toTime, lastTempBasal, data.overviewData.basalScale))
-        absoluteBasalLineArray.add(ScaledDataPoint(data.overviewData.toTime, lastAbsoluteLineBasal, data.overviewData.basalScale))
+        basalLineArray.add(ScaledDataPoint(endTime, lastLineBasal, data.overviewData.basalScale))
+        baseBasalArray.add(ScaledDataPoint(endTime, lastBaseBasal, data.overviewData.basalScale))
+        tempBasalArray.add(ScaledDataPoint(endTime, lastTempBasal, data.overviewData.basalScale))
+        absoluteBasalLineArray.add(ScaledDataPoint(endTime, lastAbsoluteLineBasal, data.overviewData.basalScale))
 
         // create series
         data.overviewData.baseBasalGraphSeries = LineGraphSeries(Array(baseBasalArray.size) { i -> baseBasalArray[i] }).also {
             it.isDrawBackground = true
-            it.backgroundColor = rh.gac(ctx, R.attr.baseBasalColor )
+            it.backgroundColor = rh.gac(ctx, info.nightscout.core.ui.R.attr.baseBasalColor )
             it.thickness = 0
         }
         data.overviewData.tempBasalGraphSeries = LineGraphSeries(Array(tempBasalArray.size) { i -> tempBasalArray[i] }).also {
             it.isDrawBackground = true
-            it.backgroundColor = rh.gac(ctx, R.attr.tempBasalColor )
+            it.backgroundColor = rh.gac(ctx, info.nightscout.core.ui.R.attr.tempBasalColor )
             it.thickness = 0
         }
         data.overviewData.basalLineGraphSeries = LineGraphSeries(Array(basalLineArray.size) { i -> basalLineArray[i] }).also {
@@ -126,14 +128,14 @@ class PrepareBasalDataWorker(
                 paint.style = Paint.Style.STROKE
                 paint.strokeWidth = rh.getDisplayMetrics().scaledDensity * 2
                 paint.pathEffect = DashPathEffect(floatArrayOf(2f, 4f), 0f)
-                paint.color = rh.gac(ctx, R.attr.basal )
+                paint.color = rh.gac(ctx, info.nightscout.core.ui.R.attr.basal )
             })
         }
         data.overviewData.absoluteBasalGraphSeries = LineGraphSeries(Array(absoluteBasalLineArray.size) { i -> absoluteBasalLineArray[i] }).also {
             it.setCustomPaint(Paint().also { absolutePaint ->
                 absolutePaint.style = Paint.Style.STROKE
                 absolutePaint.strokeWidth = rh.getDisplayMetrics().scaledDensity * 2
-                absolutePaint.color =rh.gac(ctx, R.attr.basal )
+                absolutePaint.color =rh.gac(ctx, info.nightscout.core.ui.R.attr.basal )
             })
         }
         rxBus.send(EventIobCalculationProgress(CalculationWorkflow.ProgressData.PREPARE_BASAL_DATA, 100, null))

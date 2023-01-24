@@ -6,9 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
+import com.google.gson.Gson
 import dagger.android.support.DaggerDialogFragment
-import info.nightscout.core.extensions.bolusCalculatorResultFromJson
-import info.nightscout.core.extensions.toJson
 import info.nightscout.database.entities.BolusCalculatorResult
 import info.nightscout.interfaces.Constants
 import info.nightscout.interfaces.profile.Profile
@@ -17,7 +16,6 @@ import info.nightscout.shared.interfaces.ResourceHelper
 import info.nightscout.shared.utils.DateUtil
 import info.nightscout.ui.R
 import info.nightscout.ui.databinding.DialogWizardinfoBinding
-import org.json.JSONObject
 import javax.inject.Inject
 
 class WizardInfoDialog : DaggerDialogFragment() {
@@ -28,10 +26,6 @@ class WizardInfoDialog : DaggerDialogFragment() {
 
     private lateinit var data: BolusCalculatorResult
 
-    fun setData(bolusCalculatorResult: BolusCalculatorResult) {
-        this.data = bolusCalculatorResult
-    }
-
     private var _binding: DialogWizardinfoBinding? = null
 
     // This property is only valid between onCreateView and
@@ -39,6 +33,11 @@ class WizardInfoDialog : DaggerDialogFragment() {
     private val binding get() = _binding!!
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        (savedInstanceState ?: arguments)?.let {
+            it.getString("data")?.let { str ->
+                data = Gson().fromJson(str, BolusCalculatorResult::class.java)
+            }
+        }
         dialog?.window?.requestFeature(Window.FEATURE_NO_TITLE)
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         isCancelable = true
@@ -47,19 +46,9 @@ class WizardInfoDialog : DaggerDialogFragment() {
         return binding.root
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        savedInstanceState?.getString("data")?.let { str ->
-            val json = JSONObject(str).apply {
-                put("mills", dateUtil.now()) // fake NS response
-            }
-            data = bolusCalculatorResultFromJson(json) ?: return
-        }
-    }
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString("data", data.toJson(true, dateUtil, profileFunction).toString())
+        outState.putString("data", Gson().toJson(data).toString())
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -72,39 +61,39 @@ class WizardInfoDialog : DaggerDialogFragment() {
         val trend = Profile.toUnitsString(data.glucoseTrend * 3, data.glucoseTrend * 3 * Constants.MGDL_TO_MMOLL, units)
         // BG
         binding.bg.text = rh.gs(R.string.format_bg_isf, bgString, isf)
-        binding.bgInsulin.text = rh.gs(R.string.format_insulin_units, data.glucoseInsulin)
+        binding.bgInsulin.text = rh.gs(info.nightscout.interfaces.R.string.format_insulin_units, data.glucoseInsulin)
         binding.bgCheckbox.isChecked = data.wasGlucoseUsed
         binding.ttCheckbox.isChecked = data.wasTempTargetUsed
         // Trend
         binding.bgTrend.text = trend
-        binding.bgTrendInsulin.text = rh.gs(R.string.format_insulin_units, data.trendInsulin)
+        binding.bgTrendInsulin.text = rh.gs(info.nightscout.interfaces.R.string.format_insulin_units, data.trendInsulin)
         binding.bgTrendCheckbox.isChecked = data.wasTrendUsed
         // COB
         binding.cob.text = rh.gs(R.string.format_cob_ic, data.cob, data.ic)
-        binding.cobInsulin.text = rh.gs(R.string.format_insulin_units, data.cobInsulin)
+        binding.cobInsulin.text = rh.gs(info.nightscout.interfaces.R.string.format_insulin_units, data.cobInsulin)
         binding.cobCheckbox.isChecked = data.wasCOBUsed
         // Bolus IOB
-        binding.bolusIobInsulin.text = rh.gs(R.string.format_insulin_units, data.bolusIOB)
+        binding.bolusIobInsulin.text = rh.gs(info.nightscout.interfaces.R.string.format_insulin_units, data.bolusIOB)
         binding.bolusIobCheckbox.isChecked = data.wasBolusIOBUsed
         // Basal IOB
-        binding.basalIobInsulin.text = rh.gs(R.string.format_insulin_units, data.basalIOB)
+        binding.basalIobInsulin.text = rh.gs(info.nightscout.interfaces.R.string.format_insulin_units, data.basalIOB)
         binding.basalIobCheckbox.isChecked = data.wasBasalIOBUsed
         // Superbolus
-        binding.sbInsulin.text = rh.gs(R.string.format_insulin_units, data.superbolusInsulin)
+        binding.sbInsulin.text = rh.gs(info.nightscout.interfaces.R.string.format_insulin_units, data.superbolusInsulin)
         binding.sbCheckbox.isChecked = data.wasSuperbolusUsed
         // Carbs
         binding.carbs.text = rh.gs(R.string.format_carbs_ic, data.carbs, data.ic)
-        binding.carbsInsulin.text = rh.gs(R.string.format_insulin_units, data.carbsInsulin)
+        binding.carbsInsulin.text = rh.gs(info.nightscout.interfaces.R.string.format_insulin_units, data.carbsInsulin)
         // Correction
-        binding.correctionInsulin.text = rh.gs(R.string.format_insulin_units, data.otherCorrection)
+        binding.correctionInsulin.text = rh.gs(info.nightscout.interfaces.R.string.format_insulin_units, data.otherCorrection)
         // Profile
         binding.profile.text = data.profileName
         // Notes
         binding.notes.text = data.note
         // Percentage
-        binding.percentUsed.text = rh.gs(R.string.format_percent, data.percentageCorrection)
+        binding.percentUsed.text = rh.gs(info.nightscout.core.ui.R.string.format_percent, data.percentageCorrection)
         // Total
-        binding.totalInsulin.text = rh.gs(R.string.format_insulin_units, data.totalInsulin)
+        binding.totalInsulin.text = rh.gs(info.nightscout.interfaces.R.string.format_insulin_units, data.totalInsulin)
     }
 
     override fun onStart() {
