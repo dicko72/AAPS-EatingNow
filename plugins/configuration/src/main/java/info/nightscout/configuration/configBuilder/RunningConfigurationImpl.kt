@@ -119,6 +119,18 @@ class RunningConfigurationImpl @Inject constructor(
             }
         }
 
+        configuration.smoothing?.let {
+            for (p in activePlugin.getSpecificPluginsListByInterface(Smoothing::class.java)) {
+                val smoothingPlugin = p as Smoothing
+                if (smoothingPlugin.javaClass.simpleName == it) {
+                    if (!p.isEnabled()) {
+                        aapsLogger.debug(LTag.CORE, "Changing smoothing plugin to ${smoothingPlugin.javaClass.simpleName}")
+                        configBuilder.performPluginSwitch(p, true, PluginType.SMOOTHING)
+                    }
+                }
+            }
+        }
+
         configuration.pump?.let {
             if (sp.getString(info.nightscout.core.utils.R.string.key_virtualpump_type, "fake") != it) {
                 sp.putString(info.nightscout.core.utils.R.string.key_virtualpump_type, it)
