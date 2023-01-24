@@ -217,23 +217,4 @@ open class TestBaseWithProfile : TestBase() {
         json.put("store", store)
         return ProfileStoreObject(profileInjector, json, dateUtil)
     }
-
-    fun getInvalidProfileStore1(): ProfileStore {
-        val json = JSONObject()
-        val store = JSONObject()
-        store.put(TESTPROFILENAME, JSONObject(invalidProfileJSON))
-        json.put("defaultProfile", TESTPROFILENAME)
-        json.put("store", store)
-        return ProfileStoreObject(profileInjector, json, dateUtil)
-    }
-
-    fun getInvalidProfileStore2(): ProfileStore {
-        val json = JSONObject()
-        val store = JSONObject()
-        store.put(TESTPROFILENAME, JSONObject(validProfileJSON))
-        store.put("invalid", JSONObject(invalidProfileJSON))
-        json.put("defaultProfile", TESTPROFILENAME + "invalid")
-        json.put("store", store)
-        return ProfileStoreObject(profileInjector, json, dateUtil)
-    }
 }
