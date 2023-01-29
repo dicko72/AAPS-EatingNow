@@ -1720,7 +1720,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
 
             // ============== INSULINREQPCT RESTRICTIONS ==============
-
+            // EN gets 75%
+            if (ENactive) insulinReqPct = ENinsulinReqPct;
             // ENW gets 85%
             if (ENWindowOK) insulinReqPct = ENWinsulinReqPct;
             // SAFETY: Restrict insulinReq when not ENW to lower dynamic insulinReq unless high
