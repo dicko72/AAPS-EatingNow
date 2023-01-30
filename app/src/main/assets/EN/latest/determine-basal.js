@@ -484,7 +484,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // TIRB2 - The TIR for the higher band above 150/8.3
     if (TIRH_percent) {
-        if (meal_data.TIRW1H > 25) TIRB2 = meal_data.TIRW1H / 100;
+        if (meal_data.TIRW1H > 25) TIRB2 = Math.max(meal_data.TIRW1H,meal_data.TIRTW1H) / 100;
         if (meal_data.TIRW2H > 0 && TIRB2 == 1) TIRB2 += meal_data.TIRW2H / 100;
         if (meal_data.TIRW3H > 0 && TIRB2 == 2) TIRB2 += meal_data.TIRW3H / 100;
         if (meal_data.TIRW4H > 0 && TIRB2 == 3) TIRB2 += meal_data.TIRW4H / 100;
