@@ -504,7 +504,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // dont use TIRB1 when lower than target
     var TIRB1_sum = Math.max(TIRB1,1); // use this for BG+ later
     TIRB1 = (bg > normalTarget && (delta >= -4 && delta <= 4 || !ENtimeOK) ? 1 + (TIRB1 * TIRH_percent) : 1); // experiment for overnight BG control regardless of delta
-    var endebug = "TIRB1:" + round(meal_data.TIRTW4H) + "/" + round(meal_data.TIRTW3H) + "/" + round(meal_data.TIRTW2H) + "/" + round(meal_data.TIRTW1H) + "=" + TIRB1 + "sum:" + TIRB1_sum;
+    //var endebug = "TIRB1:" + round(meal_data.TIRTW4H) + "/" + round(meal_data.TIRTW3H) + "/" + round(meal_data.TIRTW2H) + "/" + round(meal_data.TIRTW1H) + "=" + TIRB1 + "sum:" + TIRB1_sum;
 
     // TIRB0 - The TIR for the lowest band below normalTarget (-9/0.5)
     if (TIRH_percent) {
