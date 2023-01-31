@@ -1278,6 +1278,8 @@
     <string name="key_eatingnow_uamboost_maxbolus">key_eatingnow_uamboost_maxbolus</string>
     <string name="key_eatingnow_uambgboost">key_eatingnow_uambgboost</string>
     <string name="key_eatingnow_uambgboost_maxbolus">key_eatingnow_uambgboost_maxbolus</string>
+    <string name="key_eatingnow_uambgboost_bkfast">key_eatingnow_uambgboost_bkfast</string>
+    <string name="key_eatingnow_uambgboost_maxbolus_bkfast">key_eatingnow_uambgboost_maxbolus_bkfast</string>
     <string name="key_eatingnow_bgplus_maxbolus">key_eatingnow_bgplus_maxbolus</string>
     <string name="key_eatingnow_noenw_maxbolus">key_eatingnow_noenw_maxbolus</string>
     <string name="key_use_uamplus_noenw">key_use_uamplus_noenw</string>

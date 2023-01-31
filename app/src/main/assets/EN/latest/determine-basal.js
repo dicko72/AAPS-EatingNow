@@ -1247,8 +1247,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var insulinReq_sens = sens_normalTarget, insulinReq_sens_normalTarget = sens_normalTarget_orig;
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
-    var UAMBGPreBolus = (profile.UAMbgBoost > 0 && ENTTActive && ENWindowRunTime < ENWindowDuration && ENWindowRunTime < lastBolusAge);
-    var UAMBGPreBolused = (profile.UAMbgBoost > 0 && ENWindowRunTime < ENWindowDuration && ENWindowRunTime > lastBolusAge && profile.UAMbgBoost);
+    var UAMBGBoost = (firstMealWindow ? profile.UAMbgBoost_bkfast : profile.UAMbgBoost);
+    var UAMBGPreBolus = (UAMBGBoost > 0 && ENWindowRunTime < ENWindowDuration && ENWindowRunTime < lastBolusAge);
+    var UAMBGPreBolused = (UAMBGBoost > 0 && ENWindowRunTime < ENWindowDuration && ENWindowRunTime > lastBolusAge);
 
     // categorize the eventualBG prediction type for more accurate weighting
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
@@ -1279,8 +1280,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // PREbolus active
         if (sens_predType == "PB") {
             // prebolus exaggerated bg max
-            var insulinReq_bg_boost = profile.UAMbgBoost;
-            var preBolusBG = Math.max(bg,eventualBG) + insulinReq_bg_boost;
+            var preBolusBG = Math.max(bg,eventualBG) + UAMBGBoost;
 
             // increase predictions to force a prebolus when allowed
             minPredBG = preBolusBG;
@@ -1743,7 +1743,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (firstMealWindow) ENMaxSMB = (COB ? profile.EN_COB_maxBolus_breakfast : profile.EN_UAM_maxBolus_breakfast);
 
                 // when prebolusing
-                if (sens_predType == "PB") ENMaxSMB = (!profile.EN_UAMPlus_PreBolus ? ENMaxSMB : profile.EN_UAMPlus_PreBolus);
+                if (sens_predType == "PB" && UAMBGBoost > 0) ENMaxSMB = (firstMealWindow ? profile.EN_UAMPlus_PreBolus_bkfast : profile.EN_UAMPlus_PreBolus);
 
                 // UAM+ uses different SMB when configured
                 if (sens_predType == "UAM+") ENMaxSMB = profile.EN_UAMPlus_maxBolus;
