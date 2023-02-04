@@ -1760,7 +1760,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
             // ============== MAXBOLUS RESTRICTIONS ==============
             // if ENMaxSMB is more than AAPS safety maxbolus then consider the setting to be minutes
-            if (ENMaxSMB > profile.safety_maxbolus) ENMaxSMB = (UAMBGPreBolus ? profile.current_basal : basal) * ENMaxSMB / 60;
+            //if (ENMaxSMB > profile.safety_maxbolus) ENMaxSMB = (UAMBGPreBolus ? profile.current_basal : basal) * ENMaxSMB / 60;
+            if (ENMaxSMB > profile.safety_maxbolus) ENMaxSMB = profile.current_basal * ENMaxSMB / 60;
 
             // if ENMaxSMB is more than 0 use ENMaxSMB else use AAPS max minutes
             ENMaxSMB = (ENMaxSMB == 0 ? maxBolus : ENMaxSMB);
