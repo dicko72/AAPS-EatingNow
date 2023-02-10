@@ -1511,7 +1511,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         rT.reason += "IOB " + iob_data.iob + " &lt; " + round(-profile.current_basal * 20 / 60, 2);
         rT.reason += " and minDelta " + convert_bg(minDelta, profile) + " &gt; " + "expectedDelta " + convert_bg(expectedDelta, profile) + "; ";
         // predictive low glucose suspend mode: BG is / is projected to be < threshold
-    } else if (bg < threshold || minGuardBG < threshold) {
+    } else if (sens_predType != "PB" && bg < threshold || minGuardBG < threshold) {
         rT.reason += (minGuardBG < threshold ? "minGuard" : "") + "BG " + convert_bg(minGuardBG, profile) + "&lt;" + convert_bg(threshold, profile);
         //rT.reason += "minGuardBG " + convert_bg(minGuardBG, profile) + "&lt;" + convert_bg(threshold, profile);
         bgUndershoot = target_bg - minGuardBG;
@@ -1608,7 +1608,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     // if eventual BG is above min but BG is falling faster than expected Delta
-    if (minDelta < expectedDelta) {
+    if (minDelta < expectedDelta && sens_predType != "PB") {
         // if in SMB mode, don't cancel SMB zero temp
         if (!(microBolusAllowed && enableSMB)) {
             if (glucose_status.delta < minDelta) {
