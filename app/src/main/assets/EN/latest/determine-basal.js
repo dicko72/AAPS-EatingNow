@@ -1784,14 +1784,17 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // ============== TIME BASED RESTRICTIONS ==============
             if (ENtimeOK) {
                 // increase maxbolus if we are within the hours specified
-                maxBolus = (sens_predType == "TBR" ? 0 : round(ENMaxSMB, 2));
+                maxBolus = (sens_predType == "TBR" ? 0 : ENMaxSMB);
                 insulinReqPct = insulinReqPct;
+                maxBolus = round(maxBolus, 2);
             } else {
                 // Default insulinReqPct at night
                 insulinReqPct = insulinReqPctDefault;
                 // default SMB unless TBR
-                maxBolus = (sens_predType == "TBR" ? 0 : round(maxBolus, 2));
+                maxBolus = (sens_predType == "TBR" ? 0 : Math.min(maxBolus,ENMaxSMB) );
+                maxBolus = round(maxBolus, 2);
             }
+
 
             // ============== IOB RESTRICTION  ==============
             if (sens_predType != "PB" && max_iob_en > 0 && insulinReq > max_iob_en - iob_data.iob) {
