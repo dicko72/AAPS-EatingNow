@@ -1302,11 +1302,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = (bg < ISFbgMax && eventualBG > ISFbgMax ? 0.75 : 0.50);
             minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
 
-            // SAFETY: UAM+ fast delta with higher bg lowers eBG
-            if (bg > ISFbgMax && delta >= 15 && ENW_max_tdd == 0) {
+            // SAFETY: UAM+ fast delta with higher bg uses lowers minBG
+            //if (bg > ISFbgMax && delta >= 15 && ENW_max_tdd == 0) {
+            if (bg > ISFbgMax && delta >= 15) {
                 //eBGweight = 0.30;
                 minBG = Math.min(minPredBG,minGuardBG); // override with the smallest value
-                eventualBG = Math.min(eventualBG,minGuardBG);
+                //eventualBG = Math.min(eventualBG,minGuardBG);
             }
             AllowZT = false; // disable ZT for UAM+
 
