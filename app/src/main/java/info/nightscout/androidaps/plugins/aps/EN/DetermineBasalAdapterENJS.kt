@@ -368,7 +368,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             ENWStartTimeArray += lastENTempTargetTime
 
             val lastENTempTargetDuration = with(ENTempTarget.lastOrNull()?.duration) { this ?: 0 }
-            this.mealData.put("lastENTempTargetDuration",lastENTempTargetDuration)
+            this.mealData.put("lastENTempTargetDuration",lastENTempTargetDuration/60000)
         }
 
         // get the current EN TT info

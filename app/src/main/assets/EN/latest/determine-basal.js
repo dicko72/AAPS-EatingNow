@@ -430,11 +430,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     ENWindowRunTime = (nowUTC - (firstMealWindow ? meal_data.ENStartedTime : meal_data.ENWStartTime)) / 60000;
 
     var ENWindowDuration = (firstMealWindow ? ENBkfstWindow : profile.ENWindow);
-    //var ENWttDuration = (meal_data.activeENTempTargetDuration > 0 ? meal_data.activeENTempTargetDuration : ENWindowDuration);
-    var ENWttDuration = (meal_data.lastENTempTargetTime == meal_data.ENWStartTime ? meal_data.lastENTempTargetDuration : ENWindowDuration);
-    // if ENW is shorter than ENW duration then use this as the ENW duration
-    ENWindowDuration = Math.min(ENWttDuration, ENWindowDuration);
-    //ENWindowDuration = (firstMealWindow ? ENWindowDuration : Math.min(ENWttDuration, ENWindowDuration));
+    // when the TT was the last trigger for ENW use the duration of the last EN TT
+    ENWindowDuration = (meal_data.lastENTempTargetTime == meal_data.ENWStartTime ? meal_data.lastENTempTargetDuration : ENWindowDuration);
 
     // ENWindowOK is when there is a recent COB entry or manual bolus
     ENWindowOK = (ENactive && ENWindowRunTime < ENWindowDuration || ENWTriggerOK);
@@ -453,7 +450,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "------ ENWindow ------" + "\n";
     enlog += "nowUTC:" + nowUTC + ", ENWStartTime:" + meal_data.ENWStartTime + "\n";
     enlog += "ENWindowOK:" + ENWindowOK + ", ENWindowRunTime:" + ENWindowRunTime + ", ENWindowDuration:" + ENWindowDuration + "\n";
-    enlog += "ENTTActive:" + ENTTActive + ", ENWttDuration:" + ENWttDuration + "\n";
+    enlog += "ENTTActive:" + ENTTActive + "\n";
     enlog += "ENWIOBThreshU:" + ENWIOBThreshU + ", IOB:" + iob_data.iob + "\n";
     enlog += "firstMealWindow:" + firstMealWindow + ", firstMealScaling:" + firstMealScaling + "\n";
     enlog += "-----------------------" + "\n";
