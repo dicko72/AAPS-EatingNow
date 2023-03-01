@@ -345,7 +345,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         //if (profile.temptargetSet && !ENTTActive) ENactive = false;
         //if (profile.temptargetSet && !ENTTActive && enableSMB) ENactive = false;
         // TBR for tt that isn't EN at normal target
-        if (profile.temptargetSet && !ENTTActive && target_bg > normalTarget && enableSMB) ENactive = false;
+        if (profile.temptargetSet && !ENTTActive && target_bg > normalTarget) ENactive = false;
 
         // SAFETY: Disable EN overnight after EN hours and no override in prefs
         if (!ENtimeOK && ENactive && !profile.allowENWovernight) ENactive = false;
