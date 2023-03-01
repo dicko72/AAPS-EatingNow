@@ -345,7 +345,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         //if (profile.temptargetSet && !ENTTActive) ENactive = false;
         //if (profile.temptargetSet && !ENTTActive && enableSMB) ENactive = false;
         // TBR for tt that isn't EN at normal target
-        if (profile.temptargetSet && !ENTTActive && target_bg > normalTarget && enableSMB) ENactive = false;
+        if (profile.temptargetSet && !ENTTActive && target_bg > normalTarget) ENactive = false;
 
         // SAFETY: Disable EN overnight after EN hours and no override in prefs
         if (!ENtimeOK && ENactive && !profile.allowENWovernight) ENactive = false;
@@ -430,11 +430,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     ENWindowRunTime = (nowUTC - (firstMealWindow ? meal_data.ENStartedTime : meal_data.ENWStartTime)) / 60000;
 
     var ENWindowDuration = (firstMealWindow ? ENBkfstWindow : profile.ENWindow);
-    //var ENWttDuration = (meal_data.activeENTempTargetDuration > 0 ? meal_data.activeENTempTargetDuration : ENWindowDuration);
-    var ENWttDuration = (meal_data.lastENTempTargetTime == meal_data.ENWStartTime ? meal_data.lastENTempTargetDuration : ENWindowDuration);
-    // if ENW is shorter than ENW duration then use this as the ENW duration
-    ENWindowDuration = Math.min(ENWttDuration, ENWindowDuration);
-    //ENWindowDuration = (firstMealWindow ? ENWindowDuration : Math.min(ENWttDuration, ENWindowDuration));
+    // when the TT was the last trigger for ENW use the duration of the last EN TT
+    ENWindowDuration = (meal_data.lastENTempTargetTime == meal_data.ENWStartTime ? meal_data.lastENTempTargetDuration : ENWindowDuration);
 
     // ENWindowOK is when there is a recent COB entry or manual bolus
     ENWindowOK = (ENactive && ENWindowRunTime < ENWindowDuration || ENWTriggerOK);
@@ -453,7 +450,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "------ ENWindow ------" + "\n";
     enlog += "nowUTC:" + nowUTC + ", ENWStartTime:" + meal_data.ENWStartTime + "\n";
     enlog += "ENWindowOK:" + ENWindowOK + ", ENWindowRunTime:" + ENWindowRunTime + ", ENWindowDuration:" + ENWindowDuration + "\n";
-    enlog += "ENTTActive:" + ENTTActive + ", ENWttDuration:" + ENWttDuration + "\n";
+    enlog += "ENTTActive:" + ENTTActive + "\n";
     enlog += "ENWIOBThreshU:" + ENWIOBThreshU + ", IOB:" + iob_data.iob + "\n";
     enlog += "firstMealWindow:" + firstMealWindow + ", firstMealScaling:" + firstMealScaling + "\n";
     enlog += "-----------------------" + "\n";
@@ -620,7 +617,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         //sens_normalTarget = (delta >= -4 && delta <= 4 || TIR_sens_limited < 1 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
         //sens_normalTarget = (delta >= -4 && delta <= 4 || TIR_sens_limited < 1 || bg > ISFbgMax && TIRB2 > 1 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
         sens_normalTarget = sens_normalTarget / TIR_sens_limited;
-        TIR_sens_limited = profile_sens / sens_normalTarget;
+        //TIR_sens_limited = profile_sens / sens_normalTarget;
+        TIR_sens_limited = (firstMealScaling ? profile_sens * (profile.BreakfastPct / 100) : profile_sens) / sens_normalTarget; // show correct ISF adjustment when breakfast
     }
 
     // round SR
@@ -1298,15 +1296,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // UAM+ predictions, stronger eBGw
         if (sens_predType == "UAM+") {
-            // set initial eBGw at 50% unless bg is in range and accelerating or preBolus
-            eBGweight = 0.50;
+            // set initial eBGw at 50% unless bg is in range and predicted higher
+            eBGweight = (bg < ISFbgMax && eventualBG > ISFbgMax ? 0.75 : 0.50);
             minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
 
-            // SAFETY: UAM+ fast delta with higher bg lowers eBG
-            if (bg > ISFbgMax && delta >= 15 && ENW_max_tdd == 0) {
+            // SAFETY: UAM+ fast delta with higher bg uses lowers minBG
+            //if (bg > ISFbgMax && delta >= 15 && ENW_max_tdd == 0) {
+            if (bg > ISFbgMax && delta >= 15) {
                 //eBGweight = 0.30;
                 minBG = Math.min(minPredBG,minGuardBG); // override with the smallest value
-                eventualBG = Math.min(eventualBG,minGuardBG);
+                //eventualBG = Math.min(eventualBG,minGuardBG);
             }
             AllowZT = false; // disable ZT for UAM+
 
