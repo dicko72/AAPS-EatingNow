@@ -1249,8 +1249,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
     var UAMBGBoost = (firstMealWindow ? profile.UAMbgBoost_bkfast : profile.UAMbgBoost);
-    var UAMBGPreBolus = (UAMBGBoost > 0 && ENWindowRunTime < ENWindowDuration && ENWindowRunTime < lastBolusAge);
-    var UAMBGPreBolused = (UAMBGBoost > 0 && ENWindowRunTime < ENWindowDuration && ENWindowRunTime > lastBolusAge);
+    //var UAMBGPreBolus = (UAMBGBoost > 0 && ENWindowRunTime < ENWindowDuration && ENWindowRunTime < lastBolusAge);
+    var UAMBGPreBolus = (UAMBGBoost > 0 && ENWindowRunTime < ENWindowDuration && meal_data.ENWTDD == 0);
+    //var UAMBGPreBolused = (UAMBGBoost > 0 && ENWindowRunTime < ENWindowDuration && ENWindowRunTime > lastBolusAge);
 
     // categorize the eventualBG prediction type for more accurate weighting
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
@@ -1291,7 +1292,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             AllowZT = false; // disable ZT
 
             // when a TT starts some treatments will be processed before it starts causing issues later for prebolusing
-            if (ENWindowRunTime < 1) sens_predType = "TBR";
+            //if (ENWindowRunTime < 1) sens_predType = "TBR";
         }
 
         // UAM+ predictions, stronger eBGw
