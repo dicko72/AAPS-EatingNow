@@ -499,41 +499,41 @@
 
             <Preference android:summary="UAM+ is similar to the Boost plugin. UAM+ PreBolus can boost the BG to trigger an initial bolus for UAM. UAM+ can also be used outside the ENW to provide larger UAM boluses."></Preference>
 
-            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
-                android:defaultValue="0"
-                android:inputType="numberDecimal"
-                android:title="UAM+ Breakfast PreBolus Boost"
-                android:key="@string/key_eatingnow_uambgboost_bkfast"
-                android:dialogMessage="Initial UAM Breakfast PreBolus Boost for start of EN-TT.\neventualBG will be increased from current BG or eventualBG using this amount.\n0 will leave this option disabled."
-                validate:floatmaxNumber="200"
-                validate:floatminNumber="0"
-                validate:testType="floatNumericRange" />
+<!--            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference-->
+<!--                android:defaultValue="0"-->
+<!--                android:inputType="numberDecimal"-->
+<!--                android:title="UAM+ Breakfast PreBolus Boost"-->
+<!--                android:key="@string/key_eatingnow_uambgboost_bkfast"-->
+<!--                android:dialogMessage="Initial UAM Breakfast PreBolus Boost for start of EN-TT.\neventualBG will be increased from current BG or eventualBG using this amount.\n0 will leave this option disabled."-->
+<!--                validate:floatmaxNumber="200"-->
+<!--                validate:floatminNumber="0"-->
+<!--                validate:testType="floatNumericRange" />-->
 
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_uambgboost_maxbolus_bkfast"
-                android:title="UAM+ Breakfast PreBolus maxBolus"
+                android:title="UAM+ Breakfast PreBolus"
                 android:dialogMessage="UAM+ Breakfast PreBolus maxBolus for initial UAM BG rise within the EN-TT Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing EN UAM maxBolus limit."
                 validate:floatmaxNumber="200"
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
-            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
-                android:defaultValue="0"
-                android:inputType="numberDecimal"
-                android:title="UAM+ PreBolus Boost"
-                android:key="@string/key_eatingnow_uambgboost"
-                android:dialogMessage="Initial UAM PreBolus Boost for start of EN-TT.\neventualBG will be increased from current BG or eventualBG using this amount.\n0 will leave this option disabled."
-                validate:floatmaxNumber="200"
-                validate:floatminNumber="0"
-                validate:testType="floatNumericRange" />
+<!--            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference-->
+<!--                android:defaultValue="0"-->
+<!--                android:inputType="numberDecimal"-->
+<!--                android:title="UAM+ PreBolus Boost"-->
+<!--                android:key="@string/key_eatingnow_uambgboost"-->
+<!--                android:dialogMessage="Initial UAM PreBolus Boost for start of EN-TT.\neventualBG will be increased from current BG or eventualBG using this amount.\n0 will leave this option disabled."-->
+<!--                validate:floatmaxNumber="200"-->
+<!--                validate:floatminNumber="0"-->
+<!--                validate:testType="floatNumericRange" />-->
 
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_uambgboost_maxbolus"
-                android:title="UAM+ PreBolus maxBolus"
+                android:title="UAM+ PreBolus"
                 android:dialogMessage="UAM+ PreBolus maxBolus for initial UAM BG rise within the EN-TT Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing EN UAM maxBolus limit."
                 validate:floatmaxNumber="200"
                 validate:floatminNumber="0"
