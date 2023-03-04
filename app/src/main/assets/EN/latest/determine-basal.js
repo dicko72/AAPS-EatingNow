@@ -1568,8 +1568,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //console.error("Increasing insulinReq from " + insulinReq + " to " + newinsulinReq);
             insulinReq = newinsulinReq;
         }
-        // rate required to deliver insulinReq less insulin over 30m:
-        var rate = basal + (2 * insulinReq);
+        // rate required to deliver insulinReq less insulin over 20m:
+        var rate = basal + (3 * insulinReq);
         rate = round_basal(rate, profile);
 
         // if required temp < existing temp basal
@@ -1682,8 +1682,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
 
 
-        // rate required to deliver insulinReq more insulin over 30m:
-        rate = basal + (2 * insulinReq);
+        // rate required to deliver insulinReq more insulin over 20m:
+        rate = basal + (3 * insulinReq);
         rate = round_basal(rate, profile);
         insulinReq = round(insulinReq, 3);
         rT.insulinReq = insulinReq;
@@ -1870,6 +1870,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     rT.units = microBolus;
                     rT.reason += (!ENactive || !ENtimeOK || maxBolus == maxBolusOrig ? "No EN SMB: " : "");
                     rT.reason += (sens_predType == "PB" ? "Pre-bolusing " : "Microbolusing ") + microBolus + "/" + maxBolus + "U.";
+//                    insulinReq = insulinReq - microBolus;
+//                    // rate required to deliver remaining insulinReq over 20m:
+//                    rate = round(Math.max(basal + (3 * insulinReq),0),2);
                 }
             } else {
                 rT.reason += "Waiting " + nextBolusMins + "m " + nextBolusSeconds + "s to microbolus again. ";
