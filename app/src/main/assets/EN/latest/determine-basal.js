@@ -1283,11 +1283,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // PREbolus active
         if (sens_predType == "PB") {
             // prebolus exaggerated bg max
-            var preBolusBG = Math.max(bg,eventualBG,target_bg) * 3;
+//            var preBolusBG = Math.max(bg,eventualBG,target_bg) * 3;
             // increase predictions to force a prebolus when allowed
-            minPredBG = preBolusBG;
-            eventualBG = preBolusBG;
-            minGuardBG = preBolusBG;
+//            minPredBG = preBolusBG;
+//            eventualBG = preBolusBG;
+//            minGuardBG = preBolusBG;
 
             eBGweight = 1; // 100% eBGw as unrestricted insulin delivery is required
             AllowZT = false; // disable ZT
@@ -1763,9 +1763,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             ENMaxSMB = (sens_predType == "BG+" ? profile.EN_BGPlus_maxBolus : ENMaxSMB);
 
             // ============== MAXBOLUS RESTRICTIONS ==============
-            // if ENMaxSMB is more than AAPS safety maxbolus then consider the setting to be minutes
-            //if (ENMaxSMB > profile.safety_maxbolus) ENMaxSMB = (UAMBGPreBolus ? profile.current_basal : basal) * ENMaxSMB / 60;
-            if (ENMaxSMB > profile.safety_maxbolus) ENMaxSMB = profile.current_basal * ENMaxSMB / 60;
+            // if ENMaxSMB is more than AAPS max IOB then consider the setting to be minutes
+            if (ENMaxSMB > max_iob) ENMaxSMB = profile.current_basal * ENMaxSMB / 60;
 
             // if ENMaxSMB is more than 0 use ENMaxSMB else use AAPS max minutes
             ENMaxSMB = (ENMaxSMB == 0 ? maxBolus : ENMaxSMB);
