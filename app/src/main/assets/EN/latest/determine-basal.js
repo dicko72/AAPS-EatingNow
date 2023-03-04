@@ -1283,11 +1283,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // PREbolus active
         if (sens_predType == "PB") {
             // prebolus exaggerated bg max
-//            var preBolusBG = Math.max(bg,eventualBG,target_bg) * 3;
+            var preBolusBG = Math.max(bg,eventualBG,target_bg) * 2;
             // increase predictions to force a prebolus when allowed
-//            minPredBG = preBolusBG;
-//            eventualBG = preBolusBG;
-//            minGuardBG = preBolusBG;
+            minPredBG = preBolusBG;
+            eventualBG = preBolusBG;
+            minGuardBG = preBolusBG;
 
             eBGweight = 1; // 100% eBGw as unrestricted insulin delivery is required
             AllowZT = false; // disable ZT
@@ -1869,7 +1869,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (microBolus > 0) {
                     rT.units = microBolus;
                     rT.reason += (!ENactive || !ENtimeOK || maxBolus == maxBolusOrig ? "No EN SMB: " : "");
-                    rT.reason += "Microbolusing " + microBolus + "/" + maxBolus + "U.";
+                    rT.reason += (sens_predType == "PB" ? "Pre-bolusing " : "Microbolusing ") + microBolus + "/" + maxBolus + "U.";
                 }
             } else {
                 rT.reason += "Waiting " + nextBolusMins + "m " + nextBolusSeconds + "s to microbolus again. ";
