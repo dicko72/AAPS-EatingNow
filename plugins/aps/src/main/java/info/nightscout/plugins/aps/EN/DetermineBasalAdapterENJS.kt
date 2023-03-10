@@ -29,6 +29,7 @@ import info.nightscout.interfaces.profile.Profile
 import info.nightscout.interfaces.profile.ProfileFunction
 import info.nightscout.plugins.aps.R
 import info.nightscout.plugins.aps.logger.LoggerCallback
+import info.nightscout.plugins.aps.openAPSSMB.DetermineBasalResultSMB
 import info.nightscout.plugins.aps.utils.ScriptReader
 import info.nightscout.rx.logging.AAPSLogger
 import info.nightscout.rx.logging.LTag
@@ -86,7 +87,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
     override var scriptDebug = ""
 
     @Suppress("SpellCheckingInspection")
-    override operator fun invoke(): APSResultObject? {
+    override operator fun invoke(): `DetermineBasalResultSMB`? {
         aapsLogger.debug(LTag.APS, ">>> Invoking determine_basal <<<")
         aapsLogger.debug(LTag.APS, "Glucose status: " + mGlucoseStatus.toString().also { glucoseStatusParam = it })
         aapsLogger.debug(LTag.APS, "IOB data:       " + iobData.toString().also { iobDataParam = it })
@@ -99,7 +100,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         aapsLogger.debug(LTag.APS, "SMBAlwaysAllowed:  $smbAlwaysAllowed")
         aapsLogger.debug(LTag.APS, "CurrentTime: $currentTime")
         aapsLogger.debug(LTag.APS, "flatBGsDetected: $flatBGsDetected")
-        var determineBasalResultEN: DetermineBasalResultEN? = null
+        var determineBasalResultSMB: DetermineBasalResultSMB? = null
         val rhino = Context.enter()
         val scope: Scriptable = rhino.initStandardObjects()
         // Turn off optimization to make Rhino Android compatible
@@ -152,7 +153,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
                 aapsLogger.debug(LTag.APS, "Result: $result")
                 try {
                     val resultJson = JSONObject(result)
-                    determineBasalResultEN = DetermineBasalResultEN(injector, resultJson)
+                    determineBasalResultSMB = DetermineBasalResultSMB(injector, resultJson)
                 } catch (e: JSONException) {
                     aapsLogger.error(LTag.APS, "Unhandled exception", e)
                 }
@@ -177,7 +178,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         currentTempParam = currentTemp.toString()
         profileParam = profile.toString()
         mealDataParam = mealData.toString()
-        return determineBasalResultEN
+        return determineBasalResultSMB
     }
 
     @Suppress("SpellCheckingInspection")
@@ -218,9 +219,9 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("max_daily_safety_multiplier", sp.getInt(R.string.key_openapsama_max_daily_safety_multiplier, 3))
         this.profile.put("current_basal_safety_multiplier", sp.getDouble(R.string.key_openapsama_current_basal_safety_multiplier, 4.0))
 
-        this.profile.put("high_temptarget_raises_sensitivity", sp.getBoolean(R.string.key_high_temptarget_raises_sensitivity, ENDefaults.high_temptarget_raises_sensitivity))
+        this.profile.put("high_temptarget_raises_sensitivity", sp.getBoolean(info.nightscout.core.utils.R.string.key_high_temptarget_raises_sensitivity, ENDefaults.high_temptarget_raises_sensitivity))
         // this.profile.put("high_temptarget_raises_sensitivity", false)
-        this.profile.put("low_temptarget_lowers_sensitivity", sp.getBoolean(R.string.key_low_temptarget_lowers_sensitivity, ENDefaults.low_temptarget_lowers_sensitivity))
+        this.profile.put("low_temptarget_lowers_sensitivity", sp.getBoolean(info.nightscout.core.utils.R.string.key_low_temptarget_lowers_sensitivity, ENDefaults.low_temptarget_lowers_sensitivity))
         // this.profile.put("low_temptarget_lowers_sensitivity", false)
         this.profile.put("sensitivity_raises_target", sp.getBoolean(R.string.key_sensitivity_raises_target, ENDefaults.sensitivity_raises_target))
         this.profile.put("resistance_lowers_target", sp.getBoolean(R.string.key_resistance_lowers_target, ENDefaults.resistance_lowers_target))
@@ -254,8 +255,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("temptargetSet", tempTargetSet)
         this.profile.put("use_autosens", sp.getBoolean(R.string.key_openapsama_use_autosens, false))
         //this.profile.put("use_autosens", true)
-        this.profile.put("autosens_min", SafeParse.stringToDouble(sp.getString(R.string.key_openapsama_autosens_min, "0.8")))
-        this.profile.put("autosens_max", SafeParse.stringToDouble(sp.getString(R.string.key_openapsama_autosens_max, "1.2")))
+        this.profile.put("autosens_min", SafeParse.stringToDouble(sp.getString(info.nightscout.core.utils.R.string.key_openapsama_autosens_min, "0.8")))
+        this.profile.put("autosens_max", SafeParse.stringToDouble(sp.getString(info.nightscout.core.utils.R.string.key_openapsama_autosens_max, "1.2")))
 //**********************************************************************************************************************************************
         // patches ==== START
         this.profile.put("EatingNowTimeStart", sp.getInt(R.string.key_eatingnow_timestart, 9))
