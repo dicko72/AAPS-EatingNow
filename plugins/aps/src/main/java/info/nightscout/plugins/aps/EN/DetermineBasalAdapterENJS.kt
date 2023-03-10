@@ -17,10 +17,8 @@ import dagger.android.HasAndroidInjector
 import info.nightscout.core.extensions.convertedToAbsolute
 import info.nightscout.core.extensions.getPassedDurationToTimeInMinutes
 import info.nightscout.core.extensions.plannedRemainingMinutes
-import info.nightscout.core.aps.APSResultObject
 import info.nightscout.interfaces.GlucoseUnit
 import info.nightscout.interfaces.aps.DetermineBasalAdapter
-//import info.nightscout.interfaces.aps.SMBDefaults
 import info.nightscout.interfaces.constraints.Constraints
 import info.nightscout.interfaces.iob.GlucoseStatus
 import info.nightscout.interfaces.iob.IobCobCalculator
@@ -78,7 +76,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
     private var microBolusAllowed = false
     private var smbAlwaysAllowed = false
     private var currentTime: Long = 0
-    private var saveCgmSource = false
+    private var flatBGsDetected = false
 
     override var currentTempParam: String? = null
     override var iobDataParam: String? = null
@@ -100,7 +98,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         aapsLogger.debug(LTag.APS, "MicroBolusAllowed:  $microBolusAllowed")
         aapsLogger.debug(LTag.APS, "SMBAlwaysAllowed:  $smbAlwaysAllowed")
         aapsLogger.debug(LTag.APS, "CurrentTime: $currentTime")
-        aapsLogger.debug(LTag.APS, "isSaveCgmSource: $saveCgmSource")
+        aapsLogger.debug(LTag.APS, "flatBGsDetected: $flatBGsDetected")
         var determineBasalResultEN: DetermineBasalResultEN? = null
         val rhino = Context.enter()
         val scope: Scriptable = rhino.initStandardObjects()
@@ -144,7 +142,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
                     java.lang.Boolean.valueOf(microBolusAllowed),
                     makeParam(null, rhino, scope),  // reservoir data as undefined
                     java.lang.Long.valueOf(currentTime),
-                    java.lang.Boolean.valueOf(saveCgmSource)
+                    java.lang.Boolean.valueOf(flatBGsDetected)
                 )
                 val jsResult = determineBasalObj.call(rhino, scope, scope, params) as NativeObject
                 scriptDebug = LoggerCallback.scriptDebug
@@ -199,7 +197,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         microBolusAllowed: Boolean,
         uamAllowed: Boolean,
         advancedFiltering: Boolean,
-        isSaveCgmSource: Boolean
+        flatBGsDetected: Boolean
     ) {
         val now = System.currentTimeMillis()
         val pump = activePlugin.activePump
@@ -475,7 +473,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.microBolusAllowed = microBolusAllowed
         smbAlwaysAllowed = advancedFiltering
         currentTime = now
-        saveCgmSource = isSaveCgmSource
+        this.flatBGsDetected = flatBGsDetected
     }
 
     private fun makeParam(jsonObject: JSONObject?, rhino: Context, scope: Scriptable): Any {
