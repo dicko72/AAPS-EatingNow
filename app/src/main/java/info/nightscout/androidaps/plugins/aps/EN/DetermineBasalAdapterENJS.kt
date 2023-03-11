@@ -454,15 +454,17 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val lastCannAgeMins = ((now - lastCannulaTime) / 60000).toDouble()
         // this.mealData.put("lastCannAgeMins", lastCannAgeMins)
 
-        // sp.putDouble("TDDAvgtoCannula", 0.0) // reset
-        val TDDAvgtoCannula = sp.getDouble("TDDAvgtoCannula", 0.0)
-        if (lastCannAgeMins <= 30 || TDDAvgtoCannula == 0.0) {
-            val daysPrior = 3
-            val TDDAvgtoCannula = tddCalculator.calculate(lastCannulaTime - 86400000 * daysPrior, lastCannulaTime).totalAmount / daysPrior
-            sp.putDouble("TDDAvgtoCannula", TDDAvgtoCannula)
-        }
-        this.mealData.put("TDDAvgtoCannula", TDDAvgtoCannula)
-        val TDDLastCannula = if (lastCannAgeMins > 1440) tddCalculator.calculate(lastCannulaTime, now).totalAmount / (lastCannAgeMins/1440) else (TDDAvg7d * 0.8) + (TDD * 0.2)
+        // Calculate TDD prior to last cannula change
+        // // sp.putDouble("TDDAvgtoCannula", 0.0) // reset
+        // val TDDAvgtoCannula = sp.getDouble("TDDAvgtoCannula", 0.0)
+        // if (lastCannAgeMins <= 30 || TDDAvgtoCannula == 0.0) {
+        //     val daysPrior = 3
+        //     val TDDAvgtoCannula = tddCalculator.calculate(lastCannulaTime - 86400000 * daysPrior, lastCannulaTime).totalAmount / daysPrior
+        //     sp.putDouble("TDDAvgtoCannula", TDDAvgtoCannula)
+        // }
+        // this.mealData.put("TDDAvgtoCannula", TDDAvgtoCannula)
+
+        val TDDLastCannula = if (lastCannAgeMins > 1440 && enableSensLCTDD) tddCalculator.calculate(lastCannulaTime, now).totalAmount / (lastCannAgeMins/1440) else (TDDAvg7d * 0.8) + (TDD * 0.2)
         this.mealData.put("TDDLastCannula", TDDLastCannula)
 
         this.mealData.put("TDDAvg7d", sp.getDouble("TDDAvg7d", ((basalRate * 12)*100)/21))
