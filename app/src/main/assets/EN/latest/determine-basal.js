@@ -618,8 +618,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         //sens_normalTarget = (delta >= -4 && delta <= 4 || TIR_sens_limited < 1 || bg > ISFbgMax && TIRB2 > 1 ? sens_normalTarget / TIR_sens_limited : sens_normalTarget);
         sens_normalTarget = sens_normalTarget / TIR_sens_limited;
         //TIR_sens_limited = profile_sens / sens_normalTarget;
-        if (firstMealScaling) TIR_sens_limited = profile_sens * (profile.BreakfastPct / 100) / sens_normalTarget * (profile.BreakfastPct / 100); // show correct ISF adjustment when breakfast
-        if (!firstMealScaling) TIR_sens_limited = profile_sens / sens_normalTarget; // show correct ISF adjustment when breakfast
+//        if (firstMealScaling) TIR_sens_limited = profile_sens * (profile.BreakfastPct / 100) / sens_normalTarget * (profile.BreakfastPct / 100); // show correct ISF adjustment when breakfast
+//        if (!firstMealScaling) TIR_sens_limited = profile_sens / sens_normalTarget; // show correct ISF adjustment when breakfast
     }
 
     // round SR
