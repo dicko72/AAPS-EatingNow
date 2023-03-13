@@ -149,4 +149,103 @@
     <string name="key_objectiveusescale" translatable="false">ObjectivesScaleUsed</string>
     <string name="key_virtual_pump_upload_status" translatable="false">virtualpump_uploadstatus</string>
 
+    <!-- Eating Now-->
+    <string name="description_EN">Eating Now bolusing method</string>
+    <string name="EN">Eating Now</string>
+    <string name="EN_shortname">EN</string>
+    <string name="pref_en">EN</string>
+    <string name="key_use_eatingnow">key_use_eatingnow</string>
+    <string name="key_eatingnow_smbbgoffset">key_eatingnow_smbbgoffset</string>
+    <string name="key_eatingnow_smbbgoffset_day">key_eatingnow_smbbgoffset_day</string>
+    <string name="key_use_ghostcob" translatable="false">key_use_ghostcob</string>
+    <string name="key_use_ghostcob_always" translatable="false">key_use_ghostcob_always</string>
+    <string name="key_use_enw_overnight" translatable="false">key_use_enw_overnight</string>
+    <string name="key_eatingnow_cobboostminutes" translatable="false">key_eatingnow_cobboostminutes</string>
+    <string name="key_eatingnow_enwindowminutes" translatable="false">key_eatingnow_enwindowminutes</string>
+    <string name="key_enbkfstwindowminutes" translatable="false">key_enbkfstwindowminutes</string>
+    <string name="key_enwindowiob" translatable="false">key_enwindowiob</string>
+    <string name="key_enwminbolus" translatable="false">key_enwminbolus</string>
+    <string name="key_enautostart" translatable="false">key_enautostart</string>
+    <string name="key_eatingnow_cobboost_maxbolus_breakfast">key_eatingnow_cobboost_maxbolus_breakfast</string>
+    <string name="key_eatingnow_breakfastpct">key_eatingnow_breakfastpct</string>
+    <string name="key_eatingnow_uam_maxbolus_breakfast">key_eatingnow_uam_maxbolus_breakfast</string>
+    <string name="key_enw_breakfast_max_tdd">key_enw_breakfast_max_tdd</string>
+    <string name="key_enw_max_tdd">key_enw_max_tdd</string>
+    <string name="key_eatingnow_cobboost_maxbolus">key_eatingnow_cobboost_maxbolus</string>
+    <string name="key_eatingnow_uamboost_maxbolus">key_eatingnow_uamboost_maxbolus</string>
+    <string name="key_eatingnow_uambgboost">key_eatingnow_uambgboost</string>
+    <string name="key_eatingnow_uambgboost_maxbolus">key_eatingnow_uambgboost_maxbolus</string>
+    <string name="key_eatingnow_uambgboost_bkfast">key_eatingnow_uambgboost_bkfast</string>
+    <string name="key_eatingnow_uambgboost_maxbolus_bkfast">key_eatingnow_uambgboost_maxbolus_bkfast</string>
+    <string name="key_eatingnow_bgplus_maxbolus">key_eatingnow_bgplus_maxbolus</string>
+    <string name="key_eatingnow_noenw_maxbolus">key_eatingnow_noenw_maxbolus</string>
+    <string name="key_use_uamplus_noenw">key_use_uamplus_noenw</string>
+    <string name="key_eatingnow_uamplus_maxbolus">key_eatingnow_uamplus_maxbolus</string>
+    <string name="key_use_dynamicISF">key_use_dynamicISF</string>
+    <string name="key_eatingnow_isfbgscaler">key_eatingnow_isfbgscaler</string>
+    <string name="key_use_sr_tdd">key_use_sr_tdd</string>
+    <string name="key_eatingnow_maxisfpct">key_eatingnow_maxisfpct</string>
+    <string name="key_eatingnow_timestart">key_eatingnow_timestart</string>
+    <string name="key_eatingnow_timeend">key_eatingnow_timeend</string>
+    <string name="key_openapsama_TDD" translatable="false">7 day average Total Daily Dose</string>
+    <string name="key_use_3pm_basal" translatable="false">key_use_3pm_basal</string>
+    <string name="key_use_sens_tdd" translatable="false">key_use_sens_tdd</string>
+    <string name="key_use_sens_lctdd" translatable="false">key_use_sens_lctdd</string>
+    <string name="key_sens_tdd_scale" translatable="false">key_sens_tdd_scale</string>
+    <string name="key_eatingnow_showbutton" translatable="false">key_eatingnow_showbutton</string>
+    <string name="en_eatingnow_showbutton">Eating Now temp target</string>
+    <string name="en_resistance_per_hour" translatable="false">en_resistance_per_hour</string>
+    <string name="key_en_variant" translatable="false">en_variant</string>
+    <string name="en_variant_title">EN Variant</string>
+    <string name="key_en_max_iob" translatable="false">key_en_max_iob</string>
+    <string name="key_en_max_iob_allow_smb" translatable="false">key_en_max_iob_allow_smb</string>
+    <string name="key_eatingnow_duration" translatable="false">key_eatingnow_duration</string>
+
+<!--    &lt;!&ndash; Eating Now&ndash;&gt;-->
+<!--    <string name="description_EN">Eating Now bolusing method</string>-->
+<!--    <string name="EN">Eating Now</string>-->
+<!--    <string name="EN_shortname">EN</string>-->
+<!--    <string name="pref_en">EN</string>-->
+<!--    <string name="key_use_eatingnow">key_use_eatingnow</string>-->
+<!--    <string name="key_eatingnow_smbbgoffset">key_eatingnow_smbbgoffset</string>-->
+<!--    <string name="key_use_ghostcob" translatable="false">key_use_ghostcob</string>-->
+<!--    <string name="key_use_ghostcob_always" translatable="false">key_use_ghostcob_always</string>-->
+<!--    <string name="key_use_enw_overnight" translatable="false">key_use_enw_overnight</string>-->
+<!--    <string name="key_eatingnow_cobboostminutes" translatable="false">key_eatingnow_cobboostminutes</string>-->
+<!--    <string name="key_eatingnow_enwindowminutes" translatable="false">key_eatingnow_enwindowminutes</string>-->
+<!--    <string name="key_enbkfstwindowminutes" translatable="false">key_enbkfstwindowminutes</string>-->
+<!--    <string name="key_enwindowiob" translatable="false">key_enwindowiob</string>-->
+<!--    <string name="key_enwminbolus" translatable="false">key_enwminbolus</string>-->
+<!--    <string name="key_enautostart" translatable="false">key_enautostart</string>-->
+<!--    <string name="key_eatingnow_cobboost_maxbolus_breakfast">key_eatingnow_cobboost_maxbolus_breakfast</string>-->
+<!--    <string name="key_eatingnow_breakfastpct">key_eatingnow_breakfastpct</string>-->
+<!--    <string name="key_eatingnow_uam_maxbolus_breakfast">key_eatingnow_uam_maxbolus_breakfast</string>-->
+<!--    <string name="key_eatingnow_cobboost_maxbolus">key_eatingnow_cobboost_maxbolus</string>-->
+<!--    <string name="key_eatingnow_uamboost_maxbolus">key_eatingnow_uamboost_maxbolus</string>-->
+<!--    &lt;!&ndash;    <string name="key_eatingnow_uam_maxbolus">key_eatingnow_uam_maxbolus</string>&ndash;&gt;-->
+<!--    <string name="key_eatingnow_uambgboost">key_eatingnow_uambgboost</string>-->
+<!--    <string name="key_eatingnow_uambgboost_maxbolus">key_eatingnow_uambgboost_maxbolus</string>-->
+<!--    <string name="key_use_uamplus_noenw">key_use_uamplus_noenw</string>-->
+<!--    <string name="key_UAM_COB_Bkfst">key_UAM_COB_Bkfst</string>-->
+<!--    <string name="key_UAM_COB">key_UAM_COB</string>-->
+
+<!--    &lt;!&ndash;    <string name="key_eatingnow_isfboost_maxbolus">key_eatingnow_isfboost_maxbolus</string>&ndash;&gt;-->
+<!--    <string name="key_use_dynamicISF">key_use_dynamicISF</string>-->
+<!--    <string name="key_eatingnow_isfbgscaler">key_eatingnow_isfbgscaler</string>-->
+<!--    <string name="key_use_sr_tdd">key_use_sr_tdd</string>-->
+<!--    <string name="key_eatingnow_maxisfpct">key_eatingnow_maxisfpct</string>-->
+<!--    <string name="key_eatingnow_timestart">key_eatingnow_timestart</string>-->
+<!--    <string name="key_eatingnow_timeend">key_eatingnow_timeend</string>-->
+<!--    <string name="key_openapsama_TDD" translatable="false">7 day average Total Daily Dose</string>-->
+<!--    <string name="key_use_3pm_basal" translatable="false">key_use_3pm_basal</string>-->
+<!--    <string name="key_use_sens_tdd" translatable="false">key_use_sens_tdd</string>-->
+<!--    <string name="key_use_sens_lctdd" translatable="false">key_use_sens_lctdd</string>-->
+<!--    <string name="key_sens_tdd_scale" translatable="false">key_sens_tdd_scale</string>-->
+<!--    <string name="key_eatingnow_showbutton" translatable="false">key_eatingnow_showbutton</string>-->
+<!--    <string name="en_eatingnow_showbutton">Eating Now temp target</string>-->
+<!--    <string name="en_resistance_per_hour" translatable="false">en_resistance_per_hour</string>-->
+<!--    <string name="key_en_variant" translatable="false">en_variant</string>-->
+<!--    <string name="en_variant_title">EN Variant</string>-->
+<!--    <string name="key_treatmentssafety_maxbolus">key_treatmentssafety_maxbolus</string>-->
+
 </resources>

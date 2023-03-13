@@ -35,8 +35,8 @@ internal interface TemporaryTargetDao : TraceableDao<TemporaryTarget> {
     fun getTemporaryTargetDataFromTime(timestamp: Long): Single<List<TemporaryTarget>>
 
     // EATING NOW TT
-    @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE timestamp >= :timestamp AND isValid = 1 AND referenceId IS NULL AND reason = :reason ORDER BY timestamp ASC LIMIT 1")
-    fun getENTemporaryTargetDataFromTime(timestamp: Long, reason: TemporaryTarget.Reason): Single<List<TemporaryTarget>>
+    @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE timestamp >= :timestamp AND timestamp <= :to AND isValid = 1 AND referenceId IS NULL AND reason = :reason ORDER BY timestamp ASC")
+    fun getENTemporaryTargetDataFromTimetoTime(timestamp: Long, to: Long, reason: TemporaryTarget.Reason): Single<List<TemporaryTarget>>
 
     // EATING NOW TT at time
     @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE timestamp <= :timestamp AND (timestamp + duration) > :timestamp AND reason = :reason AND referenceId IS NULL AND isValid = 1 ORDER BY timestamp DESC LIMIT 1")

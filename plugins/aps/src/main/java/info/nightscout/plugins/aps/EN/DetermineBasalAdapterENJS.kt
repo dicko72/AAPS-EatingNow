@@ -119,7 +119,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             rhino.evaluateString(scope, "require = function() {return round_basal;};", "JavaScript", 0, null)
 
             //generate functions "determine_basal" and "setTempBasal"
-            val enVariant = sp.getString(R.string.key_en_variant, ENDefaults.variant)
+            val enVariant = sp.getString(info.nightscout.core.utils.R.string.key_en_variant, ENDefaults.variant)
             this.profile.put("variant", enVariant);
 
             rhino.evaluateString(scope, readFile("EN/$enVariant/determine-basal.js"), "JavaScript", 0, null)
@@ -208,7 +208,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("type", "current")
         this.profile.put("max_daily_basal", profile.getMaxDailyBasal())
         this.profile.put("max_basal", maxBasal)
-        this.profile.put("safety_maxbolus", sp.getDouble(R.string.key_treatmentssafety_maxbolus, 3.0))
+        this.profile.put("safety_maxbolus", sp.getDouble(info.nightscout.core.utils.R.string.key_treatmentssafety_maxbolus, 3.0))
         this.profile.put("min_bg", minBg.roundToInt())
         this.profile.put("max_bg", maxBg.roundToInt())
         this.profile.put("target_bg", targetBg.roundToInt())
@@ -259,41 +259,47 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("autosens_max", SafeParse.stringToDouble(sp.getString(info.nightscout.core.utils.R.string.key_openapsama_autosens_max, "1.2")))
 //**********************************************************************************************************************************************
         // patches ==== START
-        this.profile.put("EatingNowTimeStart", sp.getInt(R.string.key_eatingnow_timestart, 9))
-        this.profile.put("EatingNowTimeEnd", sp.getInt(R.string.key_eatingnow_timeend, 17))
+        this.profile.put("EatingNowTimeStart", sp.getInt(info.nightscout.core.utils.R.string.key_eatingnow_timestart, 9))
+        this.profile.put("EatingNowTimeEnd", sp.getInt(info.nightscout.core.utils.R.string.key_eatingnow_timeend, 17))
         val normalTargetBG = profile.getTargetMgdl().roundToInt()
         this.profile.put("normal_target_bg", normalTargetBG)
-        this.profile.put("enableGhostCOB", sp.getBoolean(R.string.key_use_ghostcob, false))
-        this.profile.put("enableGhostCOBAlways", sp.getBoolean(R.string.key_use_ghostcob_always, false))
+        this.profile.put("EN_max_iob", sp.getDouble(info.nightscout.core.utils.R.string.key_en_max_iob, 0.0))
+        this.profile.put("EN_max_iob_allow_smb", sp.getBoolean(info.nightscout.core.utils.R.string.key_en_max_iob_allow_smb, true))
+        this.profile.put("enableGhostCOB", sp.getBoolean(info.nightscout.core.utils.R.string.key_use_ghostcob, false))
+        this.profile.put("enableGhostCOBAlways", sp.getBoolean(info.nightscout.core.utils.R.string.key_use_ghostcob_always, false))
 
-        this.profile.put("allowENWovernight", sp.getBoolean(R.string.key_use_enw_overnight, false))
+        this.profile.put("allowENWovernight", sp.getBoolean(info.nightscout.core.utils.R.string.key_use_enw_overnight, false))
         //this.profile.put("COBWindow", sp.getInt(R.string.key_eatingnow_cobboostminutes, 0))
 
         // Within the EN Window ********************************************************************************
-        this.profile.put("ENWindow", sp.getInt(R.string.key_eatingnow_enwindowminutes, 0))
-        this.profile.put("ENWIOBTrigger", sp.getDouble(R.string.key_enwindowiob, 0.0))
-        val enwMinBolus = sp.getDouble(R.string.key_enwminbolus, 0.0)
+        this.profile.put("ENWindow", sp.getInt(info.nightscout.core.utils.R.string.key_eatingnow_enwindowminutes, 0))
+        this.profile.put("ENWIOBTrigger", sp.getDouble(info.nightscout.core.utils.R.string.key_enwindowiob, 0.0))
+        val enwMinBolus = sp.getDouble(info.nightscout.core.utils.R.string.key_enwminbolus, 0.0)
         this.profile.put("ENWMinBolus", enwMinBolus)
-        this.profile.put("ENautostart", sp.getBoolean(R.string.key_enautostart, false))
+        this.profile.put("ENautostart", sp.getBoolean(info.nightscout.core.utils.R.string.key_enautostart, false))
 
         // Breakfast / first meal
-        this.profile.put("ENBkfstWindow", sp.getInt(R.string.key_enbkfstwindowminutes, 0))
-        this.profile.put("BreakfastPct", sp.getInt(R.string.key_eatingnow_breakfastpct, 100))
-        this.profile.put("EN_COB_maxBolus_breakfast", sp.getDouble(R.string.key_eatingnow_cobboost_maxbolus_breakfast, 0.0))
-        this.profile.put("EN_UAM_maxBolus_breakfast", sp.getDouble(R.string.key_eatingnow_uam_maxbolus_breakfast, 0.0))
+        this.profile.put("ENBkfstWindow", sp.getInt(info.nightscout.core.utils.R.string.key_enbkfstwindowminutes, 0))
+        this.profile.put("BreakfastPct", sp.getInt(info.nightscout.core.utils.R.string.key_eatingnow_breakfastpct, 100))
+        this.profile.put("EN_COB_maxBolus_breakfast", sp.getDouble(info.nightscout.core.utils.R.string.key_eatingnow_cobboost_maxbolus_breakfast, 0.0))
+        this.profile.put("EN_UAM_maxBolus_breakfast", sp.getDouble(info.nightscout.core.utils.R.string.key_eatingnow_uam_maxbolus_breakfast, 0.0))
         // other meals
-        this.profile.put("EN_COB_maxBolus", sp.getDouble(R.string.key_eatingnow_cobboost_maxbolus, 0.0))
-        this.profile.put("EN_UAM_maxBolus", sp.getDouble(R.string.key_eatingnow_uamboost_maxbolus, 0.0))
-        this.profile.put("UAMbgBoost", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_uambgboost, 0.0),profileFunction.getUnits()))
-        this.profile.put("EN_UAMbgBoost_maxBolus", sp.getDouble(R.string.key_eatingnow_uambgboost_maxbolus, 0.0))
-        this.profile.put("EN_UAMPlus_NoENW", sp.getBoolean(R.string.key_use_uamplus_noenw, false))
-        this.profile.put("UAM_COB_Bkfst", sp.getInt(R.string.key_UAM_COB_Bkfst, 0))
-        this.profile.put("UAM_COB", sp.getInt(R.string.key_UAM_COB, 0))
+        this.profile.put("EN_COB_maxBolus", sp.getDouble(info.nightscout.core.utils.R.string.key_eatingnow_cobboost_maxbolus, 0.0))
+        this.profile.put("EN_UAM_maxBolus", sp.getDouble(info.nightscout.core.utils.R.string.key_eatingnow_uamboost_maxbolus, 0.0))
+        // this.profile.put("UAMbgBoost_bkfast", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_uambgboost_bkfast, 0.0),profileFunction.getUnits()))
+        this.profile.put("EN_UAMPlus_PreBolus_bkfast", sp.getDouble(info.nightscout.core.utils.R.string.key_eatingnow_uambgboost_maxbolus_bkfast, 0.0))
+        // this.profile.put("UAMbgBoost", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_uambgboost, 0.0),profileFunction.getUnits()))
+        this.profile.put("EN_UAMPlus_PreBolus", sp.getDouble(info.nightscout.core.utils.R.string.key_eatingnow_uambgboost_maxbolus, 0.0))
+        this.profile.put("EN_UAMPlus_NoENW", sp.getBoolean(info.nightscout.core.utils.R.string.key_use_uamplus_noenw, false))
+        this.profile.put("EN_UAMPlus_maxBolus", sp.getDouble(info.nightscout.core.utils.R.string.key_eatingnow_uamplus_maxbolus, 0.0))
+        this.profile.put("EN_NoENW_maxBolus", sp.getDouble(info.nightscout.core.utils.R.string.key_eatingnow_noenw_maxbolus, 0.0))
+        this.profile.put("EN_BGPlus_maxBolus", sp.getDouble(info.nightscout.core.utils.R.string.key_eatingnow_bgplus_maxbolus, 0.0))
 
-        this.profile.put("SMBbgOffset", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset, 0.0),profileFunction.getUnits()))
-        this.profile.put("ISFbgscaler", sp.getDouble(R.string.key_eatingnow_isfbgscaler, 0.0))
-        this.profile.put("MaxISFpct", sp.getInt(R.string.key_eatingnow_maxisfpct, 100))
-        this.profile.put("useDynISF", sp.getBoolean(R.string.key_use_dynamicISF, true))
+        this.profile.put("SMBbgOffset", Profile.toMgdl(sp.getDouble(info.nightscout.core.utils.R.string.key_eatingnow_smbbgoffset, 0.0),profileFunction.getUnits()))
+        this.profile.put("SMBbgOffset_day", Profile.toMgdl(sp.getDouble(info.nightscout.core.utils.R.string.key_eatingnow_smbbgoffset_day, 0.0),profileFunction.getUnits()))
+        this.profile.put("ISFbgscaler", sp.getDouble(info.nightscout.core.utils.R.string.key_eatingnow_isfbgscaler, 0.0))
+        this.profile.put("MaxISFpct", sp.getInt(info.nightscout.core.utils.R.string.key_eatingnow_maxisfpct, 100))
+        this.profile.put("useDynISF", sp.getBoolean(info.nightscout.core.utils.R.string.key_use_dynamicISF, true))
 
         this.profile.put("insulinType", activePlugin.activeInsulin.friendlyName)
         this.profile.put("insulinPeak", activePlugin.activeInsulin.insulinConfiguration.peak/60000)
@@ -329,26 +335,54 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.mealData.put("lastBolusTime", mealData.lastBolusTime)
         this.mealData.put("lastCarbTime", mealData.lastCarbTime)
 
-        // get the last carb time for EN activation
-        val getlastCarbs = repository.getLastCarbsRecordWrapped().blockingGet()
-        val lastCarbTime = if (getlastCarbs is ValueWrapper.Existing) getlastCarbs.value.timestamp else 0L
-        this.mealData.put("lastNormalCarbTime", lastCarbTime)
+        // set the EN start time based on prefs
+        val ENStartTime = 3600000 * sp.getInt(info.nightscout.core.utils.R.string.key_eatingnow_timestart, 9) + MidnightTime.calc(now)
+        // Create array to contain treatment times for ENWStartTime for today
+        var ENWStartTimeArray: Array<Long> = arrayOf() // Create array to contain last treatment times for ENW for today
+        var ENStartedArray: Array<Long> = arrayOf() // Create array to contain first treatment times for ENStartTime for today
 
-        // get the first carb time since EN activation
-        val ENStartTime = 3600000 * sp.getInt(R.string.key_eatingnow_timestart, 9) + MidnightTime.calc(now)
-        val getCarbsSinceENStart = repository.getCarbsDataFromTime(ENStartTime,true).blockingGet()
-        val firstCarbTime = getCarbsSinceENStart.lastOrNull()?.timestamp
-        this.mealData.put("firstCarbTime",firstCarbTime)
+        // get the FIRST and LAST carb time since EN activation NEW
+        repository.getCarbsDataFromTimeToTime(ENStartTime,now,false).blockingGet().let { ENCarbs->
+        // repository.getCarbsDataFromTime(ENStartTime,false).blockingGet().let { ENCarbs->
 
-        // get the FIRST bolus time since EN activation
-        repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().lastOrNull()?.let { firstENBolus->
-            this.mealData.put("firstENBolusTime", firstENBolus.timestamp)
-            this.mealData.put("firstENBolusUnits", firstENBolus.amount)
+            val firstENCarbTime = with(ENCarbs.firstOrNull()?.timestamp) { this ?: 0 }
+            this.mealData.put("firstENCarbTime",firstENCarbTime)
+            if (firstENCarbTime >0) ENStartedArray += firstENCarbTime
+
+            val lastENCarbTime = with(ENCarbs.lastOrNull()?.timestamp) { this ?: 0 }
+            this.mealData.put("lastENCarbTime",lastENCarbTime)
+            ENWStartTimeArray += lastENCarbTime
         }
 
-        // get the FIRST EN TT time since EN activation
-        repository.getENTemporaryTargetDataFromTime(ENStartTime,true).blockingGet().lastOrNull()?.let { firstENTempTarget ->
-            this.mealData.put("firstENTempTargetTime", firstENTempTarget.timestamp)
+        // get the FIRST and LAST bolus time since EN activation NEW
+        repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().let { ENBolus->
+            val firstENBolusTime = with(ENBolus.firstOrNull()?.timestamp) { this ?: 0 }
+            this.mealData.put("firstENBolusTime",firstENBolusTime)
+            if (firstENBolusTime >0) ENStartedArray += firstENBolusTime
+
+            val firstENBolusUnits = with(ENBolus.firstOrNull()?.amount) { this ?: 0 }
+            this.mealData.put("firstENBolusUnits",firstENBolusUnits)
+
+            val lastENBolusTime = with(ENBolus.lastOrNull()?.timestamp) { this ?: 0 }
+            this.mealData.put("lastENBolusTime",lastENBolusTime)
+            ENWStartTimeArray += lastENBolusTime
+
+            val lastENBolusUnits = with(ENBolus.lastOrNull()?.amount) { this ?: 0 }
+            this.mealData.put("lastENBolusUnits",lastENBolusUnits)
+        }
+
+        // get the FIRST and LAST ENTempTarget time since EN activation NEW
+        repository.getENTemporaryTargetDataFromTimetoTime(ENStartTime,now,true).blockingGet().let { ENTempTarget ->
+            val firstENTempTargetTime = with(ENTempTarget.firstOrNull()?.timestamp) { this ?: 0 }
+            this.mealData.put("firstENTempTargetTime",firstENTempTargetTime)
+            if (firstENTempTargetTime >0) ENStartedArray += firstENTempTargetTime
+
+            val lastENTempTargetTime = with(ENTempTarget.lastOrNull()?.timestamp) { this ?: 0 }
+            this.mealData.put("lastENTempTargetTime",lastENTempTargetTime)
+            ENWStartTimeArray += lastENTempTargetTime
+
+            val lastENTempTargetDuration = with(ENTempTarget.lastOrNull()?.duration) { this ?: 0 }
+            this.mealData.put("lastENTempTargetDuration",lastENTempTargetDuration/60000)
         }
 
         // get the current EN TT info
@@ -357,23 +391,31 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             this.mealData.put("activeENTempTargetDuration",activeENTempTarget.duration/60000)
         }
 
-        // get the LAST bolus time since EN activation
-        repository.getENBolusFromTimeOfType(ENStartTime, false, Bolus.Type.NORMAL, enwMinBolus).blockingGet().lastOrNull()?.let { it ->
-            this.mealData.put("lastENBolusTime", it.timestamp)
-            this.mealData.put("lastENBolusUnits", it.amount)
-        }
+        val ENStartedTime = if (ENStartedArray.isNotEmpty()) ENStartedArray.min() else 0 // get the minimum (earliest) time from the array or make it 0
+        this.mealData.put("ENStartedTime", ENStartedTime) // the time EN started today
+
+        val ENWStartTime = if (ENWStartTimeArray.isNotEmpty()) ENWStartTimeArray.max() else 0 // get the maximum (latest) time from the array or make it 0
+
+        // get the TDD since ENW Start
+        this.mealData.put("ENWStartTime", ENWStartTime)
+        //Constants.MAX_ENTT_DURATION
+        this.mealData.put("ENWTDD", if (now <= ENWStartTime+(4*3600000)) tddCalculator.calculateDaily(ENWStartTime, now)?.bolusAmount else 0)
+        // this.mealData.put("ENWTDD", if (now <= ENWStartTime+(4*3600000)) tddCalculator.calculate(ENWStartTime, now).totalAmount else 0)
+        // this.mealData.put("ENWTDD", 0)
+        this.profile.put("ENW_breakfast_max_tdd", sp.getDouble(info.nightscout.core.utils.R.string.key_enw_breakfast_max_tdd, 0.0))
+        this.profile.put("ENW_max_tdd", sp.getDouble(info.nightscout.core.utils.R.string.key_enw_max_tdd, 0.0))
 
         // 3PM is used as a low basal point at which the rest of the day leverages for ISF variance when using one ISF in the profile
-        this.profile.put("enableBasalAt3PM", sp.getBoolean(R.string.key_use_3pm_basal, false))
+        this.profile.put("enableBasalAt3PM", sp.getBoolean(info.nightscout.core.utils.R.string.key_use_3pm_basal, false))
         this.profile.put("BasalAt3PM", profile.getBasal(3600000*15+MidnightTime.calc(now)))
 
         // TDD related functions
-        val enableSensTDD = sp.getBoolean(R.string.key_use_sens_tdd, false)
+        val enableSensTDD = sp.getBoolean(info.nightscout.core.utils.R.string.key_use_sens_tdd, false)
         this.profile.put("use_sens_TDD", enableSensTDD) // Override profile ISF with TDD ISF if selected in prefs
-        val enableSensLCTDD = sp.getBoolean(R.string.key_use_sens_lctdd, false)
+        val enableSensLCTDD = sp.getBoolean(info.nightscout.core.utils.R.string.key_use_sens_lctdd, false)
         this.profile.put("use_sens_LCTDD", enableSensLCTDD) // Override profile ISF with LCTDD ISF if selected in prefs
-        this.profile.put("sens_TDD_scale",SafeParse.stringToDouble(sp.getString(R.string.key_sens_tdd_scale,"100")))
-        val enableSRTDD = sp.getBoolean(R.string.key_use_sr_tdd, false)
+        this.profile.put("sens_TDD_scale",SafeParse.stringToDouble(sp.getString(info.nightscout.core.utils.R.string.key_sens_tdd_scale,"100")))
+        val enableSRTDD = sp.getBoolean(info.nightscout.core.utils.R.string.key_use_sr_tdd, false)
         this.profile.put("enableSRTDD", enableSRTDD)
 
 
@@ -396,7 +438,9 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         // calculate the rest of the TDD data
         var TDDAvg1d = tddCalculator.averageTDD(tddCalculator.calculate(1, allowMissingDays = false))?.totalAmount
         if (TDDAvg1d == null || TDDAvg1d < basalRate) TDDAvg1d =  tddCalculator.calculateDaily(-24, 0)?.totalAmount
-        if (TDDAvg1d!! < basalRate) TDDAvg1d = ((basalRate * 12)*100)/21
+        if (TDDAvg1d != null) {
+            if (TDDAvg1d < basalRate) TDDAvg1d = ((basalRate * 12)*100)/21
+        }
         this.mealData.put("TDDAvg1d", TDDAvg1d)
 
         val TDDLast4h = tddCalculator.calculateDaily(-4, 0)?.totalAmount
@@ -405,17 +449,18 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val TDDLast8h = tddCalculator.calculateDaily(-8, 0)?.totalAmount
         this.mealData.put("TDDLast8h", TDDLast8h)
 
-        val TDDLast8hfor4h = TDDLast8h!! - TDDLast4h!!
+        val TDDLast8hfor4h = tddCalculator.calculateDaily(-8, -4)?.totalAmount
         this.mealData.put("TDDLast8hfor4h", TDDLast8hfor4h)
 
-        val TDDLast8_wt = (((1.4 * TDDLast4h) + (0.6 * TDDLast8hfor4h)) * 3)
-        var TDD8h_exp = (3 * TDDLast8h)
+        val TDDLast8_wt = (((1.4 * TDDLast4h!!) + (0.6 * TDDLast8hfor4h!!)) * 3)
+        val TDD8h_exp = (3 * TDDLast8h!!)
+        this.mealData.put("TDD8h_exp",TDD8h_exp)
 
         if ( TDDLast8_wt < (0.75 * TDDAvg7d)) TDDAvg7d = TDDLast8_wt + ( ( TDDLast8_wt / TDDAvg7d ) * ( TDDAvg7d - TDDLast8_wt ) )
 
         this.mealData.put("TDDAvg7d",TDDAvg7d)
 
-        val TDD = (TDDLast8_wt * 0.33) + (TDDAvg7d!! * 0.34) + (TDDAvg1d!! * 0.33)
+        val TDD = (TDDLast8_wt * 0.33) + (TDDAvg7d * 0.34) + (TDDAvg1d!! * 0.33)
         this.mealData.put("TDD", TDD)
 
         val lastCannula = repository.getLastTherapyRecordUpToNow(TherapyEvent.Type.CANNULA_CHANGE).blockingGet()
@@ -424,47 +469,59 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val lastCannAgeMins = ((now - lastCannulaTime) / 60000).toDouble()
         // this.mealData.put("lastCannAgeMins", lastCannAgeMins)
 
-        // sp.putDouble("TDDAvgtoCannula", 0.0) // reset
-        val TDDAvgtoCannula = sp.getDouble("TDDAvgtoCannula", 0.0)
-        if (lastCannAgeMins <= 30 || TDDAvgtoCannula == 0.0) {
-            val daysPrior = 3
-            //val TDDAvgtoCannula = tddCalculator.calculate(lastCannulaTime - 86400000 * daysPrior, allowMissingDays = false)?.totalAmount / daysPrior
+        // Calculate TDD prior to last cannula change
+        // // sp.putDouble("TDDAvgtoCannula", 0.0) // reset
+        // val TDDAvgtoCannula = sp.getDouble("TDDAvgtoCannula", 0.0)
+        // if (lastCannAgeMins <= 30 || TDDAvgtoCannula == 0.0) {
+        //     val daysPrior = 3
+        //     val TDDAvgtoCannula = tddCalculator.calculate(lastCannulaTime - 86400000 * daysPrior, lastCannulaTime).totalAmount / daysPrior
+        //     sp.putDouble("TDDAvgtoCannula", TDDAvgtoCannula)
+        // }
+        // this.mealData.put("TDDAvgtoCannula", TDDAvgtoCannula)
 
-            sp.putDouble("TDDAvgtoCannula", TDDAvgtoCannula)
-        }
-        this.mealData.put("TDDAvgtoCannula", TDDAvgtoCannula)
-        //val TDDLastCannula = if (lastCannAgeMins > 1440) tddCalculator.calculate(lastCannulaTime, allowMissingDays = false)?.totalAmount / (lastCannAgeMins/1440) else (TDDAvg7d * 0.8) + (TDD * 0.2)
-        //this.mealData.put("TDDLastCannula", TDDLastCannula)
+        val TDDLastCannula = if (lastCannAgeMins > 1440 && enableSensLCTDD) tddCalculator.calculateDaily(lastCannulaTime, now)?.totalAmount?.div((lastCannAgeMins/1440)) else (TDDAvg7d * 0.8) + (TDD * 0.2)
+        this.mealData.put("TDDLastCannula", TDDLastCannula)
 
         this.mealData.put("TDDAvg7d", sp.getDouble("TDDAvg7d", ((basalRate * 12)*100)/21))
         this.mealData.put("TDDLastUpdate", sp.getLong("TDDLastUpdate", 0))
         // }
 
         // TIR Windows - 4 hours prior to current time // 4.0 - 10.0
-        val resistancePerHr = sp.getDouble(R.string.en_resistance_per_hour, 0.0)
-        this.profile.put("resistancePerHr", sp.getDouble(R.string.en_resistance_per_hour, 0.0))
+        val resistancePerHr = sp.getDouble(info.nightscout.core.utils.R.string.en_resistance_per_hour, 0.0)
+        this.profile.put("resistancePerHr", resistancePerHr)
         if (resistancePerHr > 0) {
-            // this.mealData.put("TIRW4H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4, 3, 72.0, 150.0)).abovePct())
-            // this.mealData.put("TIRW3H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3, 2, 72.0, 150.0)).abovePct())
-            // this.mealData.put("TIRW2H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2, 1, 72.0, 150.0)).abovePct())
-            // this.mealData.put("TIRW1H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1, 0, 72.0, 150.0)).abovePct())
-            this.mealData.put("TIRW4H", 0)
-            this.mealData.put("TIRW3H", 0)
-            this.mealData.put("TIRW2H", 0)
-            this.mealData.put("TIRW1H", 0)
+            this.mealData.put("TIRW4H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4, 3, 72.0, 150.0)).abovePct())
+            this.mealData.put("TIRW3H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3, 2, 72.0, 150.0)).abovePct())
+            this.mealData.put("TIRW2H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2, 1, 72.0, 150.0)).abovePct())
+            this.mealData.put("TIRW1H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1, 0, 72.0, 150.0)).abovePct())
         }
 
         // TIR Windows for normalTarget
         if (resistancePerHr > 0) {
-            // this.mealData.put("TIRTW4H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4, 3, normalTargetBG-9.0, normalTargetBG+9.0)).abovePct())
-            // this.mealData.put("TIRTW3H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3, 2, normalTargetBG-9.0, normalTargetBG+9.0)).abovePct())
-            // this.mealData.put("TIRTW2H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2, 1, normalTargetBG-9.0, normalTargetBG+9.0)).abovePct())
-            // this.mealData.put("TIRTW1H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1, 0, normalTargetBG-9.0, normalTargetBG+9.0)).abovePct())
 
-            this.mealData.put("TIRTW4L",0)
-            this.mealData.put("TIRTW3L",0)
-            this.mealData.put("TIRTW2L",0)
-            this.mealData.put("TIRTW1L",0)
+            // TIR 4h ago
+            tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4, 3, normalTargetBG-9.0, normalTargetBG+18.0)).let { tir ->
+                this.mealData.put("TIRTW4H",tir.abovePct())
+                this.mealData.put("TIRTW4L",tir.belowPct())
+            }
+
+            // TIR 3h ago
+            tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3, 2, normalTargetBG-9.0, normalTargetBG+18.0)).let { tir ->
+                this.mealData.put("TIRTW3H",tir.abovePct())
+                this.mealData.put("TIRTW3L",tir.belowPct())
+            }
+
+            // TIR 2h ago
+            tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2, 1, normalTargetBG-9.0, normalTargetBG+18.0)).let { tir ->
+                this.mealData.put("TIRTW2H",tir.abovePct())
+                this.mealData.put("TIRTW2L",tir.belowPct())
+            }
+
+            // TIR 1h ago
+            tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1, 0, normalTargetBG-9.0, normalTargetBG+18.0)).let { tir ->
+                this.mealData.put("TIRTW1H",tir.abovePct())
+                this.mealData.put("TIRTW1L",tir.belowPct())
+            }
         }
 
         if (constraintChecker.isAutosensModeEnabled().value()) {

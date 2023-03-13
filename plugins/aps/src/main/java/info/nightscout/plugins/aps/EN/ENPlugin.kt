@@ -67,10 +67,10 @@ class ENPlugin @Inject constructor(
         .mainType(PluginType.APS)
         .fragmentClass(OpenAPSFragment::class.java.name)
         .pluginIcon(info.nightscout.core.ui.R.drawable.ic_generic_icon)
-        .pluginName(R.string.EN)
-        .shortName(R.string.EN_shortname)
+        .pluginName(info.nightscout.core.utils.R.string.EN)
+        .shortName(info.nightscout.core.utils.R.string.EN_shortname)
         .preferencesId(R.xml.pref_eatingnow)
-        .description(R.string.description_EN),
+        .description(info.nightscout.core.utils.R.string.description_EN),
     aapsLogger, rh, injector
 ), APS, Constraints {
 
