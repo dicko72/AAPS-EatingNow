@@ -174,5 +174,11 @@
     <string name="overview_editquickwizard_usepercentage">Percentage calculation</string>
     <string name="app_default">Application default</string>
     <string name="a11y_drag_and_drop_handle">drag and drop handle</string>
+    <string name="manual">manual</string>
+    <string name="eatingsoon">eatingsoon</string>
+    <string name="eatingnow">eatingnow</string>
+    <string name="activity">activity</string>
+    <string name="hypo">hypo</string>
+    <string name="key_en_variant">key_en_variant</string>
 
 </resources>

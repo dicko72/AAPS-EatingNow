@@ -384,7 +384,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         if (TDDLastUpdate == 0L || TDDHrSinceUpdate > 6) {
             // Generate the data for the larger datasets every 6 hours
-            var TDDAvg7d = tddCalculator.averageTDD(tddCalculator.calculate(7))?.totalAmount
+            var TDDAvg7d = tddCalculator.averageTDD(tddCalculator.calculate(7, allowMissingDays = false))?.totalAmount
             if (TDDAvg7d == 0.0 || TDDAvg7d == null ) TDDAvg7d = ((basalRate * 12)*100)/21
             sp.putDouble("TDDAvg7d", TDDAvg7d)
             sp.putLong("TDDLastUpdate", now)
@@ -394,18 +394,18 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         var TDDAvg7d = sp.getDouble("TDDAvg7d", ((basalRate * 12)*100)/21)
 
         // calculate the rest of the TDD data
-        var TDDAvg1d = tddCalculator.averageTDD(tddCalculator.calculate(1))?.totalAmount
-        if (TDDAvg1d == null || TDDAvg1d < basalRate) TDDAvg1d =  tddCalculator.calculateDaily(-24, 0).totalAmount
-        if (TDDAvg1d < basalRate) TDDAvg1d = ((basalRate * 12)*100)/21
+        var TDDAvg1d = tddCalculator.averageTDD(tddCalculator.calculate(1, allowMissingDays = false))?.totalAmount
+        if (TDDAvg1d == null || TDDAvg1d < basalRate) TDDAvg1d =  tddCalculator.calculateDaily(-24, 0)?.totalAmount
+        if (TDDAvg1d!! < basalRate) TDDAvg1d = ((basalRate * 12)*100)/21
         this.mealData.put("TDDAvg1d", TDDAvg1d)
 
-        val TDDLast4h = tddCalculator.calculateDaily(-4, 0).totalAmount
+        val TDDLast4h = tddCalculator.calculateDaily(-4, 0)?.totalAmount
         this.mealData.put("TDDLast4h", TDDLast4h)
 
-        val TDDLast8h = tddCalculator.calculateDaily(-8, 0).totalAmount
+        val TDDLast8h = tddCalculator.calculateDaily(-8, 0)?.totalAmount
         this.mealData.put("TDDLast8h", TDDLast8h)
 
-        val TDDLast8hfor4h = TDDLast8h - TDDLast4h
+        val TDDLast8hfor4h = TDDLast8h!! - TDDLast4h!!
         this.mealData.put("TDDLast8hfor4h", TDDLast8hfor4h)
 
         val TDDLast8_wt = (((1.4 * TDDLast4h) + (0.6 * TDDLast8hfor4h)) * 3)
@@ -415,7 +415,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         this.mealData.put("TDDAvg7d",TDDAvg7d)
 
-        val TDD = (TDDLast8_wt * 0.33) + (TDDAvg7d * 0.34) + (TDDAvg1d * 0.33)
+        val TDD = (TDDLast8_wt * 0.33) + (TDDAvg7d!! * 0.34) + (TDDAvg1d!! * 0.33)
         this.mealData.put("TDD", TDD)
 
         val lastCannula = repository.getLastTherapyRecordUpToNow(TherapyEvent.Type.CANNULA_CHANGE).blockingGet()
@@ -428,12 +428,13 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val TDDAvgtoCannula = sp.getDouble("TDDAvgtoCannula", 0.0)
         if (lastCannAgeMins <= 30 || TDDAvgtoCannula == 0.0) {
             val daysPrior = 3
-            val TDDAvgtoCannula = tddCalculator.calculate(lastCannulaTime - 86400000 * daysPrior, lastCannulaTime).totalAmount / daysPrior
+            //val TDDAvgtoCannula = tddCalculator.calculate(lastCannulaTime - 86400000 * daysPrior, allowMissingDays = false)?.totalAmount / daysPrior
+
             sp.putDouble("TDDAvgtoCannula", TDDAvgtoCannula)
         }
         this.mealData.put("TDDAvgtoCannula", TDDAvgtoCannula)
-        val TDDLastCannula = if (lastCannAgeMins > 1440) tddCalculator.calculate(lastCannulaTime, now).totalAmount / (lastCannAgeMins/1440) else (TDDAvg7d * 0.8) + (TDD * 0.2)
-        this.mealData.put("TDDLastCannula", TDDLastCannula)
+        //val TDDLastCannula = if (lastCannAgeMins > 1440) tddCalculator.calculate(lastCannulaTime, allowMissingDays = false)?.totalAmount / (lastCannAgeMins/1440) else (TDDAvg7d * 0.8) + (TDD * 0.2)
+        //this.mealData.put("TDDLastCannula", TDDLastCannula)
 
         this.mealData.put("TDDAvg7d", sp.getDouble("TDDAvg7d", ((basalRate * 12)*100)/21))
         this.mealData.put("TDDLastUpdate", sp.getLong("TDDLastUpdate", 0))

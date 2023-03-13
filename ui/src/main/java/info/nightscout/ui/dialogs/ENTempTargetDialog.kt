@@ -29,7 +29,6 @@ import info.nightscout.interfaces.utils.HtmlHelper
 import info.nightscout.rx.logging.LTag
 import info.nightscout.shared.interfaces.ResourceHelper
 import info.nightscout.ui.R
-//import info.nightscout.ui.databinding.DialogTemptargetBinding
 import info.nightscout.ui.databinding.DialogEnTemptargetBinding
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
@@ -74,7 +73,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         super.onViewCreated(view, savedInstanceState)
 
         val units = profileFunction.getUnits()
-        binding.units.text = if (units == GlucoseUnit.MMOL) rh.gs(R.string.mmol) else rh.gs(R.string.mgdl)
+        binding.units.text = if (units == GlucoseUnit.MMOL) rh.gs(info.nightscout.core.ui.R.string.mmol) else rh.gs(info.nightscout.core.ui.R.string.mgdl)
 
         // set the Eating Now defaults
         val enTT = Profile.toCurrentUnits(units,profileFunction.getProfile()!!.getTargetMgdl())
@@ -107,7 +106,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
                 rh.gs(R.string.activity),
                 rh.gs(R.string.hypo)
             )
-            binding.reasonList.setAdapter(ArrayAdapter(context, R.layout.spinner_centered, reasonList))
+            binding.reasonList.setAdapter(ArrayAdapter(context, info.nightscout.core.ui.R.layout.spinner_centered, reasonList))
 
             binding.targetCancel.setOnClickListener { binding.duration.value = 0.0; shortClick(it) }
             binding.eatingSoon.setOnClickListener { shortClick(it) }
@@ -173,22 +172,22 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         if (_binding == null) return false
         val actions: LinkedList<String> = LinkedList()
         var reason = binding.reasonList.text.toString()
-        val unitResId = if (profileFunction.getUnits() == GlucoseUnit.MGDL) R.string.mgdl else R.string.mmol
+        val unitResId = if (profileFunction.getUnits() == GlucoseUnit.MGDL) info.nightscout.core.ui.R.string.mgdl else info.nightscout.core.ui.R.string.mmol
         val target = binding.temptarget.value
         val duration = binding.duration.value.toInt()
         if (target != 0.0 && duration != 0) {
-            actions.add(rh.gs(R.string.reason) + ": " + reason)
-            actions.add(rh.gs(R.string.target_label) + ": " + Profile.toCurrentUnitsString(profileFunction, target) + " " + rh.gs(unitResId))
-            actions.add(rh.gs(R.string.duration) + ": " + rh.gs(R.string.format_mins, duration))
+            actions.add(rh.gs(info.nightscout.core.ui.R.string.reason) + ": " + reason)
+            actions.add(rh.gs(info.nightscout.core.ui.R.string.target_label) + ": " + Profile.toCurrentUnitsString(profileFunction, target) + " " + rh.gs(unitResId))
+            actions.add(rh.gs(info.nightscout.core.ui.R.string.duration) + ": " + rh.gs(info.nightscout.core.ui.R.string.format_mins, duration))
         } else {
-            actions.add(rh.gs(R.string.stoptemptarget))
-            reason = rh.gs(R.string.stoptemptarget)
+            actions.add(rh.gs(info.nightscout.core.ui.R.string.stoptemptarget))
+            reason = rh.gs(info.nightscout.core.ui.R.string.stoptemptarget)
         }
         if (eventTimeChanged)
-            actions.add(rh.gs(R.string.time) + ": " + dateUtil.dateAndTimeString(eventTime))
+            actions.add(rh.gs(info.nightscout.core.ui.R.string.time) + ": " + dateUtil.dateAndTimeString(eventTime))
 
         activity?.let { activity ->
-            OKDialog.showConfirmation(activity, rh.gs(R.string.temporary_target), HtmlHelper.fromHtml(Joiner.on("<br/>").join(actions)), {
+            OKDialog.showConfirmation(activity, rh.gs(info.nightscout.core.ui.R.string.temporary_target), HtmlHelper.fromHtml(Joiner.on("<br/>").join(actions)), {
                 val units = profileFunction.getUnits()
                 when (reason) {
                     rh.gs(R.string.eatingnow)     -> uel.log(
@@ -221,7 +220,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
                         ), ValueWithUnit.fromGlucoseUnit(target, units.asText), ValueWithUnit.Minute(duration)
                     )
 
-                    rh.gs(R.string.stoptemptarget) -> uel.log(UserEntry.Action.CANCEL_TT, UserEntry.Sources.TTDialog, ValueWithUnit.Timestamp(eventTime).takeIf { eventTimeChanged })
+                    rh.gs(info.nightscout.core.ui.R.string.stoptemptarget) -> uel.log(UserEntry.Action.CANCEL_TT, UserEntry.Sources.TTDialog, ValueWithUnit.Timestamp(eventTime).takeIf { eventTimeChanged })
                 }
                 if (target == 0.0 || duration == 0) {
                     disposable += repository.runTransactionForResult(CancelCurrentTemporaryTargetIfAnyTransaction(eventTime))
@@ -253,7 +252,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
                                 })
                 }
 
-                if (duration == 10) sp.putBoolean(R.string.key_objectiveusetemptarget, true)
+                if (duration == 10) sp.putBoolean(info.nightscout.core.utils.R.string.key_objectiveusetemptarget, true)
             })
         }
         return true
