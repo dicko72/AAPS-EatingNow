@@ -110,7 +110,7 @@ android {
     defaultConfig {
         multiDexEnabled true
         versionCode 1500
-        version "3.2.0-beta1"
+        version "3.2.0-dev-i"
         buildConfigField "String", "VERSION", '"' + version + '"'
         buildConfigField "String", "BUILDVERSION",   '"' + 'EN-' + generateGitBuild()[0..7] + '-' + generateDate() + '"'
         buildConfigField "String", "REMOTE", '"' + generateGitRemote() + '"'
@@ -264,7 +264,7 @@ dependencies {
     kapt "com.google.dagger:dagger-compiler:$dagger_version"
 
     // MainApp
-    api "com.uber.rxdogtag2:rxdogtag:2.0.1"
+    api "com.uber.rxdogtag2:rxdogtag:2.0.2"
 
 }
 
