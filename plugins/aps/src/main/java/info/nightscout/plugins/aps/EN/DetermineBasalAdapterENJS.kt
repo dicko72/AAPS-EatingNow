@@ -12,7 +12,7 @@ import info.nightscout.interfaces.stats.TddCalculator
 import info.nightscout.interfaces.stats.TirCalculator
 // import info.nightscout.androidaps.utils.DateUtil
 import info.nightscout.interfaces.utils.MidnightTime
-import info.nightscout.plugins.aps.loop.LoopVariantPreference
+// import info.nightscout.plugins.aps.EN.ENVariantPreference
 import dagger.android.HasAndroidInjector
 import info.nightscout.core.extensions.convertedToAbsolute
 import info.nightscout.core.extensions.getPassedDurationToTimeInMinutes
@@ -119,9 +119,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             rhino.evaluateString(scope, "require = function() {return round_basal;};", "JavaScript", 0, null)
 
             //generate functions "determine_basal" and "setTempBasal"
-            // val enVariant = sp.getString(info.nightscout.core.utils.R.string.key_en_variant, ENDefaults.variant)
-            val enVariant = "latest"
-            // rhino.evaluateString(scope, readFile(LoopVariantPreference.getVariantFileName(sp, "EN")), "JavaScript", 0, null)
+            val enVariant = sp.getString(info.nightscout.core.utils.R.string.key_en_variant, ENDefaults.variant)
             this.profile.put("variant", enVariant);
 
             rhino.evaluateString(scope, readFile("EN/$enVariant/determine-basal.js"), "JavaScript", 0, null)

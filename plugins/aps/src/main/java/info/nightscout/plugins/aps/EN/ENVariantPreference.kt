@@ -1,10 +1,10 @@
-package info.nightscout.ui.dialogs
+package info.nightscout.plugins.aps.EN
 
 import android.content.Context
 import android.util.AttributeSet
 import androidx.preference.DropDownPreference
 import dagger.android.HasAndroidInjector
-import info.nightscout.ui.R
+import info.nightscout.core.ui.R
 import info.nightscout.shared.sharedPreferences.SP
 import java.util.*
 import javax.inject.Inject
@@ -27,6 +27,6 @@ class ENVariantPreference(context: Context, attrs: AttributeSet?)
 
         entryValues = entries.toTypedArray()
         setEntries(entries.toTypedArray())
-        setDefaultValue(sp.getString(R.string.key_en_variant, ENDefaults.variant))
+        setDefaultValue(sp.getString(info.nightscout.core.utils.R.string.key_en_variant, ENDefaults.variant))
     }
 }
