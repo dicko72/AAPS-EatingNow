@@ -12,7 +12,7 @@ import info.nightscout.interfaces.stats.TddCalculator
 import info.nightscout.interfaces.stats.TirCalculator
 // import info.nightscout.androidaps.utils.DateUtil
 import info.nightscout.interfaces.utils.MidnightTime
-
+import info.nightscout.plugins.aps.loop.LoopVariantPreference
 import dagger.android.HasAndroidInjector
 import info.nightscout.core.extensions.convertedToAbsolute
 import info.nightscout.core.extensions.getPassedDurationToTimeInMinutes
@@ -123,10 +123,14 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             this.profile.put("variant", enVariant);
 
             rhino.evaluateString(scope, readFile("EN/$enVariant/determine-basal.js"), "JavaScript", 0, null)
-            rhino.evaluateString(scope, readFile("EN/$enVariant/basal-set-temp.js"), "setTempBasal.js", 0, null)
+            rhino.evaluateString(scope, readFile("OpenAPSSMB/basal-set-temp.js"), "setTempBasal.js", 0, null)
+            // rhino.evaluateString(scope, readFile(LoopVariantPreference.getVariantFileName(sp, "OpenAPSSMBDynamicISF")), "JavaScript", 0, null)
+            // rhino.evaluateString(scope, readFile("OpenAPSSMB/basal-set-temp.js"), "setTempBasal.js", 0, null)
 
             val determineBasalObj = scope["determine_basal", scope]
             val setTempBasalFunctionsObj = scope["tempBasalFunctions", scope]
+
+
 
             //call determine-basal
             if (determineBasalObj is Function && setTempBasalFunctionsObj is NativeObject) {
