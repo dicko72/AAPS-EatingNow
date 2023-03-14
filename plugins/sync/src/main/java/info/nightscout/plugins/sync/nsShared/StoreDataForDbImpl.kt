@@ -1,9 +1,6 @@
 package info.nightscout.plugins.sync.nsShared
 
-import android.content.Context
 import android.os.SystemClock
-import androidx.work.WorkerParameters
-import info.nightscout.core.utils.worker.LoggingWorker
 import info.nightscout.database.entities.Bolus
 import info.nightscout.database.entities.BolusCalculatorResult
 import info.nightscout.database.entities.Carbs
@@ -21,6 +18,17 @@ import info.nightscout.database.entities.UserEntry
 import info.nightscout.database.entities.ValueWithUnit
 import info.nightscout.database.impl.AppRepository
 import info.nightscout.database.impl.transactions.CgmSourceTransaction
+import info.nightscout.database.impl.transactions.InvalidateBolusCalculatorResultTransaction
+import info.nightscout.database.impl.transactions.InvalidateBolusTransaction
+import info.nightscout.database.impl.transactions.InvalidateCarbsTransaction
+import info.nightscout.database.impl.transactions.InvalidateEffectiveProfileSwitchTransaction
+import info.nightscout.database.impl.transactions.InvalidateExtendedBolusTransaction
+import info.nightscout.database.impl.transactions.InvalidateGlucoseValueTransaction
+import info.nightscout.database.impl.transactions.InvalidateOfflineEventTransaction
+import info.nightscout.database.impl.transactions.InvalidateProfileSwitchTransaction
+import info.nightscout.database.impl.transactions.InvalidateTemporaryBasalTransaction
+import info.nightscout.database.impl.transactions.InvalidateTemporaryTargetTransaction
+import info.nightscout.database.impl.transactions.InvalidateTherapyEventTransaction
 import info.nightscout.database.impl.transactions.SyncNsBolusCalculatorResultTransaction
 import info.nightscout.database.impl.transactions.SyncNsBolusTransaction
 import info.nightscout.database.impl.transactions.SyncNsCarbsTransaction
@@ -48,20 +56,19 @@ import info.nightscout.database.impl.transactions.UpdateNsIdTherapyEventTransact
 import info.nightscout.database.transactions.TransactionGlucoseValue
 import info.nightscout.interfaces.Config
 import info.nightscout.interfaces.Constants
-import info.nightscout.interfaces.XDripBroadcast
 import info.nightscout.interfaces.logging.UserEntryLogger
 import info.nightscout.interfaces.notifications.Notification
 import info.nightscout.interfaces.nsclient.StoreDataForDb
 import info.nightscout.interfaces.pump.VirtualPump
 import info.nightscout.interfaces.source.NSClientSource
 import info.nightscout.interfaces.ui.UiInteraction
+import info.nightscout.plugins.sync.R
 import info.nightscout.rx.bus.RxBus
 import info.nightscout.rx.events.EventNSClientNewLog
 import info.nightscout.rx.logging.AAPSLogger
 import info.nightscout.rx.logging.LTag
 import info.nightscout.shared.sharedPreferences.SP
 import info.nightscout.shared.utils.DateUtil
-import kotlinx.coroutines.Dispatchers
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -78,7 +85,6 @@ class StoreDataForDbImpl @Inject constructor(
     private val dateUtil: DateUtil,
     private val config: Config,
     private val nsClientSource: NSClientSource,
-    private val xDripBroadcast: XDripBroadcast,
     private val virtualPump: VirtualPump,
     private val uiInteraction: UiInteraction
 ) : StoreDataForDb {
@@ -110,6 +116,8 @@ class StoreDataForDbImpl @Inject constructor(
     override val nsIdDeviceStatuses: MutableList<DeviceStatus> = mutableListOf()
     override val nsIdFoods: MutableList<Food> = mutableListOf()
 
+    override val deleteTreatment: MutableList<String> = mutableListOf()
+    override val deleteGlucoseValue: MutableList<String> = mutableListOf()
     private val userEntries: MutableList<UserEntry> = mutableListOf()
 
     private val inserted = HashMap<String, Long>()
@@ -121,39 +129,11 @@ class StoreDataForDbImpl @Inject constructor(
 
     private val pause = 1000L // to slow down db operations
 
-    class StoreBgWorker(
-        context: Context,
-        params: WorkerParameters
-    ) : LoggingWorker(context, params, Dispatchers.Default) {
-
-        @Inject lateinit var storeDataForDb: StoreDataForDb
-
-        override suspend fun doWorkAndLog(): Result {
-            storeDataForDb.storeGlucoseValuesToDb()
-            return Result.success()
-        }
-    }
-
-    class StoreFoodWorker(
-        context: Context,
-        params: WorkerParameters
-    ) : LoggingWorker(context, params, Dispatchers.Default) {
-
-        @Inject lateinit var storeDataForDb: StoreDataForDb
-
-        override suspend fun doWorkAndLog(): Result {
-            storeDataForDb.storeFoodsToDb()
-            return Result.success()
-        }
-    }
-
     fun <T> HashMap<T, Long>.inc(key: T) =
         if (containsKey(key)) merge(key, 1, Long::plus)
         else put(key, 1)
 
     override fun storeGlucoseValuesToDb() {
-        rxBus.send(EventNSClientNewLog("PROCESSING BG", ""))
-
         if (glucoseValues.isNotEmpty())
             repository.runTransactionForResult(CgmSourceTransaction(glucoseValues, emptyList(), null))
                 .doOnError {
@@ -163,19 +143,16 @@ class StoreDataForDbImpl @Inject constructor(
                 .also { result ->
                     glucoseValues.clear()
                     result.updated.forEach {
-                        xDripBroadcast.sendIn640gMode(it)
                         nsClientSource.detectSource(it)
                         aapsLogger.debug(LTag.DATABASE, "Updated bg $it")
                         updated.inc(GlucoseValue::class.java.simpleName)
                     }
                     result.inserted.forEach {
-                        xDripBroadcast.sendIn640gMode(it)
                         nsClientSource.detectSource(it)
                         aapsLogger.debug(LTag.DATABASE, "Inserted bg $it")
                         inserted.inc(GlucoseValue::class.java.simpleName)
                     }
                     result.updatedNsId.forEach {
-                        xDripBroadcast.sendIn640gMode(it)
                         nsClientSource.detectSource(it)
                         aapsLogger.debug(LTag.DATABASE, "Updated nsId bg $it")
                         nsIdUpdated.inc(GlucoseValue::class.java.simpleName)
@@ -184,12 +161,10 @@ class StoreDataForDbImpl @Inject constructor(
 
         sendLog("GlucoseValue", GlucoseValue::class.java.simpleName)
         SystemClock.sleep(pause)
-        rxBus.send(EventNSClientNewLog("DONE BG", ""))
+        rxBus.send(EventNSClientNewLog("● DONE PROCESSING BG", ""))
     }
 
     override fun storeFoodsToDb() {
-        rxBus.send(EventNSClientNewLog("PROCESSING FOOD", ""))
-
         if (foods.isNotEmpty())
             repository.runTransactionForResult(SyncNsFoodTransaction(foods))
                 .doOnError {
@@ -214,12 +189,10 @@ class StoreDataForDbImpl @Inject constructor(
 
         sendLog("Food", Food::class.java.simpleName)
         SystemClock.sleep(pause)
-        rxBus.send(EventNSClientNewLog("DONE FOOD", ""))
+        rxBus.send(EventNSClientNewLog("● DONE PROCESSING FOOD", ""))
     }
 
     override fun storeTreatmentsToDb() {
-        rxBus.send(EventNSClientNewLog("PROCESSING TR", ""))
-
         if (boluses.isNotEmpty())
             repository.runTransactionForResult(SyncNsBolusTransaction(boluses))
                 .doOnError {
@@ -796,11 +769,13 @@ class StoreDataForDbImpl @Inject constructor(
         SystemClock.sleep(pause)
 
         uel.log(userEntries)
-        rxBus.send(EventNSClientNewLog("DONE TR", ""))
+        rxBus.send(EventNSClientNewLog("● DONE PROCESSING TR", ""))
     }
 
     private val eventWorker = Executors.newSingleThreadScheduledExecutor()
     private var scheduledEventPost: ScheduledFuture<*>? = null
+
+    @Synchronized
     override fun scheduleNsIdUpdate() {
         class PostRunnable : Runnable {
 
@@ -816,7 +791,8 @@ class StoreDataForDbImpl @Inject constructor(
         scheduledEventPost = eventWorker.schedule(task, 10, TimeUnit.SECONDS)
     }
 
-    private fun updateNsIds() {
+    @Synchronized
+    override fun updateNsIds() {
         repository.runTransactionForResult(UpdateNsIdTemporaryTargetTransaction(nsIdTemporaryTargets))
             .doOnError { error ->
                 aapsLogger.error(LTag.DATABASE, "Updated nsId of TemporaryTarget failed", error)
@@ -996,32 +972,183 @@ class StoreDataForDbImpl @Inject constructor(
         sendLog("TherapyEvent", TherapyEvent::class.java.simpleName)
         sendLog("OfflineEvent", OfflineEvent::class.java.simpleName)
         sendLog("ExtendedBolus", ExtendedBolus::class.java.simpleName)
-        rxBus.send(EventNSClientNewLog("DONE NSIDs", ""))
+        rxBus.send(EventNSClientNewLog("● DONE NSIDs", ""))
+    }
+
+    override fun updateDeletedTreatmentsInDb() {
+        deleteTreatment.forEach { id ->
+            if (sp.getBoolean(info.nightscout.core.utils.R.string.key_ns_receive_insulin, false) || config.NSCLIENT)
+                repository.findBolusByNSId(id)?.let { bolus ->
+                    repository.runTransactionForResult(InvalidateBolusTransaction(bolus.id))
+                        .doOnError { aapsLogger.error(LTag.DATABASE, "Error while invalidating Bolus", it) }
+                        .blockingGet()
+                        .also { result ->
+                            result.invalidated.forEach {
+                                aapsLogger.debug(LTag.DATABASE, "Invalidated Bolus $it")
+                                invalidated.inc(Bolus::class.java.simpleName)
+                            }
+                        }
+                }
+            if (sp.getBoolean(info.nightscout.core.utils.R.string.key_ns_receive_carbs, false) || config.NSCLIENT)
+                repository.findCarbsByNSId(id)?.let { carb ->
+                    repository.runTransactionForResult(InvalidateCarbsTransaction(carb.id))
+                        .doOnError { aapsLogger.error(LTag.DATABASE, "Error while invalidating Carbs", it) }
+                        .blockingGet()
+                        .also { result ->
+                            result.invalidated.forEach {
+                                aapsLogger.debug(LTag.DATABASE, "Invalidated Carbs $it")
+                                invalidated.inc(Carbs::class.java.simpleName)
+                            }
+                        }
+                }
+            if (sp.getBoolean(info.nightscout.core.utils.R.string.key_ns_receive_temp_target, false) || config.NSCLIENT)
+                repository.findTemporaryTargetByNSId(id)?.let { gv ->
+                    repository.runTransactionForResult(InvalidateTemporaryTargetTransaction(gv.id))
+                        .doOnError { aapsLogger.error(LTag.DATABASE, "Error while invalidating TemporaryTarget", it) }
+                        .blockingGet()
+                        .also { result ->
+                            result.invalidated.forEach {
+                                aapsLogger.debug(LTag.DATABASE, "Invalidated TemporaryTarget $it")
+                                invalidated.inc(TemporaryTarget::class.java.simpleName)
+                            }
+                        }
+                }
+            if (config.isEngineeringMode() && sp.getBoolean(R.string.key_ns_receive_tbr_eb, false) || config.NSCLIENT)
+                repository.findTemporaryBasalByNSId(id)?.let { gv ->
+                    repository.runTransactionForResult(InvalidateTemporaryBasalTransaction(gv.id))
+                        .doOnError { aapsLogger.error(LTag.DATABASE, "Error while invalidating TemporaryBasal", it) }
+                        .blockingGet()
+                        .also { result ->
+                            result.invalidated.forEach {
+                                aapsLogger.debug(LTag.DATABASE, "Invalidated TemporaryBasal $it")
+                                invalidated.inc(TemporaryBasal::class.java.simpleName)
+                            }
+                        }
+                }
+            if (sp.getBoolean(info.nightscout.core.utils.R.string.key_ns_receive_profile_switch, false) || config.NSCLIENT)
+                repository.findEffectiveProfileSwitchByNSId(id)?.let { gv ->
+                    repository.runTransactionForResult(InvalidateEffectiveProfileSwitchTransaction(gv.id))
+                        .doOnError { aapsLogger.error(LTag.DATABASE, "Error while invalidating EffectiveProfileSwitch", it) }
+                        .blockingGet()
+                        .also { result ->
+                            result.invalidated.forEach {
+                                aapsLogger.debug(LTag.DATABASE, "Invalidated EffectiveProfileSwitch $it")
+                                invalidated.inc(EffectiveProfileSwitch::class.java.simpleName)
+                            }
+                        }
+                }
+            if (sp.getBoolean(info.nightscout.core.utils.R.string.key_ns_receive_profile_switch, false) || config.NSCLIENT)
+                repository.findProfileSwitchByNSId(id)?.let { gv ->
+                    repository.runTransactionForResult(InvalidateProfileSwitchTransaction(gv.id))
+                        .doOnError { aapsLogger.error(LTag.DATABASE, "Error while invalidating ProfileSwitch", it) }
+                        .blockingGet()
+                        .also { result ->
+                            result.invalidated.forEach {
+                                aapsLogger.debug(LTag.DATABASE, "Invalidated ProfileSwitch $it")
+                                invalidated.inc(ProfileSwitch::class.java.simpleName)
+                            }
+                        }
+                }
+            repository.findBolusCalculatorResultByNSId(id)?.let { gv ->
+                repository.runTransactionForResult(InvalidateBolusCalculatorResultTransaction(gv.id))
+                    .doOnError { aapsLogger.error(LTag.DATABASE, "Error while invalidating BolusCalculatorResult", it) }
+                    .blockingGet()
+                    .also { result ->
+                        result.invalidated.forEach {
+                            aapsLogger.debug(LTag.DATABASE, "Invalidated BolusCalculatorResult $it")
+                            invalidated.inc(BolusCalculatorResult::class.java.simpleName)
+                        }
+                    }
+            }
+            if (sp.getBoolean(info.nightscout.core.utils.R.string.key_ns_receive_therapy_events, false) || config.NSCLIENT)
+                repository.findTherapyEventByNSId(id)?.let { gv ->
+                    repository.runTransactionForResult(InvalidateTherapyEventTransaction(gv.id))
+                        .doOnError { aapsLogger.error(LTag.DATABASE, "Error while invalidating TherapyEvent", it) }
+                        .blockingGet()
+                        .also { result ->
+                            result.invalidated.forEach {
+                                aapsLogger.debug(LTag.DATABASE, "Invalidated TherapyEvent $it")
+                                invalidated.inc(TherapyEvent::class.java.simpleName)
+                            }
+                        }
+                }
+            if (sp.getBoolean(info.nightscout.core.utils.R.string.key_ns_receive_offline_event, false) && config.isEngineeringMode() || config.NSCLIENT)
+                repository.findOfflineEventByNSId(id)?.let { gv ->
+                    repository.runTransactionForResult(InvalidateOfflineEventTransaction(gv.id))
+                        .doOnError { aapsLogger.error(LTag.DATABASE, "Error while invalidating OfflineEvent", it) }
+                        .blockingGet()
+                        .also { result ->
+                            result.invalidated.forEach {
+                                aapsLogger.debug(LTag.DATABASE, "Invalidated OfflineEvent $it")
+                                invalidated.inc(OfflineEvent::class.java.simpleName)
+                            }
+                        }
+                }
+            if (config.isEngineeringMode() && sp.getBoolean(R.string.key_ns_receive_tbr_eb, false) || config.NSCLIENT)
+                repository.findExtendedBolusByNSId(id)?.let { gv ->
+                    repository.runTransactionForResult(InvalidateExtendedBolusTransaction(gv.id))
+                        .doOnError { aapsLogger.error(LTag.DATABASE, "Error while invalidating ExtendedBolus", it) }
+                        .blockingGet()
+                        .also { result ->
+                            result.invalidated.forEach {
+                                aapsLogger.debug(LTag.DATABASE, "Invalidated ExtendedBolus $it")
+                                invalidated.inc(ExtendedBolus::class.java.simpleName)
+                            }
+                        }
+                }
+        }
+        sendLog("Bolus", Bolus::class.java.simpleName)
+        sendLog("Carbs", Carbs::class.java.simpleName)
+        sendLog("TemporaryTarget", TemporaryTarget::class.java.simpleName)
+        sendLog("TemporaryBasal", TemporaryBasal::class.java.simpleName)
+        sendLog("EffectiveProfileSwitch", EffectiveProfileSwitch::class.java.simpleName)
+        sendLog("ProfileSwitch", ProfileSwitch::class.java.simpleName)
+        sendLog("BolusCalculatorResult", BolusCalculatorResult::class.java.simpleName)
+        sendLog("TherapyEvent", TherapyEvent::class.java.simpleName)
+        sendLog("OfflineEvent", OfflineEvent::class.java.simpleName)
+        sendLog("ExtendedBolus", ExtendedBolus::class.java.simpleName)
+    }
+
+    override fun updateDeletedGlucoseValuesInDb() {
+        deleteGlucoseValue.forEach { id ->
+            repository.findBgReadingByNSId(id)?.let { gv ->
+                repository.runTransactionForResult(InvalidateGlucoseValueTransaction(gv.id))
+                    .doOnError { aapsLogger.error(LTag.DATABASE, "Error while invalidating GlucoseValue", it) }
+                    .blockingGet()
+                    .also { result ->
+                        result.invalidated.forEach {
+                            aapsLogger.debug(LTag.DATABASE, "Invalidated GlucoseValue $it")
+                            invalidated.inc(GlucoseValue::class.java.simpleName)
+                        }
+                    }
+            }
+        }
+        sendLog("GlucoseValue", GlucoseValue::class.java.simpleName)
     }
 
     private fun sendLog(item: String, clazz: String) {
         inserted[clazz]?.let {
-            rxBus.send(EventNSClientNewLog("INSERT", "$item $it"))
+            rxBus.send(EventNSClientNewLog("◄ INSERT", "$item $it"))
         }
         inserted.remove(clazz)
         updated[clazz]?.let {
-            rxBus.send(EventNSClientNewLog("UPDATE", "$item $it"))
+            rxBus.send(EventNSClientNewLog("◄ UPDATE", "$item $it"))
         }
         updated.remove(clazz)
         invalidated[clazz]?.let {
-            rxBus.send(EventNSClientNewLog("INVALIDATE", "$item $it"))
+            rxBus.send(EventNSClientNewLog("◄ INVALIDATE", "$item $it"))
         }
         invalidated.remove(clazz)
         nsIdUpdated[clazz]?.let {
-            rxBus.send(EventNSClientNewLog("NS_ID", "$item $it"))
+            rxBus.send(EventNSClientNewLog("◄ NS_ID", "$item $it"))
         }
         nsIdUpdated.remove(clazz)
         durationUpdated[clazz]?.let {
-            rxBus.send(EventNSClientNewLog("DURATION", "$item $it"))
+            rxBus.send(EventNSClientNewLog("◄ DURATION", "$item $it"))
         }
         durationUpdated.remove(clazz)
         ended[clazz]?.let {
-            rxBus.send(EventNSClientNewLog("CUT", "$item $it"))
+            rxBus.send(EventNSClientNewLog("◄ CUT", "$item $it"))
         }
         ended.remove(clazz)
     }

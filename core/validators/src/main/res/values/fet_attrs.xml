@@ -40,4 +40,5 @@
         <attr name="minMgdl" format="integer" />
         <attr name="maxMgdl" format="integer" />
     </declare-styleable>
+
 </resources>

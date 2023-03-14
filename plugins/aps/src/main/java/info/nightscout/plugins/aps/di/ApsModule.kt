@@ -3,6 +3,7 @@ package info.nightscout.plugins.aps.di
 import dagger.Binds
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
+import info.nightscout.interfaces.aps.APSResult
 import info.nightscout.interfaces.aps.Loop
 import info.nightscout.interfaces.autotune.Autotune
 import info.nightscout.plugins.aps.APSResultObject

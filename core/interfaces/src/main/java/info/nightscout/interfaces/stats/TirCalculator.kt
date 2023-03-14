@@ -13,4 +13,4 @@ interface TirCalculator {
     fun stats(context: Context): TableLayout
     fun averageTIR(tirs: LongSparseArray<TIR>): TIR
     fun calculateHoursPrior(hrsPriorStart: Long, hrsPriorEnd: Long, lowMgdl: Double, highMgdl: Double): LongSparseArray<TIR>
-    }
+}
