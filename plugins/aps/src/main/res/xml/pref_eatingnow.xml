@@ -7,11 +7,11 @@
         android:title="Eating Now Preferences"
         app:initialExpandedChildrenCount="0">
 
-<!--        <info.nightscout.androidaps.plugins.aps.EN.ENVariantPreference-->
-<!--            android:title="@string/en_variant_title"-->
-<!--            android:key="@string/key_en_variant"-->
-<!--            android:defaultValue="stable"-->
-<!--            android:selectable="true" />-->
+        <info.nightscout.androidaps.plugins.aps.EN.ENVariantPreference
+            android:title="@string/en_variant_title"
+            android:key="@string/key_en_variant"
+            android:defaultValue="stable"
+            android:selectable="true" />
 
 <!--        <info.nightscout.plugins.aps.loop.LoopVariantPreference-->
 <!--            android:title="@string/DynISF_variant_title"-->
