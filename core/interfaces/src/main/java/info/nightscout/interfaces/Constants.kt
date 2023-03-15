@@ -47,7 +47,7 @@ object Constants {
 
     // Eating Now Temp targets
     const val defaultEatingNowTTDuration = 30 // min
-    const val MAX_ENTT_DURATION = 480.0  // min
+    const val MAX_ENTT_DURATION = 240.0  // min
 
     //NSClientInternal
     const val MAX_LOG_LINES = 90
