@@ -38,6 +38,7 @@ import info.nightscout.core.ui.elements.SingleClickButton
 import info.nightscout.core.ui.toast.ToastUtils
 import info.nightscout.core.utils.fabric.FabricPrivacy
 import info.nightscout.core.wizard.QuickWizard
+import info.nightscout.database.entities.TemporaryTarget
 import info.nightscout.database.entities.UserEntry.Action
 import info.nightscout.database.entities.UserEntry.Sources
 import info.nightscout.database.entities.interfaces.end
@@ -965,6 +966,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
     fun updateTemporaryTarget() {
         val units = profileFunction.getUnits()
         val tempTarget = overviewData.temporaryTarget
+        val ENTTtext = if (tempTarget?.reason == TemporaryTarget.Reason.EATING_NOW) "EATING NOW " else ""
         runOnUiThread {
             _binding ?: return@runOnUiThread
             if (tempTarget != null) {
