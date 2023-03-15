@@ -22,6 +22,7 @@ import info.nightscout.ui.dialogs.BolusProgressDialog
 import info.nightscout.ui.dialogs.CalibrationDialog
 import info.nightscout.ui.dialogs.CarbsDialog
 import info.nightscout.ui.dialogs.CareDialog
+import info.nightscout.ui.dialogs.ENTempTargetDialog
 import info.nightscout.ui.dialogs.EditQuickWizardDialog
 import info.nightscout.ui.dialogs.ExtendedBolusDialog
 import info.nightscout.ui.dialogs.FillDialog
