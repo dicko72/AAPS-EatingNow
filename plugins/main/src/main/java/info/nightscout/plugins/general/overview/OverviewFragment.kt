@@ -389,7 +389,8 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                 R.id.en_button        -> protectionCheck.queryProtection(
                     activity,
                     ProtectionCheck.Protection.BOLUS,
-                    UIRunnable { ENTempTargetDialog().show(childFragmentManager, "Overview") })
+                    UIRunnable { uiInteraction.runTempTargetDialog(childFragmentManager) })
+                    // UIRunnable { ENTempTargetDialog().show(childFragmentManager, "Overview") })
 
                 R.id.temp_target         -> protectionCheck.queryProtection(
                     activity,
