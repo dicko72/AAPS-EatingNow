@@ -974,7 +974,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                     binding.tempTarget,
                     info.nightscout.core.ui.R.attr.ribbonTextWarningColor,
                     info.nightscout.core.ui.R.attr.ribbonWarningColor,
-                    Profile.toTargetRangeString(tempTarget.lowTarget, tempTarget.highTarget, GlucoseUnit.MGDL, units) + " " + dateUtil.untilString(tempTarget.end, rh)
+                    ENTTtext + Profile.toTargetRangeString(tempTarget.lowTarget, tempTarget.highTarget, GlucoseUnit.MGDL, units) + " " + dateUtil.untilString(tempTarget.end, rh)
                 )
             } else {
                 // If the target is not the same as set in the profile then oref has overridden it
