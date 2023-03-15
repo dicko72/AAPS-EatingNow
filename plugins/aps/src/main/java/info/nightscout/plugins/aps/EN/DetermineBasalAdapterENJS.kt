@@ -119,8 +119,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             rhino.evaluateString(scope, "require = function() {return round_basal;};", "JavaScript", 0, null)
 
             //generate functions "determine_basal" and "setTempBasal"
-            // val enVariant = sp.getString(info.nightscout.core.utils.R.string.key_en_variant, ENDefaults.variant)
-            val enVariant = "stable"
+            val enVariant = sp.getString(info.nightscout.core.utils.R.string.key_EN_variant, ENDefaults.variant)
+            // val enVariant = "stable"
             this.profile.put("variant", enVariant);
 
             // rhino.evaluateString(scope, readFile("EN/$enVariant/determine-basal.js"), "JavaScript", 0, null)
