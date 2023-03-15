@@ -125,7 +125,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
             // rhino.evaluateString(scope, readFile("EN/$enVariant/determine-basal.js"), "JavaScript", 0, null)
             // rhino.evaluateString(scope, readFile("OpenAPSSMB/basal-set-temp.js"), "setTempBasal.js", 0, null)
-            rhino.evaluateString(scope, readFile(LoopVariantPreference.getVariantFileName(sp, "OpenAPSSMBDynamicISF")), "JavaScript", 0, null)
+            rhino.evaluateString(scope, readFile(LoopVariantPreference.getVariantFileName(sp, "EN")), "JavaScript", 0, null)
             rhino.evaluateString(scope, readFile("OpenAPSSMB/basal-set-temp.js"), "setTempBasal.js", 0, null)
 
             val determineBasalObj = scope["determine_basal", scope]

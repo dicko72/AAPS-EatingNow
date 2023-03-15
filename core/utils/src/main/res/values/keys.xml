@@ -195,7 +195,7 @@
     <string name="key_eatingnow_showbutton" translatable="false">key_eatingnow_showbutton</string>
     <string name="en_eatingnow_showbutton">Eating Now temp target</string>
     <string name="en_resistance_per_hour" translatable="false">en_resistance_per_hour</string>
-    <string name="key_en_variant" translatable="false">en_variant</string>
+    <string name="key_EN_variant" translatable="false">en_variant</string>
     <string name="en_variant_title">EN Variant</string>
     <string name="key_en_max_iob" translatable="false">key_en_max_iob</string>
     <string name="key_en_max_iob_allow_smb" translatable="false">key_en_max_iob_allow_smb</string>
