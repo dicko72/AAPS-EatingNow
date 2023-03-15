@@ -100,11 +100,11 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
                 binding.targetCancel.visibility = View.GONE
 
             reasonList = Lists.newArrayList(
-                rh.gs(R.string.manual),
-                rh.gs(R.string.eatingsoon),
-                rh.gs(R.string.eatingnow),
-                rh.gs(R.string.activity),
-                rh.gs(R.string.hypo)
+                rh.gs(info.nightscout.core.ui.R.string.manual),
+                rh.gs(info.nightscout.core.ui.R.string.eatingsoon),
+                rh.gs(info.nightscout.core.ui.R.string.eatingnow),
+                rh.gs(info.nightscout.core.ui.R.string.activity),
+                rh.gs(info.nightscout.core.ui.R.string.hypo)
             )
             binding.reasonList.setAdapter(ArrayAdapter(context, info.nightscout.core.ui.R.layout.spinner_centered, reasonList))
 
@@ -132,7 +132,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         // reset to Eating Now defaults
         //binding.temptarget.value = Profile.toCurrentUnits(units,profileFunction.getProfile()!!.getTargetMgdl())
         binding.duration.value = defaultValueHelper.determineEatingNowTTDuration().toDouble()
-        binding.reasonList.setText(rh.gs(R.string.eatingnow), false)
+        binding.reasonList.setText(rh.gs(info.nightscout.core.ui.R.string.eatingnow), false)
     }
 
     private fun shortClick(v: View) {
@@ -145,19 +145,19 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
             R.id.eating_soon -> {
                 binding.temptarget.value = defaultValueHelper.determineEatingSoonTT()
                 binding.duration.value = defaultValueHelper.determineEatingSoonTTDuration().toDouble()
-                binding.reasonList.setText(rh.gs(R.string.eatingsoon), false)
+                binding.reasonList.setText(rh.gs(info.nightscout.core.ui.R.string.eatingsoon), false)
             }
 
             R.id.activity    -> {
                 binding.temptarget.value = defaultValueHelper.determineActivityTT()
                 binding.duration.value = defaultValueHelper.determineActivityTTDuration().toDouble()
-                binding.reasonList.setText(rh.gs(R.string.activity), false)
+                binding.reasonList.setText(rh.gs(info.nightscout.core.ui.R.string.activity), false)
             }
 
             R.id.hypo        -> {
                 binding.temptarget.value = defaultValueHelper.determineHypoTT()
                 binding.duration.value = defaultValueHelper.determineHypoTTDuration().toDouble()
-                binding.reasonList.setText(rh.gs(R.string.hypo), false)
+                binding.reasonList.setText(rh.gs(info.nightscout.core.ui.R.string.hypo), false)
             }
         }
     }
@@ -190,31 +190,31 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
             OKDialog.showConfirmation(activity, rh.gs(info.nightscout.core.ui.R.string.temporary_target), HtmlHelper.fromHtml(Joiner.on("<br/>").join(actions)), {
                 val units = profileFunction.getUnits()
                 when (reason) {
-                    rh.gs(R.string.eatingnow)     -> uel.log(
+                    rh.gs(info.nightscout.core.ui.R.string.eatingnow)     -> uel.log(
                         UserEntry.Action.TT, UserEntry.Sources.TTDialog, ValueWithUnit.Timestamp(eventTime).takeIf { eventTimeChanged }, ValueWithUnit.TherapyEventTTReason(
                             TemporaryTarget.Reason.EATING_NOW
                         ), ValueWithUnit.fromGlucoseUnit(target, units.asText), ValueWithUnit.Minute(duration)
                     )
 
-                    rh.gs(R.string.eatingsoon)     -> uel.log(
+                    rh.gs(info.nightscout.core.ui.R.string.eatingsoon)     -> uel.log(
                         UserEntry.Action.TT, UserEntry.Sources.TTDialog, ValueWithUnit.Timestamp(eventTime).takeIf { eventTimeChanged }, ValueWithUnit.TherapyEventTTReason(
                             TemporaryTarget.Reason.EATING_SOON
                         ), ValueWithUnit.fromGlucoseUnit(target, units.asText), ValueWithUnit.Minute(duration)
                     )
 
-                    rh.gs(R.string.activity)       -> uel.log(
+                    rh.gs(info.nightscout.core.ui.R.string.activity)       -> uel.log(
                         UserEntry.Action.TT, UserEntry.Sources.TTDialog, ValueWithUnit.Timestamp(eventTime).takeIf { eventTimeChanged }, ValueWithUnit.TherapyEventTTReason(
                             TemporaryTarget.Reason.ACTIVITY
                         ), ValueWithUnit.fromGlucoseUnit(target, units.asText), ValueWithUnit.Minute(duration)
                     )
 
-                    rh.gs(R.string.hypo)           -> uel.log(
+                    rh.gs(info.nightscout.core.ui.R.string.hypo)           -> uel.log(
                         UserEntry.Action.TT, UserEntry.Sources.TTDialog, ValueWithUnit.Timestamp(eventTime).takeIf { eventTimeChanged }, ValueWithUnit.TherapyEventTTReason(
                             TemporaryTarget.Reason.HYPOGLYCEMIA
                         ), ValueWithUnit.fromGlucoseUnit(target, units.asText), ValueWithUnit.Minute(duration)
                     )
 
-                    rh.gs(R.string.manual)         -> uel.log(
+                    rh.gs(info.nightscout.core.ui.R.string.manual)         -> uel.log(
                         UserEntry.Action.TT, UserEntry.Sources.TTDialog, ValueWithUnit.Timestamp(eventTime).takeIf { eventTimeChanged }, ValueWithUnit.TherapyEventTTReason(
                             TemporaryTarget.Reason.CUSTOM
                         ), ValueWithUnit.fromGlucoseUnit(target, units.asText), ValueWithUnit.Minute(duration)
@@ -235,11 +235,11 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
                             timestamp = eventTime,
                             duration = TimeUnit.MINUTES.toMillis(duration.toLong()),
                             reason = when (reason) {
-                                rh.gs(R.string.eatingnow) -> TemporaryTarget.Reason.EATING_NOW
-                                rh.gs(R.string.eatingsoon) -> TemporaryTarget.Reason.EATING_SOON
-                                rh.gs(R.string.activity)   -> TemporaryTarget.Reason.ACTIVITY
-                                rh.gs(R.string.hypo)       -> TemporaryTarget.Reason.HYPOGLYCEMIA
-                                else                       -> TemporaryTarget.Reason.CUSTOM
+                                rh.gs(info.nightscout.core.ui.R.string.eatingnow) -> TemporaryTarget.Reason.EATING_NOW
+                                rh.gs(info.nightscout.core.ui.R.string.eatingsoon) -> TemporaryTarget.Reason.EATING_SOON
+                                rh.gs(info.nightscout.core.ui.R.string.activity)   -> TemporaryTarget.Reason.ACTIVITY
+                                rh.gs(info.nightscout.core.ui.R.string.hypo)       -> TemporaryTarget.Reason.HYPOGLYCEMIA
+                                else                                                 -> TemporaryTarget.Reason.CUSTOM
                             },
                             lowTarget = Profile.toMgdl(target, profileFunction.getUnits()),
                             highTarget = Profile.toMgdl(target, profileFunction.getUnits())
