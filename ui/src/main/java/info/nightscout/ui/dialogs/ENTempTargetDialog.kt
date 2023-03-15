@@ -78,7 +78,8 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         // set the Eating Now defaults
         val enTT = Profile.toCurrentUnits(units,profileFunction.getProfile()!!.getTargetMgdl())
 
-        binding.duration.setParams(savedInstanceState?.getDouble("duration")
+        binding.duration.setParams(
+            savedInstanceState?.getDouble("duration")
             ?: 0.0, 0.0, Constants.MAX_ENTT_DURATION, 10.0, DecimalFormat("0"), false, binding.okcancel.ok)
 
         if (profileFunction.getUnits() == GlucoseUnit.MMOL)
