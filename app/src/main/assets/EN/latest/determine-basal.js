@@ -1848,7 +1848,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (microBolus > 0) {
                     rT.units = microBolus;
                     rT.reason += (!ENactive || !ENtimeOK || maxBolus == maxBolusOrig ? "No EN SMB: " : "");
-                    rT.reason += (sens_predType.startsWith("PB") ? "Pre-bolusing " : "Microbolusing ") + microBolus + "/" + maxBolus + "U.";
+                    rT.reason += (sens_predType.startsWith("PB") ? "Pre-bolusing " : "Microbolusing ") + microBolus;
+                    rT.reason += "/" + (sens_predType.startsWith("PB") ? UAMBGPreBolusUnits : maxBolus) + "U.";
+
 //                    insulinReq = insulinReq - microBolus;
 //                    // rate required to deliver remaining insulinReq over 20m:
 //                    rate = round(Math.max(basal + (3 * insulinReq),0),2);
