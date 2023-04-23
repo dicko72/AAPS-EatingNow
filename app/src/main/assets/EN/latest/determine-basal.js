@@ -1318,6 +1318,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // BG+ predtype when stuck high set a higher eventualBG if not in prebolus window
             sens_predType = (profile.EN_BGPlus_maxBolus !=0 && delta >= -4 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens_limited > 1 ? "BG+" : sens_predType);
             if (sens_predType == "BG+" && UAMBGPreBolusUnits > 0 && ENWindowRunTime < PBW) sens_predType = "UAM"; // reset when in prebolus window
+            if (sens_predType == "BG+" && lastBolusAge <= 15 && mealData.lastBolusUnits > profile.EN_BGPlus_maxBolus) sens_predType = "UAM"; // reset when recent bolus greater than BG+ maxBolus
         }
 
         // COB predictions or UAM with COB
