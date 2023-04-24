@@ -1316,9 +1316,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = (bg > ISFbgMax && delta >= 15 && ENWBolusIOBMax == 0 ? 0.30 : eBGweight);
 
             // BG+ predtype when stuck high set a higher eventualBG if not in prebolus window
-            sens_predType = (profile.EN_BGPlus_maxBolus !=0 && delta >= -4 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens_limited > 1 ? "BG+" : sens_predType);
+            //sens_predType = (profile.EN_BGPlus_maxBolus !=0 && delta >= -4 && delta <= 4 && glucose_status.short_avgdelta >=0 && glucose_status.long_avgdelta >=0 && eventualBG < bg && TIR_sens_limited > 1 ? "BG+" : sens_predType);
+            sens_predType = (profile.EN_BGPlus_maxBolus !=0 && delta >= -4 && delta <= 4 && glucose_status.short_avgdelta >=-2 && glucose_status.long_avgdelta >=-2 && eventualBG < bg && TIR_sens_limited > 1 ? "BG+" : sens_predType);
             if (sens_predType == "BG+" && UAMBGPreBolusUnits > 0 && ENWindowRunTime < PBW) sens_predType = "UAM"; // reset when in prebolus window
-            if (sens_predType == "BG+" && mealData.lastBolusUnits > profile.EN_BGPlus_maxBolus && lastBolusAge <= 15) sens_predType = "UAM"; // reset when recent bolus greater than BG+ maxBolus
+            if (sens_predType == "BG+" && meal_data.lastBolusUnits > profile.EN_BGPlus_maxBolus && lastBolusAge <= 15) sens_predType = "UAM"; // reset when recent bolus greater than BG+ maxBolus
+//            var endebug = "meal_data.lastBolusUnits:" + meal_data.lastBolusUnits + ",profile.EN_BGPlus_maxBolus:"+profile.EN_BGPlus_maxBolus+",lastBolusAge:"+lastBolusAge;
         }
 
         // COB predictions or UAM with COB
