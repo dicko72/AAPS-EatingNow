@@ -499,16 +499,6 @@
 
             <Preference android:summary="UAM+ is similar to the Boost plugin. UAM+ PreBolus can boost the BG to trigger an initial bolus for UAM. UAM+ can also be used outside the ENW to provide larger UAM boluses."></Preference>
 
-<!--            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference-->
-<!--                android:defaultValue="0"-->
-<!--                android:inputType="numberDecimal"-->
-<!--                android:title="UAM+ Breakfast PreBolus Boost"-->
-<!--                android:key="@string/key_eatingnow_uambgboost_bkfast"-->
-<!--                android:dialogMessage="Initial UAM Breakfast PreBolus Boost for start of EN-TT.\neventualBG will be increased from current BG or eventualBG using this amount.\n0 will leave this option disabled."-->
-<!--                validate:floatmaxNumber="200"-->
-<!--                validate:floatminNumber="0"-->
-<!--                validate:testType="floatNumericRange" />-->
-
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
@@ -518,16 +508,6 @@
                 validate:floatmaxNumber="200"
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
-
-<!--            <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference-->
-<!--                android:defaultValue="0"-->
-<!--                android:inputType="numberDecimal"-->
-<!--                android:title="UAM+ PreBolus Boost"-->
-<!--                android:key="@string/key_eatingnow_uambgboost"-->
-<!--                android:dialogMessage="Initial UAM PreBolus Boost for start of EN-TT.\neventualBG will be increased from current BG or eventualBG using this amount.\n0 will leave this option disabled."-->
-<!--                validate:floatmaxNumber="200"-->
-<!--                validate:floatminNumber="0"-->
-<!--                validate:testType="floatNumericRange" />-->
 
             <info.nightscout.androidaps.utils.textValidator.ValidatingEditTextPreference
                 android:defaultValue="0"
@@ -552,8 +532,14 @@
             <SwitchPreference
                 android:defaultValue="false"
                 android:key="key_use_uamplus_noenw"
-                android:title="Enable UAM+ outside ENW"
-                android:summary="Allow UAM+ to provide an EN UAM+ maxBolus when not within ENW.\nSimilar to Boost plugin this will activate with sufficient delta and acceleration." />
+                android:title="Allow UAM+ SMB outside ENW"
+                android:summary="Allow UAM+ to provide an EN UAM+ maxBolus SMB when not within ENW.\nSimilar to Boost plugin this will activate with sufficient delta and acceleration." />
+
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="key_use_uamplustbr_noenw"
+                android:title="Allow UAM+ TBR outside ENW"
+                android:summary="Allow UAM+ to provide an EN UAM+ TBR when not within ENW.\nSimilar to Boost plugin this will activate with sufficient delta and acceleration." />
 
         </PreferenceCategory>
 
