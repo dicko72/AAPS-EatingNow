@@ -1283,7 +1283,7 @@
     <string name="key_eatingnow_bgplus_maxbolus">key_eatingnow_bgplus_maxbolus</string>
     <string name="key_eatingnow_noenw_maxbolus">key_eatingnow_noenw_maxbolus</string>
     <string name="key_use_uamplus_noenw">key_use_uamplus_noenw</string>
-    <string name="key_use_uamplustbr_noenw">key_use_uamplus_noenw</string>
+    <string name="key_use_uamplustbr_noenw">key_use_uamplustbr_noenw</string>
     <string name="key_eatingnow_uamplus_maxbolus">key_eatingnow_uamplus_maxbolus</string>
     <string name="key_use_dynamicISF">key_use_dynamicISF</string>
     <string name="key_eatingnow_isfbgscaler">key_eatingnow_isfbgscaler</string>
