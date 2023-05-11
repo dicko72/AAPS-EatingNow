@@ -47,7 +47,6 @@ object Constants {
     const val MIN_TT_MMOL = 4.0
     const val MAX_TT_MMOL = 10.0
 
-
     //NSClientInternal
     const val MAX_LOG_LINES = 90
 

@@ -1252,13 +1252,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
 
     // UAM+ predtype when sufficient delta not a COB prediction
-    if (profile.EN_UAMPlus_maxBolus > 0 && (profile.EN_UAMPlus_NoENW || ENWindowOK) && ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && glucose_status.long_avgdelta >= 0 && sens_predType != "COB") {
+    if (profile.EN_UAMPlus_maxBolus > 0 && (profile.EN_UAMPlusSMB_NoENW || profile.EN_UAMPlusTBR_NoENW || ENWindowOK) && ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && glucose_status.long_avgdelta >= 0 && sens_predType != "COB") {
         if (DeltaPctS > 1 && DeltaPctL > 1.5) sens_predType = "UAM+"; // with acceleration
         if (eventualBG > ISFbgMax && bg < ISFbgMax) sens_predType = "UAM+"; // when predicted high and bg is lower
         // reset to UAM prediction when COB are not mostly absorbed
         if (meal_data.carbs && fractionCOBAbsorbed < 0.75) sens_predType = "UAM";
-        // if there is no ENW it means UAM+ is allowed outside ENW so formally enable the ENW to allow the larger SMB later
-        if (sens_predType == "UAM+" && !ENWindowOK) ENWindowOK = true;
+        // if there is no ENW and UAM+ triggered with EN_UAMPlusSMB_NoENW so formally enable the ENW to allow the larger SMB later
+        if (sens_predType == "UAM+" && !ENWindowOK && profile.EN_UAMPlusSMB_NoENW) ENWindowOK = true;
     }
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
@@ -1298,12 +1298,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = (bg < ISFbgMax && eventualBG > ISFbgMax ? 0.75 : 0.50);
             minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
 
-            // SAFETY: UAM+ fast delta with higher bg uses lowers minBG
-            //if (bg > ISFbgMax && delta >= 15 && ENWBolusIOBMax == 0) {
-            if (bg > ISFbgMax && delta >= 15) {
-                //eBGweight = 0.30;
-                minBG = Math.min(minPredBG,minGuardBG); // override with the smallest value
-                //eventualBG = Math.min(eventualBG,minGuardBG);
+            // UAM+ with lower eventualBG can use non-ENW SMB or TBR
+            if (eventualBG < bg && ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB < ENWBolusIOBMax) {
+                eventualBG = bg;
+                ENWindowOK = false; // disable ENW so smaller SMB or UAM TBR can run
             }
             AllowZT = false; // disable ZT for UAM+
         }
@@ -1389,13 +1387,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // EN window status
     rT.reason += ", ENW: ";
     rT.reason += (ENWindowOK ? "On" : "Off");
-    rT.reason += (ENWindowOK && !ENWTriggerOK && profile.EN_UAMPlus_NoENW && sens_predType == "UAM+" ? " UAM+" : "");
+    //rT.reason += (ENWindowOK && !ENWTriggerOK && profile.EN_UAMPlusSMB_NoENW && sens_predType == "UAM+" ? " UAM+" : "");
     rT.reason += (firstMealWindow ? " Bkfst" : "") + (firstMealScaling ? " " + profile.BreakfastPct + "%" : "");
     rT.reason += (ENWindowOK && ENWindowRunTime <= ENWindowDuration ? " " + round(ENWindowRunTime) + "/" + ENWindowDuration + "m" : "");
     rT.reason += (!ENWindowOK && !ENWTriggerOK && ENtimeOK ? " IOB&lt;" + round(ENWIOBThreshU, 2) : "");
     rT.reason += (ENWindowOK && ENWTriggerOK ? " IOB&gt;" + round(ENWIOBThreshU, 2) : "");
     if (meal_data.ENWBolusIOB) rT.reason += ", ENWBolus:" + round(meal_data.ENWBolusIOB,2) + (ENWBolusIOBMax > 0 ? "/" + ENWBolusIOBMax : "");
-
+    var endebug = "basaliob:" + iob_data.basaliob;
 
     // other EN stuff
     rT.reason += ", eBGw: " + (sens_predType != "NA" ? sens_predType + " " : "") + convert_bg(insulinReq_bg, profile) + " " + round(eBGweight * 100) + "%";
@@ -1478,7 +1476,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     carbsReq = round(carbsReq);
     console.error("naive_eventualBG:", naive_eventualBG, "bgUndershoot:", bgUndershoot, "zeroTempDuration:", zeroTempDuration, "zeroTempEffect:", zeroTempEffect, "carbsReq:", carbsReq);
     console.log("===============================");
-    console.log("Eating Now latest variant");
+    console.log("Eating Now stable variant");
     console.log("===============================");
     console.log(enlog);
     console.log("==============================");
@@ -1739,6 +1737,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (sens_predType == "UAM+") ENMaxSMB = profile.EN_UAMPlus_maxBolus;
             } else {
                 ENMaxSMB = profile.EN_NoENW_maxBolus;
+                if (sens_predType == "UAM+" && profile.EN_UAMPlusTBR_NoENW) ENMaxSMB = -1; // TBR only
             }
 
             // BG+ is the only EN prediction type allowed outside of ENW

@@ -52,7 +52,7 @@ class TirCalculatorImpl @Inject constructor(
         return result
     }
 
-    fun averageTIR(tirs: LongSparseArray<TIR>): TIR {
+    override fun averageTIR(tirs: LongSparseArray<TIR>): TIR {
         val totalTir = if (tirs.size() > 0) {
             TirImpl(tirs.valueAt(0).date, tirs.valueAt(0).lowThreshold, tirs.valueAt(0).highThreshold)
         } else {
@@ -69,7 +69,7 @@ class TirCalculatorImpl @Inject constructor(
         return totalTir
     }
 
-    fun calculateHoursPrior(hrsPriorStart: Long, hrsPriorEnd: Long, lowMgdl: Double, highMgdl: Double): LongSparseArray<TIR> {
+    override fun calculateHoursPrior(hrsPriorStart: Long, hrsPriorEnd: Long, lowMgdl: Double, highMgdl: Double): LongSparseArray<TIR> {
         if (lowMgdl < 39) throw RuntimeException("Low below 39")
         if (lowMgdl > highMgdl) throw RuntimeException("Low > High")
         val startTime = dateUtil.now() - T.hours(hour = hrsPriorStart).msecs()
@@ -81,7 +81,7 @@ class TirCalculatorImpl @Inject constructor(
             //val midnight = MidnightTime.calc(bg.date)
             var tir = result[startTime]
             if (tir == null) {
-                tir = TIR(startTime, lowMgdl, highMgdl)
+                tir = TirImpl(startTime, lowMgdl, highMgdl)
                 result.append(startTime, tir)
             }
             if (bg.value < 39) tir.error()
