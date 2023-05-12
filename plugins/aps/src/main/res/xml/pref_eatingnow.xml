@@ -24,7 +24,7 @@
             android:defaultValue="3"
             android:inputType="numberDecimal"
             android:key="@string/key_treatmentssafety_maxbolus"
-            android:title="@string/treatmentssafety_max_bolus_title"
+            android:title="@string/max_bolus_title"
             validate:floatmaxNumber="25.0"
             validate:floatminNumber="0.1"
             validate:testType="floatNumericRange" />
@@ -209,7 +209,7 @@
             android:singleLine="true"
             android:summary="@string/carbs_req_threshold_summary"
             android:title="@string/carbs_req_threshold"
-            validate:maxNumber="10"
+            validate:maxNumber="200"
             validate:minNumber="1"
             validate:testType="numericRange" />
 
