@@ -1,16 +1,17 @@
-package info.nightscout.androidaps.plugins.aps.EN
+package info.nightscout.plugins.aps.EN
 
 import dagger.android.HasAndroidInjector
-import info.nightscout.shared.logging.LTag
-import info.nightscout.androidaps.plugins.aps.loop.APSResult
+import info.nightscout.plugins.aps.APSResultObject
+import info.nightscout.interfaces.aps.VariableSensitivityResult
+import info.nightscout.rx.logging.LTag
 import org.json.JSONException
 import org.json.JSONObject
 
-class DetermineBasalResultEN private constructor(injector: HasAndroidInjector) : APSResult(injector) {
+class DetermineBasalResultEN private constructor(injector: HasAndroidInjector) : APSResultObject(injector), VariableSensitivityResult {
 
     private var eventualBG = 0.0
     private var snoozeBG = 0.0
-    var variableSens: Double? = null
+    override var variableSens: Double? = null
 
     internal constructor(injector: HasAndroidInjector, result: JSONObject) : this(injector) {
         date = dateUtil.now()
@@ -27,7 +28,7 @@ class DetermineBasalResultEN private constructor(injector: HasAndroidInjector) :
             if (result.has("carbsReq")) carbsReq = result.getInt("carbsReq")
             if (result.has("carbsReqWithin")) carbsReqWithin = result.getInt("carbsReqWithin")
             if (result.has("rate") && result.has("duration")) {
-                tempBasalRequested = true
+                isTempBasalRequested = true
                 rate = result.getDouble("rate")
                 if (rate < 0.0) rate = 0.0
                 duration = result.getInt("duration")
@@ -51,9 +52,7 @@ class DetermineBasalResultEN private constructor(injector: HasAndroidInjector) :
                     aapsLogger.error(LTag.APS, "Error parsing 'deliverAt' date: $date", e)
                 }
             }
-            if (result.has("variable_sens")) {
-                variableSens = result.getDouble("variable_sens")
-            }
+            if (result.has("variable_sens")) variableSens = result.getDouble("variable_sens")
         } catch (e: JSONException) {
             aapsLogger.error(LTag.APS, "Error parsing determine-basal result JSON", e)
         }
