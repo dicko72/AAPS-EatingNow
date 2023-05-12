@@ -29,7 +29,7 @@ import info.nightscout.interfaces.utils.HtmlHelper
 import info.nightscout.rx.logging.LTag
 import info.nightscout.shared.interfaces.ResourceHelper
 import info.nightscout.ui.R
-import info.nightscout.ui.databinding.DialogTemptargetBinding
+import info.nightscout.ui.databinding.DialogEnTemptargetBinding
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import java.text.DecimalFormat
@@ -52,7 +52,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
 
     private var queryingProtection = false
     private val disposable = CompositeDisposable()
-    private var _binding: DialogTemptargetBinding? = null
+    private var _binding: DialogEnTemptargetBinding? = null
 
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
@@ -65,33 +65,33 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         onCreateViewGeneral()
-        _binding = DialogTemptargetBinding.inflate(inflater, container, false)
+        _binding = DialogEnTemptargetBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val units = profileFunction.getUnits()
+        binding.units.text = if (units == GlucoseUnit.MMOL) rh.gs(info.nightscout.core.ui.R.string.mmol) else rh.gs(info.nightscout.core.ui.R.string.mgdl)
+
+        // set the Eating Now defaults
+        val enTT = Profile.toCurrentUnits(units,profileFunction.getProfile()!!.getTargetMgdl())
+
         binding.duration.setParams(
             savedInstanceState?.getDouble("duration")
-                ?: 0.0, 0.0, Constants.MAX_PROFILE_SWITCH_DURATION, 10.0, DecimalFormat("0"), false, binding.okcancel.ok
-        )
+            ?: 0.0, 0.0, Constants.MAX_ENTT_DURATION, 10.0, DecimalFormat("0"), false, binding.okcancel.ok)
 
         if (profileFunction.getUnits() == GlucoseUnit.MMOL)
             binding.temptarget.setParams(
                 savedInstanceState?.getDouble("tempTarget")
-                    ?: 8.0,
-                Constants.MIN_TT_MMOL, Constants.MAX_TT_MMOL, 0.1, DecimalFormat("0.0"), false, binding.okcancel.ok
-            )
+                    ?: enTT,
+                Constants.MIN_TT_MMOL, enTT, 0.1, DecimalFormat("0.0"), false, binding.okcancel.ok)
         else
             binding.temptarget.setParams(
                 savedInstanceState?.getDouble("tempTarget")
-                    ?: 144.0,
-                Constants.MIN_TT_MGDL, Constants.MAX_TT_MGDL, 1.0, DecimalFormat("0"), false, binding.okcancel.ok
-            )
-
-        val units = profileFunction.getUnits()
-        binding.units.text = if (units == GlucoseUnit.MMOL) rh.gs(info.nightscout.core.ui.R.string.mmol) else rh.gs(info.nightscout.core.ui.R.string.mgdl)
+                    ?: enTT,
+                Constants.MIN_TT_MGDL, Constants.MAX_TT_MGDL, 1.0, DecimalFormat("0"), false, binding.okcancel.ok)
 
         // temp target
         context?.let { context ->
@@ -103,6 +103,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
             reasonList = Lists.newArrayList(
                 rh.gs(info.nightscout.core.ui.R.string.manual),
                 rh.gs(info.nightscout.core.ui.R.string.eatingsoon),
+                rh.gs(info.nightscout.core.ui.R.string.eatingnow),
                 rh.gs(info.nightscout.core.ui.R.string.activity),
                 rh.gs(info.nightscout.core.ui.R.string.hypo)
             )
@@ -128,6 +129,11 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
             binding.durationLabel.labelFor = binding.duration.editTextId
             binding.temptargetLabel.labelFor = binding.temptarget.editTextId
         }
+
+        // reset to Eating Now defaults
+        //binding.temptarget.value = Profile.toCurrentUnits(units,profileFunction.getProfile()!!.getTargetMgdl())
+        binding.duration.value = defaultValueHelper.determineEatingNowTTDuration().toDouble()
+        binding.reasonList.setText(rh.gs(info.nightscout.core.ui.R.string.eatingnow), false)
     }
 
     private fun shortClick(v: View) {
@@ -185,6 +191,12 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
             OKDialog.showConfirmation(activity, rh.gs(info.nightscout.core.ui.R.string.temporary_target), HtmlHelper.fromHtml(Joiner.on("<br/>").join(actions)), {
                 val units = profileFunction.getUnits()
                 when (reason) {
+                    rh.gs(info.nightscout.core.ui.R.string.eatingnow)     -> uel.log(
+                        UserEntry.Action.TT, UserEntry.Sources.TTDialog, ValueWithUnit.Timestamp(eventTime).takeIf { eventTimeChanged }, ValueWithUnit.TherapyEventTTReason(
+                            TemporaryTarget.Reason.EATING_NOW
+                        ), ValueWithUnit.fromGlucoseUnit(target, units.asText), ValueWithUnit.Minute(duration)
+                    )
+
                     rh.gs(info.nightscout.core.ui.R.string.eatingsoon)     -> uel.log(
                         UserEntry.Action.TT, UserEntry.Sources.TTDialog, ValueWithUnit.Timestamp(eventTime).takeIf { eventTimeChanged }, ValueWithUnit.TherapyEventTTReason(
                             TemporaryTarget.Reason.EATING_SOON
@@ -224,6 +236,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
                             timestamp = eventTime,
                             duration = TimeUnit.MINUTES.toMillis(duration.toLong()),
                             reason = when (reason) {
+                                rh.gs(info.nightscout.core.ui.R.string.eatingnow) -> TemporaryTarget.Reason.EATING_NOW
                                 rh.gs(info.nightscout.core.ui.R.string.eatingsoon) -> TemporaryTarget.Reason.EATING_SOON
                                 rh.gs(info.nightscout.core.ui.R.string.activity)   -> TemporaryTarget.Reason.ACTIVITY
                                 rh.gs(info.nightscout.core.ui.R.string.hypo)       -> TemporaryTarget.Reason.HYPOGLYCEMIA
