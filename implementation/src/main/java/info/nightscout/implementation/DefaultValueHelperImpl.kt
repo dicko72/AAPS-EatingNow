@@ -64,7 +64,7 @@ class DefaultValueHelperImpl @Inject constructor(
         return if (value > 0) value else Constants.defaultEatingSoonTTDuration
     }
 
-    fun determineEatingNowTTDuration(): Int {
+    override fun determineEatingNowTTDuration(): Int {
         val value = sp.getInt(info.nightscout.core.utils.R.string.key_eatingnow_duration, Constants.defaultEatingNowTTDuration)
         return if (value > 0) value else Constants.defaultEatingNowTTDuration
     }
