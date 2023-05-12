@@ -61,7 +61,7 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 android:textStyle="bold" />
 
-            <info.nightscout.androidaps.utils.ui.NumberPicker
+            <info.nightscout.core.ui.elements.NumberPicker
                 android:id="@+id/temptarget"
                 android:layout_width="130dp"
                 android:layout_height="40dp"
@@ -98,7 +98,7 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 android:textStyle="bold" />
 
-            <info.nightscout.androidaps.utils.ui.MinutesNumberPicker
+            <info.nightscout.core.ui.elements.MinutesNumberPicker
                 android:id="@+id/duration"
                 android:layout_width="130dp"
                 android:layout_height="40dp"
@@ -140,7 +140,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <info.nightscout.androidaps.utils.ui.SingleClickButton
+            <info.nightscout.core.ui.elements.SingleClickButton
                 android:id="@+id/target_cancel"
                 style="@style/ButtonSmallFontStyle"
                 android:layout_width="0px"
@@ -153,7 +153,7 @@
                 android:textColor="?attr/tempTargetConfirmation"
                 android:visibility="gone" />
 
-            <info.nightscout.androidaps.utils.ui.SingleClickButton
+            <info.nightscout.core.ui.elements.SingleClickButton
                 android:id="@+id/eating_soon"
                 style="@style/ButtonSmallFontStyle"
                 android:layout_width="0px"
@@ -167,7 +167,7 @@
                 android:textColor="?attr/carbsColor"
                 android:visibility="gone" />
 
-            <info.nightscout.androidaps.utils.ui.SingleClickButton
+            <info.nightscout.core.ui.elements.SingleClickButton
                 android:id="@+id/activity"
                 style="@style/ButtonSmallFontStyle"
                 android:layout_width="0px"
@@ -181,7 +181,7 @@
                 android:textColor="?attr/exerciseColor"
                 android:visibility="gone" />
 
-            <info.nightscout.androidaps.utils.ui.SingleClickButton
+            <info.nightscout.core.ui.elements.SingleClickButton
                 android:id="@+id/hypo"
                 style="@style/ButtonSmallFontStyle"
                 android:layout_width="0px"
