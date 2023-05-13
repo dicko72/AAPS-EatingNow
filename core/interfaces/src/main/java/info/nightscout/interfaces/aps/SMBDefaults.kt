@@ -3,7 +3,6 @@ package info.nightscout.interfaces.aps
 @Suppress("SpellCheckingInspection")
 object SMBDefaults {
 
-    const val variant = "stable"
     // CALCULATED OR FROM PREFS
     // max_iob: 0 // if max_iob is not provided, will default to zero
     // max_daily_safety_multiplier:3
