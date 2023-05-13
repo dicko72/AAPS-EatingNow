@@ -243,7 +243,7 @@ abstract class PluginsListModule {
     @Binds
     @APS
     @IntoMap
-    @IntKey(230)
+    @IntKey(235)
     abstract fun bindENPlugin(plugin: ENPlugin): PluginBase
 
     @Binds
