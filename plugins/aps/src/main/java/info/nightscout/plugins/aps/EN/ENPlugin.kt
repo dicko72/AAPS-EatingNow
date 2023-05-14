@@ -9,7 +9,10 @@ import info.nightscout.core.extensions.target
 import info.nightscout.core.utils.MidnightUtils
 import info.nightscout.database.ValueWrapper
 import info.nightscout.database.impl.AppRepository
-import info.nightscout.interfaces.aps.*
+import info.nightscout.interfaces.aps.APS
+import info.nightscout.interfaces.aps.AutosensResult
+import info.nightscout.interfaces.aps.DetermineBasalAdapter
+import info.nightscout.interfaces.aps.SMBDefaults
 import info.nightscout.interfaces.bgQualityCheck.BgQualityCheck
 import info.nightscout.interfaces.constraints.Constraint
 import info.nightscout.interfaces.constraints.Constraints
@@ -24,10 +27,10 @@ import info.nightscout.interfaces.profile.ProfileFunction
 import info.nightscout.interfaces.profiling.Profiler
 import info.nightscout.interfaces.utils.HardLimits
 import info.nightscout.interfaces.utils.Round
-import info.nightscout.plugins.aps.OpenAPSFragment
+// import info.nightscout.plugins.aps.OpenAPSFragment
 import info.nightscout.plugins.aps.R
-import info.nightscout.plugins.aps.events.EventOpenAPSUpdateGui
-import info.nightscout.plugins.aps.events.EventResetOpenAPSGui
+// import info.nightscout.plugins.aps.events.EventOpenAPSUpdateGui
+// import info.nightscout.plugins.aps.events.EventResetOpenAPSGui
 import info.nightscout.plugins.aps.openAPSSMB.DetermineBasalResultSMB
 import info.nightscout.plugins.aps.utils.ScriptReader
 import info.nightscout.rx.bus.RxBus
@@ -59,10 +62,10 @@ class ENPlugin @Inject constructor(
     private val repository: AppRepository,
     private val glucoseStatusProvider: GlucoseStatusProvider,
     private val bgQualityCheck: BgQualityCheck
-)  : PluginBase(
+) : PluginBase(
     PluginDescription()
         .mainType(PluginType.APS)
-        .fragmentClass(OpenAPSFragment::class.java.name)
+        .fragmentClass(info.nightscout.plugins.aps.OpenAPSFragment::class.java.name)
         .pluginIcon(info.nightscout.core.ui.R.drawable.ic_generic_icon)
         .pluginName(R.string.EN)
         .shortName(R.string.EN_shortname)
@@ -106,17 +109,17 @@ class ENPlugin @Inject constructor(
         val profile = profileFunction.getProfile()
         val pump = activePlugin.activePump
         if (profile == null) {
-            rxBus.send(EventResetOpenAPSGui(rh.gs(info.nightscout.core.ui.R.string.no_profile_set)))
+            rxBus.send(info.nightscout.plugins.aps.events.EventResetOpenAPSGui(rh.gs(info.nightscout.core.ui.R.string.no_profile_set)))
             aapsLogger.debug(LTag.APS, rh.gs(info.nightscout.core.ui.R.string.no_profile_set))
             return
         }
         if (!isEnabled()) {
-            rxBus.send(EventResetOpenAPSGui(rh.gs(R.string.openapsma_disabled)))
+            rxBus.send(info.nightscout.plugins.aps.events.EventResetOpenAPSGui(rh.gs(R.string.openapsma_disabled)))
             aapsLogger.debug(LTag.APS, rh.gs(R.string.openapsma_disabled))
             return
         }
         if (glucoseStatus == null) {
-            rxBus.send(EventResetOpenAPSGui(rh.gs(R.string.openapsma_no_glucose_data)))
+            rxBus.send(info.nightscout.plugins.aps.events.EventResetOpenAPSGui(rh.gs(R.string.openapsma_no_glucose_data)))
             aapsLogger.debug(LTag.APS, rh.gs(R.string.openapsma_no_glucose_data))
             return
         }
@@ -133,7 +136,8 @@ class ENPlugin @Inject constructor(
         }.value()
 
         var minBg = hardLimits.verifyHardLimits(Round.roundTo(profile.getTargetLowMgdl(), 0.1), info.nightscout.core.ui.R.string.profile_low_target, HardLimits.VERY_HARD_LIMIT_MIN_BG[0], HardLimits.VERY_HARD_LIMIT_MIN_BG[1])
-        var maxBg = hardLimits.verifyHardLimits(Round.roundTo(profile.getTargetHighMgdl(), 0.1), info.nightscout.core.ui.R.string.profile_high_target, HardLimits.VERY_HARD_LIMIT_MAX_BG[0], HardLimits.VERY_HARD_LIMIT_MAX_BG[1])
+        var maxBg =
+            hardLimits.verifyHardLimits(Round.roundTo(profile.getTargetHighMgdl(), 0.1), info.nightscout.core.ui.R.string.profile_high_target, HardLimits.VERY_HARD_LIMIT_MAX_BG[0], HardLimits.VERY_HARD_LIMIT_MAX_BG[1])
         var targetBg = hardLimits.verifyHardLimits(profile.getTargetMgdl(), info.nightscout.core.ui.R.string.temp_target_value, HardLimits.VERY_HARD_LIMIT_TARGET_BG[0], HardLimits.VERY_HARD_LIMIT_TARGET_BG[1])
         var isTempTarget = false
         val tempTarget = repository.getTemporaryTargetActiveAt(dateUtil.now()).blockingGet()
@@ -170,7 +174,7 @@ class ENPlugin @Inject constructor(
         if (constraintChecker.isAutosensModeEnabled().value()) {
             val autosensData = iobCobCalculator.getLastAutosensDataWithWaitForCalculationFinish("OpenAPSPlugin")
             if (autosensData == null) {
-                rxBus.send(EventResetOpenAPSGui(rh.gs(R.string.openaps_no_as_data)))
+                rxBus.send(info.nightscout.plugins.aps.events.EventResetOpenAPSGui(rh.gs(R.string.openaps_no_as_data)))
                 return
             }
             lastAutosensResult = autosensData.autosensResult
@@ -209,7 +213,8 @@ class ENPlugin @Inject constructor(
                 smbAllowed.value(),
                 uam.value(),
                 advancedFiltering.value(),
-                flatBGsDetected)
+                flatBGsDetected
+            )
             val now = System.currentTimeMillis()
             val determineBasalResultSMB = determineBasalAdapterENJS.invoke()
             profiler.log(LTag.APS, "SMB calculation", start)
@@ -231,7 +236,7 @@ class ENPlugin @Inject constructor(
                 lastAPSRun = now
             }
         }
-        rxBus.send(EventOpenAPSUpdateGui())
+        rxBus.send(info.nightscout.plugins.aps.events.EventOpenAPSUpdateGui())
     }
 
     override fun isSuperBolusEnabled(value: Constraint<Boolean>): Constraint<Boolean> {
@@ -241,7 +246,7 @@ class ENPlugin @Inject constructor(
 
     override fun applyMaxIOBConstraints(maxIob: Constraint<Double>): Constraint<Double> {
         if (isEnabled()) {
-            val maxIobPref: Double = sp.getDouble(R.string.key_openapssmb_max_iob, 3.0)
+            val maxIobPref: Double = sp.getDouble(info.nightscout.plugins.aps.R.string.key_openapssmb_max_iob, 3.0)
             maxIob.setIfSmaller(aapsLogger, maxIobPref, rh.gs(R.string.limiting_iob, maxIobPref, rh.gs(R.string.maxvalueinpreferences)), this)
             maxIob.setIfSmaller(aapsLogger, hardLimits.maxIobSMB(), rh.gs(R.string.limiting_iob, hardLimits.maxIobSMB(), rh.gs(R.string.hardlimit)), this)
         }
