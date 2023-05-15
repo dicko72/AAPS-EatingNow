@@ -180,6 +180,7 @@ class TranslatorImpl @Inject internal constructor(
         TemporaryTarget.Reason.CUSTOM       -> rh.gs(info.nightscout.core.ui.R.string.custom)
         TemporaryTarget.Reason.HYPOGLYCEMIA -> rh.gs(info.nightscout.core.ui.R.string.hypo)
         TemporaryTarget.Reason.EATING_SOON  -> rh.gs(info.nightscout.core.ui.R.string.eatingsoon)
+        TemporaryTarget.Reason.EATING_NOW  -> rh.gs(info.nightscout.core.ui.R.string.eatingnow)
         TemporaryTarget.Reason.ACTIVITY     -> rh.gs(info.nightscout.core.ui.R.string.activity)
         TemporaryTarget.Reason.AUTOMATION   -> rh.gs(info.nightscout.core.ui.R.string.automation)
         TemporaryTarget.Reason.WEAR         -> rh.gs(info.nightscout.core.ui.R.string.wear)
