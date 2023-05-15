@@ -125,6 +125,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             val enVariant = sp.getString(info.nightscout.core.utils.R.string.key_en_variant, "stable")
             // val enVariant = "stable"
             this.profile.put("variant", enVariant);
+            this.profile.put("VariantFileName", LoopVariantPreference.getVariantFileName(sp, "EN"));
 
             //generate functions "determine_basal" and "setTempBasal"
             rhino.evaluateString(scope, readFile(LoopVariantPreference.getVariantFileName(sp, "EN")), "JavaScript", 0, null)
