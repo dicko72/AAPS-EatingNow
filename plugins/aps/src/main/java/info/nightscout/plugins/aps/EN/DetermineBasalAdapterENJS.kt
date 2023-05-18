@@ -346,6 +346,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         // set the EN start time based on prefs
         val ENStartTime = 3600000 * sp.getInt(R.string.key_eatingnow_timestart, 9) + MidnightTime.calc(now)
+        this.mealData.put("ENStartTime",ENStartTime)
+
         // Create array to contain treatment times for ENWStartTime for today
         var ENWStartTimeArray: Array<Long> = arrayOf() // Create array to contain last treatment times for ENW for today
         var ENStartedArray: Array<Long> = arrayOf() // Create array to contain first treatment times for ENStartTime for today
