@@ -363,36 +363,36 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             ENWStartTimeArray += lastENCarbTime
         }
 
-        // get the FIRST and LAST bolus time since EN activation NEW
-        repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().let { ENBolus->
-            val firstENBolusTime = with(ENBolus.firstOrNull()?.timestamp) { this ?: 0 }
-            this.mealData.put("firstENBolusTime",firstENBolusTime)
-            if (firstENBolusTime >0) ENStartedArray += firstENBolusTime
-
-            val firstENBolusUnits = with(ENBolus.firstOrNull()?.amount) { this ?: 0 }
-            this.mealData.put("firstENBolusUnits",firstENBolusUnits)
-
-            val lastENBolusTime = with(ENBolus.lastOrNull()?.timestamp) { this ?: 0 }
-            this.mealData.put("lastENBolusTime",lastENBolusTime)
-            ENWStartTimeArray += lastENBolusTime
-
-            val lastENBolusUnits = with(ENBolus.lastOrNull()?.amount) { this ?: 0 }
-            this.mealData.put("lastENBolusUnits",lastENBolusUnits)
-        }
-
-        // get the FIRST and LAST ENTempTarget time since EN activation NEW
-        repository.getENTemporaryTargetDataFromTimetoTime(ENStartTime,now,true).blockingGet().let { ENTempTarget ->
-            val firstENTempTargetTime = with(ENTempTarget.firstOrNull()?.timestamp) { this ?: 0 }
-            this.mealData.put("firstENTempTargetTime",firstENTempTargetTime)
-            if (firstENTempTargetTime >0) ENStartedArray += firstENTempTargetTime
-
-            val lastENTempTargetTime = with(ENTempTarget.lastOrNull()?.timestamp) { this ?: 0 }
-            this.mealData.put("lastENTempTargetTime",lastENTempTargetTime)
-            ENWStartTimeArray += lastENTempTargetTime
-
-            val lastENTempTargetDuration = with(ENTempTarget.lastOrNull()?.duration) { this ?: 0 }
-            this.mealData.put("lastENTempTargetDuration",lastENTempTargetDuration/60000)
-        }
+        // // get the FIRST and LAST bolus time since EN activation NEW
+        // repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().let { ENBolus->
+        //     val firstENBolusTime = with(ENBolus.firstOrNull()?.timestamp) { this ?: 0 }
+        //     this.mealData.put("firstENBolusTime",firstENBolusTime)
+        //     if (firstENBolusTime >0) ENStartedArray += firstENBolusTime
+        //
+        //     val firstENBolusUnits = with(ENBolus.firstOrNull()?.amount) { this ?: 0 }
+        //     this.mealData.put("firstENBolusUnits",firstENBolusUnits)
+        //
+        //     val lastENBolusTime = with(ENBolus.lastOrNull()?.timestamp) { this ?: 0 }
+        //     this.mealData.put("lastENBolusTime",lastENBolusTime)
+        //     ENWStartTimeArray += lastENBolusTime
+        //
+        //     val lastENBolusUnits = with(ENBolus.lastOrNull()?.amount) { this ?: 0 }
+        //     this.mealData.put("lastENBolusUnits",lastENBolusUnits)
+        // }
+        //
+        // // get the FIRST and LAST ENTempTarget time since EN activation NEW
+        // repository.getENTemporaryTargetDataFromTimetoTime(ENStartTime,now,true).blockingGet().let { ENTempTarget ->
+        //     val firstENTempTargetTime = with(ENTempTarget.firstOrNull()?.timestamp) { this ?: 0 }
+        //     this.mealData.put("firstENTempTargetTime",firstENTempTargetTime)
+        //     if (firstENTempTargetTime >0) ENStartedArray += firstENTempTargetTime
+        //
+        //     val lastENTempTargetTime = with(ENTempTarget.lastOrNull()?.timestamp) { this ?: 0 }
+        //     this.mealData.put("lastENTempTargetTime",lastENTempTargetTime)
+        //     ENWStartTimeArray += lastENTempTargetTime
+        //
+        //     val lastENTempTargetDuration = with(ENTempTarget.lastOrNull()?.duration) { this ?: 0 }
+        //     this.mealData.put("lastENTempTargetDuration",lastENTempTargetDuration/60000)
+        // }
 
         // get the current EN TT info
         repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.let { activeENTempTarget ->
