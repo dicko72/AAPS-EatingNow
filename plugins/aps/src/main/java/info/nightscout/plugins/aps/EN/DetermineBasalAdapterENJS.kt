@@ -403,14 +403,13 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val ENStartedTime = if (ENStartedArray.isNotEmpty()) ENStartedArray.min() else 0 // get the minimum (earliest) time from the array or make it 0
         this.mealData.put("ENStartedTime", ENStartedTime) // the time EN started today
 
-        val ENWStartTime = 0L
-        val ENWStartTimeTEST = if (ENWStartTimeArray.isNotEmpty()) ENWStartTimeArray.max() else 0 // get the maximum (latest) time from the array or make it 0
+        val ENWStartTime = if (ENWStartTimeArray.isNotEmpty()) ENWStartTimeArray.max() else 0 // get the maximum (latest) time from the array or make it 0
 
         // get the TDD since ENW Start
         this.mealData.put("ENWStartTime", ENWStartTime)
-        this.mealData.put("ENWStartTimeTEST", ENWStartTimeTEST)
         //Constants.MAX_ENTT_DURATION
-        this.mealData.put("ENWBolusIOB", if (now <= ENWStartTime+(4*3600000)) tddCalculator.calculateDaily(ENWStartTime, now)?.bolusAmount else 0)
+        // this.mealData.put("ENWBolusIOB", if (now <= ENWStartTime+(4*3600000)) tddCalculator.calculateDaily(ENWStartTime, now)?.bolusAmount else 0)
+        this.mealData.put("ENWBolusIOB", 0)
         // this.mealData.put("ENWBolusIOB", if (now <= ENWStartTime+(4*3600000)) tddCalculator.calculate(ENWStartTime, now).totalAmount else 0)
         // this.mealData.put("ENWBolusIOB", 0)
         this.profile.put("ENW_breakfast_max_tdd", sp.getDouble(R.string.key_enw_breakfast_max_tdd, 0.0))
