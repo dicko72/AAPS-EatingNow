@@ -360,7 +360,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
             val lastENCarbTime = with(ENCarbs.lastOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("lastENCarbTime",lastENCarbTime)
-            // ENWStartTimeArray += lastENCarbTime
+            ENWStartTimeArray += lastENCarbTime
         }
 
         // // get the FIRST and LAST bolus time since EN activation NEW
