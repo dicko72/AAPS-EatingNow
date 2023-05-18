@@ -19,4 +19,5 @@ app/.classpath
 app/.settings/org.eclipse.buildship.core.prefs
 wear/.classpath
 wear/.settings/org.eclipse.buildship.core.prefs
-.*/output-metadata.json
+/app/nsclient2/release/output-metadata.json
+/app/nsclient/release/output-metadata.json
