@@ -357,9 +357,9 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             val firstENCarbTime = with(ENCarbs.firstOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("firstENCarbTime",firstENCarbTime)
             if (firstENCarbTime >0) ENStartedArray += firstENCarbTime
-            //
-            // val lastENCarbTime = with(ENCarbs.lastOrNull()?.timestamp) { this ?: 0 }
-            // this.mealData.put("lastENCarbTime",lastENCarbTime)
+
+            val lastENCarbTime = with(ENCarbs.lastOrNull()?.timestamp) { this ?: 0 }
+            this.mealData.put("lastENCarbTime",lastENCarbTime)
             // ENWStartTimeArray += lastENCarbTime
         }
 
