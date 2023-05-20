@@ -385,6 +385,7 @@
     <string name="basal_shortname">BAS</string>
     <string name="deviation_shortname">DEV</string>
     <string name="activity_shortname">ACT</string>
+    <string name="raw_bg_shortname">RAW</string>
     <string name="bgi_shortname">-BGI</string>
     <string name="abs_insulin_shortname">ABS</string>
     <string name="devslope_shortname">DEVSLOPE</string>
@@ -555,6 +556,7 @@
     <string name="subcategory">Unterkategorie</string>
     <string name="bolusrecordedonly">Bolus wird nur aufgezeichnet (Pumpe gibt kein Insulin ab!)</string>
     <string name="loop_smbsetbypump_label">SMB von der Pumpe abgegeben</string>
+    <string name="overview_show_raw_bg">Raw BZ</string>
     <string name="overview_show_activity">Aktivität</string>
     <string name="overview_show_bgi">Blutzuckerwirkung</string>
     <string name="overview_show_sensitivity">Sensitivität</string>
@@ -1046,4 +1048,11 @@ Unerwartetes Verhalten.</string>
     <string name="blocked_by_connectivity">Blockiert durch Verbindungsoptionen</string>
     <string name="no_watch_connected">(keine Uhr verbunden)</string>
     <string name="error_asking_for_permissions">Fehler beim Anfordern der Erlaubnis</string>
+
+    <!-- Tsunami Data Smoothing -->
+    <string name="key_use_data_smoothing" translatable="false">use_data_smoothing</string>
+    <string name="use_data_smoothing_summary" translatable="false">Glättet eingehende Sensordaten im Hauptdiagramm. Empfohlen, wenn der Sensor die Sensormesswerte nicht selbst glättet und SMB immer aktiviert werden sollen.</string>
+    <string name="use_data_smoothing_title" translatable="false">Glättung eingehender Sensordaten</string>
+    <string name="internal_smoothing_enabled">Sensordatenglättung ist aktiviert.</string>
+    <!-- Tsunami Data Smoothing end-->
 </resources>
