@@ -249,6 +249,7 @@ class OverviewData @Inject constructor(
     var maxBgValue = Double.MIN_VALUE
     var bucketedGraphSeries: PointsWithLabelGraphSeries<DataPointWithLabelInterface> = PointsWithLabelGraphSeries()
     var bgReadingGraphSeries: PointsWithLabelGraphSeries<DataPointWithLabelInterface> = PointsWithLabelGraphSeries()
+    var bgReadingRawGraphSeries: PointsWithLabelGraphSeries<DataPointWithLabelInterface> = PointsWithLabelGraphSeries()
     var predictionsGraphSeries: PointsWithLabelGraphSeries<DataPointWithLabelInterface> = PointsWithLabelGraphSeries()
 
     val basalScale = Scale()
