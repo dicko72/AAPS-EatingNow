@@ -444,23 +444,32 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         // calculate the rest of the TDD data
         var TDDAvg1d = tddCalculator.averageTDD(tddCalculator.calculate(1, allowMissingDays = false))?.totalAmount
-        if (TDDAvg1d == null || TDDAvg1d < basalRate) TDDAvg1d =  tddCalculator.calculateDaily(-24, 0)?.totalAmount
-        if (TDDAvg1d != null) {
-            if (TDDAvg1d < basalRate) TDDAvg1d = ((basalRate * 12)*100)/21
+        // if (TDDAvg1d == null || TDDAvg1d < basalRate) TDDAvg1d =  tddCalculator.calculateDaily(-24, 0)?.totalAmount
+        // if (TDDAvg1d != null) {
+        //     if (TDDAvg1d < basalRate) TDDAvg1d = ((basalRate * 12)*100)/21
+        // }
+
+        var TDDLast4h = tddCalculator.calculateDaily(-4, 0)?.totalAmount
+        var TDDLast8h = tddCalculator.calculateDaily(-8, 0)?.totalAmount
+        var TDDLast8hfor4h = tddCalculator.calculateDaily(-8, -4)?.totalAmount
+        val tddLast24H = tddCalculator.calculateDaily(-24, 0)?.totalAmount
+
+
+        if (tddLast24H == null || TDDLast4h == null || TDDLast8hfor4h == null || TDDLast8h == null) {
+            if (TDDAvg1d == null || TDDAvg1d < basalRate) TDDAvg1d = ((basalRate * 12)*100)/21
+            TDDLast4h = TDDAvg1d / 6
+            TDDLast8h = TDDAvg1d / 3
+            TDDLast8hfor4h = TDDAvg1d / 6
         }
+
+        this.mealData.put("TDDLast4h", TDDLast4h)
+        this.mealData.put("TDDLast8h", TDDLast8h)
+        this.mealData.put("TDDLast8hfor4h", TDDLast8hfor4h)
         this.mealData.put("TDDAvg1d", TDDAvg1d)
 
-        val TDDLast4h = tddCalculator.calculateDaily(-4, 0)?.totalAmount
-        this.mealData.put("TDDLast4h", TDDLast4h)
 
-        val TDDLast8h = tddCalculator.calculateDaily(-8, 0)?.totalAmount
-        this.mealData.put("TDDLast8h", TDDLast8h)
-
-        val TDDLast8hfor4h = tddCalculator.calculateDaily(-8, -4)?.totalAmount
-        this.mealData.put("TDDLast8hfor4h", TDDLast8hfor4h)
-
-        val TDDLast8_wt = (((1.4 * TDDLast4h!!) + (0.6 * TDDLast8hfor4h!!)) * 3)
-        val TDD8h_exp = (3 * TDDLast8h!!)
+        val TDDLast8_wt = (((1.4 * TDDLast4h) + (0.6 * TDDLast8hfor4h)) * 3)
+        val TDD8h_exp = (3 * TDDLast8h)
         this.mealData.put("TDD8h_exp",TDD8h_exp)
 
         if ( TDDLast8_wt < (0.75 * TDDAvg7d)) TDDAvg7d = TDDLast8_wt + ( ( TDDLast8_wt / TDDAvg7d ) * ( TDDAvg7d - TDDLast8_wt ) )
