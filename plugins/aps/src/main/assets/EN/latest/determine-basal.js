@@ -1303,6 +1303,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 minPredBG = Math.max(minPredBG,threshold);
                 minGuardBG = Math.max(minGuardBG,threshold);
                 eventualBG = bg;
+                eBGweight = 1; // try 100%
                 ENWindowOK = false; // disable ENW so smaller SMB or UAM TBR can run
             }
             AllowZT = false; // disable ZT for UAM+
