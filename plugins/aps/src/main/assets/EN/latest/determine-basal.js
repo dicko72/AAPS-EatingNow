@@ -1763,9 +1763,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (max_iob_en > 0 && iob_data.iob > max_iob_en) ENMaxSMB = (profile.EN_max_iob_allow_smb ? maxBolus : 0);
 
             // restrict maxBolus when ENWBolusIOB will be exceeded by SMB
-            if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB + insulinReq > ENWBolusIOBMax) ENMaxSMB = Math.min(ENWBolusIOBMax - meal_data.ENWBolusIOB, ENMaxSMB);
-            if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB >= ENWBolusIOBMax) ENMaxSMB = Math.min(ENMaxSMB,profile.EN_NoENW_maxBolus);
-
+            if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB + insulinReq > ENWBolusIOBMax) ENMaxSMB = Math.min(ENMaxSMB,profile.EN_NoENW_maxBolus);
 
             // ============== TIME BASED RESTRICTIONS ==============
             if (ENtimeOK) {
