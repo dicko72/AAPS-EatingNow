@@ -35,6 +35,7 @@ data class NSTemporaryTarget(
         ACTIVITY("Activity"),
         EATING_SOON("Eating Soon"),
         EATING_NOW("Eating Now"),
+        EATING_NOW_PB("Eating Now PB"),
         AUTOMATION("Automation"),
         WEAR("Wear")
         ;

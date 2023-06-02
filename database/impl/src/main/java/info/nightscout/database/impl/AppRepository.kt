@@ -216,13 +216,13 @@ import kotlin.math.roundToInt
 
     // Eating Now: Get the first EN TT since EN start time
     fun getENTemporaryTargetDataFromTimetoTime(timestamp: Long, to: Long, ascending: Boolean): Single<List<TemporaryTarget>> =
-        database.temporaryTargetDao.getENTemporaryTargetDataFromTimetoTime(timestamp, to, TemporaryTarget.Reason.EATING_NOW)
+        database.temporaryTargetDao.getENTemporaryTargetDataFromTimetoTime(timestamp, to, TemporaryTarget.Reason.EATING_NOW, TemporaryTarget.Reason.EATING_NOW_PB)
             .map { if (!ascending) it.reversed() else it }
             .subscribeOn(Schedulers.io())
 
     // Eating Now: Get the EN TT at this time
     fun getENTemporaryTargetActiveAt(timestamp: Long): Single<List<TemporaryTarget>> =
-        database.temporaryTargetDao.getENTemporaryTargetActiveAt(timestamp,TemporaryTarget.Reason.EATING_NOW)
+        database.temporaryTargetDao.getENTemporaryTargetActiveAt(timestamp,TemporaryTarget.Reason.EATING_NOW, TemporaryTarget.Reason.EATING_NOW_PB)
             .subscribeOn(Schedulers.io())
 
     fun getTemporaryTargetDataIncludingInvalidFromTime(timestamp: Long, ascending: Boolean): Single<List<TemporaryTarget>> =

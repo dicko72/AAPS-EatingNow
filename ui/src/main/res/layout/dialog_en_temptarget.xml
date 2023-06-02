@@ -194,6 +194,13 @@
                 android:textColor="?attr/lowColor"
                 android:visibility="gone" />
 
+            <CheckBox
+                android:id="@+id/prebolus"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginTop="5dp"
+                android:text="Pre-Bolus" />
+
         </LinearLayout>
         
         <include

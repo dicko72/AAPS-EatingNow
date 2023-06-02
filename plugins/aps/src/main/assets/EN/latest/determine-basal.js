@@ -243,6 +243,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var ENStartTime = new Date().setHours(profile.EatingNowTimeStart, 0, 0, 0) - ENStartOffset, ENEndTime = new Date().setHours(profile.EatingNowTimeEnd, 0, 0, 0) + ENEndOffset;
     // var COB = meal_data.mealCOB;
     var ENTTActive = meal_data.activeENTempTargetDuration > 0;
+    var ENPBActive = (typeof meal_data.activeENPB == 'undefined' ? false : meal_data.activeENPB);
 
     // variables for deltas
     var delta = glucose_status.delta, DeltaPctS = 1, DeltaPctL = 1;
@@ -449,6 +450,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "nowUTC:" + nowUTC + ", ENWStartTime:" + meal_data.ENWStartTime + "\n";
     enlog += "ENWindowOK:" + ENWindowOK + ", ENWindowRunTime:" + ENWindowRunTime + ", ENWindowDuration:" + ENWindowDuration + "\n";
     enlog += "ENTTActive:" + ENTTActive + "\n";
+    enlog += "ENPBActive:" + ENPBActive + "\n";
     enlog += "ENWIOBThreshU:" + ENWIOBThreshU + ", IOB:" + iob_data.iob + "\n";
     enlog += "firstMealWindow:" + firstMealWindow + ", firstMealScaling:" + firstMealScaling + "\n";
     enlog += "-----------------------" + "\n";
@@ -1267,7 +1269,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // within the first 30 minutes if UAM+ would be triggered go back to PB condition as PB+
     // start with the prebolus in prefs as the minimum starting bolus amount for ENWBolusIOB then use the maxbolus for UAM+ as the increment
-    var UAMBGPreBolus = (UAMBGPreBolusUnits > 0 && ENTTActive && ENWindowRunTime < PBW && (meal_data.ENWBolusIOB < UAMBGPreBolusUnits || sens_predType == "UAM+") );
+    var UAMBGPreBolus = (UAMBGPreBolusUnits > 0 && ENTTActive && ENPBActive && ENWindowRunTime < PBW && (meal_data.ENWBolusIOB < UAMBGPreBolusUnits || sens_predType == "UAM+") );
 
     // Pre-bolus condition matches set PB+ when boluses exceed PreBolus prefs else use normal PB
     if (UAMBGPreBolus) sens_predType = (sens_predType == "UAM+" && meal_data.ENWBolusIOB >= UAMBGPreBolusUnits ? "PB+" : "PB");

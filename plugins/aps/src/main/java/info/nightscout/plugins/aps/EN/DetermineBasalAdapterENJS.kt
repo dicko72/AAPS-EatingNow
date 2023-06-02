@@ -17,6 +17,7 @@ import dagger.android.HasAndroidInjector
 import info.nightscout.core.extensions.convertedToAbsolute
 import info.nightscout.core.extensions.getPassedDurationToTimeInMinutes
 import info.nightscout.core.extensions.plannedRemainingMinutes
+import info.nightscout.database.entities.TemporaryTarget
 import info.nightscout.interfaces.GlucoseUnit
 import info.nightscout.interfaces.aps.DetermineBasalAdapter
 import info.nightscout.interfaces.aps.SMBDefaults
@@ -398,6 +399,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.let { activeENTempTarget ->
             this.mealData.put("activeENTempTargetStartTime",activeENTempTarget.timestamp)
             this.mealData.put("activeENTempTargetDuration",activeENTempTarget.duration/60000)
+            this.mealData.put("activeENPB",activeENTempTarget.reason == TemporaryTarget.Reason.EATING_NOW_PB)
         }
 
         val ENStartedTime = if (ENStartedArray.isNotEmpty()) ENStartedArray.min() else 0 // get the minimum (earliest) time from the array or make it 0

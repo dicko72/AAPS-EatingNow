@@ -625,8 +625,9 @@
     <string name="cleanup_db_confirm_sync">Do you want to cleanup the database?\nIt will remove tracked changes and historic data older than 3 months.\nDoing it will speedup full synchronization dramatically.</string>
     <string name="cleared_entries">Cleared entries</string>
 
-    <!--    Eating Now -->
+    <!--    Eating Now TT -->
     <string name="eatingnow">Eating Now</string>
+    <string name="eatingnow_prebolus">Eating Now PB</string>
     <string name="key_eatingnow_duration" translatable="false">eatingnow_duration</string>
 
 </resources>
