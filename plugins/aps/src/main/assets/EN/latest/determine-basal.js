@@ -523,7 +523,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     TIR_sens = (TIRB0 < 1 ? TIRB0 : Math.max(TIRB2,TIRB1) );
 
     // TIR_sum will use relevant TIR band for BG+
-    var TIRB_sum = (bg < 150 ? TIRB1_sum : TIRB2_sum);
+    var TIRB_sum = (bg < normalTarget + 50 ? TIRB1_sum : TIRB2_sum);
 
     // apply autosens limit to TIR_sens_limited
     TIR_sens_limited = Math.min(TIR_sens, profile.autosens_max);
