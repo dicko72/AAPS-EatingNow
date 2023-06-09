@@ -557,8 +557,8 @@
             <SwitchPreference
                 android:defaultValue="false"
                 android:key="key_use_uamplustbr_noenw"
-                android:title="Allow UAM+ TBR outside ENW"
-                android:summary="Allow UAM+ to provide an EN UAM+ TBR when not within ENW.\nSimilar to Boost plugin this will activate with sufficient delta and acceleration." />
+                android:title="Allow UAM+ restricted SMB with TBR outside ENW"
+                android:summary="Allow UAM+ to provide a non ENW SMB with TBR when not within ENW.\nSimilar to Boost plugin this will activate with sufficient delta and acceleration." />
 
         </PreferenceCategory>
 
