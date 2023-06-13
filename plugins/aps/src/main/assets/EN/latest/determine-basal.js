@@ -244,6 +244,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // var COB = meal_data.mealCOB;
     var ENTTActive = meal_data.activeENTempTargetDuration > 0;
     var ENPBActive = (typeof meal_data.activeENPB == 'undefined' ? false : meal_data.activeENPB);
+    var HighTempTargetSet = (!ENTTActive && profile.temptargetSet && target_bg > normalTarget);
 
     // variables for deltas
     var delta = glucose_status.delta, DeltaPctS = 1, DeltaPctL = 1;
@@ -1280,7 +1281,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (profile.temptargetSet && !ENTTActive && target_bg == normalTarget) sens_predType = "TBR";
 
     // evaluate prediction type and weighting - Only use during day or when TIR is above threshold for relevant band
-    if (ENactive || TIRB_sum > 1 || !ENtimeOK && eventualBG > target_bg) {
+    if (ENactive || TIRB_sum > 1 || !ENtimeOK && eventualBG > target_bg && !HighTempTargetSet) {
 
         // PREbolus active - PB used for increasing Bolus IOB within ENW, PB+ for when a UAM+ rise is still active (potential underbolus)
         if (sens_predType.startsWith("PB")) {
