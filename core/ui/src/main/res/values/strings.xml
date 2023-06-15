@@ -628,6 +628,6 @@
     <!--    Eating Now TT -->
     <string name="eatingnow">Eating Now</string>
     <string name="eatingnow_prebolus">Eating Now PB</string>
-    <string name="key_eatingnow_duration" translatable="false">eatingnow_duration</string>
+<!--    <string name="key_eatingnow_duration" translatable="false">eatingnow_duration</string>-->
 
 </resources>
