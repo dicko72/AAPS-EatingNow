@@ -746,9 +746,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             rT.reason += "Dosing sensitivity: " +future_sens+" using eventual BG;";
          }
          future_sens = round(future_sens,1);
-     } else {
-        var future_sens = variable_sens;
-     }
+     } else future_sens = variable_sens
+
 
     var fractionCarbsLeft = meal_data.mealCOB/meal_data.carbs;
     // if we have COB and UAM is enabled, average both
