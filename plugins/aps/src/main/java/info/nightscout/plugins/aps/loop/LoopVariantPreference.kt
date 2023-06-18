@@ -22,7 +22,7 @@ class LoopVariantPreference(context: Context, attrs: AttributeSet?)
         pluginFolder = typedArray.getString(R.styleable.LoopVariantPreference_pluginFolder)
         key = "key_${pluginFolder}_variant";
         val entries = Vector<CharSequence>()
-        entries.add(DEFAULT)
+        // entries.add(DEFAULT)
 
         val list = context.assets.list("$pluginFolder/")
         list?.forEach {
@@ -36,12 +36,12 @@ class LoopVariantPreference(context: Context, attrs: AttributeSet?)
     }
 
     companion object {
-        const val DEFAULT = "default"
+        const val DEFAULT = "stable"
 
         fun getVariantFileName(sp: SP, pluginFolder: String) : String
         {
             return when (val variant = sp.getString("key_${pluginFolder}_variant", DEFAULT)) {
-                DEFAULT -> "$pluginFolder/determine-basal.js"
+                DEFAULT -> "$pluginFolder/stable/determine-basal.js"
                 else    -> "$pluginFolder/$variant/determine-basal.js"
             }
         }

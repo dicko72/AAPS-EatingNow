@@ -381,15 +381,11 @@ class NSClientV3Plugin @Inject constructor(
                 val response = args[0] as JSONObject
                 wsConnected = if (response.optBoolean("success")) {
                     rxBus.send(EventNSClientNewLog("◄ WS", "Subscribed for: ${response.optString("collections")}"))
-                    // during disconnection updated data is not received
-                    // thus run non WS load to get missing data
-                    executeLoop("WS_CONNECT", forceNew = false)
                     true
                 } else {
                     rxBus.send(EventNSClientNewLog("◄ WS", "Auth failed"))
                     false
                 }
-                rxBus.send(EventNSClientUpdateGuiStatus())
             })
         }
     }
@@ -421,7 +417,6 @@ class NSClientV3Plugin @Inject constructor(
         rxBus.send(EventNSClientNewLog("◄ WS", "disconnect storage event"))
         wsConnected = false
         initialLoadFinished = false
-        rxBus.send(EventNSClientUpdateGuiStatus())
     }
 
     private val onDisconnectAlarm = Emitter.Listener { args ->
@@ -466,17 +461,7 @@ class NSClientV3Plugin @Inject constructor(
     private val onDataDelete = Emitter.Listener { args ->
         val response = args[0] as JSONObject
         aapsLogger.debug(LTag.NSCLIENT, "onDataDelete: $response")
-        val collection = response.optString("colName") ?: return@Listener
-        val identifier = response.optString("identifier") ?: return@Listener
-        rxBus.send(EventNSClientNewLog("◄ WS DELETE", "$collection $identifier"))
-        if (collection == "treatments") {
-            storeDataForDb.deleteTreatment.add(identifier)
-            storeDataForDb.updateDeletedTreatmentsInDb()
-        }
-        if (collection == "entries") {
-            storeDataForDb.deleteGlucoseValue.add(identifier)
-            storeDataForDb.updateDeletedGlucoseValuesInDb()
-        }
+        rxBus.send(EventNSClientNewLog("◄ WS DELETE", "${response.optString("collection")} ${response.optString("doc")}"))
     }
 
     private val onAnnouncement = Emitter.Listener { args ->

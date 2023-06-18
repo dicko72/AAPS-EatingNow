@@ -966,8 +966,10 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
     fun updateTemporaryTarget() {
         val units = profileFunction.getUnits()
         val tempTarget = overviewData.temporaryTarget
-        val ENTTtext = if (tempTarget?.reason == TemporaryTarget.Reason.EATING_NOW) "EATING NOW " else ""
-        runOnUiThread {
+        var ENTTtext = ""
+        if (tempTarget?.reason == TemporaryTarget.Reason.EATING_NOW) ENTTtext = "EATING NOW "
+        if (tempTarget?.reason == TemporaryTarget.Reason.EATING_NOW_PB) ENTTtext = "EATING NOW PB "
+            runOnUiThread {
             _binding ?: return@runOnUiThread
             if (tempTarget != null) {
                 setRibbon(

@@ -12,7 +12,6 @@
         android:orientation="horizontal"
         android:paddingStart="16dp"
         android:paddingTop="16dp"
-        android:paddingEnd="16dp"
         android:visibility="visible">
 
         <CheckBox

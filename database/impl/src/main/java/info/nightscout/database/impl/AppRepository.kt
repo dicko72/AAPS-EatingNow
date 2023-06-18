@@ -143,8 +143,8 @@ import kotlin.math.roundToInt
             .subscribeOn(Schedulers.io())
 
     //BG READINGS -- including invalid/history records
-    fun findBgReadingByNSId(nsId: String): GlucoseValue? =
-        database.glucoseValueDao.findByNSId(nsId)
+    fun findBgReadingByNSIdSingle(nsId: String): Single<ValueWrapper<GlucoseValue>> =
+        database.glucoseValueDao.findByNSIdMaybe(nsId).toWrappedSingle()
 
     fun getModifiedBgReadingsDataFromId(lastId: Long): Single<List<GlucoseValue>> =
         database.glucoseValueDao.getModifiedFrom(lastId)
@@ -186,9 +186,6 @@ import kotlin.math.roundToInt
             .subscribeOn(Schedulers.io())
 
     // TEMP TARGETS
-    fun findTemporaryTargetByNSId(nsId: String): TemporaryTarget? =
-        database.temporaryTargetDao.findByNSId(nsId)
-
     /*
        * returns a Pair of the next entity to sync and the ID of the "update".
        * The update id might either be the entry id itself if it is a new entry - or the id
@@ -219,13 +216,13 @@ import kotlin.math.roundToInt
 
     // Eating Now: Get the first EN TT since EN start time
     fun getENTemporaryTargetDataFromTimetoTime(timestamp: Long, to: Long, ascending: Boolean): Single<List<TemporaryTarget>> =
-        database.temporaryTargetDao.getENTemporaryTargetDataFromTimetoTime(timestamp, to, TemporaryTarget.Reason.EATING_NOW)
+        database.temporaryTargetDao.getENTemporaryTargetDataFromTimetoTime(timestamp, to, TemporaryTarget.Reason.EATING_NOW, TemporaryTarget.Reason.EATING_NOW_PB)
             .map { if (!ascending) it.reversed() else it }
             .subscribeOn(Schedulers.io())
 
     // Eating Now: Get the EN TT at this time
     fun getENTemporaryTargetActiveAt(timestamp: Long): Single<List<TemporaryTarget>> =
-        database.temporaryTargetDao.getENTemporaryTargetActiveAt(timestamp,TemporaryTarget.Reason.EATING_NOW)
+        database.temporaryTargetDao.getENTemporaryTargetActiveAt(timestamp,TemporaryTarget.Reason.EATING_NOW, TemporaryTarget.Reason.EATING_NOW_PB)
             .subscribeOn(Schedulers.io())
 
     fun getTemporaryTargetDataIncludingInvalidFromTime(timestamp: Long, ascending: Boolean): Single<List<TemporaryTarget>> =
@@ -266,9 +263,6 @@ import kotlin.math.roundToInt
     }
 
     // PROFILE SWITCH
-
-    fun findProfileSwitchByNSId(nsId: String): ProfileSwitch? =
-        database.profileSwitchDao.findByNSId(nsId)
 
     fun getNextSyncElementProfileSwitch(id: Long): Maybe<Pair<ProfileSwitch, ProfileSwitch>> =
         database.profileSwitchDao.getNextModifiedOrNewAfter(id)
@@ -326,9 +320,6 @@ import kotlin.math.roundToInt
         database.profileSwitchDao.getLastId()
 
     // EFFECTIVE PROFILE SWITCH
-    fun findEffectiveProfileSwitchByNSId(nsId: String): EffectiveProfileSwitch? =
-        database.effectiveProfileSwitchDao.findByNSId(nsId)
-
     /*
        * returns a Pair of the next entity to sync and the ID of the "update".
        * The update id might either be the entry id itself if it is a new entry - or the id
@@ -393,9 +384,6 @@ import kotlin.math.roundToInt
        *
        * It is a Maybe as there might be no next element.
        * */
-    fun findTherapyEventByNSId(nsId: String): TherapyEvent? =
-        database.therapyEventDao.findByNSId(nsId)
-
     fun getNextSyncElementTherapyEvent(id: Long): Maybe<Pair<TherapyEvent, TherapyEvent>> =
         database.therapyEventDao.getNextModifiedOrNewAfter(id)
             .flatMap { nextIdElement ->
@@ -438,6 +426,11 @@ import kotlin.math.roundToInt
         database.therapyEventDao.getLastTherapyRecord(type, System.currentTimeMillis()).toWrappedSingle()
             .subscribeOn(Schedulers.io())
 
+    // // EN - for getting the previous treatment
+    // fun getLastTherapyRecordUpToTime(type: TherapyEvent.Type, timestamp: Long): Single<ValueWrapper<TherapyEvent>> =
+    //     database.therapyEventDao.getLastTherapyRecord(type, timestamp-1).toWrappedSingle()
+    //         .subscribeOn(Schedulers.io())
+
     fun getTherapyEventByTimestamp(type: TherapyEvent.Type, timestamp: Long): TherapyEvent? =
         database.therapyEventDao.findByTimestamp(type, timestamp)
 
@@ -454,9 +447,6 @@ import kotlin.math.roundToInt
         database.therapyEventDao.getLastId()
 
     // FOOD
-    fun findFoodByNSId(nsId: String): Food? =
-        database.foodDao.findByNSId(nsId)
-
     /*
        * returns a Pair of the next entity to sync and the ID of the "update".
        * The update id might either be the entry id itself if it is a new entry - or the id
@@ -491,9 +481,6 @@ import kotlin.math.roundToInt
         database.foodDao.getLastId()
 
     // BOLUS
-    fun findBolusByNSId(nsId: String): Bolus? =
-        database.bolusDao.findByNSId(nsId)
-
     /*
       * returns a Pair of the next entity to sync and the ID of the "update".
       * The update id might either be the entry id itself if it is a new entry - or the id
@@ -540,7 +527,7 @@ import kotlin.math.roundToInt
 
     // Eating Now: Get the first bolus since EN Start
     fun getENBolusFromTimeOfType(timestamp: Long, ascending: Boolean, type: Bolus.Type, minbolus: Double): Single<List<Bolus>> =
-        database.bolusDao.getBolusesFromTimeOfType(type, timestamp, minbolus)
+        database.bolusDao.getENBolusesFromTimeOfType(type, timestamp, minbolus)
             .map { if (!ascending) it.reversed() else it }
             .subscribeOn(Schedulers.io())
 
@@ -565,9 +552,6 @@ import kotlin.math.roundToInt
     fun getLastBolusId(): Long? =
         database.bolusDao.getLastId()
     // CARBS
-
-    fun findCarbsByNSId(nsId: String): Carbs? =
-        database.carbsDao.findByNSId(nsId)
 
     private fun expandCarbs(carbs: Carbs): List<Carbs> =
         if (carbs.duration == 0L) {
@@ -684,9 +668,6 @@ import kotlin.math.roundToInt
         database.carbsDao.getLastId()
 
     // BOLUS CALCULATOR RESULT
-    fun findBolusCalculatorResultByNSId(nsId: String): BolusCalculatorResult? =
-        database.bolusCalculatorResultDao.findByNSId(nsId)
-
     /*
       * returns a Pair of the next entity to sync and the ID of the "update".
       * The update id might either be the entry id itself if it is a new entry - or the id
@@ -750,16 +731,13 @@ import kotlin.math.roundToInt
         database.deviceStatusDao.getLastId()
 
     // TEMPORARY BASAL
-    fun findTemporaryBasalByNSId(nsId: String): TemporaryBasal? =
-        database.temporaryBasalDao.findByNSId(nsId)
-
     /*
-        * returns a Pair of the next entity to sync and the ID of the "update".
-        * The update id might either be the entry id itself if it is a new entry - or the id
-        * of the update ("historic") entry. The sync counter should be incremented to that id if it was synced successfully.
-        *
-        * It is a Maybe as there might be no next element.
-        * */
+       * returns a Pair of the next entity to sync and the ID of the "update".
+       * The update id might either be the entry id itself if it is a new entry - or the id
+       * of the update ("historic") entry. The sync counter should be incremented to that id if it was synced successfully.
+       *
+       * It is a Maybe as there might be no next element.
+       * */
 
     fun getNextSyncElementTemporaryBasal(id: Long): Maybe<Pair<TemporaryBasal, TemporaryBasal>> =
         database.temporaryBasalDao.getNextModifiedOrNewAfter(id)
@@ -817,16 +795,13 @@ import kotlin.math.roundToInt
         database.temporaryBasalDao.getLastId()
 
     // EXTENDED BOLUS
-    fun findExtendedBolusByNSId(nsId: String): ExtendedBolus? =
-        database.extendedBolusDao.findByNSId(nsId)
-
     /*
-       * returns a Pair of the next entity to sync and the ID of the "update".
-       * The update id might either be the entry id itself if it is a new entry - or the id
-       * of the update ("historic") entry. The sync counter should be incremented to that id if it was synced successfully.
-       *
-       * It is a Maybe as there might be no next element.
-       * */
+      * returns a Pair of the next entity to sync and the ID of the "update".
+      * The update id might either be the entry id itself if it is a new entry - or the id
+      * of the update ("historic") entry. The sync counter should be incremented to that id if it was synced successfully.
+      *
+      * It is a Maybe as there might be no next element.
+      * */
 
     fun getNextSyncElementExtendedBolus(id: Long): Maybe<Pair<ExtendedBolus, ExtendedBolus>> =
         database.extendedBolusDao.getNextModifiedOrNewAfter(id)
@@ -891,9 +866,6 @@ import kotlin.math.roundToInt
     }
 
     // OFFLINE EVENT
-    fun findOfflineEventByNSId(nsId: String): OfflineEvent? =
-        database.offlineEventDao.findByNSId(nsId)
-
     /*
        * returns a Pair of the next entity to sync and the ID of the "update".
        * The update id might either be the entry id itself if it is a new entry - or the id

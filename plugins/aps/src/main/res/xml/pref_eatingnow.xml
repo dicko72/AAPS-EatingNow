@@ -7,14 +7,8 @@
         android:title="Eating Now Preferences"
         app:initialExpandedChildrenCount="0">
 
-<!--        <info.nightscout.androidaps.plugins.aps.EN.ENVariantPreference-->
-<!--            android:title="@string/en_variant_title"-->
-<!--            android:key="@string/key_en_variant"-->
-<!--            android:defaultValue="stable"-->
-<!--            android:selectable="true" />-->
-
         <info.nightscout.plugins.aps.loop.LoopVariantPreference
-            android:title="@string/DynISF_variant_title"
+            android:title="@string/en_variant_title"
             android:defaultValue="stable"
             android:selectable="true"
             app:pluginFolder="EN" />
@@ -40,7 +34,7 @@
             android:inputType="numberDecimal"
             android:key="@string/key_openapsma_max_basal"
             android:title="@string/openapsma_max_basal_title"
-            validate:floatmaxNumber="12.0"
+            validate:floatmaxNumber="25.0"
             validate:floatminNumber="0.1"
             validate:testType="floatNumericRange" />
 
@@ -50,15 +44,42 @@
             android:inputType="numberDecimal"
             android:key="@string/key_openapssmb_max_iob"
             android:title="@string/openapssmb_max_iob_title"
-            validate:floatmaxNumber="25.0"
+            validate:floatmaxNumber="70.0"
             validate:floatminNumber="0"
             validate:testType="floatNumericRange" />
 
         <SwitchPreference
             android:defaultValue="false"
-            android:key="@string/key_openapsama_use_autosens"
+            android:key="openapsama_use_autosens"
             android:summary="Restricted to maximum of 1 with dynamic ISF"
             android:title="@string/openapsama_use_autosens" />
+
+        <info.nightscout.core.validators.ValidatingEditTextPreference
+            android:defaultValue="1.2"
+            android:dialogMessage="@string/openapsama_autosens_max_summary"
+            android:digits="0123456789.,"
+            android:inputType="numberDecimal"
+            android:key="@string/key_openapsama_autosens_max"
+            android:maxLines="20"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/openapsama_autosens_max"
+            validate:floatmaxNumber="3"
+            validate:floatminNumber="0.5"
+            validate:testType="floatNumericRange" />
+
+        <info.nightscout.core.validators.ValidatingEditTextPreference
+            android:defaultValue="0.7"
+            android:dialogMessage="@string/openapsama_autosens_min_summary"
+            android:inputType="numberDecimal"
+            android:key="@string/key_openapsama_autosens_min"
+            android:maxLines="20"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/openapsama_autosens_min"
+            validate:floatmaxNumber="1.0"
+            validate:floatminNumber="0.1"
+            validate:testType="floatNumericRange" />
 
         <SwitchPreference
             android:defaultValue="false"
@@ -163,7 +184,9 @@
             android:enabled="true"
             android:key="@string/key_high_temptarget_raises_sensitivity"
             android:summary="@string/high_temptarget_raises_sensitivity_summary"
-            android:title="@string/high_temptarget_raises_sensitivity_title" />
+            android:title="High temptarget raises sensitivity" />
+        <!--            android:title="@string/high_temptarget_raises_sensitivity_title" />-->
+
 
         <!-- TODO AS-FIX -->
         <SwitchPreference
@@ -171,7 +194,8 @@
             android:enabled="true"
             android:key="@string/key_low_temptarget_lowers_sensitivity"
             android:summary="@string/low_temptarget_lowers_sensitivity_summary"
-            android:title="@string/low_temptarget_lowers_sensitivity_title" />
+            android:title="Low temptarget lowers sensitivity" />
+        <!--            android:title="@string/low_temptarget_lowers_sensitivity_title" />-->
 
         <info.nightscout.core.validators.ValidatingEditTextPreference
             android:defaultValue="1"
@@ -234,7 +258,7 @@
         android:summary="General settings for Eating Now"
         app:initialExpandedChildrenCount="0">
 
-        <Preference android:summary="Eating Now operates within the Start and End time specified.\nThe Eating Now Window becomes active when there is a manual bolus or active carb entry after the Start Time setting.\nWhen the Eating Now Window expires this is considered to be the period when not eating and different SMB sizes may be configured.">
+        <Preference android:summary="Eating Now operates within the Start and End time specified.\nLarger boluses from the Eating Now Window are allowed within this time range.">
         </Preference>
 
         <info.nightscout.core.validators.ValidatingEditTextPreference
@@ -263,7 +287,20 @@
                 android:title="Enable EN after EN Start Time"
                 android:summary="Allow EN to become active automatically after EN start time without COB or manual bolus entry." />
 
+            <Preference android:summary="SMB's can be restricted inside and outside of the Eating Now time range.">
+            </Preference>
+
             <info.nightscout.core.validators.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:inputType="numberDecimal"
+                android:title="Daytime SMB Restriction"
+                android:key="@string/key_eatingnow_smbbgoffset_day"
+                android:dialogMessage="There will be no SMB when below this BG offset during the day unless COB or a TT lower or equal to normalTarget\ne.g. if normalTarget is 5.5 (99) and this setting is 1.5 (27) there will be no SMB below 7.0 (126)"
+                validate:floatmaxNumber="270.0"
+                validate:floatminNumber="0"
+                validate:testType="floatNumericRange" />
+
+             <info.nightscout.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:title="Overnight SMB Restriction"
@@ -273,23 +310,21 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange" />
 
+            <info.nightscout.core.validators.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:dialogMessage="Max IOB for EN. Once reached the maxBolus will fallback to either AAPS maxBolus or TBR."
+                android:inputType="numberDecimal"
+                android:key="key_en_max_iob"
+                android:title="Maximum IOB for Eating Now"
+                validate:floatmaxNumber="25.0"
+                validate:floatminNumber="0"
+                validate:testType="floatNumericRange" />
+
         <SwitchPreference
-                android:defaultValue="false"
-                android:key="key_use_enw_overnight"
-                android:title="Allow ENW Overnight"
-                android:summary="ENW will be active after EN End Time with COB or EN-TT." />
-
-            <SwitchPreference
-                android:defaultValue="false"
-                android:key="key_use_ghostcob"
-                android:title="Use GhostCOB after ENW"
-                android:summary="Ignore COB after EN Window and rely on UAM predictions." />
-
-            <SwitchPreference
-                android:defaultValue="false"
-                android:key="key_use_ghostcob_always"
-                android:title="Use GhostCOB Always"
-                android:summary="Always ignore COB." />
+            android:defaultValue="true"
+            android:key="key_en_max_iob_allow_smb"
+            android:title="Allow SMB when EN Max IOB exceeded"
+            android:summary="Disable for TBR." />
 
         </PreferenceCategory>
 
@@ -320,15 +355,23 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
-<!--            <info.nightscout.core.validators.ValidatingEditTextPreference-->
-<!--                android:defaultValue="0"-->
-<!--                android:inputType="number"-->
-<!--                android:key="@string/key_eatingnow_duration"-->
-<!--                android:title="EN TT Duration"-->
-<!--                android:dialogMessage="Time in minutes for EN Window when using the Eating Now TT button."-->
-<!--                validate:maxNumber="180"-->
-<!--                validate:minNumber="15"-->
-<!--                validate:testType="numericRange" />-->
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="key_use_enw_overnight"
+                android:title="Allow ENW Overnight"
+                android:summary="ENW will be active after EN End Time with COB or EN-TT." />
+
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="key_use_ghostcob"
+                android:title="Use GhostCOB after ENW"
+                android:summary="Ignore COB after EN Window and rely on UAM predictions." />
+
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="key_use_ghostcob_always"
+                android:title="Use GhostCOB Always"
+                android:summary="Always ignore COB." />
 
             <Preference android:summary="The first manual bolus or carb entry is considered breakfast, or the first meal of the day.\nThe time of the first meal of the day may vary. ISF and CR scaling can be applied to a single ISF/CR profile entry allowing flexibility without profile shifts."></Preference>
 
@@ -358,7 +401,7 @@
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_cobboost_maxbolus_breakfast"
                 android:title="Breakfast COB maxBolus"
-                android:dialogMessage="Breakfast COB maxBolus for BGL rises within the EN Window.\nThis will use ISF/CR percentage scaling if enabled.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing maxBolus limit"
+                android:dialogMessage="Breakfast COB maxBolus for BGL rises within the EN Window.\nThis will use ISF/CR percentage scaling if enabled.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will use existing maxBolus limit"
                 validate:floatmaxNumber="180"
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
@@ -368,10 +411,20 @@
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_uam_maxbolus_breakfast"
                 android:title="Breakfast UAM maxBolus"
-                android:dialogMessage="Breakfast UAM maxBolus for BGL rises within the EN Window.\nThis will use ISF/CR percentage scaling if enabled.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing maxBolus limit"
+                android:dialogMessage="Breakfast UAM maxBolus for BGL rises within the EN Window.\nThis will use ISF/CR percentage scaling if enabled.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will use existing maxBolus limit"
                 validate:floatmaxNumber="180"
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
+
+            <info.nightscout.core.validators.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:dialogMessage="Max Units within Breakfast ENW (boluses only). Once reached the maxBolus will fallback to AAPS maxBolus. Will continue until ENW is inactive, max 4h. 0 will disable the function."
+                android:inputType="numberDecimal"
+                android:key="key_enw_breakfast_max_tdd"
+                android:title="Breakfast ENW Max Units"
+                validate:floatmaxNumber="50.0"
+                validate:floatminNumber="0"
+                validate:testType="floatNumericRange" />
 
             <Preference android:summary="An ENW duration, larger COB and UAM maxBolus may also be defined within the EN Window for subsequent meals."></Preference>
 
@@ -391,7 +444,7 @@
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_uamboost_maxbolus"
                 android:title="UAM maxBolus"
-                android:dialogMessage="UAM maxBolus for all BGL rises without COB within the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing AAPS maxBolus limit and -1 will only disable SMB and use TBR only."
+                android:dialogMessage="UAM maxBolus for all BGL rises without COB within the EN Window.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will use existing AAPS maxBolus limit and -1 will only disable SMB and use TBR only."
                 validate:floatmaxNumber="200"
                 validate:floatminNumber="-1"
                 validate:testType="floatNumericRange"/>
@@ -401,7 +454,37 @@
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_cobboost_maxbolus"
                 android:title="COB maxBolus"
-                android:dialogMessage="COB maxBolus for BGL rises within the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing AAPS maxBolus limit and -1 will only disable SMB and use TBR only."
+                android:dialogMessage="COB maxBolus for BGL rises within the EN Window.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will use existing AAPS maxBolus limit and -1 will only disable SMB and use TBR only."
+                validate:floatmaxNumber="200"
+                validate:floatminNumber="-1"
+                validate:testType="floatNumericRange"/>
+
+            <info.nightscout.core.validators.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:dialogMessage="Max Units within ENW after breakfast (boluses only). Once reached the maxBolus will fallback to AAPS maxBolus. Will continue until ENW is inactive, max 4h. 0 will disable the function."
+                android:inputType="numberDecimal"
+                android:key="key_enw_max_tdd"
+                android:title="ENW Max Units"
+                validate:floatmaxNumber="50.0"
+                validate:floatminNumber="0"
+                validate:testType="floatNumericRange" />
+
+            <info.nightscout.core.validators.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:inputType="numberDecimal"
+                android:key="@string/key_eatingnow_noenw_maxbolus"
+                android:title="Outside ENW maxBolus"
+                android:dialogMessage="maxBolus for BGL rises outside the EN Window.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will use existing AAPS maxBolus limit and -1 will only disable SMB and use TBR only."
+                validate:floatmaxNumber="200"
+                validate:floatminNumber="-1"
+                validate:testType="floatNumericRange"/>
+
+            <info.nightscout.core.validators.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:inputType="numberDecimal"
+                android:key="@string/key_eatingnow_bgplus_maxbolus"
+                android:title="BG+ maxBolus"
+                android:dialogMessage="BG+ maxBolus for when there is resistance and BG is stuck higher than target.\n0 will use disable and -1 will disable SMB and use TBR only."
                 validate:floatmaxNumber="200"
                 validate:floatminNumber="-1"
                 validate:testType="floatNumericRange"/>
@@ -415,42 +498,52 @@
 
             <Preference android:summary="UAM+ is similar to the Boost plugin. UAM+ PreBolus can boost the BG to trigger an initial bolus for UAM. UAM+ can also be used outside the ENW to provide larger UAM boluses."></Preference>
 
+<!--            <info.nightscout.core.validators.ValidatingEditTextPreference-->
+<!--                android:defaultValue="0"-->
+<!--                android:inputType="numberDecimal"-->
+<!--                android:title="UAM+ Breakfast PreBolus Boost"-->
+<!--                android:key="@string/key_eatingnow_uambgboost_bkfast"-->
+<!--                android:dialogMessage="Initial UAM Breakfast PreBolus Boost for start of EN-TT.\neventualBG will be increased from current BG or eventualBG using this amount.\n0 will leave this option disabled."-->
+<!--                validate:floatmaxNumber="200"-->
+<!--                validate:floatminNumber="0"-->
+<!--                validate:testType="floatNumericRange" />-->
+
             <info.nightscout.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
-                android:title="UAM+ PreBolus Boost"
-                android:key="@string/key_eatingnow_uambgboost"
-                android:dialogMessage="Initial UAM PreBolus Boost for start of EN-TT.\neventualBG will be increased from current BG or eventualBG using this amount.\n0 will leave this option disabled."
-                validate:floatmaxNumber="125"
+                android:key="@string/key_eatingnow_uambgboost_maxbolus_bkfast"
+                android:title="UAM+ Breakfast PreBolus"
+                android:dialogMessage="UAM+ Breakfast PreBolus maxBolus for initial UAM BG rise within the EN-TT Window.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will use existing EN UAM maxBolus limit."
+                validate:floatmaxNumber="200"
                 validate:floatminNumber="0"
-                validate:testType="floatNumericRange" />
+                validate:testType="floatNumericRange"/>
 
             <info.nightscout.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
-                android:inputType="number"
-                android:title="UAM+ COB Breakfast PreBolus"
-                android:key="key_UAM_COB_Bkfst"
-                android:dialogMessage="Initial UAM PreBolus for start of EN-TT with breakfast.\nCOB will be used to increase the insulinReq.\nThis value is in grams, 0 will leave this option disabled."
-                validate:maxNumber="100"
-                validate:minNumber="0"
-                validate:testType="numericRange" />
-
-            <info.nightscout.core.validators.ValidatingEditTextPreference
-                android:defaultValue="0"
-                android:inputType="number"
-                android:title="UAM+ COB PreBolus"
-                android:key="key_UAM_COB"
-                android:dialogMessage="Initial UAM PreBolus for start of EN-TT with other meals.\nCOB will be used to increase the insulinReq.\nThis value is in grams, 0 will leave this option disabled."
-                validate:maxNumber="100"
-                validate:minNumber="0"
-                validate:testType="numericRange" />
+                android:inputType="numberDecimal"
+                android:key="@string/key_eatingnow_uamplus_maxbolus_bkfast"
+                android:title="UAM+ Breakfast maxBolus"
+                android:dialogMessage="UAM+ Breakfast maxBolus for accelerated UAM BG rise within the EN-TT Window.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will disable UAM+ and fallback to usual UAM prediction."
+                validate:floatmaxNumber="200"
+                validate:floatminNumber="0"
+                validate:testType="floatNumericRange"/>
 
             <info.nightscout.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_uambgboost_maxbolus"
-                android:title="UAM+ PreBolus maxBolus"
-                android:dialogMessage="UAM+ PreBolus maxBolus for initial UAM BG rise within the EN-TT Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing EN UAM maxBolus limit."
+                android:title="UAM+ PreBolus"
+                android:dialogMessage="UAM+ PreBolus maxBolus for initial UAM BG rise within the EN-TT Window.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will use existing EN UAM maxBolus limit."
+                validate:floatmaxNumber="200"
+                validate:floatminNumber="0"
+                validate:testType="floatNumericRange"/>
+
+            <info.nightscout.core.validators.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:inputType="numberDecimal"
+                android:key="@string/key_eatingnow_uamplus_maxbolus"
+                android:title="UAM+ maxBolus"
+                android:dialogMessage="UAM+ maxBolus for accelerated UAM BG rise within the EN-TT Window.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will disable UAM+ and fallback to usual UAM prediction."
                 validate:floatmaxNumber="200"
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
@@ -458,37 +551,16 @@
             <SwitchPreference
                 android:defaultValue="false"
                 android:key="key_use_uamplus_noenw"
-                android:title="Enable UAM+ outside ENW"
-                android:summary="Allow UAM+ to provide an EN UAM maxBolus when not within ENW.\nSimilar to Boost plugin this will activate with sufficient delta and acceleration." />
+                android:title="Allow UAM+ SMB outside ENW"
+                android:summary="Allow UAM+ to provide an EN UAM+ maxBolus SMB when not within ENW.\nSimilar to Boost plugin this will activate with sufficient delta and acceleration." />
+
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="key_use_uamplustbr_noenw"
+                android:title="Allow UAM+ restricted SMB with TBR outside ENW"
+                android:summary="Allow UAM+ to provide a non ENW SMB with TBR when not within ENW.\nSimilar to Boost plugin this will activate with sufficient delta and acceleration." />
 
         </PreferenceCategory>
-<!--        <PreferenceCategory-->
-<!--            android:title="Outside EN Window"-->
-<!--            android:summary="Settings for outside of the EN Window."-->
-<!--            app:initialExpandedChildrenCount="0">-->
-
-<!--            <Preference android:summary="When the EN Window ends COB and UAM maxBolus may also be defined."></Preference>-->
-
-<!--            <info.nightscout.core.validators.ValidatingEditTextPreference-->
-<!--                android:defaultValue="0"-->
-<!--                android:inputType="numberDecimal"-->
-<!--                android:key="@string/key_eatingnow_uam_maxbolus"-->
-<!--                android:title="UAM maxBolus"-->
-<!--                android:dialogMessage="UAM maxBolus for all BGL rises without COB outside of the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing maxBolus limit and -1 will only disable SMB and use TBR only."-->
-<!--                validate:floatmaxNumber="200"-->
-<!--                validate:floatminNumber="-1"-->
-<!--                validate:testType="floatNumericRange"/>-->
-
-<!--            <info.nightscout.core.validators.ValidatingEditTextPreference-->
-<!--                android:defaultValue="0"-->
-<!--                android:inputType="numberDecimal"-->
-<!--                android:key="@string/key_eatingnow_isfboost_maxbolus"-->
-<!--                android:title="COB maxBolus"-->
-<!--                android:dialogMessage="COB maxBolus for all BGL rises with COB outside of the EN Window.\nIf this value is larger than maxBolus it will be considered to be minutes of basal.\n0 will use existing maxBolus limit and -1 will only disable SMB and use TBR only."-->
-<!--                validate:floatmaxNumber="200"-->
-<!--                validate:floatminNumber="-1"-->
-<!--                validate:testType="floatNumericRange"/>-->
-<!--        </PreferenceCategory>-->
 
         <PreferenceCategory
             android:title="Eating Now: ISF"

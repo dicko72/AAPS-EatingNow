@@ -122,21 +122,24 @@ class Connection(
         cmdBleIO.hello()
         cmdBleIO.readyToRead()
         dataBleIO.readyToRead()
+        _connectionWaitCond = null
     }
 
     @Synchronized
     fun disconnect(closeGatt: Boolean) {
         aapsLogger.debug(LTag.PUMPBTCOMM, "Disconnecting closeGatt=$closeGatt")
-        podState.bluetoothConnectionState = OmnipodDashPodStateManager.BluetoothConnectionState.DISCONNECTED
-        if (closeGatt) {
-            gattConnection?.close()
-            gattConnection = null
-        } else {
+        if (closeGatt == false && gattConnection != null) {
+            // Disconnect first, then close gatt
             gattConnection?.disconnect()
+        } else {
+            // Call with closeGatt=true only when ble is already disconnected or there is no connection
+            gattConnection?.close()
+            bleCommCallbacks.resetConnection()
+            gattConnection = null
+            session = null
+            msgIO = null
+            podState.bluetoothConnectionState = OmnipodDashPodStateManager.BluetoothConnectionState.DISCONNECTED
         }
-        bleCommCallbacks.resetConnection()
-        session = null
-        msgIO = null
     }
 
     private fun waitForConnection(connectionWaitCond: ConnectionWaitCondition): ConnectionState {

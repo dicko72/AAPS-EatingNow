@@ -163,7 +163,7 @@ class DataSyncSelectorV3Impl @Inject constructor(
                     bolus.first.interfaceIDs.nightscoutId != null && bolus.first.id != bolus.second.id ->
                         cont = activePlugin.activeNsClient?.nsUpdate("treatments", DataSyncSelector.PairBolus(bolus.first, bolus.second.id), "$startId/$lastDbId") ?: false
                 }
-                if (cont) confirmLastBolusIdIfGreater(bolus.second.id)
+                confirmLastBolusIdIfGreater(bolus.second.id)
             } ?: run {
                 cont = false
             }
@@ -206,7 +206,7 @@ class DataSyncSelectorV3Impl @Inject constructor(
                     carb.first.interfaceIDs.nightscoutId != null && carb.first.id != carb.second.id ->
                         cont = activePlugin.activeNsClient?.nsUpdate("treatments", DataSyncSelector.PairCarbs(carb.first, carb.second.id), "$startId/$lastDbId") ?: false
                 }
-                if (cont) confirmLastCarbsIdIfGreater(carb.second.id)
+                confirmLastCarbsIdIfGreater(carb.second.id)
             } ?: run {
                 cont = false
             }
@@ -257,7 +257,7 @@ class DataSyncSelectorV3Impl @Inject constructor(
                             "$startId/$lastDbId"
                         ) ?: false
                 }
-                if (cont) confirmLastBolusCalculatorResultsIdIfGreater(bolusCalculatorResult.second.id)
+                confirmLastBolusCalculatorResultsIdIfGreater(bolusCalculatorResult.second.id)
             } ?: run {
                 cont = false
             }
@@ -300,7 +300,7 @@ class DataSyncSelectorV3Impl @Inject constructor(
                     tt.first.interfaceIDs.nightscoutId != null                                ->
                         cont = activePlugin.activeNsClient?.nsUpdate("treatments", DataSyncSelector.PairTemporaryTarget(tt.first, tt.second.id), "$startId/$lastDbId") ?: false
                 }
-                if (cont) confirmLastTempTargetsIdIfGreater(tt.second.id)
+                confirmLastTempTargetsIdIfGreater(tt.second.id)
             } ?: run {
                 cont = false
             }
@@ -343,7 +343,7 @@ class DataSyncSelectorV3Impl @Inject constructor(
                     food.first.interfaceIDs.nightscoutId != null                                    ->
                         cont = activePlugin.activeNsClient?.nsUpdate("food", DataSyncSelector.PairFood(food.first, food.second.id), "$startId/$lastDbId") ?: false
                 }
-                if (cont) confirmLastFoodIdIfGreater(food.second.id)
+                confirmLastFoodIdIfGreater(food.second.id)
             } ?: run {
                 cont = false
             }
@@ -388,7 +388,7 @@ class DataSyncSelectorV3Impl @Inject constructor(
                             cont = activePlugin.activeNsClient?.nsUpdate("entries", DataSyncSelector.PairGlucoseValue(gv.first, gv.second.id), "$startId/$lastDbId") ?: false
                     }
                 }
-                if (cont) confirmLastGlucoseValueIdIfGreater(gv.second.id)
+                confirmLastGlucoseValueIdIfGreater(gv.second.id)
             } ?: run {
                 cont = false
             }
@@ -431,7 +431,7 @@ class DataSyncSelectorV3Impl @Inject constructor(
                     te.first.interfaceIDs.nightscoutId != null                                ->
                         cont = activePlugin.activeNsClient?.nsUpdate("treatments", DataSyncSelector.PairTherapyEvent(te.first, te.second.id), "$startId/$lastDbId") ?: false
                 }
-                if (cont) confirmLastTherapyEventIdIfGreater(te.second.id)
+                confirmLastTherapyEventIdIfGreater(te.second.id)
             } ?: run {
                 cont = false
             }
@@ -504,7 +504,7 @@ class DataSyncSelectorV3Impl @Inject constructor(
                     tb.first.interfaceIDs.nightscoutId != null                                ->
                         cont = activePlugin.activeNsClient?.nsUpdate("treatments", DataSyncSelector.PairTemporaryBasal(tb.first, tb.second.id), "$startId/$lastDbId") ?: false
                 }
-                if (cont) confirmLastTemporaryBasalIdIfGreater(tb.second.id)
+                confirmLastTemporaryBasalIdIfGreater(tb.second.id)
             } ?: run {
                 cont = false
             }
@@ -550,7 +550,7 @@ class DataSyncSelectorV3Impl @Inject constructor(
                             cont = activePlugin.activeNsClient?.nsUpdate("treatments", DataSyncSelector.PairExtendedBolus(eb.first, eb.second.id), "$startId/$lastDbId") ?: false
                     }
                 } else aapsLogger.info(LTag.NSCLIENT, "Ignoring ExtendedBolus. No profile: ${eb.second.id} ")
-                if (cont) confirmLastExtendedBolusIdIfGreater(eb.second.id)
+                confirmLastExtendedBolusIdIfGreater(eb.second.id)
             } ?: run {
                 cont = false
             }
@@ -593,7 +593,7 @@ class DataSyncSelectorV3Impl @Inject constructor(
                     ps.first.interfaceIDs.nightscoutId != null                                ->
                         cont = activePlugin.activeNsClient?.nsUpdate("treatments", DataSyncSelector.PairProfileSwitch(ps.first, ps.second.id), "$startId/$lastDbId") ?: false
                 }
-                if (cont) confirmLastProfileSwitchIdIfGreater(ps.second.id)
+                confirmLastProfileSwitchIdIfGreater(ps.second.id)
             } ?: run {
                 cont = false
             }
@@ -636,7 +636,7 @@ class DataSyncSelectorV3Impl @Inject constructor(
                     ps.first.interfaceIDs.nightscoutId != null                                ->
                         cont = activePlugin.activeNsClient?.nsUpdate("treatments", DataSyncSelector.PairEffectiveProfileSwitch(ps.first, ps.second.id), "$startId/$lastDbId") ?: false
                 }
-                if (cont) confirmLastEffectiveProfileSwitchIdIfGreater(ps.second.id)
+                confirmLastEffectiveProfileSwitchIdIfGreater(ps.second.id)
             } ?: run {
                 cont = false
             }
@@ -679,7 +679,7 @@ class DataSyncSelectorV3Impl @Inject constructor(
                     oe.first.interfaceIDs.nightscoutId != null                                ->
                         cont = activePlugin.activeNsClient?.nsUpdate("treatments", DataSyncSelector.PairOfflineEvent(oe.first, oe.second.id), "$startId/$lastDbId") ?: false
                 }
-                if (cont) confirmLastOfflineEventIdIfGreater(oe.second.id)
+                confirmLastOfflineEventIdIfGreater(oe.second.id)
             } ?: run {
                 cont = false
             }

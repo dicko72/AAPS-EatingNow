@@ -28,7 +28,6 @@
     <string name="dynisf_adjust_sensitivity">Adjust sensitivity and BG</string>
     <string name="DynISFAdjust_title" formatted="false">DynamicISF Adjustment Factor %</string>
     <string name="DynISFAdjust_summary" formatted="false">Adjustment factor for DynamicISF. Set more than 100% for more aggressive correction doses, and less than 100% for less aggressive corrections.</string>
-    <string name="DynISF_variant_title" formatted="false">Variant</string>
     <string name="high_temptarget_raises_sensitivity_title">High temptarget raises sensitivity</string>
     <string name="high_temptarget_raises_sensitivity_summary"><![CDATA[Raise sensitivity for temptargets >= 100]]></string>
     <string name="low_temptarget_lowers_sensitivity_title">Low temptarget lowers sensitivity</string>
@@ -149,4 +148,62 @@
     <string name="loop_smb_set_by_pump_label">SMB set by pump</string>
     <string name="loop_open_mode_min_change">Minimal request change [%]</string>
     <string name="loop_open_mode_min_change_summary" formatted="false">Open Loop will popup new change request only if change is bigger than this value in %. Default value is 20%</string>
+
+    <!-- Eating Now-->
+    <string name="description_EN">Eating Now bolusing method</string>
+    <string name="EN">Eating Now</string>
+    <string name="EN_shortname">EN</string>
+    <string name="pref_en">EN</string>
+    <string name="key_use_eatingnow">key_use_eatingnow</string>
+    <string name="key_eatingnow_smbbgoffset">key_eatingnow_smbbgoffset</string>
+    <string name="key_eatingnow_smbbgoffset_day">key_eatingnow_smbbgoffset_day</string>
+    <string name="key_use_ghostcob" translatable="false">key_use_ghostcob</string>
+    <string name="key_use_ghostcob_always" translatable="false">key_use_ghostcob_always</string>
+    <string name="key_use_enw_overnight" translatable="false">key_use_enw_overnight</string>
+    <string name="key_eatingnow_cobboostminutes" translatable="false">key_eatingnow_cobboostminutes</string>
+    <string name="key_eatingnow_enwindowminutes" translatable="false">key_eatingnow_enwindowminutes</string>
+    <string name="key_enbkfstwindowminutes" translatable="false">key_enbkfstwindowminutes</string>
+    <string name="key_enwindowiob" translatable="false">key_enwindowiob</string>
+    <string name="key_enwminbolus" translatable="false">key_enwminbolus</string>
+    <string name="key_enautostart" translatable="false">key_enautostart</string>
+    <string name="key_eatingnow_cobboost_maxbolus_breakfast">key_eatingnow_cobboost_maxbolus_breakfast</string>
+    <string name="key_eatingnow_breakfastpct">key_eatingnow_breakfastpct</string>
+    <string name="key_eatingnow_uam_maxbolus_breakfast">key_eatingnow_uam_maxbolus_breakfast</string>
+    <string name="key_enw_breakfast_max_tdd">key_enw_breakfast_max_tdd</string>
+    <string name="key_enw_max_tdd">key_enw_max_tdd</string>
+    <string name="key_eatingnow_cobboost_maxbolus">key_eatingnow_cobboost_maxbolus</string>
+    <string name="key_eatingnow_uamboost_maxbolus">key_eatingnow_uamboost_maxbolus</string>
+    <string name="key_eatingnow_uambgboost">key_eatingnow_uambgboost</string>
+    <string name="key_eatingnow_uambgboost_maxbolus">key_eatingnow_uambgboost_maxbolus</string>
+    <string name="key_eatingnow_uambgboost_bkfast">key_eatingnow_uambgboost_bkfast</string>
+    <string name="key_eatingnow_uambgboost_maxbolus_bkfast">key_eatingnow_uambgboost_maxbolus_bkfast</string>
+    <string name="key_eatingnow_uamplus_maxbolus_bkfast">key_eatingnow_uamplus_maxbolus_bkfast</string>
+    <string name="key_eatingnow_bgplus_maxbolus">key_eatingnow_bgplus_maxbolus</string>
+    <string name="key_eatingnow_noenw_maxbolus">key_eatingnow_noenw_maxbolus</string>
+    <string name="key_use_uamplus_noenw">key_use_uamplus_noenw</string>
+    <string name="key_use_uamplustbr_noenw">key_use_uamplustbr_noenw</string>
+    <string name="key_eatingnow_uamplus_maxbolus">key_eatingnow_uamplus_maxbolus</string>
+    <string name="key_use_dynamicISF">key_use_dynamicISF</string>
+    <string name="key_eatingnow_isfbgscaler">key_eatingnow_isfbgscaler</string>
+    <string name="key_use_sr_tdd">key_use_sr_tdd</string>
+    <string name="key_eatingnow_maxisfpct">key_eatingnow_maxisfpct</string>
+    <string name="key_eatingnow_timestart">key_eatingnow_timestart</string>
+    <string name="key_eatingnow_timeend">key_eatingnow_timeend</string>
+    <string name="key_openapsama_TDD" translatable="false">7 day average Total Daily Dose</string>
+    <string name="key_use_3pm_basal" translatable="false">key_use_3pm_basal</string>
+    <string name="key_use_sens_tdd" translatable="false">key_use_sens_tdd</string>
+    <string name="key_use_sens_lctdd" translatable="false">key_use_sens_lctdd</string>
+    <string name="key_sens_tdd_scale" translatable="false">key_sens_tdd_scale</string>
+    <string name="key_eatingnow_showbutton" translatable="false">key_eatingnow_showbutton</string>
+    <string name="en_eatingnow_showbutton">Eating Now temp target</string>
+    <string name="en_resistance_per_hour" translatable="false">en_resistance_per_hour</string>
+    <string name="en_variant_title">EN Variant</string>
+    <string name="key_en_max_iob" translatable="false">key_en_max_iob</string>
+    <string name="key_en_max_iob_allow_smb" translatable="false">key_en_max_iob_allow_smb</string>
+    <string name="openapsama_autosens_min_summary">Default value: 0.7\nThe other side of the autosens safety limits, putting a cap on how low autosens can adjust basals, and how high it can adjust ISF and BG targets.</string>
+    <string name="openapsama_autosens_max_summary">Default value: 1.2\nThis is a multiplier cap for autosens (and soon autotune) to set a 20%% max limit on how high the autosens ratio can be, which in turn determines how high autosens can adjust basals, how low it can adjust ISF, and how low it can set the BG target.</string>
+    <string name="openapsama_autosens_max">Max autosens ratio</string>
+    <string name="openapsama_autosens_min">Min autosens ratio</string>
+
+
 </resources>
