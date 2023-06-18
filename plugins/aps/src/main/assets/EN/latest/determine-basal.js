@@ -1302,7 +1302,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // set initial eBGw at 50% unless bg is in range and predicted higher
             eBGweight = (bg < ISFbgMax && eventualBG > ISFbgMax ? 0.75 : 0.50);
             minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
-            AllowZT = false; // disable ZT for UAM+
+            AllowZT = (ENWindowOK ? false : true); // disable ZT for UAM+
 
             // UAM+ with lower eventualBG can use non-ENW SMB or TBR
             //if (eventualBG <= bg && ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB < ENWBolusIOBMax) {
