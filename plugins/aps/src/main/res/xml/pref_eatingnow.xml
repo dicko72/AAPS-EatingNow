@@ -518,15 +518,15 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
-<!--            <info.nightscout.core.validators.ValidatingEditTextPreference-->
-<!--                android:defaultValue="0"-->
-<!--                android:inputType="numberDecimal"-->
-<!--                android:title="UAM+ PreBolus Boost"-->
-<!--                android:key="@string/key_eatingnow_uambgboost"-->
-<!--                android:dialogMessage="Initial UAM PreBolus Boost for start of EN-TT.\neventualBG will be increased from current BG or eventualBG using this amount.\n0 will leave this option disabled."-->
-<!--                validate:floatmaxNumber="200"-->
-<!--                validate:floatminNumber="0"-->
-<!--                validate:testType="floatNumericRange" />-->
+            <info.nightscout.core.validators.ValidatingEditTextPreference
+                android:defaultValue="0"
+                android:inputType="numberDecimal"
+                android:key="@string/key_eatingnow_uamplus_maxbolus_bkfast"
+                android:title="UAM+ Breakfast maxBolus"
+                android:dialogMessage="UAM+ Breakfast maxBolus for accelerated UAM BG rise within the EN-TT Window.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will disable UAM+ and fallback to usual UAM prediction."
+                validate:floatmaxNumber="200"
+                validate:floatminNumber="0"
+                validate:testType="floatNumericRange"/>
 
             <info.nightscout.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
