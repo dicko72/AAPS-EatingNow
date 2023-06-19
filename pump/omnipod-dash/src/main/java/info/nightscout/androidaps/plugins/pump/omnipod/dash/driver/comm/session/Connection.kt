@@ -96,7 +96,6 @@ class Connection(
             connectionWaitCond.timeoutMs = newTimeout
         }
         podState.bluetoothConnectionState = OmnipodDashPodStateManager.BluetoothConnectionState.CONNECTED
-        _connectionWaitCond = null
 
         val discoverer = ServiceDiscoverer(aapsLogger, gatt, bleCommCallbacks, this)
         val discovered = discoverer.discoverServices(connectionWaitCond)
