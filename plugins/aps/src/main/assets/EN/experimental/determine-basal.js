@@ -1290,7 +1290,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eventualBG = Math.max(bg,eventualBG,target_bg); // bg + delta * 3
 
             eBGweight = 1; // 100% eBGw as unrestricted insulin delivery is required
-            AllowZT = false; // disable ZT
+            AllowZT = true; // disable ZT
         }
 
         // UAM+ predictions, stronger eBGw
