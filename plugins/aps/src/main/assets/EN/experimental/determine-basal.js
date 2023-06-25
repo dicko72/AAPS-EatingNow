@@ -1304,13 +1304,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //if (eventualBG <= bg && ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB < ENWBolusIOBMax) {
 
             // UAM+ experiment when ENWBolusIOB is less than ENWBolusIOBMax
-            if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB < ENWBolusIOBMax) {
-                sens_predType = "UAM++";
+            if (sens_predType == "UAM++" && ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB < ENWBolusIOBMax) {
+                //sens_predType = "UAM++";
                 minPredBG = Math.max(minPredBG,threshold);
                 minGuardBG = Math.max(minGuardBG,threshold);
                 minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
                 eventualBG = Math.max(eventualBG,bg);
-                eBGweight = (DeltaPctS > 1 && DeltaPctL > 1 ? 0.75 : eBGweight);
+                eBGweight = 0.75;
                 AllowZT = true; // Allow ZT for UAM+ experiment
                 //ENWindowOK = false; // disable ENW so smaller SMB or UAM TBR can run
             }
