@@ -19,7 +19,7 @@
             android:title="@string/overview_buttons_selection">
 
             <SwitchPreference
-                android:defaultValue="true"
+                android:defaultValue="false"
                 android:key="@string/key_show_treatment_button"
                 android:title="@string/treatments" />
 
