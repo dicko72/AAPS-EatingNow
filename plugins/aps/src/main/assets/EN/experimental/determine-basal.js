@@ -1257,7 +1257,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // UAM+ predtype when sufficient delta not a COB prediction
     //if (profile.EN_UAMPlus_maxBolus > 0 && (profile.EN_UAMPlusSMB_NoENW || profile.EN_UAMPlusTBR_NoENW || ENWindowOK) && ENtimeOK && delta >= 5 && glucose_status.short_avgdelta >= 3 && (glucose_status.long_avgdelta >= 0 || meal_data.ENWBolusIOB < ENWBolusIOBMax) && sens_predType != "COB") {
     if (profile.EN_UAMPlus_maxBolus > 0 && (profile.EN_UAMPlusSMB_NoENW || profile.EN_UAMPlusTBR_NoENW || ENWindowOK) && ENtimeOK && delta >= 0 && sens_predType != "COB") {
-        if (DeltaPctS > 1 && DeltaPctL > 1 && (ENWindowOK || (bg > ISFbgMax && eventualBG > bg)) ) sens_predType = "UAM++" // any accelerated rise with no PB within ENW or higher bg, denoted by the extra + for testing
+        //if (DeltaPctS > 1 && DeltaPctL > 1 && (ENWindowOK || (bg > ISFbgMax && eventualBG > bg)) ) sens_predType = "UAM++" // any accelerated rise with no PB within ENW or higher bg, denoted by the extra + for testing
+        if (DeltaPctS > 1 && DeltaPctL > 1) sens_predType = "UAM++" // any accelerated rise with no PB within ENW or higher bg, denoted by the extra + for testing
         if (delta >= 5 && glucose_status.short_avgdelta >= 3 && glucose_status.long_avgdelta >= 0 && DeltaPctS > 1 && DeltaPctL > 1.5) sens_predType = "UAM+"; // if rising with acceleration
 //        if (DeltaPctS > 1 && DeltaPctL > 1 && (ENWindowOK && !ENPBActive) || (bg > ISFbgMax && eventualBG > bg) ) sens_predType = "UAM+" // any accelerated rise with no PB within ENW or higher bg
         // reset to UAM prediction when COB are not mostly absorbed
@@ -1304,12 +1305,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //if (eventualBG <= bg && ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB < ENWBolusIOBMax) {
 
             // UAM+ experiment when ENWBolusIOB is less than ENWBolusIOBMax
-            if (sens_predType == "UAM++" && ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB < ENWBolusIOBMax) {
+            //if (sens_predType == "UAM++" && ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB < ENWBolusIOBMax) {
+            if (sens_predType == "UAM++") {
                 //sens_predType = "UAM++";
                 minPredBG = Math.max(minPredBG,threshold);
                 minGuardBG = Math.max(minGuardBG,threshold);
                 minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
-                eventualBG = Math.max(eventualBG,bg);
+                eventualBG = (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB < ENWBolusIOBMax ? Math.max(eventualBG,bg,bg+delta*3) : eventualBG); // if ENW IOB is below the Max push out eventualBG
                 eBGweight = 0.75;
                 AllowZT = true; // Allow ZT for UAM+ experiment
                 //ENWindowOK = false; // disable ENW so smaller SMB or UAM TBR can run
