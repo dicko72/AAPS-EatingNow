@@ -464,6 +464,7 @@
     <string name="basal_shortname">BAS</string>
     <string name="deviation_shortname">DEV</string>
     <string name="activity_shortname">ACT</string>
+    <string name="raw_bg_shortname">RAW</string>
     <string name="bgi_shortname">-BGI</string>
     <string name="abs_insulin_shortname">ABS</string>
     <string name="devslope_shortname">DEVSLOPE</string>
@@ -675,6 +676,7 @@
     <string name="subcategory">Subcategory</string>
     <string name="bolusrecordedonly">Bolus will be recorded only (not delivered by pump)</string>
     <string name="loop_smbsetbypump_label">SMB set by pump</string>
+    <string name="overview_show_raw_bg">Raw BG</string>
     <string name="overview_show_activity">Activity</string>
     <string name="overview_show_bgi">Blood Glucose Impact</string>
     <string name="overview_show_sensitivity">Sensitivity</string>
@@ -1303,5 +1305,10 @@
     <string name="en_variant_title">EN Variant</string>
     <string name="key_en_max_iob" translatable="false">key_en_max_iob</string>
     <string name="key_en_max_iob_allow_smb" translatable="false">key_en_max_iob_allow_smb</string>
-
+    <!-- Tsunami Data Smoothing -->
+    <string name="key_use_data_smoothing" translatable="false">use_data_smoothing</string>
+    <string name="use_data_smoothing_summary" translatable="false">Smooth and display incoming sensor data in the main chart. Recommended if your glucose source does not smooth sensor readings by itself and you would like to enable SMB always.</string>
+    <string name="use_data_smoothing_title" translatable="false">Smooth incoming glucose values</string>
+    <string name="internal_smoothing_enabled">Smoothing of incoming sensor readings is enabled.</string>
+    <!-- Tsunami Data Smoothing end-->
 </resources>

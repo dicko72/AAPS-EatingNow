@@ -143,8 +143,9 @@ class DexcomPlugin @Inject constructor(
                         glucoseValues += CgmSourceTransaction.TransactionGlucoseValue(
                             timestamp = timestamp,
                             value = glucoseValueBundle.getInt("glucoseValue").toDouble(),
-                            noise = null,
                             raw = null,
+                            smoothed = null,
+                            noise = null,
                             trendArrow = GlucoseValue.TrendArrow.fromString(glucoseValueBundle.getString("trendArrow")!!),
                             sourceSensor = sourceSensor
                         )
@@ -227,7 +228,8 @@ class DexcomPlugin @Inject constructor(
             "com.dexcom.cgm.region1.mgdl", "com.dexcom.cgm.region1.mmol",
             "com.dexcom.cgm.region2.mgdl", "com.dexcom.cgm.region2.mmol",
             "com.dexcom.g6.region1.mmol", "com.dexcom.g6.region2.mgdl",
-            "com.dexcom.g6.region3.mgdl", "com.dexcom.g6.region3.mmol", "com.dexcom.g6"
+            "com.dexcom.g6.region3.mgdl", "com.dexcom.g6.region3.mmol",
+            "com.dexcom.g6", "com.dexcom.g7"
         )
         const val PERMISSION = "com.dexcom.cgm.EXTERNAL_PERMISSION"
     }
