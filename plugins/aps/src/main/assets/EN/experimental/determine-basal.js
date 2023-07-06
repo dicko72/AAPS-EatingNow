@@ -1297,21 +1297,21 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // UAM+ predictions, stronger eBGw
         if (sens_predType.startsWith("UAM+")) {
-            var UAMDeltaX = (bg < ISFbgMax && ENWindowOK ? 6 : 3); // delta multiplier
+            var deltaX = (bg < ISFbgMax && ENWindowOK ? 6 : 3); // delta multiplier
 
             // set initial eBGw at 50% unless bg is in range and predicted higher
             eBGweight = (bg < ISFbgMax && eventualBG > ISFbgMax ? 0.75 : 0.50);
             minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
             // AllowZT = (ENWindowOK ? false : true); // disable ZT for UAM+
-            eventualBG = Math.max(eventualBG,bg,bg + delta * UAMDeltaX);
+            eventualBG = Math.max(eventualBG,bg,bg + delta * deltaX);
 
             // UAM+ experiment when ENWBolusIOB is less than ENWBolusIOBMax
             if (sens_predType == "UAM++") {
                 minPredBG = Math.max(minPredBG,threshold);
                 minGuardBG = Math.max(minGuardBG,threshold);
                 minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
-                //eventualBG = (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB < ENWBolusIOBMax ? Math.max(eventualBG,bg,bg + delta * UAMDeltaX) : eventualBG); // if ENW IOB is below the Max push out eventualBG
-                eventualBG = Math.max(eventualBG,bg,bg + delta * UAMDeltaX);
+                //eventualBG = (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB < ENWBolusIOBMax ? Math.max(eventualBG,bg,bg + delta * deltaX) : eventualBG); // if ENW IOB is below the Max push out eventualBG
+                eventualBG = Math.max(eventualBG,bg,bg + delta * deltaX);
                 eBGweight = 0.75;
                 // AllowZT = true; // Allow ZT for UAM++
             }
