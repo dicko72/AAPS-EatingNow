@@ -1656,7 +1656,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReqTIRS = Math.max(insulinReqTIRS,0); // dont allow negative
         insulinReqTIRS = round(insulinReqTIRS,3);
 
-        var endebug = "IR:" + insulinReq+",IRTIRS:" + insulinReqTIRS;
+        var endebug = "IRTIRS:" + insulinReqTIRS;
         insulinReq += insulinReqTIRS;
 
         // override insulinReq for initial pre-bolus (PB)
