@@ -1651,6 +1651,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // use eBGweight for insulinReq
         insulinReq = (insulinReq_bg - target_bg) / insulinReq_sens;
+        // when resistant allow a portion of IOB when not eating
+        var insulinReqTIRS = (TIR_sens_limited > 1 && !ENWindowOK ? iob_data.iob * (TIR_sens_limited-1) : 0);
+        insulinReqTIRS = Math.max(insulinReqTIRS,0); // dont allow negative
+        insulinReqTIRS = round(insulinReqTIRS,3);
+
+        var endebug = "IR:" + insulinReq+",IRTIRS:" + insulinReqTIRS;
+        insulinReq += insulinReqTIRS;
+
         // override insulinReq for initial pre-bolus (PB)
         if (sens_predType =="PB") insulinReq = UAMBGPreBolusUnits - meal_data.ENWBolusIOB;
 
