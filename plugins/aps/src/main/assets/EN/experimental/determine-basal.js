@@ -1654,6 +1654,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // when resistant allow a portion of IOB when not eating
         var insulinReqTIRS = (TIR_sens_limited > 1 && !ENWindowOK ? iob_data.iob * (TIR_sens_limited-1) : 0);
         insulinReqTIRS = Math.max(insulinReqTIRS,0); // dont allow negative
+        insulinReqTIRS = Math.min(insulinReqTIRS,basal); // SAFETY: Limit insulinReqTIRS to 60 minutes of current basal
         insulinReqTIRS = round(insulinReqTIRS,3);
 
         var endebug = "IRTIRS:" + insulinReqTIRS;
