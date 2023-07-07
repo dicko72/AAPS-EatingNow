@@ -1300,10 +1300,17 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = (bg < ISFbgMax ? 0.75 : 0.50);
             AllowZT = (TIR_sens_limited > 1 ? false : true); // disable ZT when resistant
 
-           // original UAM+ logic with LGS
-            if (delta >= 5 && glucose_status.short_avgdelta >= 3 && glucose_status.long_avgdelta >= 0 && DeltaPctL > 1.5) {
-                minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
-            } else {
+//           // original UAM+ logic with LGS
+//            if (delta >= 5 && glucose_status.short_avgdelta >= 3 && glucose_status.long_avgdelta >= 0 && DeltaPctL > 1.5) {
+//                minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
+//            } else {
+//                // UAM+ for slower delta but any acceleration, earlier detection for UAM+, bypass LGS
+//                minPredBG = Math.max(minPredBG,threshold); // bypass LGS
+//                minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS
+//                minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
+//            }
+
+            if (ENWindowOK) {
                 // UAM+ for slower delta but any acceleration, earlier detection for UAM+, bypass LGS
                 minPredBG = Math.max(minPredBG,threshold); // bypass LGS
                 minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS
