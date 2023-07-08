@@ -1298,7 +1298,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eventualBG = Math.max(eventualBG,bg,bg + delta * UAMDeltaX);
             // set initial eBGw at 50% unless bg is in range and predicted higher
             eBGweight = (bg < ISFbgMax ? 0.75 : 0.50);
-            AllowZT = (TIR_sens_limited > 1 ? false : true); // disable ZT when resistant
+            // AllowZT = (TIR_sens_limited > 1 ? false : true); // disable ZT when resistant
 
 //           // original UAM+ logic with LGS
 //            if (delta >= 5 && glucose_status.short_avgdelta >= 3 && glucose_status.long_avgdelta >= 0 && DeltaPctL > 1.5) {
