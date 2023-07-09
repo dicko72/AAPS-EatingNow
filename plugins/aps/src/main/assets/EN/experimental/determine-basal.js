@@ -1245,7 +1245,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // minPredBG and eventualBG based dosing - insulinReq_bg
     // insulinReq_sens is calculated using a percentage of eventualBG (eBGweight) with the rest as minPredBG, to reduce the risk of overdosing.
     var insulinReq_bg_orig = Math.min(minPredBG, eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), minBG = minPredBG, eBGweight = eBGweight_orig,  AllowZT = true;
-    var minPredBG_orig = minPredBG, eventualBG_orig = eventualBG;
+    var minPredBG_orig = minPredBG, eventualBG_orig = eventualBG, lastUAMpredBG_orig = lastUAMpredBG;
 
     var insulinReq_sens = sens_normalTarget, insulinReq_sens_normalTarget = sens_normalTarget_orig;
 
@@ -1387,7 +1387,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         rT.reason += ", " + (ignoreCOB ? "!" : "") + "COBpredBG " + convert_bg(lastCOBpredBG, profile);
     }
     if (lastUAMpredBG > 0) {
-        rT.reason += ", UAMpredBG " + convert_bg(lastUAMpredBG, profile);
+        rT.reason += ", UAMpredBG " + convert_bg(lastUAMpredBG_orig, profile) + (lastUAMpredBG > lastUAMpredBG_orig ? "="+convert_bg(lastUAMpredBG, profile) : "");
     }
 
     // main EN status
