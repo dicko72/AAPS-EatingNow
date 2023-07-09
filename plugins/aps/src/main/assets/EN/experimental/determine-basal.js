@@ -1294,8 +1294,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // UAM+ predictions, stronger eBGw
         if (sens_predType == "UAM+") {
             // delta multiplier to increase eventualBG
-            var UAMDeltaX = (bg < ISFbgMax && ENWindowOK ? 9 : 3);
-            eventualBG = Math.max(eventualBG,bg,bg + delta * UAMDeltaX);
+            var UAMDeltaX = (bg < ISFbgMax && ENWindowOK ? delta * 9 : delta * 3);
+            eventualBG = Math.max(eventualBG,bg,bg + UAMDeltaX);
             // set initial eBGw at 50% unless bg is in range and predicted higher
             eBGweight = (bg < ISFbgMax ? 0.75 : 0.50);
             // AllowZT = (TIR_sens_limited > 1 ? false : true); // disable ZT when resistant
@@ -1634,7 +1634,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // eventual BG is at/above target
     // if iob is over max, just cancel any temps
     if (eventualBG >= max_bg) {
-        rT.reason += "Eventual BG " + convert_bg(eventualBG_orig, profile) + (eventualBG > eventualBG_orig ? "=" + convert_bg(eventualBG, profile) : "") + " &gt;= " + convert_bg(max_bg, profile) + ", ";
+        rT.reason += "Eventual BG " + convert_bg(eventualBG_orig, profile) + (eventualBG > eventualBG_orig ? "+" + convert_bg(UAMDeltaX,profile) + "=" + convert_bg(eventualBG, profile) : "") + " &gt;= " + convert_bg(max_bg, profile) + ", ";
     }
     if (iob_data.iob > max_iob) {
         rT.reason += "IOB " + round(iob_data.iob, 2) + " &gt; max_iob " + max_iob;
