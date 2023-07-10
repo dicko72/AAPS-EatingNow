@@ -1294,7 +1294,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // UAM+ predictions, stronger eBGw
         if (sens_predType == "UAM+") {
             // delta multiplier to increase eventualBG
-            var UAMDeltaX = (bg < ISFbgMax && ENWindowOK ? delta * 9 : delta * 3);
+            var UAMDeltaX = (bg < ISFbgMax && ENWindowOK ? delta * 7 : delta * 3);
             eventualBG = Math.max(eventualBG,bg,bg + UAMDeltaX);
             // set initial eBGw at 50% unless bg is in range and predicted higher
             eBGweight = (bg < ISFbgMax ? 0.75 : 0.50);
