@@ -1269,7 +1269,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // start with the prebolus in prefs as the minimum starting bolus amount for ENWBolusIOB then use the maxbolus for UAM+ as the increment
     var UAMBGPreBolus = (UAMBGPreBolusUnits > 0 && ENTTActive && ENPBActive && ENWindowRunTime < PBW && meal_data.ENWBolusIOB < UAMBGPreBolusUnits);
-    var UAMBGPreBolusAuto = (UAMBGPreBolusUnits > 0 && ENTTActive && !ENPBActive && meal_data.ENWBolusIOB < UAMBGPreBolusUnits);
+    //var UAMBGPreBolusAuto = (UAMBGPreBolusUnits > 0 && ENTTActive && !ENPBActive && meal_data.ENWBolusIOB < UAMBGPreBolusUnits);
 
     // Pre-bolus condition matches set PB type
     if (UAMBGPreBolus) sens_predType = "PB";
@@ -1757,7 +1757,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (sens_predType == "UAM+") ENMaxSMB = (firstMealWindow ? profile.EN_UAMPlus_maxBolus_bkfst : profile.EN_UAMPlus_maxBolus);
 
                 // when auto prebolusing Increase ENMaxSMB to cover remaining UAMBGPreBolusUnits
-                if (UAMBGPreBolusAuto) ENMaxSMB = Math.max(ENMaxSMB, UAMBGPreBolusUnits - meal_data.ENWBolusIOB);
+                //if (UAMBGPreBolusAuto) ENMaxSMB = Math.max(ENMaxSMB, UAMBGPreBolusUnits - meal_data.ENWBolusIOB);
 
             } else {
                 ENMaxSMB = profile.EN_NoENW_maxBolus;
