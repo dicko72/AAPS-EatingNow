@@ -1294,11 +1294,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // UAM+ predictions, stronger eBGw
         if (sens_predType == "UAM+") {
             // UAMDeltaX delta multiplier to increase eventualBG when ENW has started
-            var UAMDeltaX = delta * 3; // default 15m
+            var UAMDeltaX = 0; // default no increase to eBG
             if (ENWindowOK) {
                 if (bg < ISFbgMax) UAMDeltaX = delta * 7;
                 if (ENWindowRunTime < 30) UAMDeltaX = delta * 7;
                 if (ENWindowRunTime < 15) UAMDeltaX = delta * 10; // first 15m predict further
+                if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB / ENWBolusIOBMax > 0.75) UAMDeltaX = delta * 3; // SAFETY: if we have a good chunk of expected bolus ENWIOB then reduce UAMDeltaX
             }
 
             eventualBG = Math.max(eventualBG,bg,bg + UAMDeltaX);
@@ -1409,7 +1410,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += (!ENWindowOK && !ENWTriggerOK && ENtimeOK ? " IOB&lt;" + round(ENWIOBThreshU, 2) : "");
     rT.reason += (ENWindowOK && ENWTriggerOK ? " IOB&gt;" + round(ENWIOBThreshU, 2) : "");
     if (meal_data.ENWBolusIOB || ENWindowOK) rT.reason += ", ENW-IOB:" + round(meal_data.ENWBolusIOB,2) + (ENWBolusIOBMax > 0 ? "/" + ENWBolusIOBMax : "");
-//    var endebug = "basaliob:" + iob_data.basaliob;
+    var endebug = "ENWIOB%:" + meal_data.ENWBolusIOB + "/" + ENWBolusIOBMax;
 
     // other EN stuff
     rT.reason += ", eBGw: " + (sens_predType != "NA" ? sens_predType + " " : "") + convert_bg(insulinReq_bg, profile) + " " + round(eBGweight * 100) + "%";
