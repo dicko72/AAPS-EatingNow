@@ -1302,7 +1302,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB / ENWBolusIOBMax > 0.75) UAMDeltaX = delta * 3; // SAFETY: if we have a good chunk of expected bolus ENWIOB then reduce UAMDeltaX
             }
 
-            eventualBG = Math.max(eventualBG,bg,eventualBG+UAMDeltaX);
+            // use the largest eventualBG, if eventualBG is less than bg increase with UAMDeltaX
+            eventualBG = Math.max(eventualBG,bg,(eventualBG < bg ? eventualBG + UAMDeltaX : eventualBG) );
             // set initial eBGw at 50% unless bg is in range and predicted higher
             eBGweight = (bg < ISFbgMax && ENWindowOK ? 1 : 0.50);
             // AllowZT = (TIR_sens_limited > 1 ? false : true); // disable ZT when resistant
