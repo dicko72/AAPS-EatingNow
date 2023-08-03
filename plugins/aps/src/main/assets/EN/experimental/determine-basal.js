@@ -1265,7 +1265,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
     var UAMBGPreBolusUnits = (firstMealWindow ? profile.EN_UAMPlus_PreBolus_bkfast : profile.EN_UAMPlus_PreBolus) , PBW = 30;
-    // UAMBGPreBolusUnits *= profile.percent/100; // profile switch percentage applied
+    UAMBGPreBolusUnits *= profile.percent/100; // profile switch percentage applied
 
     // start with the prebolus in prefs as the minimum starting bolus amount for ENWBolusIOB then use the maxbolus for UAM+ as the increment
     var UAMBGPreBolus = (UAMBGPreBolusUnits > 0 && ENTTActive && ENPBActive && ENWindowRunTime < PBW && meal_data.ENWBolusIOB < UAMBGPreBolusUnits);
