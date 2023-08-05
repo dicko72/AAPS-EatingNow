@@ -1244,7 +1244,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // minPredBG and eventualBG based dosing - insulinReq_bg
     // insulinReq_sens is calculated using a percentage of eventualBG (eBGweight) with the rest as minPredBG, to reduce the risk of overdosing.
-    var insulinReq_bg_orig = Math.min(minPredBG, eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), minBG = minPredBG, eBGweight = eBGweight_orig,  AllowZT = true;
+    var insulinReq_bg_orig = Math.min(minPredBG, eventualBG), insulinReq_bg = insulinReq_bg_orig, insulinReqTIRS = 0, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), minBG = minPredBG, eBGweight = eBGweight_orig,  AllowZT = true;
     var minPredBG_orig = minPredBG, eventualBG_orig = eventualBG, lastUAMpredBG_orig = lastUAMpredBG;
 
     var insulinReq_sens = sens_normalTarget, insulinReq_sens_normalTarget = sens_normalTarget_orig;
@@ -1354,7 +1354,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // BG+ bg is stuck with resistance or UAM+ activated with minGuardBG
         if (sens_predType == "BG+") {
-            eventualBG = bg;
+            // when resistant allow a portion of IOB when not eating
+            var insulinReqTIRS = (TIR_sens_limited > 1 && !ENWindowOK ? iob_data.iob * (TIR_sens_limited-1) : 0);
+            insulinReqTIRS = Math.max(insulinReqTIRS,0); // dont allow negative
+            //insulinReqTIRS = Math.min(insulinReqTIRS,basal/2); // SAFETY: Limit insulinReqTIRS to 30 minutes of current basal
+            insulinReqTIRS = round(insulinReqTIRS,3);
+
+            //eventualBG = bg;
             minGuardBG = threshold;
             eBGweight = 1; // 100% eBGw as insulin delivery is restricted
             //AllowZT = false;
@@ -1671,13 +1677,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // use eBGweight for insulinReq
         insulinReq = (insulinReq_bg - target_bg) / insulinReq_sens;
-        // when resistant allow a portion of IOB when not eating
-        var insulinReqTIRS = (TIR_sens_limited > 1 && !ENWindowOK ? iob_data.iob * (TIR_sens_limited-1) : 0);
-        insulinReqTIRS = Math.max(insulinReqTIRS,0); // dont allow negative
-        insulinReqTIRS = Math.min(insulinReqTIRS,basal/2); // SAFETY: Limit insulinReqTIRS to 30 minutes of current basal
-        insulinReqTIRS = round(insulinReqTIRS,3);
 
         var endebug = "IRTIRS:" + insulinReqTIRS;
+        // inrease insulinReq as part of BG+ when required
         insulinReq += insulinReqTIRS;
 
         // override insulinReq for initial pre-bolus (PB)
