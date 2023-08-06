@@ -1295,7 +1295,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (sens_predType == "UAM+") {
             // UAMDeltaX delta multiplier to increase eventualBG when ENW has started
             var UAMDeltaX = 0; // default no increase to eBG
-            if (ENWindowOK) {
+            if (ENWindowOK && !UAMBGPreBolus) { // SAFETY: Dont eBG increase when prebolusing
                 if (bg < ISFbgMax) UAMDeltaX = delta * 7;
                 if (ENWindowRunTime < 30) UAMDeltaX = delta * 7;
                 if (ENWindowRunTime < 15) UAMDeltaX = delta * 10; // first 15m predict further
