@@ -1361,7 +1361,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             insulinReqTIRS = round(insulinReqTIRS,3);
 
             //eventualBG = bg;
-            //minGuardBG = threshold;
+            minGuardBG = threshold; // required to allow SMB consistently
             eBGweight = 1; // 100% eBGw as insulin delivery is restricted
             //AllowZT = false;
             // When resistant and insulin delivery is restricted allow the SR adjusted sens_normalTarget
