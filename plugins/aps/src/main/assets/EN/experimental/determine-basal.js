@@ -1314,9 +1314,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //insulinReqTIRS = Math.min(insulinReqTIRS,basal/2); // SAFETY: Limit insulinReqTIRS to 30 minutes of current basal
             insulinReqTIRS = round(insulinReqTIRS,3);
 
-            eventualBG = threshold;
+            //eventualBG = threshold;
             minGuardBG = threshold; // required to allow SMB consistently
-            eBGweight = 1; // 100% eBGw as insulin delivery is restricted
+            minBG = bg;
+            eBGweight = 0.5;
             //AllowZT = false;
             // When resistant and insulin delivery is restricted allow the SR adjusted sens_normalTarget
             if (TIR_sens_limited > 1 && ENactive && !firstMealScaling) insulinReq_sens_normalTarget = sens_normalTarget;
