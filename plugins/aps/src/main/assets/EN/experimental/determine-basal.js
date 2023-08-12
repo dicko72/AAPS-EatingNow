@@ -1231,7 +1231,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (UAMBGPreBolus) sens_predType = "PB";
 
     // BG+ outside of UAM prediction
-    if (!ENPBActive && ENWMinsAgo > PBW && TIR_sens_limited > 1) sens_predType = "BG+";
+    if (!ENPBActive && ENWMinsAgo > PBW && TIR_sens_limited > 1 && (sens_predType != "UAM+" || sens_predType != "COB") ) sens_predType = "BG+";
 
     // TBR for tt that isn't EN at normal target
     if (profile.temptargetSet && !ENTTActive && target_bg == normalTarget) sens_predType = "TBR";
