@@ -265,6 +265,7 @@ import kotlin.math.roundToInt
 
     fun insert(word: UserEntry) {
         database.userEntryDao.insert(word)
+        changeSubject.onNext(mutableListOf(word)) // Not TraceableDao
     }
 
     // PROFILE SWITCH
@@ -734,8 +735,10 @@ import kotlin.math.roundToInt
         database.bolusCalculatorResultDao.getLastId()
 
     // DEVICE STATUS
-    fun insert(deviceStatus: DeviceStatus): Long =
+    fun insert(deviceStatus: DeviceStatus) {
         database.deviceStatusDao.insert(deviceStatus)
+        changeSubject.onNext(mutableListOf(deviceStatus)) // Not TraceableDao
+    }
 
     /*
        * returns a Pair of the next entity to sync and the ID of the "update".
@@ -747,10 +750,6 @@ import kotlin.math.roundToInt
 
     fun getNextSyncElementDeviceStatus(id: Long): Maybe<DeviceStatus> =
         database.deviceStatusDao.getNextModifiedOrNewAfter(id)
-            .subscribeOn(Schedulers.io())
-
-    fun getModifiedDeviceStatusDataFromId(lastId: Long): Single<List<DeviceStatus>> =
-        database.deviceStatusDao.getModifiedFrom(lastId)
             .subscribeOn(Schedulers.io())
 
     fun getLastDeviceStatusId(): Long? =

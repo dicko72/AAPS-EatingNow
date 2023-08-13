@@ -924,7 +924,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
     private fun updateIobCob() {
         val iobText = overviewData.iobText(iobCobCalculator)
         val iobDialogText = overviewData.iobDialogText(iobCobCalculator)
-        val displayText = overviewData.cobInfo(iobCobCalculator).displayText(rh, dateUtil, config.isEngineeringMode())
+        val displayText = overviewData.cobInfo(iobCobCalculator).displayText(rh)
         val lastCarbsTime = overviewData.lastCarbsTime
         runOnUiThread {
             _binding ?: return@runOnUiThread
@@ -939,7 +939,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                 if (constraintsProcessed.carbsReq > 0) {
                     //only display carbsreq when carbs have not been entered recently
                     if (lastCarbsTime < lastRun.lastAPSRun) {
-                        cobText += " | " + constraintsProcessed.carbsReq + " " + rh.gs(info.nightscout.core.ui.R.string.required)
+                        cobText += "\n" + constraintsProcessed.carbsReq + " " + rh.gs(info.nightscout.core.ui.R.string.required)
                     }
                     if (carbAnimation?.isRunning == false)
                         carbAnimation?.start()

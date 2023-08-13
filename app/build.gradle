@@ -3,7 +3,6 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'kotlin-allopen'
-    id 'com.hiya.jacoco-android'
     id 'kotlinx-serialization'
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
@@ -110,7 +109,7 @@ android {
     defaultConfig {
         multiDexEnabled true
         versionCode 1500
-        version "3.2.0-dev-j-EatingNow"
+        version "3.2.0-dev-k-EatingNow"
         buildConfigField "String", "VERSION", '"' + version + '"'
         buildConfigField "String", "BUILDVERSION",   '"' + 'EN-' + generateGitBuild()[0..7] + '-' + generateDate() + '"'
         buildConfigField "String", "REMOTE", '"' + generateGitRemote() + '"'
@@ -150,7 +149,7 @@ android {
                 }
         }
     }
-    flavorDimensions "standard"
+    flavorDimensions = ["standard"]
     productFlavors {
         full {
             applicationId "info.nightscout.androidaps"
@@ -244,6 +243,7 @@ dependencies {
     implementation project(':pump:danar')
     implementation project(':pump:diaconn')
     implementation project(':pump:eopatch')
+    implementation project(':pump:medtrum')
     implementation project(':insight')
     implementation project(':pump:medtronic')
     implementation project(':pump:pump-common')
