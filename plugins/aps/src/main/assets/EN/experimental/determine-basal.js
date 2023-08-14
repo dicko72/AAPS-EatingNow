@@ -1728,10 +1728,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // BG+ is the only EN prediction type allowed outside of ENW
             ENMaxSMB = (sens_predType == "BG+" ? profile.EN_BGPlus_maxBolus : ENMaxSMB);
 
-            // ============== MAXBOLUS RESTRICTIONS ==============
-            // if ENMaxSMB is more than AAPS max IOB then consider the setting to be minutes
-            if (ENMaxSMB > max_iob) ENMaxSMB = profile.current_basal * ENMaxSMB / 60;
-
             // if ENMaxSMB is more than 0 use ENMaxSMB else use AAPS max minutes
             ENMaxSMB = (ENMaxSMB == 0 ? maxBolus : ENMaxSMB);
 
@@ -1749,6 +1745,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 ENMaxSMB = Math.min(ENMaxSMB,ENWBolusIOBMax-meal_data.ENWBolusIOB); // smallest of allowed SMB and remaining ENWBolusIOB
                 ENMaxSMB = Math.max(ENMaxSMB,profile.EN_NoENW_maxBolus); // use EN_NoENW_maxBolus if its larger than restricted SMB
             }
+
+            // ============== MAXBOLUS RESTRICTIONS ==============
+            // if ENMaxSMB is more than AAPS max IOB then consider the setting to be minutes
+            if (ENMaxSMB > max_iob) ENMaxSMB = profile.current_basal * ENMaxSMB / 60;
+
 
             // ============== TIME BASED RESTRICTIONS ==============
             if (ENtimeOK) {
