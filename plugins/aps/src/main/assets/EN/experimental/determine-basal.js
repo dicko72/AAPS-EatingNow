@@ -1765,6 +1765,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             }
 
 
+            var endebug = "ENMaxSMB:"+ENMaxSMB;
+
             // ============== IOB RESTRICTION  ==============
             if (!UAMBGPreBolus && max_iob_en > 0 && insulinReq > max_iob_en - iob_data.iob) {
                 insulinReq = round(max_iob_en - iob_data.iob, 2);
