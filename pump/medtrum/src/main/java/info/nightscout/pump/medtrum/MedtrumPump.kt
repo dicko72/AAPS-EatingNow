@@ -12,6 +12,7 @@ import info.nightscout.pump.medtrum.comm.enums.BasalType
 import info.nightscout.pump.medtrum.comm.enums.MedtrumPumpState
 import info.nightscout.pump.medtrum.extension.toByteArray
 import info.nightscout.pump.medtrum.extension.toInt
+import info.nightscout.pump.medtrum.util.MedtrumSnUtil
 import info.nightscout.rx.events.EventOverviewBolusProgress
 import info.nightscout.rx.logging.AAPSLogger
 import info.nightscout.rx.logging.LTag
@@ -170,7 +171,7 @@ class MedtrumPump @Inject constructor(
             sp.putLong(R.string.key_last_connection, value)
         }
 
-    private var _deviceType: Int = 80 // As reported by pump
+    private var _deviceType: Int = 0 // As reported by pump
     var deviceType: Int
         get() = _deviceType
         set(value) {
@@ -280,14 +281,16 @@ class MedtrumPump @Inject constructor(
         try {
             _actualBasalProfile = Base64.decode(encodedString, Base64.DEFAULT)
         } catch (e: Exception) {
-            aapsLogger.error(LTag.PUMP, "Error decoding basal profile from SP: $encodedString")
+            aapsLogger.warn(LTag.PUMP, "Error decoding basal profile from SP: $encodedString")
         }
     }
 
-    fun pumpType(): PumpType =
-        when (deviceType) {
-            80, 88 -> PumpType.MEDTRUM_NANO
-            else   -> PumpType.MEDTRUM_UNTESTED
+    fun pumpType(): PumpType = pumpType(deviceType)
+
+    fun pumpType(type: Int): PumpType =
+        when (type) {
+            MedtrumSnUtil.MD_0201, MedtrumSnUtil.MD_8201 -> PumpType.MEDTRUM_NANO
+            else                                         -> PumpType.MEDTRUM_UNTESTED
         }
 
     fun loadUserSettingsFromSP() {
@@ -498,25 +501,25 @@ class MedtrumPump @Inject constructor(
 
     fun alarmStateToString(alarmState: AlarmState): String {
         val stringId = when (alarmState) {
-            AlarmState.NONE               -> R.string.alarm_none
-            AlarmState.PUMP_LOW_BATTERY   -> R.string.alarm_pump_low_battery
-            AlarmState.PUMP_LOW_RESERVOIR -> R.string.alarm_pump_low_reservoir
-            AlarmState.PUMP_EXPIRES_SOON  -> R.string.alarm_pump_expires_soon
-            AlarmState.LOW_BG_SUSPENDED   -> R.string.alarm_low_bg_suspended
-            AlarmState.LOW_BG_SUSPENDED2  -> R.string.alarm_low_bg_suspended2
+            AlarmState.NONE                 -> R.string.alarm_none
+            AlarmState.PUMP_LOW_BATTERY     -> R.string.alarm_pump_low_battery
+            AlarmState.PUMP_LOW_RESERVOIR   -> R.string.alarm_pump_low_reservoir
+            AlarmState.PUMP_EXPIRES_SOON    -> R.string.alarm_pump_expires_soon
+            AlarmState.LOW_BG_SUSPENDED     -> R.string.alarm_low_bg_suspended
+            AlarmState.LOW_BG_SUSPENDED2    -> R.string.alarm_low_bg_suspended2
             AlarmState.AUTO_SUSPENDED       -> R.string.alarm_auto_suspended
             AlarmState.HOURLY_MAX_SUSPENDED -> R.string.alarm_hourly_max_suspended
             AlarmState.DAILY_MAX_SUSPENDED  -> R.string.alarm_daily_max_suspended
             AlarmState.SUSPENDED            -> R.string.alarm_suspended
-            AlarmState.PAUSED             -> R.string.alarm_paused
-            AlarmState.OCCLUSION          -> R.string.alarm_occlusion
-            AlarmState.EXPIRED            -> R.string.alarm_expired
-            AlarmState.RESERVOIR_EMPTY    -> R.string.alarm_reservoir_empty
-            AlarmState.PATCH_FAULT        -> R.string.alarm_patch_fault
-            AlarmState.PATCH_FAULT2       -> R.string.alarm_patch_fault2
-            AlarmState.BASE_FAULT         -> R.string.alarm_base_fault
-            AlarmState.BATTERY_OUT        -> R.string.alarm_battery_out
-            AlarmState.NO_CALIBRATION     -> R.string.alarm_no_calibration
+            AlarmState.PAUSED               -> R.string.alarm_paused
+            AlarmState.OCCLUSION            -> R.string.alarm_occlusion
+            AlarmState.EXPIRED              -> R.string.alarm_expired
+            AlarmState.RESERVOIR_EMPTY      -> R.string.alarm_reservoir_empty
+            AlarmState.PATCH_FAULT          -> R.string.alarm_patch_fault
+            AlarmState.PATCH_FAULT2         -> R.string.alarm_patch_fault2
+            AlarmState.BASE_FAULT           -> R.string.alarm_base_fault
+            AlarmState.BATTERY_OUT          -> R.string.alarm_battery_out
+            AlarmState.NO_CALIBRATION       -> R.string.alarm_no_calibration
         }
         return rh.gs(stringId)
     }

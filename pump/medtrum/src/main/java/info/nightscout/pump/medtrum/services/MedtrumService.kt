@@ -29,6 +29,7 @@ import info.nightscout.pump.medtrum.code.ConnectionState
 import info.nightscout.pump.medtrum.comm.enums.AlarmState
 import info.nightscout.pump.medtrum.comm.enums.MedtrumPumpState
 import info.nightscout.pump.medtrum.comm.packets.*
+import info.nightscout.pump.medtrum.util.MedtrumSnUtil
 import info.nightscout.rx.AapsSchedulers
 import info.nightscout.rx.bus.RxBus
 import info.nightscout.rx.events.EventAppExit
@@ -109,8 +110,9 @@ class MedtrumService : DaggerService(), BLECommCallback {
             .subscribe({ event ->
                            if (event.isChanged(rh.gs(R.string.key_sn_input))) {
                                aapsLogger.debug(LTag.PUMPCOMM, "Serial number changed, reporting new pump!")
-                               pumpSync.connectNewPump()
                                medtrumPump.loadUserSettingsFromSP()
+                               medtrumPump.deviceType = MedtrumSnUtil().getDeviceTypeFromSerial(medtrumPump.pumpSN)
+                               pumpSync.connectNewPump()
                                medtrumPump.setFakeTBRIfNeeded()
                            }
                            if (event.isChanged(rh.gs(R.string.key_alarm_setting))
@@ -164,8 +166,19 @@ class MedtrumService : DaggerService(), BLECommCallback {
         if (currentState is IdleState) {
             medtrumPump.connectionState = ConnectionState.CONNECTING
             return bleComm.connect(from, medtrumPump.pumpSN)
+        } else if (currentState is ReadyState) {
+            aapsLogger.error(LTag.PUMPCOMM, "Connect attempt when in ReadyState from: $from")
+            if (isConnected) {
+                aapsLogger.debug(LTag.PUMP, "connect: already connected")
+                return true
+            } else {
+                aapsLogger.debug(LTag.PUMP, "connect: not connected, resetting state and trying to connect")
+                toState(IdleState())
+                medtrumPump.connectionState = ConnectionState.CONNECTING
+                return bleComm.connect(from, medtrumPump.pumpSN)
+            }
         } else {
-            aapsLogger.error(LTag.PUMPCOMM, "Connect attempt when in non Idle state from: $from")
+            aapsLogger.error(LTag.PUMPCOMM, "Connect attempt when in state: $currentState from: $from")
             return false
         }
     }
@@ -267,11 +280,11 @@ class MedtrumService : DaggerService(), BLECommCallback {
                     result = sendPacketAndGetResponse(ClearPumpAlarmPacket(injector, ALARM_HOURLY_MAX_CLEAR_CODE))
                 }
 
-                MedtrumPumpState.DAILY_MAX_SUSPENDED -> {
+                MedtrumPumpState.DAILY_MAX_SUSPENDED  -> {
                     result = sendPacketAndGetResponse(ClearPumpAlarmPacket(injector, ALARM_DAILY_MAX_CLEAR_CODE))
                 }
 
-                else                            -> {
+                else                                  -> {
                     // Nothing to reset
                 }
             }
@@ -287,20 +300,22 @@ class MedtrumService : DaggerService(), BLECommCallback {
     }
 
     fun setBolus(detailedBolusInfo: DetailedBolusInfo, t: EventOverviewBolusProgress.Treatment): Boolean {
-        if (!isConnected) return false
-        if (BolusProgressData.stopPressed) return false
+        if (!isConnected) {
+            aapsLogger.warn(LTag.PUMPCOMM, "Pump not connected, not setting bolus")
+            return false
+        }
+        if (BolusProgressData.stopPressed) {
+            aapsLogger.warn(LTag.PUMPCOMM, "Bolus stop pressed, not setting bolus")
+            return false
+        }
+        if (!medtrumPump.bolusDone) {
+            aapsLogger.warn(LTag.PUMPCOMM, "Bolus already in progress, not setting new one")
+            return false
+        }
+
         val insulin = detailedBolusInfo.insulin
-        val bolusStart = System.currentTimeMillis()
-
-        medtrumPump.bolusDone = false
-        medtrumPump.bolusingTreatment = t
-        medtrumPump.bolusAmountToBeDelivered = insulin
-        medtrumPump.bolusStopped = false
-        medtrumPump.bolusProgressLastTimeStamp = bolusStart
-
         if (insulin > 0) {
-            val result = sendPacketAndGetResponse(SetBolusPacket(injector, insulin))
-            if (!result) {
+            if (!sendPacketAndGetResponse(SetBolusPacket(injector, insulin))) {
                 aapsLogger.error(LTag.PUMPCOMM, "Failed to set bolus")
                 commandQueue.loadEvents(null) // make sure if anything is delivered (which is highly unlikely at this point) we get it
                 t.insulin = 0.0
@@ -311,6 +326,13 @@ class MedtrumService : DaggerService(), BLECommCallback {
             t.insulin = 0.0
             return false
         }
+
+        val bolusStart = System.currentTimeMillis()
+        medtrumPump.bolusDone = false
+        medtrumPump.bolusingTreatment = t
+        medtrumPump.bolusAmountToBeDelivered = insulin
+        medtrumPump.bolusStopped = false
+        medtrumPump.bolusProgressLastTimeStamp = bolusStart
 
         detailedBolusInfo.timestamp = bolusStart // Make sure the timestamp is set to the start of the bolus
         detailedBolusInfoStorage.add(detailedBolusInfo) // will be picked up on reading history
@@ -468,23 +490,23 @@ class MedtrumService : DaggerService(), BLECommCallback {
     private fun handlePumpStateUpdate(state: MedtrumPumpState) {
         // Map the pump state to an alarm state and add it to the active alarms
         val alarmState = when (state) {
-            MedtrumPumpState.NONE              -> AlarmState.NONE
-            MedtrumPumpState.LOW_BG_SUSPENDED  -> AlarmState.LOW_BG_SUSPENDED
-            MedtrumPumpState.LOW_BG_SUSPENDED2 -> AlarmState.LOW_BG_SUSPENDED2
+            MedtrumPumpState.NONE                 -> AlarmState.NONE
+            MedtrumPumpState.LOW_BG_SUSPENDED     -> AlarmState.LOW_BG_SUSPENDED
+            MedtrumPumpState.LOW_BG_SUSPENDED2    -> AlarmState.LOW_BG_SUSPENDED2
             MedtrumPumpState.AUTO_SUSPENDED       -> AlarmState.AUTO_SUSPENDED
             MedtrumPumpState.HOURLY_MAX_SUSPENDED -> AlarmState.HOURLY_MAX_SUSPENDED
             MedtrumPumpState.DAILY_MAX_SUSPENDED  -> AlarmState.DAILY_MAX_SUSPENDED
             MedtrumPumpState.SUSPENDED            -> AlarmState.SUSPENDED
-            MedtrumPumpState.PAUSED            -> AlarmState.PAUSED
-            MedtrumPumpState.OCCLUSION         -> AlarmState.OCCLUSION
-            MedtrumPumpState.EXPIRED           -> AlarmState.EXPIRED
-            MedtrumPumpState.RESERVOIR_EMPTY   -> AlarmState.RESERVOIR_EMPTY
-            MedtrumPumpState.PATCH_FAULT       -> AlarmState.PATCH_FAULT
-            MedtrumPumpState.PATCH_FAULT2      -> AlarmState.PATCH_FAULT2
-            MedtrumPumpState.BASE_FAULT        -> AlarmState.BASE_FAULT
-            MedtrumPumpState.BATTERY_OUT       -> AlarmState.BATTERY_OUT
-            MedtrumPumpState.NO_CALIBRATION    -> AlarmState.NO_CALIBRATION
-            else                               -> null
+            MedtrumPumpState.PAUSED               -> AlarmState.PAUSED
+            MedtrumPumpState.OCCLUSION            -> AlarmState.OCCLUSION
+            MedtrumPumpState.EXPIRED              -> AlarmState.EXPIRED
+            MedtrumPumpState.RESERVOIR_EMPTY      -> AlarmState.RESERVOIR_EMPTY
+            MedtrumPumpState.PATCH_FAULT          -> AlarmState.PATCH_FAULT
+            MedtrumPumpState.PATCH_FAULT2         -> AlarmState.PATCH_FAULT2
+            MedtrumPumpState.BASE_FAULT           -> AlarmState.BASE_FAULT
+            MedtrumPumpState.BATTERY_OUT          -> AlarmState.BATTERY_OUT
+            MedtrumPumpState.NO_CALIBRATION       -> AlarmState.NO_CALIBRATION
+            else                                  -> null
         }
         if (alarmState != null && alarmState != AlarmState.NONE) {
             medtrumPump.addAlarm(alarmState)
@@ -499,7 +521,7 @@ class MedtrumService : DaggerService(), BLECommCallback {
         // Map the pump state to a notification
         when (state) {
             MedtrumPumpState.NONE,
-            MedtrumPumpState.STOPPED        -> {
+            MedtrumPumpState.STOPPED              -> {
                 rxBus.send(EventDismissNotification(Notification.PUMP_ERROR))
                 rxBus.send(EventDismissNotification(Notification.PUMP_SUSPENDED))
                 uiInteraction.addNotification(
@@ -516,7 +538,7 @@ class MedtrumService : DaggerService(), BLECommCallback {
             MedtrumPumpState.PRIMING,
             MedtrumPumpState.PRIMED,
             MedtrumPumpState.EJECTING,
-            MedtrumPumpState.EJECTED        -> {
+            MedtrumPumpState.EJECTED              -> {
                 rxBus.send(EventDismissNotification(Notification.PUMP_ERROR))
                 rxBus.send(EventDismissNotification(Notification.PUMP_SUSPENDED))
                 medtrumPump.setFakeTBRIfNeeded()
@@ -524,7 +546,7 @@ class MedtrumService : DaggerService(), BLECommCallback {
             }
 
             MedtrumPumpState.ACTIVE,
-            MedtrumPumpState.ACTIVE_ALT     -> {
+            MedtrumPumpState.ACTIVE_ALT           -> {
                 rxBus.send(EventDismissNotification(Notification.PATCH_NOT_ACTIVE))
                 rxBus.send(EventDismissNotification(Notification.PUMP_SUSPENDED))
                 medtrumPump.clearAlarmState()
@@ -534,7 +556,7 @@ class MedtrumService : DaggerService(), BLECommCallback {
             MedtrumPumpState.LOW_BG_SUSPENDED2,
             MedtrumPumpState.AUTO_SUSPENDED,
             MedtrumPumpState.SUSPENDED,
-            MedtrumPumpState.PAUSED         -> {
+            MedtrumPumpState.PAUSED               -> {
                 uiInteraction.addNotification(
                     Notification.PUMP_SUSPENDED,
                     rh.gs(R.string.pump_is_suspended),
@@ -552,7 +574,7 @@ class MedtrumService : DaggerService(), BLECommCallback {
                 // Pump will report proper TBR for this
             }
 
-            MedtrumPumpState.DAILY_MAX_SUSPENDED -> {
+            MedtrumPumpState.DAILY_MAX_SUSPENDED  -> {
                 uiInteraction.addNotification(
                     Notification.PUMP_SUSPENDED,
                     rh.gs(R.string.pump_is_suspended_day_max),
@@ -568,7 +590,7 @@ class MedtrumService : DaggerService(), BLECommCallback {
             MedtrumPumpState.PATCH_FAULT2,
             MedtrumPumpState.BASE_FAULT,
             MedtrumPumpState.BATTERY_OUT,
-            MedtrumPumpState.NO_CALIBRATION -> {
+            MedtrumPumpState.NO_CALIBRATION       -> {
                 rxBus.send(EventDismissNotification(Notification.PATCH_NOT_ACTIVE))
                 rxBus.send(EventDismissNotification(Notification.PUMP_SUSPENDED))
                 // Pump suspended due to error, show error!
@@ -641,7 +663,7 @@ class MedtrumService : DaggerService(), BLECommCallback {
             result = currentState.waitForResponse(timeout)
             SystemClock.sleep(100)
         } else {
-            aapsLogger.error(LTag.PUMPCOMM, "Send packet attempt when in non Ready state")
+            aapsLogger.error(LTag.PUMPCOMM, "Send packet attempt when in state: $currentState")
         }
         return result
     }
@@ -732,21 +754,7 @@ class MedtrumService : DaggerService(), BLECommCallback {
                 // Success!
                 responseHandled = true
                 responseSuccess = true
-                // Check if we have a supported pump
-                if (medtrumPump.pumpType() == PumpType.MEDTRUM_UNTESTED) {
-                    // Throw error
-                    aapsLogger.error(LTag.PUMPCOMM, "Unsupported pump type")
-                    uiInteraction.addNotificationWithSound(
-                        Notification.PUMP_ERROR,
-                        rh.gs(R.string.pump_unsupported, medtrumPump.deviceType),
-                        Notification.URGENT,
-                        info.nightscout.core.ui.R.raw.alarm
-                    )
-                    disconnect("Unsupported pump")
-                    toState(IdleState())
-                } else {
-                    toState(GetDeviceTypeState())
-                }
+                toState(GetDeviceTypeState())
             } else if (mPacket?.failed == true) {
                 // Failure
                 responseHandled = true

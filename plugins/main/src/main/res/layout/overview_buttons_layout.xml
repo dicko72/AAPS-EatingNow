@@ -78,20 +78,6 @@
             app:iconPadding="-4dp" />
 
         <info.nightscout.core.ui.elements.SingleClickButton
-            android:id="@+id/en_button"
-            style="@style/ButtonSmallFontStyle"
-            android:layout_width="0dp"
-            android:layout_height="fill_parent"
-            android:layout_marginEnd="-2dp"
-            android:layout_weight="0.5"
-            android:drawableTop="@drawable/ic_target_eatingsoon"
-            android:ellipsize="end"
-            android:singleLine="true"
-            android:text="EATING NOW"
-            android:textColor="?attr/icBolusCarbsColor"
-            app:iconPadding="-4dp" />
-
-        <info.nightscout.core.ui.elements.SingleClickButton
             android:id="@+id/wizard_button"
             style="@style/ButtonSmallFontStyle"
             android:layout_width="0px"

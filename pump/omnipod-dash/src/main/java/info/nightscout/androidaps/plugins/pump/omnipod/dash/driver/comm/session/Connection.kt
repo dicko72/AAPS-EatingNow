@@ -136,8 +136,8 @@ class Connection(
             bleCommCallbacks.resetConnection()
             gattConnection = null
             session = null
-            msgIO = null
-            podState.bluetoothConnectionState = OmnipodDashPodStateManager.BluetoothConnectionState.DISCONNECTED
+            msgIO = null            
+            podState.bluetoothConnectionState = OmnipodDashPodStateManager.BluetoothConnectionState.DISCONNECTED            
         }
     }
 
