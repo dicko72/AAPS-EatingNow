@@ -29,6 +29,7 @@ import info.nightscout.interfaces.iob.MealData
 import info.nightscout.interfaces.plugin.ActivePlugin
 import info.nightscout.interfaces.profile.Profile
 import info.nightscout.interfaces.profile.ProfileFunction
+import info.nightscout.plugins.aps.APSResultObject
 import info.nightscout.plugins.aps.R
 import info.nightscout.plugins.aps.logger.LoggerCallback
 import info.nightscout.plugins.aps.openAPSSMB.DetermineBasalResultSMB
@@ -91,7 +92,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
     override var scriptDebug = ""
 
     @Suppress("SpellCheckingInspection")
-    override operator fun invoke(): `DetermineBasalResultSMB`? {
+    override operator fun invoke(): APSResultObject? {
         aapsLogger.debug(LTag.APS, ">>> Invoking determine_basal <<<")
         aapsLogger.debug(LTag.APS, "Glucose status: " + mGlucoseStatus.toString().also { glucoseStatusParam = it })
         aapsLogger.debug(LTag.APS, "IOB data:       " + iobData.toString().also { iobDataParam = it })
@@ -132,8 +133,6 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             rhino.evaluateString(scope, readFile("OpenAPSSMB/basal-set-temp.js"), "setTempBasal.js", 0, null)
             val determineBasalObj = scope["determine_basal", scope]
             val setTempBasalFunctionsObj = scope["tempBasalFunctions", scope]
-
-
 
             //call determine-basal
             if (determineBasalObj is Function && setTempBasalFunctionsObj is NativeObject) {
@@ -205,7 +204,12 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         microBolusAllowed: Boolean,
         uamAllowed: Boolean,
         advancedFiltering: Boolean,
-        flatBGsDetected: Boolean
+        flatBGsDetected: Boolean,
+        tdd1D: Double?,
+        tdd7D: Double?,
+        tddLast24H: Double?,
+        tddLast4H: Double?,
+        tddLast8to4H: Double?
     ) {
         val now = System.currentTimeMillis()
         val pump = activePlugin.activePump
@@ -335,7 +339,6 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         } else {
             mGlucoseStatus.put("delta", glucoseStatus.delta)
         }
-
         mGlucoseStatus.put("short_avgdelta", glucoseStatus.shortAvgDelta)
         mGlucoseStatus.put("long_avgdelta", glucoseStatus.longAvgDelta)
         mGlucoseStatus.put("date", glucoseStatus.date)
