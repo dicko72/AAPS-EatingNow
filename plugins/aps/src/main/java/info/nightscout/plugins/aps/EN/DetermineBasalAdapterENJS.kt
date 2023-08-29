@@ -284,6 +284,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         // Within the EN Window ********************************************************************************
         this.profile.put("ENWindow", sp.getInt(R.string.key_eatingnow_enwindowminutes, 0))
+        this.profile.put("ENWPct", sp.getInt(R.string.key_eatingnow_pct, 100))
         this.profile.put("ENWIOBTrigger", sp.getDouble(R.string.key_enwindowiob, 0.0))
         val enwMinBolus = sp.getDouble(R.string.key_enwminbolus, 0.0)
         this.profile.put("ENWMinBolus", enwMinBolus)

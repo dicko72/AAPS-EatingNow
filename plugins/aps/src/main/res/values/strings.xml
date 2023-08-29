@@ -168,6 +168,7 @@
     <string name="key_enautostart" translatable="false">key_enautostart</string>
     <string name="key_eatingnow_cobboost_maxbolus_breakfast">key_eatingnow_cobboost_maxbolus_breakfast</string>
     <string name="key_eatingnow_breakfastpct">key_eatingnow_breakfastpct</string>
+    <string name="key_eatingnow_pct">key_eatingnow_pct</string>
     <string name="key_eatingnow_uam_maxbolus_breakfast">key_eatingnow_uam_maxbolus_breakfast</string>
     <string name="key_enw_breakfast_max_tdd">key_enw_breakfast_max_tdd</string>
     <string name="key_enw_max_tdd">key_enw_max_tdd</string>

@@ -440,6 +440,16 @@
                 validate:testType="numericRange" />
 
             <info.nightscout.core.validators.ValidatingEditTextPreference
+                android:defaultValue="100"
+                android:inputType="number"
+                android:title="ENW ISF/CR Percentage"
+                android:key="@string/key_eatingnow_pct"
+                android:dialogMessage="* ONLY TO BE USED WHEN A SINGLE ISF AND CR ENTRY IS WITHIN THE PROFILE *\nThe ISF/CR will use the profile and scale as a percentage.\n100 will be no change.\n150 will make the ISF and CR 150% stronger than profile.\nThis setting will be active for the duration of the EN Window."
+                validate:maxNumber="200"
+                validate:minNumber="100"
+                validate:testType="numericRange" />
+
+            <info.nightscout.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_uamboost_maxbolus"

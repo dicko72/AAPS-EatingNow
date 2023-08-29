@@ -409,9 +409,18 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     ENWBolusIOBMax = (ENWindowOK && ENWMinsAgo <= ENWindowDuration ? ENWBolusIOBMax : 0); // reset to 0 if not within ENW
 
     // stronger CR and ISF can be used when firstmeal is within 2h window
-    var firstMealScaling = (firstMealWindow && !profile.use_sens_TDD && profile.sens == profile.sens_midnight && profile.carb_ratio == profile.carb_ratio_midnight);
-    var carb_ratio = (firstMealScaling ? round(profile.carb_ratio_midnight / (profile.BreakfastPct / 100), 1) : profile.carb_ratio);
-    sens = (firstMealScaling ? round(profile.sens_midnight / (profile.BreakfastPct / 100), 1) : sens);
+//    var firstMealScaling = (firstMealWindow && !profile.use_sens_TDD && profile.sens == profile.sens_midnight && profile.carb_ratio == profile.carb_ratio_midnight);
+    var carb_ratio = profile.carb_ratio;
+    var MealScaler = 1; // no scaling by default
+//    sens = (firstMealScaling ? round(profile.sens_midnight / (profile.BreakfastPct / 100), 1) : sens);
+
+    // stronger CR and ISF can be used to scale within ENW when 1 CR and 1 ISF is within the profile
+    if (!profile.use_sens_TDD && profile.sens == profile.sens_midnight && profile.carb_ratio == profile.carb_ratio_midnight && ENWindowOK) {
+        MealScaler = round((firstMealWindow ? profile.BreakfastPct / 100 : profile.ENWPct / 100),2);
+        carb_ratio = round(profile.carb_ratio_midnight / MealScaler, 1);
+        sens = round(profile.sens_midnight / MealScaler, 1);
+    }
+
 
     enlog += "------ ENWindow ------" + "\n";
     enlog += "nowUTC:" + nowUTC + ", ENWStartTime:" + meal_data.ENWStartTime + "\n";
@@ -419,7 +428,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "ENTTActive:" + ENTTActive + "\n";
     enlog += "ENPBActive:" + ENPBActive + "\n";
     enlog += "ENWIOBThreshU:" + ENWIOBThreshU + ", IOB:" + iob_data.iob + "\n";
-    enlog += "firstMealWindow:" + firstMealWindow + ", firstMealScaling:" + firstMealScaling + "\n";
+    enlog += "MealScaler:" + MealScaler + "\n";
     enlog += "-----------------------" + "\n";
 
     // Thresholds for no SMB's
@@ -1315,7 +1324,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = 0.3;
             //AllowZT = false;
             // When resistant and insulin delivery is restricted allow the SR adjusted sens_normalTarget
-            if (TIR_sens_limited > 1 && ENactive && !firstMealScaling) insulinReq_sens_normalTarget = sens_normalTarget;
+            if (TIR_sens_limited > 1 && ENactive && MealScaler == 1) insulinReq_sens_normalTarget = sens_normalTarget;
         }
 
         // TBR only
@@ -1323,7 +1332,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = 1; // 100% eBGw as SMB is disabled
             // AllowZT = false;
             // When resistant and insulin delivery is restricted allow the SR adjusted sens_normalTarget
-            if (TIR_sens_limited > 1 && ENactive && !firstMealScaling) insulinReq_sens_normalTarget = sens_normalTarget;
+            if (TIR_sens_limited > 1 && ENactive && MealScaler == 1) insulinReq_sens_normalTarget = sens_normalTarget;
         }
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
@@ -1367,7 +1376,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // EN window status
     rT.reason += ", ENW: ";
     rT.reason += (ENWindowOK ? "On" : "Off");
-    rT.reason += (firstMealWindow ? " Bkfst" : "") + (firstMealScaling ? " " + profile.BreakfastPct + "%" : "");
+    rT.reason += (firstMealWindow ? " Bkfst" : "");
+    rT.reason += (MealScaler > 1 ? " " + round(MealScaler*100) + "%" : "");
     rT.reason += (ENWindowOK && ENWMinsAgo <= ENWindowDuration ? " " + round(ENWMinsAgo) + "/" + ENWindowDuration + "m" : "");
     rT.reason += (!ENWindowOK && !ENWTriggerOK && ENtimeOK ? " IOB&lt;" + round(ENWIOBThreshU, 2) : "");
     rT.reason += (ENWindowOK && ENWTriggerOK ? " IOB&gt;" + round(ENWIOBThreshU, 2) : "");
