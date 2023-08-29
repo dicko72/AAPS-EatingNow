@@ -462,15 +462,11 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         var TDDLast4h = tddCalculator.calculateDaily(-4, 0)?.totalAmount
         var TDDLast8h = tddCalculator.calculateDaily(-8, 0)?.totalAmount
         var TDDLast8hfor4h = tddCalculator.calculateDaily(-8, -4)?.totalAmount
-        val tddLast24H = tddCalculator.calculateDaily(-24, 0)?.totalAmount
 
-
-        if (tddLast24H == null || TDDLast4h == null || TDDLast8hfor4h == null || TDDLast8h == null) {
-            if (TDDAvg1d == null || TDDAvg1d < basalRate) TDDAvg1d = ((basalRate * 12)*100)/21
-            TDDLast4h = TDDAvg1d / 6
-            TDDLast8h = TDDAvg1d / 3
-            TDDLast8hfor4h = TDDAvg1d / 6
-        }
+        if (TDDAvg1d == null || TDDAvg1d < basalRate * 12) TDDAvg1d = ((basalRate * 12)*100)/21
+        if (TDDLast4h == null) TDDLast4h = (TDDAvg1d / 6)
+        if (TDDLast8h == null) TDDLast8h = (TDDAvg1d / 3)
+        if (TDDLast8hfor4h == null) TDDLast8hfor4h = (TDDAvg1d / 6)
 
         this.mealData.put("TDDLast4h", TDDLast4h)
         this.mealData.put("TDDLast8h", TDDLast8h)
