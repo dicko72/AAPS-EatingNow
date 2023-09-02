@@ -38,7 +38,7 @@ import info.nightscout.core.ui.elements.SingleClickButton
 import info.nightscout.core.ui.toast.ToastUtils
 import info.nightscout.core.utils.fabric.FabricPrivacy
 import info.nightscout.core.wizard.QuickWizard
-import info.nightscout.database.entities.TemporaryTarget
+import info.nightscout.database.entities.TemporaryTarget //EN
 import info.nightscout.database.entities.UserEntry.Action
 import info.nightscout.database.entities.UserEntry.Sources
 import info.nightscout.database.entities.interfaces.end
@@ -66,7 +66,7 @@ import info.nightscout.interfaces.profile.ProfileFunction
 import info.nightscout.interfaces.protection.ProtectionCheck
 import info.nightscout.interfaces.pump.defs.PumpType
 import info.nightscout.interfaces.source.DexcomBoyda
-import info.nightscout.interfaces.source.XDrip
+import info.nightscout.interfaces.source.XDripSource
 import info.nightscout.interfaces.ui.UiInteraction
 import info.nightscout.interfaces.utils.JsonHelper
 import info.nightscout.interfaces.utils.TrendCalculator
@@ -129,7 +129,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
     @Inject lateinit var activePlugin: ActivePlugin
     @Inject lateinit var iobCobCalculator: IobCobCalculator
     @Inject lateinit var dexcomBoyda: DexcomBoyda
-    @Inject lateinit var xDrip: XDrip
+    @Inject lateinit var xDripSource: XDripSource
     @Inject lateinit var notificationStore: NotificationStore
     @Inject lateinit var quickWizard: QuickWizard
     @Inject lateinit var config: Config
@@ -408,7 +408,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                 }
 
                 R.id.cgm_button          -> {
-                    if (xDrip.isEnabled())
+                    if (xDripSource.isEnabled())
                         openCgmApp("com.eveningoutpost.dexdrip")
                     else if (dexcomBoyda.isEnabled()) {
                         dexcomBoyda.findDexcomPackageName()?.let {
@@ -419,7 +419,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                 }
 
                 R.id.calibration_button  -> {
-                    if (xDrip.isEnabled()) {
+                    if (xDripSource.isEnabled()) {
                         uiInteraction.runCalibrationDialog(childFragmentManager)
                     } else if (dexcomBoyda.isEnabled()) {
                         try {
@@ -587,7 +587,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                 && sp.getBoolean(R.string.key_eatingnow_showbutton, false)).toVisibility()
 
             // **** Calibration & CGM buttons ****
-            val xDripIsBgSource = xDrip.isEnabled()
+            val xDripIsBgSource = xDripSource.isEnabled()
             val dexcomIsSource = dexcomBoyda.isEnabled()
             binding.buttonsLayout.calibrationButton.visibility = (xDripIsBgSource && actualBG != null && sp.getBoolean(R.string.key_show_calibration_button, true)).toVisibility()
             if (dexcomIsSource) {

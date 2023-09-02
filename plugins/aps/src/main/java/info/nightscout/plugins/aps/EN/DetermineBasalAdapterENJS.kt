@@ -483,7 +483,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         this.mealData.put("TDDAvg7d",TDDAvg7d)
 
-        val TDD = (TDDLast8_wt * 0.33) + (TDDAvg7d * 0.34) + (TDDAvg1d!! * 0.33)
+        val TDD = (TDDLast8_wt * 0.33) + (TDDAvg7d * 0.34) + (TDDAvg1d * 0.33)
         this.mealData.put("TDD", TDD)
 
         val lastCannula = repository.getLastTherapyRecordUpToNow(TherapyEvent.Type.CANNULA_CHANGE).blockingGet()
