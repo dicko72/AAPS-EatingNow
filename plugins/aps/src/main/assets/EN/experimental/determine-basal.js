@@ -1271,7 +1271,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             }
 
             // use the largest eventualBG, if eventualBG is less than bg increase with UAMDeltaX
-            eventualBG = Math.max(eventualBG,bg,(eventualBG < bg ? eventualBG + UAMDeltaX : eventualBG) );
+            eventualBG = Math.max(eventualBG,(eventualBG < bg ? eventualBG + UAMDeltaX : eventualBG) );
+            //eventualBG = Math.max(eventualBG,bg,(eventualBG < bg ? eventualBG + UAMDeltaX : eventualBG) );
             // early on in ENW increase eventualBG using current bg
             if (ENWMinsAgo < 30) eventualBG = Math.max(eventualBG, bg + UAMDeltaX);
             // set initial eBGw at 50% unless bg is in range and predicted higher
