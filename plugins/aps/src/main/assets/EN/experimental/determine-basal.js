@@ -1778,6 +1778,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // boost insulinReq and maxBolus if required limited to ENMaxSMB
             var roundSMBTo = 1 / profile.bolus_increment;
             var microBolus = Math.floor(Math.min(insulinReq * insulinReqPct, maxBolus) * roundSMBTo) / roundSMBTo;
+            microBolus = Math.min(microBolus,profile.safety_maxbolus); // reduce to safety maxbolus if required, displays SMB correctly and allows TBR to have the correct treatment remainder
 
             // calculate a long enough zero temp to eventually correct back up to target
             var smbTarget = target_bg;
