@@ -1259,44 +1259,32 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
 
 
-        // UAM+ predictions, stronger eBGw
+        // UAM+ for slower delta but any acceleration, earlier detection for larger SMB's, bypass LGS
         if (sens_predType == "UAM+") {
+            // UAM+ safety needs slightly higher delta when no ENW
+            eBGweight = (delta <= 5 ? eBGweight_orig : 0.50);
+
             // UAMDeltaX delta multiplier to increase eventualBG when ENW has started
             var UAMDeltaX = 0; // default no increase to eBG
-            if (ENWindowOK && !UAMBGPreBolus) { // SAFETY: Dont eBG increase when prebolusing
-                if (bg < ISFbgMax) UAMDeltaX = delta * 7;
-                if (ENWMinsAgo < 30) UAMDeltaX = delta * 7;
-                if (ENWMinsAgo < 15) UAMDeltaX = delta * 10; // first 15m predict further
-                if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB / ENWBolusIOBMax > 0.75) UAMDeltaX = delta * 3; // SAFETY: if we have a good chunk of expected bolus ENWIOB then reduce UAMDeltaX
-            }
-
-            // use the largest eventualBG, if eventualBG is less than bg increase with UAMDeltaX
-            eventualBG = Math.max(eventualBG,(eventualBG < bg ? eventualBG + UAMDeltaX : eventualBG) );
-            //eventualBG = Math.max(eventualBG,bg,(eventualBG < bg ? eventualBG + UAMDeltaX : eventualBG) );
-            // early on in ENW increase eventualBG using current bg
-            if (ENWMinsAgo < 30) eventualBG = Math.max(eventualBG, bg + UAMDeltaX);
-            // set initial eBGw at 50% unless bg is in range and predicted higher
-            //eBGweight = (bg < ISFbgMax && ENWindowOK ? 1 : 0.50);
-            eBGweight = (ENWindowOK ? 1 : 0.50);
-            // UAM+ safety needs slightly higher delta when no ENW
-            eBGweight = (!ENWindowOK && delta <= 5 ? eBGweight_orig : eBGweight);
-            // AllowZT = (TIR_sens_limited > 1 ? false : true); // disable ZT when resistant
-
-//           // original UAM+ logic with LGS
-//            if (delta >= 5 && glucose_status.short_avgdelta >= 3 && glucose_status.long_avgdelta >= 0 && DeltaPctL > 1.5) {
-//                minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
-//            } else {
-//                // UAM+ for slower delta but any acceleration, earlier detection for UAM+, bypass LGS
-//                minPredBG = Math.max(minPredBG,threshold); // bypass LGS
-//                minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS
-//                minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
-//            }
 
             if (ENWindowOK) {
-                // UAM+ for slower delta but any acceleration, earlier detection for UAM+, bypass LGS
+                // SAFETY: Dont increase eventualBG when prebolusing
+                if (!UAMBGPreBolus) {
+                    if (bg < ISFbgMax) UAMDeltaX = delta * 7; // lower bg
+                    if (ENWMinsAgo < 30) UAMDeltaX = delta * 7; // 0-30 mins ENW
+                    if (ENWMinsAgo < 15) UAMDeltaX = delta * 10; // first 15m predict further
+                    if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB / ENWBolusIOBMax > 0.75) UAMDeltaX = delta * 3; // SAFETY: if we have a good chunk of expected bolus ENWIOB then reduce UAMDeltaX
+
+                    // eventualBG adjustments
+                    // use the largest eventualBG, if eventualBG is less than bg increase with UAMDeltaX
+                    if (eventualBG < bg) eventualBG = eventualBG + UAMDeltaX;
+                    // early on in ENW increase eventualBG with UAMDeltaX using current bg as the basis, helps if bg already higher at start of ENW
+                    if (ENWMinsAgo < 30) eventualBG = Math.max(eventualBG, bg + UAMDeltaX);
+                }
                 minPredBG = Math.max(minPredBG,threshold); // bypass LGS
                 minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS
                 minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
+                eBGweight = 1; // 100% eBGw in ENW
             }
         }
 
