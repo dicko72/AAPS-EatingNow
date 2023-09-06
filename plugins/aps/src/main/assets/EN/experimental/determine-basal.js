@@ -1273,7 +1273,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     if (bg < ISFbgMax) UAMDeltaX = delta * 7; // lower bg
                     if (ENWMinsAgo < 30) UAMDeltaX = delta * 7; // 0-30 mins ENW
                     if (ENWMinsAgo < 15) UAMDeltaX = delta * 10; // first 15m predict further
-                    if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB / ENWBolusIOBMax > 0.75) UAMDeltaX = delta * 3; // SAFETY: if we have a good chunk of expected bolus ENWIOB then reduce UAMDeltaX
+                    // if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB / ENWBolusIOBMax > 0.75) UAMDeltaX = delta * 3; // SAFETY: if we have a good chunk of expected bolus ENWIOB then reduce UAMDeltaX
 
                     // eventualBG adjustments
                     // use the largest eventualBG, if eventualBG is less than bg increase with UAMDeltaX
