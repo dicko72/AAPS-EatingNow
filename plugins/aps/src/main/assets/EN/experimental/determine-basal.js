@@ -1313,7 +1313,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eBGweight = 0.3;
             //AllowZT = false;
             // When resistant and insulin delivery is restricted allow the SR adjusted sens_normalTarget
-            if (TIR_sens_limited > 1 && ENactive && MealScaler == 1 cunt) insulinReq_sens_normalTarget = sens_normalTarget;
+            //if (TIR_sens_limited > 1 && ENactive && MealScaler == 1 && profile.EN_BGPlus_maxBolus == -1) insulinReq_sens_normalTarget = sens_normalTarget;
         }
 
         // TBR only
