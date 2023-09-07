@@ -1215,9 +1215,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var insulinReq_sens = sens_normalTarget, insulinReq_sens_normalTarget = sens_normalTarget_orig;
 
     // categorize the eventualBG prediction type for more accurate weighting
+    if (lastIOBpredBG > 0 && eventualBG == lastIOBpredBG) sens_predType = "IOB"; // if IOB prediction is present eventualBG aligns
     if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
-
 
     // UAM+ predtype when sufficient delta not a COB prediction
     if (profile.EN_UAMPlus_maxBolus > 0 && (profile.EN_UAMPlusSMB_NoENW || profile.EN_UAMPlusTBR_NoENW || ENWindowOK) && ENtimeOK && delta >= 0 && sens_predType != "COB") {
@@ -1322,6 +1322,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // AllowZT = false;
             // When resistant and insulin delivery is restricted allow the SR adjusted sens_normalTarget
             if (TIR_sens_limited > 1 && ENactive && MealScaler == 1) insulinReq_sens_normalTarget = sens_normalTarget;
+        }
+
+        // IOB prediction - TESTING when lower than target for some time prevent additional insulin
+        if (sens_predType == "IOB") {
+            // When sensitive and below target with low IOB dont trust IOBpredBG and override eventualBG
+            if (TIR_sens_limited < 1 && bg < target_bg && bg < normalTarget && iob_data.iob <= 0 ) {
+                eventualBG = bg;
+                insulinReq_sens_normalTarget = sens_normalTarget; // use the SR adjusted sens_normalTarget
+                eBGweight = 1; // trust the new eventualBG
+            }
         }
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
