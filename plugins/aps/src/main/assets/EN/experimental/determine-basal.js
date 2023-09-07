@@ -1739,16 +1739,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // IOB > EN max IOB fallback to AAPS maxBolus (default) or TBR
             if (max_iob_en > 0 && iob_data.iob > max_iob_en) ENMaxSMB = (profile.EN_max_iob_allow_smb ? maxBolus : 0);
 
-            // restrict maxBolus when ENWBolusIOB will be exceeded by SMB but minimum is EN_NoENW_maxBolus
-            if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB + insulinReq > ENWBolusIOBMax) {
-                ENMaxSMB = Math.min(ENMaxSMB,ENWBolusIOBMax-meal_data.ENWBolusIOB); // smallest of allowed SMB and remaining ENWBolusIOB
-                ENMaxSMB = Math.max(ENMaxSMB,profile.EN_NoENW_maxBolus); // use EN_NoENW_maxBolus if its larger than restricted SMB
-            }
-
             // ============== MAXBOLUS RESTRICTIONS ==============
             // if ENMaxSMB is more than AAPS max IOB then consider the setting to be minutes
             if (ENMaxSMB > max_iob) ENMaxSMB = profile.current_basal * ENMaxSMB / 60;
-
 
             // ============== TIME BASED RESTRICTIONS ==============
             if (ENtimeOK) {
@@ -1765,7 +1758,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             }
 
 
-            var endebug = "ENMaxSMB:"+ENMaxSMB;
+            //var endebug = "ENMaxSMB:"+ENMaxSMB;
 
             // ============== IOB RESTRICTION  ==============
             if (!UAMBGPreBolus && max_iob_en > 0 && insulinReq > max_iob_en - iob_data.iob) {
@@ -1778,6 +1771,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // boost insulinReq and maxBolus if required limited to ENMaxSMB
             var roundSMBTo = 1 / profile.bolus_increment;
             var microBolus = Math.floor(Math.min(insulinReq * insulinReqPct, maxBolus) * roundSMBTo) / roundSMBTo;
+
+            // restrict SMB when ENWBolusIOB will be exceeded by SMB but minimum is EN_NoENW_maxBolus
+            if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB + microBolus > ENWBolusIOBMax) {
+                microBolus = Math.max(ENWBolusIOBMax-meal_data.ENWBolusIOB,profile.EN_NoENW_maxBolus); // use EN_NoENW_maxBolus if its larger than restricted SMB
+            }
+
             microBolus = Math.min(microBolus,profile.safety_maxbolus); // reduce to safety maxbolus if required, displays SMB correctly and allows TBR to have the correct treatment remainder
 
             // calculate a long enough zero temp to eventually correct back up to target
