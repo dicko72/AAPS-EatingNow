@@ -1216,7 +1216,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // categorize the eventualBG prediction type for more accurate weighting
     if (lastIOBpredBG > 0 && eventualBG == lastIOBpredBG) sens_predType = "IOB"; // if IOB prediction is present eventualBG aligns
-    if (lastUAMpredBG > 0 && eventualBG >= lastUAMpredBG) sens_predType = "UAM"; // UAM or any prediction > UAM is the default
+    if (lastUAMpredBG > 0 && eventualBG == lastUAMpredBG) sens_predType = "UAM"; // UAM prediction
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
 
     // UAM+ predtype when sufficient delta not a COB prediction
