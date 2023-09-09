@@ -1245,8 +1245,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // TBR for tt that isn't EN at normal target
     if (profile.temptargetSet && !ENTTActive && target_bg == normalTarget) sens_predType = "TBR";
 
-    // evaluate prediction type and weighting - Only use during day or when TIR is above threshold for relevant band
-    if (ENactive || TIRB_sum > 1 || !ENtimeOK && eventualBG > target_bg && !HighTempTargetSet) {
+    // evaluate prediction type and weighting - Only use during when EN active or sensitive or resistant
+    if (ENactive || TIR_sens_limited !=1 && !HighTempTargetSet) {
 
         // PREbolus active - PB used for increasing Bolus IOB within ENW
         if (sens_predType == "PB") {
