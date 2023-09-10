@@ -1265,26 +1265,25 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // UAM+ safety needs slightly higher delta when no ENW
             eBGweight = (delta <= 5 ? eBGweight_orig : 0.50);
 
-            // UAMDeltaX delta multiplier to increase eventualBG when ENW has started
-            var UAMDeltaX = 0; // default no increase to eBG
-
+            // Only when ENW for now
             if (ENWindowOK) {
-                // SAFETY: Dont increase eventualBG when prebolusing
-                if (!UAMBGPreBolus) {
-                    if (bg < ISFbgMax) UAMDeltaX = delta * 7; // lower bg
-                    //if (ENWMinsAgo < 15) UAMDeltaX = delta * 10; // first 15m predict further
-                    // if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB / ENWBolusIOBMax > 0.75) UAMDeltaX = delta * 3; // SAFETY: if we have a good chunk of expected bolus ENWIOB then reduce UAMDeltaX
+                // UAMDeltaX delta multiplier to increase eventualBG when ENW has started
+                var UAMDeltaX = 0; // default no increase to eBG
 
-                    // eventualBG adjustments
-                    // early on in ENW increase eventualBG with UAMDeltaX using current bg as the basis, helps if bg already higher at start of ENW
-                    if (ENWMinsAgo < 30) {
-                        UAMDeltaX = delta * 10; // 0-30 mins ENW
-                        eventualBG = Math.max(eventualBG, bg + UAMDeltaX);
-                        AllowZT = false; // allow ZT
-                    }
-                    // use the largest eventualBG, if eventualBG is less than bg increase with UAMDeltaX
-                    if (eventualBG < bg) eventualBG = eventualBG + UAMDeltaX;
+                if (bg < ISFbgMax) UAMDeltaX = delta * 7; // lower bg
+                //if (ENWMinsAgo < 15) UAMDeltaX = delta * 10; // first 15m predict further
+                // if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB / ENWBolusIOBMax > 0.75) UAMDeltaX = delta * 3; // SAFETY: if we have a good chunk of expected bolus ENWIOB then reduce UAMDeltaX
+
+                // eventualBG adjustments
+                // early on in ENW increase eventualBG with UAMDeltaX using current bg as the basis or when less than 65% of ENWBolusIOBMax
+                if (ENWMinsAgo < 45 || (ENWBolusIOBMax > 0 && (meal_data.ENWBolusIOB / ENWBolusIOBMax) < 0.65)) {
+                    UAMDeltaX = delta * 10; // 0-30 mins ENW
+                    eventualBG = Math.max(eventualBG, bg + UAMDeltaX);
+                    AllowZT = false; // allow ZT
                 }
+                // use the largest eventualBG, if eventualBG is less than bg increase with UAMDeltaX
+                if (eventualBG < bg) eventualBG = eventualBG + UAMDeltaX;
+
                 minPredBG = Math.max(minPredBG,threshold); // bypass LGS
                 minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS
                 minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
