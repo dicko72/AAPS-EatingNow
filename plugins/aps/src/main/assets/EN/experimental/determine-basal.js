@@ -1615,9 +1615,15 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // if iob is over max, just cancel any temps
     if (eventualBG >= max_bg) {
         rT.reason += "Eventual BG " + convert_bg(eventualBG_orig, profile);
-        rT.reason += (eventualBG > eventualBG_orig ? "+" + convert_bg(eventualBG-eventualBG_orig,profile) : "");
-        rT.reason += (eventualBG > eventualBG_orig ? "= "+ convert_bg(eventualBG, profile) : "") + " &gt;= " + convert_bg(max_bg, profile) + ", ";
+        if (eventualBG > eventualBG_orig) {
+            rT.reason += "+" + convert_bg(eventualBG - eventualBG_orig, profile) + " = " + convert_bg(eventualBG, profile);
+        } else if (eventualBG < eventualBG_orig) {
+            rT.reason += "-" + convert_bg(eventualBG_orig - eventualBG, profile) + " = " + convert_bg(eventualBG, profile);
+        }
+
+        rT.reason += " &gt;= " + convert_bg(max_bg, profile) + ", ";
     }
+
     if (iob_data.iob > max_iob) {
         rT.reason += "IOB " + round(iob_data.iob, 2) + " &gt; max_iob " + max_iob;
         if (currenttemp.duration > 15 && (round_basal(basal, profile) === round_basal(currenttemp.rate, profile))) {
