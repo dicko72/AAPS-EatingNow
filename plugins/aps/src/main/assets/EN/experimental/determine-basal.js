@@ -481,7 +481,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     TIRB1 = (bg > normalTarget && (delta >= -4 && delta <= 4) && glucose_status.long_avgdelta >= 0 ? 1 + (TIRB1 * TIRH_percent) : 1); // experiment for overnight BG control regardless of delta
 
     // TIRB0 - The TIR for the lowest band below normalTarget (-9/0.5)
-    if (TIRH_percent) {
+    if (TIRH_percent && !ENWindowOK) {
         if (meal_data.TIRTW1L > 0) TIRB0 = meal_data.TIRTW1L / 100;
         if (meal_data.TIRTW2L > 0 && TIRB0 == 1) TIRB0 += meal_data.TIRTW2L / 100;
         if (meal_data.TIRTW3L > 0 && TIRB0 == 2) TIRB0 += meal_data.TIRTW3L / 100;
