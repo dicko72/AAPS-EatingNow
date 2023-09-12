@@ -1279,6 +1279,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (ENWMinsAgo < 45 || (ENWBolusIOBMax > 0 && (meal_data.ENWBolusIOB / ENWBolusIOBMax) < 0.80) && eventualBG < 270) {
                     UAMDeltaX = delta * 10; // 0-30 mins ENW
                     eventualBG = Math.max(eventualBG, bg + UAMDeltaX);
+                    eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
                     AllowZT = false; // allow ZT
                 }
                 // use the largest eventualBG, if eventualBG is less than bg increase with UAMDeltaX
