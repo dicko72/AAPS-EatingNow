@@ -1277,13 +1277,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // eventualBG adjustments
                 // for lower eventualBg predictions increase eventualBG with UAMDeltaX using current bg as the basis when early on in ENW or less than 80 of ENWBolusIOBMax has been given
                 if (ENWMinsAgo < 45 || (ENWBolusIOBMax > 0 && (meal_data.ENWBolusIOB / ENWBolusIOBMax) < 0.80) && eventualBG < 270) {
-                    UAMDeltaX = delta * 10; // 0-30 mins ENW
-                    eventualBG = Math.max(eventualBG, bg + UAMDeltaX);
+                    UAMDeltaX = delta * 10;
+                    //eventualBG = Math.max(eventualBG, bg + UAMDeltaX);
+                    //eventualBG = Math.max(eventualBG, (bg < ISFbgMax ? bg : eventualBG) + UAMDeltaX);
+                    var bgBase = (bg < ISFbgMax ? bg : eventualBG);
+                    eventualBG = Math.max(eventualBG, bgBase + UAMDeltaX);
                     eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
                     AllowZT = false; // allow ZT
                 }
                 // use the largest eventualBG, if eventualBG is less than bg increase with UAMDeltaX
-                if (eventualBG < bg) eventualBG = eventualBG + UAMDeltaX;
+                //if (eventualBG < bg) eventualBG = eventualBG + UAMDeltaX;
 
                 minPredBG = Math.max(minPredBG,threshold); // bypass LGS
                 minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS
