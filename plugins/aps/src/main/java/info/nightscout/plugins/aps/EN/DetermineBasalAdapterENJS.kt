@@ -54,7 +54,7 @@ import java.lang.reflect.InvocationTargetException
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import info.nightscout.plugins.aps.loop.LoopVariantPreference
-
+import info.nightscout.shared.interfaces.ProfileUtil
 
 class DetermineBasalAdapterENJS internal constructor(private val scriptReader: ScriptReader, private val injector: HasAndroidInjector) : DetermineBasalAdapter {
 
@@ -62,6 +62,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
     @Inject lateinit var constraintChecker: Constraints
     @Inject lateinit var sp: SP
     @Inject lateinit var profileFunction: ProfileFunction
+    @Inject lateinit var profileUtil: ProfileUtil
     @Inject lateinit var iobCobCalculator: IobCobCalculator
     @Inject lateinit var activePlugin: ActivePlugin
 
@@ -310,8 +311,10 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("EN_NoENW_maxBolus", sp.getDouble(R.string.key_eatingnow_noenw_maxbolus, 0.0))
         this.profile.put("EN_BGPlus_maxBolus", sp.getDouble(R.string.key_eatingnow_bgplus_maxbolus, 0.0))
 
-        this.profile.put("SMBbgOffset", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset, 0.0),profileFunction.getUnits()))
-        this.profile.put("SMBbgOffset_day", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset_day, 0.0),profileFunction.getUnits()))
+        // this.profile.put("SMBbgOffset", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset, 0.0),profileFunction.getUnits()))
+        this.profile.put("SMBbgOffset",profileUtil.convertToMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset, 0.0), profileFunction.getUnits()))
+        // this.profile.put("SMBbgOffset_day", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset_day, 0.0),profileFunction.getUnits()))
+        this.profile.put("SMBbgOffset_day",profileUtil.convertToMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset_day, 0.0), profileFunction.getUnits()))
         this.profile.put("ISFbgscaler", sp.getDouble(R.string.key_eatingnow_isfbgscaler, 0.0))
         this.profile.put("MaxISFpct", sp.getInt(R.string.key_eatingnow_maxisfpct, 100))
         this.profile.put("useDynISF", sp.getBoolean(R.string.key_use_dynamicISF, true))

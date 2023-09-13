@@ -33,6 +33,7 @@ import info.nightscout.interfaces.sync.DataSyncSelector
 import info.nightscout.interfaces.sync.NsClient
 import info.nightscout.interfaces.sync.Sync
 import info.nightscout.interfaces.ui.UiInteraction
+import info.nightscout.interfaces.utils.DecimalFormatter
 import info.nightscout.plugins.sync.R
 import info.nightscout.plugins.sync.nsShared.NSClientFragment
 import info.nightscout.plugins.sync.nsShared.NsIncomingDataProcessor
@@ -121,7 +122,8 @@ class NSClientV3Plugin @Inject constructor(
     private val nsDeviceStatusHandler: NSDeviceStatusHandler,
     private val nsClientSource: NSClientSource,
     private val nsIncomingDataProcessor: NsIncomingDataProcessor,
-    private val storeDataForDb: StoreDataForDb
+    private val storeDataForDb: StoreDataForDb,
+    private val decimalFormatter: DecimalFormatter
 ) : NsClient, Sync, PluginBase(
     PluginDescription()
         .mainType(PluginType.SYNC)
@@ -168,7 +170,7 @@ class NSClientV3Plugin @Inject constructor(
     private val isAllowed get() = receiverDelegate.allowed
     private val blockingReason get() = receiverDelegate.blockingReason
 
-    val maxAge = T.days(77).msecs()
+    val maxAge = T.days(100).msecs()
     internal var newestDataOnServer: LastModified? = null // timestamp of last modification for every collection provided by server
     internal var lastLoadedSrvModified = LastModified(LastModified.Collections()) // max srvLastModified timestamp of last fetched data for every collection
     internal var firstLoadContinueTimestamp = LastModified(LastModified.Collections()) // timestamp of last fetched data for every collection during initial load
@@ -578,7 +580,10 @@ class NSClientV3Plugin @Inject constructor(
      **********************/
 
     override fun resend(reason: String) {
-        if (sp.getBoolean(info.nightscout.core.utils.R.string.key_ns_use_ws, true))
+        // If WS is enabled, download is triggered by changes in NS. Thus uploadOnly
+        // Exception is after reset to full sync (initialLoadFinished == false), where
+        // older data must be loaded directly and then continue over WS
+        if (sp.getBoolean(info.nightscout.core.utils.R.string.key_ns_use_ws, true) && initialLoadFinished)
             executeUpload("START $reason", forceNew = true)
         else
             executeLoop("START $reason", forceNew = true)
@@ -795,7 +800,7 @@ class NSClientV3Plugin @Inject constructor(
                 dataPair.value.toNSExtendedBolus(profile)
             }
 
-            is DataSyncSelector.PairProfileSwitch          -> dataPair.value.toNSProfileSwitch(dateUtil)
+            is DataSyncSelector.PairProfileSwitch          -> dataPair.value.toNSProfileSwitch(dateUtil, decimalFormatter)
             is DataSyncSelector.PairEffectiveProfileSwitch -> dataPair.value.toNSEffectiveProfileSwitch(dateUtil)
             is DataSyncSelector.PairOfflineEvent           -> dataPair.value.toNSOfflineEvent()
             else                                           -> null

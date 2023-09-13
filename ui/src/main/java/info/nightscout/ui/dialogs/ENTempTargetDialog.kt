@@ -22,11 +22,11 @@ import info.nightscout.interfaces.GlucoseUnit
 import info.nightscout.interfaces.constraints.Constraints
 import info.nightscout.interfaces.logging.UserEntryLogger
 import info.nightscout.interfaces.profile.DefaultValueHelper
-import info.nightscout.interfaces.profile.Profile
 import info.nightscout.interfaces.profile.ProfileFunction
 import info.nightscout.interfaces.protection.ProtectionCheck
 import info.nightscout.interfaces.utils.HtmlHelper
 import info.nightscout.rx.logging.LTag
+import info.nightscout.shared.interfaces.ProfileUtil
 import info.nightscout.shared.interfaces.ResourceHelper
 import info.nightscout.ui.R
 import info.nightscout.ui.databinding.DialogEnTemptargetBinding
@@ -42,6 +42,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
     @Inject lateinit var constraintChecker: Constraints
     @Inject lateinit var rh: ResourceHelper
     @Inject lateinit var profileFunction: ProfileFunction
+    @Inject lateinit var profileUtil: ProfileUtil
     @Inject lateinit var defaultValueHelper: DefaultValueHelper
     @Inject lateinit var uel: UserEntryLogger
     @Inject lateinit var repository: AppRepository
@@ -72,11 +73,12 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val units = profileFunction.getUnits()
+        val units = profileUtil.units
         binding.units.text = if (units == GlucoseUnit.MMOL) rh.gs(info.nightscout.core.ui.R.string.mmol) else rh.gs(info.nightscout.core.ui.R.string.mgdl)
 
         // set the Eating Now defaults
-        val enTT = Profile.toCurrentUnits(units,profileFunction.getProfile()!!.getTargetMgdl())
+        val enTT = profileUtil.convertToMgdl(profileFunction.getProfile()!!.getTargetMgdl(), units)
+        //val enTT = profile.toCurrentUnits(units,profileFunction.getProfile()!!.getTargetMgdl())
 
         binding.duration.setParams(
             savedInstanceState?.getDouble("duration")
@@ -144,7 +146,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         val duration = binding.duration.value.toInt()
         if (target != 0.0 && duration != 0) {
             actions.add(rh.gs(info.nightscout.core.ui.R.string.reason) + ": " + reason)
-            actions.add(rh.gs(info.nightscout.core.ui.R.string.target_label) + ": " + Profile.toCurrentUnitsString(profileFunction, target) + " " + rh.gs(unitResId))
+            actions.add(rh.gs(info.nightscout.core.ui.R.string.target_label) + ": " + profileUtil.stringInCurrentUnitsDetect(target) + " " + rh.gs(unitResId))
             actions.add(rh.gs(info.nightscout.core.ui.R.string.duration) + ": " + rh.gs(info.nightscout.core.ui.R.string.format_mins, duration))
         } else {
             actions.add(rh.gs(info.nightscout.core.ui.R.string.stoptemptarget))
@@ -188,8 +190,8 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
                                 rh.gs(info.nightscout.core.ui.R.string.eatingnow_prebolus) -> TemporaryTarget.Reason.EATING_NOW_PB
                                 else                                                 -> TemporaryTarget.Reason.CUSTOM
                             },
-                            lowTarget = Profile.toMgdl(target, profileFunction.getUnits()),
-                            highTarget = Profile.toMgdl(target, profileFunction.getUnits())
+                            lowTarget = profileUtil.convertToMgdl(target, profileFunction.getUnits()),
+                            highTarget = profileUtil.convertToMgdl(target, profileFunction.getUnits())
                         )
                     ).subscribe({ result ->
                                     result.inserted.forEach { aapsLogger.debug(LTag.DATABASE, "Inserted temp target $it") }
