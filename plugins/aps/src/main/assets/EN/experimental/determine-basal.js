@@ -1210,7 +1210,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // minPredBG and eventualBG based dosing - insulinReq_bg
     // insulinReq_sens is calculated using a percentage of eventualBG (eBGweight) with the rest as minPredBG, to reduce the risk of overdosing.
     var insulinReq_bg_orig = Math.min(minPredBG, eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), minBG = minPredBG, eBGweight = eBGweight_orig,  AllowZT = true;
-    var minPredBG_orig = minPredBG, eventualBG_orig = eventualBG, lastUAMpredBG_orig = lastUAMpredBG;
+    var minPredBG_orig = minPredBG, eventualBG_orig = eventualBG, eventualBG_base = eventualBG, lastUAMpredBG_orig = lastUAMpredBG;
 
     var insulinReq_sens = sens_normalTarget, insulinReq_sens_normalTarget = sens_normalTarget_orig;
 
@@ -1282,8 +1282,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     UAMDeltaX = delta * (bg < ISFbgMax ? 10 : 5);
                     //eventualBG = Math.max(eventualBG, bg + UAMDeltaX);
                     //eventualBG = Math.max(eventualBG, (bg < ISFbgMax ? bg : eventualBG) + UAMDeltaX);
-                    var bgBase = (bg < ISFbgMax ? bg : eventualBG);
-                    eventualBG = Math.max(eventualBG, bgBase + UAMDeltaX);
+                    eventualBG_base = (bg < ISFbgMax ? bg : eventualBG);
+                    eventualBG = Math.max(eventualBG, eventualBG_base + UAMDeltaX);
                     eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
                     AllowZT = (bg < ISFbgMax ? false : true); // allow ZT
                 }
@@ -1619,11 +1619,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // eventual BG is at/above target
     // if iob is over max, just cancel any temps
     if (eventualBG >= max_bg) {
-        rT.reason += "Eventual BG " + convert_bg(eventualBG_orig, profile);
-        if (eventualBG > eventualBG_orig) {
-            rT.reason += "+" + convert_bg(eventualBG - eventualBG_orig, profile) + " = " + convert_bg(eventualBG, profile);
+        rT.reason += "Eventual BG " + convert_bg(eventualBG_base, profile);
+        if (eventualBG > eventualBG_base) {
+            rT.reason += "+" + convert_bg(eventualBG - eventualBG_base, profile) + " = " + convert_bg(eventualBG, profile) + "(" + convert_bg(eventualBG_orig, profile) +")";
         } else if (eventualBG < eventualBG_orig) {
-            rT.reason += "-" + convert_bg(eventualBG_orig - eventualBG, profile) + " = " + convert_bg(eventualBG, profile);
+            rT.reason += "-" + convert_bg(eventualBG_base - eventualBG, profile) + " = " + convert_bg(eventualBG, profile) + "(" + convert_bg(eventualBG_orig, profile) +")";
         }
 
         rT.reason += " &gt;= " + convert_bg(max_bg, profile) + ", ";
