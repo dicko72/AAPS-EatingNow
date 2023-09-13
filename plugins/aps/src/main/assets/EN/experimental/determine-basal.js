@@ -467,7 +467,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
     var TIRB2_sum = Math.max(TIRB2,1); // use this for BG+ later
     // dont use TIRB2 when lower than target
-    TIRB2 = (bg >= normalTarget + 50 && (delta >= -4 && delta <= 4) && glucose_status.long_avgdelta >= -2 ? 1 + (TIRB2 * TIRH_percent) : 1); // SAFETY: only within delta range
+    TIRB2 = (bg >= normalTarget + 50 && (delta >= -4 && delta <= 4) && glucose_status.long_avgdelta >= -2 && Math.min(DeltaPctS,DeltaPctL) > 0 ? 1 + (TIRB2 * TIRH_percent) : 1); // SAFETY: only within delta range
 
     // TIRB1 - The TIR for the lower band just above normalTarget (+18/1.0)
     if (TIRH_percent && !ENWindowOK) {
@@ -478,7 +478,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
     // dont use TIRB1 when lower than target
     var TIRB1_sum = Math.max(TIRB1,1); // use this for BG+ later
-    TIRB1 = (bg > normalTarget && (delta >= -4 && delta <= 4) && glucose_status.long_avgdelta >= -2 ? 1 + (TIRB1 * TIRH_percent) : 1); // experiment for overnight BG control regardless of delta
+    TIRB1 = (bg > normalTarget && (delta >= -4 && delta <= 4) && glucose_status.long_avgdelta >= -2 && Math.min(DeltaPctS,DeltaPctL) > 0 ? 1 + (TIRB1 * TIRH_percent) : 1); // experiment for overnight BG control regardless of delta
 
     // TIRB0 - The TIR for the lowest band below normalTarget (-9/0.5)
     if (TIRH_percent && !ENWindowOK) {
@@ -1285,7 +1285,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     var bgBase = (bg < ISFbgMax ? bg : eventualBG);
                     eventualBG = Math.max(eventualBG, bgBase + UAMDeltaX);
                     eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
-                    AllowZT = false; // allow ZT
+                    AllowZT = (bg < ISFbgMax ? false : true); // allow ZT
                 }
                 // use the largest eventualBG, if eventualBG is less than bg increase with UAMDeltaX
                 //if (eventualBG < bg) eventualBG = eventualBG + UAMDeltaX;
