@@ -77,8 +77,9 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         binding.units.text = if (units == GlucoseUnit.MMOL) rh.gs(info.nightscout.core.ui.R.string.mmol) else rh.gs(info.nightscout.core.ui.R.string.mgdl)
 
         // set the Eating Now defaults
-        val enTT = profileUtil.convertToMgdl(profileFunction.getProfile()!!.getTargetMgdl(), units)
+        // val enTT = profileUtil.convertToMgdl(profileFunction.getProfile()!!.getTargetMgdl(), units)
         //val enTT = profile.toCurrentUnits(units,profileFunction.getProfile()!!.getTargetMgdl())
+        val enTT = profileUtil.valueInCurrentUnitsDetect(profileFunction.getProfile()!!.getTargetMgdl())
 
         binding.duration.setParams(
             savedInstanceState?.getDouble("duration")
