@@ -530,7 +530,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // MaxISF is the user defined limit for adjusted ISF based on a percentage of the current profile based ISF
     var MaxISF = sens_profile / (profile.MaxISFpct / 100);
-    var ISFbgMax = 160;
+    var ISFbgMax = 180;
 
     // If Use TDD ISF is enabled in profile restrict by MaxISF also adjust for when a high TT using SR if applicable
     sens_normalTarget = (profile.use_sens_TDD && ENactive ? Math.max(MaxISF, sens_TDD) : sens_normalTarget);
@@ -1285,7 +1285,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     eventualBG_base = (bg < ISFbgMax ? bg : eventualBG);
                     eventualBG = Math.max(eventualBG, eventualBG_base + UAMDeltaX);
                     eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
-                    AllowZT = (bg < ISFbgMax ? false : true); // allow ZT
+                    AllowZT = (ENWMinsAgo < 45 ? false : true); // allow ZT
                 }
                 // use the largest eventualBG, if eventualBG is less than bg increase with UAMDeltaX
                 //if (eventualBG < bg) eventualBG = eventualBG + UAMDeltaX;
