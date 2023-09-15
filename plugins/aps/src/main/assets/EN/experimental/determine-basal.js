@@ -1265,7 +1265,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // UAM+ for slower delta but any acceleration, earlier detection for larger SMB's, bypass LGS
         if (sens_predType == "UAM+") {
             // UAM+ safety needs slightly higher delta when no ENW
-            eBGweight = (delta <= 5 ? eBGweight_orig : 0.50);
+            eBGweight = (delta <= 5 ? eBGweight_orig : 0.25);
 
             // Only when ENW for now
             if (ENWindowOK) {
