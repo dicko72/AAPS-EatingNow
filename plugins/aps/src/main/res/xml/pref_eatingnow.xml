@@ -606,7 +606,7 @@
                 android:dialogMessage="This will use a percentage of the calculated TDD ISF. If TDD ISF is too strong it can be reduced e.g. 75 will use 75% of the calculated TDD ISF."
                 android:title="TDD ISF Scaling"
                 validate:floatmaxNumber="100"
-                validate:floatminNumber="50"
+                validate:floatminNumber="5"
                 validate:testType="floatNumericRange"/>
 
             <info.nightscout.core.validators.ValidatingEditTextPreference
