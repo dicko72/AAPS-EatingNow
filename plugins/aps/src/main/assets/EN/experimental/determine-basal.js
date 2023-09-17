@@ -1320,7 +1320,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //eventualBG = threshold;
             minGuardBG = threshold; // required to allow SMB consistently
             minBG = bg;
-            eBGweight = 0.3;
+            eBGweight = 0.25;
             //AllowZT = false;
             // When resistant and insulin delivery is restricted allow the SR adjusted sens_normalTarget
             //if (TIR_sens_limited > 1 && ENactive && MealScaler == 1 && profile.EN_BGPlus_maxBolus == -1) insulinReq_sens_normalTarget = sens_normalTarget;
@@ -1886,9 +1886,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         var maxSafeBasal = tempBasalFunctions.getMaxSafeBasal(profile);
 
-        // SAFETY: if an SMB given reduce the temp rate when not resistant including ENW to deliver remaining insulinReq over 30m
+        // SAFETY: if an SMB given reduce the temp rate when not sensitive including ENW to deliver remaining insulinReq over 30m
         //if (microBolus && (TIR_sens_limited == 1 || !ENtimeOK) && AllowZT) {
-        if (microBolus && TIR_sens_limited == 1) {
+        if (microBolus && TIR_sens_limited >= 1) {
             rate = Math.max(basal + insulinReq - microBolus, 0) * 2; //remaining insulinReq over 60 minutes * 2 = 30 minutes
             rate = round_basal(rate, profile);
         }
