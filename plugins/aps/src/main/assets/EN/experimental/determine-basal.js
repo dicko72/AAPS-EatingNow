@@ -1266,16 +1266,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // UAM+ for slower delta but any acceleration, earlier detection for larger SMB's, bypass LGS
         if (sens_predType == "UAM+") {
             // UAM+ safety needs slightly higher delta when no ENW
-            eBGweight = (delta <= 5 ? eBGweight_orig : 0.25);
+            // eBGweight = (delta <= 5 ? eBGweight_orig : 0.25);
 
             // Only when ENW for now
             if (ENWindowOK) {
                 // UAMDeltaX delta multiplier to increase eventualBG when ENW has started
                 var UAMDeltaX = 0; // default no increase to eBG
-
                 if (bg < ISFbgMax) UAMDeltaX = delta * 7; // lower bg
-                //if (ENWMinsAgo < 15) UAMDeltaX = delta * 10; // first 15m predict further
-                // if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB / ENWBolusIOBMax > 0.75) UAMDeltaX = delta * 3; // SAFETY: if we have a good chunk of expected bolus ENWIOB then reduce UAMDeltaX
 
                 // eventualBG adjustments
                 // for lower eventualBg predictions increase eventualBG with UAMDeltaX using current bg as the basis when early on in ENW or less than 80 of ENWBolusIOBMax has been given
@@ -1288,13 +1285,18 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
                     AllowZT = (ENWMinsAgo < 45 ? false : true); // allow ZT
                 }
-                // use the largest eventualBG, if eventualBG is less than bg increase with UAMDeltaX
-                //if (eventualBG < bg) eventualBG = eventualBG + UAMDeltaX;
-
-                minPredBG = Math.max(minPredBG,threshold); // bypass LGS
-                minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS
+                minPredBG = Math.max(minPredBG,threshold); // bypass LGS for ENW
+                minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS for ENW
                 minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
                 eBGweight = 1; // 100% eBGw in ENW
+            } else if (delta > 5) {
+                // No ENW prepare to test for postprandial rise
+                UAMDeltaX = delta * 3;
+                eventualBG_base = (bg < ISFbgMax ? Math.max(bg,eventualBG) : eventualBG);
+                eventualBG = Math.max(eventualBG, eventualBG_base + UAMDeltaX);
+                eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
+                // UAM+ safety needs slightly higher delta when no ENW
+                eBGweight = 0.25;
             }
         }
 
