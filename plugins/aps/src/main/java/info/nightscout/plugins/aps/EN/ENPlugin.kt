@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
 import dagger.android.HasAndroidInjector
+import info.nightscout.core.constraints.ConstraintObject
 import info.nightscout.core.extensions.target
 import info.nightscout.core.utils.MidnightUtils
 import info.nightscout.database.ValueWrapper
@@ -14,7 +15,8 @@ import info.nightscout.interfaces.aps.DetermineBasalAdapter
 import info.nightscout.interfaces.aps.SMBDefaults
 import info.nightscout.interfaces.bgQualityCheck.BgQualityCheck
 import info.nightscout.interfaces.constraints.Constraint
-import info.nightscout.interfaces.constraints.Constraints
+import info.nightscout.interfaces.constraints.ConstraintsChecker
+import info.nightscout.interfaces.constraints.PluginConstraints
 import info.nightscout.interfaces.iob.GlucoseStatusProvider
 import info.nightscout.interfaces.iob.IobCobCalculator
 import info.nightscout.interfaces.plugin.ActivePlugin
@@ -45,7 +47,7 @@ open class ENPlugin @Inject constructor(
     injector: HasAndroidInjector,
     aapsLogger: AAPSLogger,
     private val rxBus: RxBus,
-    private val constraintChecker: Constraints,
+    private val constraintChecker: ConstraintsChecker,
     rh: ResourceHelper,
     private val profileFunction: ProfileFunction,
     val context: Context,
@@ -69,7 +71,7 @@ open class ENPlugin @Inject constructor(
         .preferencesId(R.xml.pref_eatingnow)
         .description(R.string.description_EN),
     aapsLogger, rh, injector
-), APS, Constraints {
+), APS, PluginConstraints {
 
     // DynamicISF specific
     var tdd1D: Double? = null
@@ -77,7 +79,7 @@ open class ENPlugin @Inject constructor(
     var tddLast24H: Double? = null
     var tddLast4H: Double? = null
     var tddLast8to4H: Double? = null
-    var dynIsfEnabled: Constraint<Boolean> = Constraint(false)
+    var dynIsfEnabled: Constraint<Boolean> = ConstraintObject(false, aapsLogger)
 
     // last values
     override var lastAPSRun: Long = 0
@@ -129,7 +131,7 @@ open class ENPlugin @Inject constructor(
             return
         }
 
-        val inputConstraints = Constraint(0.0) // fake. only for collecting all results
+        val inputConstraints = ConstraintObject(0.0, aapsLogger) // fake. only for collecting all results
         val maxBasal = constraintChecker.getMaxBasalAllowed(profile).also {
             inputConstraints.copyReasons(it)
         }.value()
@@ -207,19 +209,19 @@ open class ENPlugin @Inject constructor(
         val iobArray = iobCobCalculator.calculateIobArrayForSMB(lastAutosensResult, SMBDefaults.exercise_mode, SMBDefaults.half_basal_exercise_target, isTempTarget)
         profiler.log(LTag.APS, "calculateIobArrayInDia()", startPart)
         startPart = System.currentTimeMillis()
-        val smbAllowed = Constraint(!tempBasalFallback).also {
+        val smbAllowed = ConstraintObject(!tempBasalFallback, aapsLogger).also {
             constraintChecker.isSMBModeEnabled(it)
             inputConstraints.copyReasons(it)
         }
-        val advancedFiltering = Constraint(!tempBasalFallback).also {
+        val advancedFiltering = ConstraintObject(!tempBasalFallback, aapsLogger).also {
             constraintChecker.isAdvancedFilteringEnabled(it)
             inputConstraints.copyReasons(it)
         }
-        val uam = Constraint(true).also {
+        val uam = ConstraintObject(false, aapsLogger).also {
             constraintChecker.isUAMEnabled(it)
             inputConstraints.copyReasons(it)
         }
-        dynIsfEnabled = Constraint(true).also {
+        dynIsfEnabled = ConstraintObject(false, aapsLogger).also {
             constraintChecker.isDynIsfModeEnabled(it)
             inputConstraints.copyReasons(it)
         }
@@ -281,15 +283,15 @@ open class ENPlugin @Inject constructor(
     }
 
     override fun isSuperBolusEnabled(value: Constraint<Boolean>): Constraint<Boolean> {
-        value.set(aapsLogger, false)
+        value.set(false)
         return value
     }
 
     override fun applyMaxIOBConstraints(maxIob: Constraint<Double>): Constraint<Double> {
         if (isEnabled()) {
             val maxIobPref: Double = sp.getDouble(R.string.key_openapssmb_max_iob, 3.0)
-            maxIob.setIfSmaller(aapsLogger, maxIobPref, rh.gs(R.string.limiting_iob, maxIobPref, rh.gs(R.string.maxvalueinpreferences)), this)
-            maxIob.setIfSmaller(aapsLogger, hardLimits.maxIobSMB(), rh.gs(R.string.limiting_iob, hardLimits.maxIobSMB(), rh.gs(R.string.hardlimit)), this)
+            maxIob.setIfSmaller(maxIobPref, rh.gs(R.string.limiting_iob, maxIobPref, rh.gs(R.string.maxvalueinpreferences)), this)
+            maxIob.setIfSmaller(hardLimits.maxIobSMB(), rh.gs(R.string.limiting_iob, hardLimits.maxIobSMB(), rh.gs(R.string.hardlimit)), this)
         }
         return maxIob
     }
@@ -307,33 +309,32 @@ open class ENPlugin @Inject constructor(
             val maxBasalMultiplier = sp.getDouble(R.string.key_openapsama_current_basal_safety_multiplier, 4.0)
             val maxFromBasalMultiplier = floor(maxBasalMultiplier * profile.getBasal() * 100) / 100
             absoluteRate.setIfSmaller(
-                aapsLogger,
                 maxFromBasalMultiplier,
                 rh.gs(info.nightscout.core.ui.R.string.limitingbasalratio, maxFromBasalMultiplier, rh.gs(R.string.max_basal_multiplier)),
                 this
             )
             val maxBasalFromDaily = sp.getDouble(R.string.key_openapsama_max_daily_safety_multiplier, 3.0)
             val maxFromDaily = floor(profile.getMaxDailyBasal() * maxBasalFromDaily * 100) / 100
-            absoluteRate.setIfSmaller(aapsLogger, maxFromDaily, rh.gs(info.nightscout.core.ui.R.string.limitingbasalratio, maxFromDaily, rh.gs(R.string.max_daily_basal_multiplier)), this)
+            absoluteRate.setIfSmaller(maxFromDaily, rh.gs(info.nightscout.core.ui.R.string.limitingbasalratio, maxFromDaily, rh.gs(R.string.max_daily_basal_multiplier)), this)
         }
         return absoluteRate
     }
 
     override fun isSMBModeEnabled(value: Constraint<Boolean>): Constraint<Boolean> {
         val enabled = sp.getBoolean(R.string.key_use_smb, false)
-        if (!enabled) value.set(aapsLogger, false, rh.gs(R.string.smb_disabled_in_preferences), this)
+        if (!enabled) value.set(false, rh.gs(R.string.smb_disabled_in_preferences), this)
         return value
     }
 
     override fun isUAMEnabled(value: Constraint<Boolean>): Constraint<Boolean> {
         val enabled = sp.getBoolean(R.string.key_use_uam, false)
-        if (!enabled) value.set(aapsLogger, false, rh.gs(R.string.uam_disabled_in_preferences), this)
+        if (!enabled) value.set(false, rh.gs(R.string.uam_disabled_in_preferences), this)
         return value
     }
 
     override fun isAutosensModeEnabled(value: Constraint<Boolean>): Constraint<Boolean> {
         val enabled = sp.getBoolean(R.string.key_openapsama_use_autosens, false)
-        if (!enabled) value.set(aapsLogger, false, rh.gs(R.string.autosens_disabled_in_preferences), this)
+        if (!enabled) value.set(false, rh.gs(R.string.autosens_disabled_in_preferences), this)
         return value
     }
     open fun provideDetermineBasalAdapter(): DetermineBasalAdapter = DetermineBasalAdapterENJS(ScriptReader(context), injector)
