@@ -249,7 +249,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         //    mProfile.put("min_5m_carbimpact", SP.getDouble(R.string.key_openapsama_min_5m_carbimpact, SMBDefaults.min_5m_carbimpact));
         //}
         this.profile.put("remainingCarbsCap", SMBDefaults.remainingCarbsCap)
-        this.profile.put("enableUAM", uamAllowed)
+        // this.profile.put("enableUAM", uamAllowed)
+        this.profile.put("enableUAM", true)
         this.profile.put("A52_risk_enable", SMBDefaults.A52_risk_enable)
         val smbEnabled = sp.getBoolean(R.string.key_use_smb, false)
         this.profile.put("SMBInterval", sp.getInt(R.string.key_smb_interval, SMBDefaults.SMBInterval))
