@@ -1290,13 +1290,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
                 eBGweight = 1; // 100% eBGw in ENW
             } else if (delta > 5) {
+                // UAM+ safety needs slightly higher delta when no ENW
                 // No ENW prepare to test for postprandial rise
                 UAMDeltaX = delta * 3;
                 eventualBG_base = (bg < ISFbgMax ? Math.max(bg,eventualBG) : eventualBG);
                 eventualBG = Math.max(eventualBG, eventualBG_base + UAMDeltaX);
                 eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
-                // UAM+ safety needs slightly higher delta when no ENW
                 eBGweight = 1;
+
+                // When resistant and with EN active and no mealscaling check as safety allow the resistant ISF to be used for insulinReq_sens providing a stronger ISF prediction
+                if (TIR_sens_limited > 1 && ENactive && MealScaler == 1) insulinReq_sens_normalTarget = sens_normalTarget;
             }
         }
 
@@ -1645,9 +1648,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // insulinReq is the additional insulin required to get minPredBG down to target_bg
         //console.error(minPredBG,eventualBG);
-        //insulinReq = round( (Math.min(minPredBG,eventualBG) - target_bg) / insulinReq_sens, 3);
-        //insulinReq = round((insulinReq_bg_orig - target_bg) / sens_profile, 3);
-        insulinReq = round((insulinReq_bg_orig - target_bg) / Math.max(sens_profile, sens_normalTarget), 3);
+        // insulinReq = round( (Math.min(minPredBG,eventualBG) - target_bg) / sens, 2);
+        insulinReq = round((insulinReq_bg_orig - target_bg) / sens_profile, 2);
 
         // keep the original insulinReq for reporting
         var insulinReqOrig = insulinReq;
