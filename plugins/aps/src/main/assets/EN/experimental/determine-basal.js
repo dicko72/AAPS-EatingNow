@@ -1296,7 +1296,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 eventualBG = Math.max(eventualBG, eventualBG_base + UAMDeltaX);
                 eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
                 // UAM+ safety needs slightly higher delta when no ENW
-                eBGweight = 0.25;
+                eBGweight = 1;
             }
         }
 
