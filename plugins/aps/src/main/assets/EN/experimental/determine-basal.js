@@ -1392,7 +1392,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += (!ENWindowOK && !ENWTriggerOK && ENtimeOK ? " IOB&lt;" + round(ENWIOBThreshU, 2) : "");
     rT.reason += (ENWindowOK && ENWTriggerOK ? " IOB&gt;" + round(ENWIOBThreshU, 2) : "");
     if (meal_data.ENWBolusIOB || ENWindowOK) rT.reason += ", ENW-IOB:" + round(meal_data.ENWBolusIOB,2) + (ENWBolusIOBMax > 0 ? "/" + ENWBolusIOBMax : "");
-    var endebug = "ENWRT:" + round(ENWMinsAgo);
+    //var endebug = "ENWRT:" + round(ENWMinsAgo);
 
     // other EN stuff
     rT.reason += ", eBGw: " + (sens_predType != "NA" ? sens_predType + " " : "") + convert_bg(insulinReq_bg, profile) + " " + round(eBGweight * 100) + "%";
@@ -1891,7 +1891,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // SAFETY: if an SMB given reduce the temp rate when not sensitive including ENW to deliver remaining insulinReq over 30m
         //if (microBolus && (TIR_sens_limited == 1 || !ENtimeOK) && AllowZT) {
         if (microBolus && TIR_sens_limited >= 1) {
-            rate = Math.max(basal + insulinReq - microBolus, 0) * 2; //remaining insulinReq over 60 minutes * 2 = 30 minutes
+            // when resistant allow a extra basal rate portion of IOB
+            var insulinReqTIRS = Math.max( (TIR_sens_limited > 1 ? iob_data.iob * (TIR_sens_limited-1) : 0) ,0);
+            var endebug = "rate:+" + round(insulinReqTIRS);
+            rate = Math.max(basal + insulinReq + insulinReqTIRS - microBolus, 0) * 2; //remaining insulinReq over 60 minutes * 2 = 30 minutes
             rate = round_basal(rate, profile);
         }
 
