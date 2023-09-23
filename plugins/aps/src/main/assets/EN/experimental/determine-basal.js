@@ -1811,6 +1811,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             worstCaseInsulinReq = (smbTarget - (naive_eventualBG + minIOBPredBG) / 2) / sens;
             durationReq = round(60 * worstCaseInsulinReq / profile.current_basal);
 
+            // BG+ no ZT experiment
+            if (sens_predType == "BG+") durationReq = 0;
+
             // TBR only when below respective SMBbgOffsets with no low TT / no COB
             if (ENSleepModeNoSMB || ENDayModeNoSMB) {
                 microBolus = 0;
@@ -1893,7 +1896,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (microBolus && TIR_sens_limited >= 1) {
             // when resistant allow a extra basal rate portion of IOB
             var insulinReqTIRS = Math.max( (TIR_sens_limited > 1 ? iob_data.iob * (TIR_sens_limited-1) : 0) ,0);
-            var endebug = "rate:+" + round(insulinReqTIRS);
+            rT.reason += "** DEBUG: " + "rate:+" + round(insulinReqTIRS) + "** ";
             rate = Math.max(basal + insulinReq + insulinReqTIRS - microBolus, 0) * 2; //remaining insulinReq over 60 minutes * 2 = 30 minutes
             rate = round_basal(rate, profile);
         }
