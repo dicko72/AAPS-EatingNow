@@ -1320,10 +1320,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // BG+ bg is stuck with resistance or UAM+ activated with minGuardBG
         if (sens_predType == "BG+") {
-            //eventualBG = threshold;
+            eventualBG = (target_bg + bg)/2;
             minGuardBG = threshold; // required to allow SMB consistently
             minBG = bg;
-            eBGweight = 0.25;
+            eBGweight = 1;
             //AllowZT = false;
             // When resistant and insulin delivery is restricted allow the SR adjusted sens_normalTarget
             //if (TIR_sens_limited > 1 && ENactive && MealScaler == 1 && profile.EN_BGPlus_maxBolus == -1) insulinReq_sens_normalTarget = sens_normalTarget;
@@ -1347,9 +1347,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
         insulinReq_bg = (Math.max(minBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight);
-
-        // when resistant set the eventualBG based on weighting
-        if (sens_predType == "BG+") eventualBG = insulinReq_bg;
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
         insulinReq_sens = (profile.useDynISF ? dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val) : sens_normalTarget); // dynISF?
