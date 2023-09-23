@@ -1295,6 +1295,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
                 // When resistant and with EN active and no mealscaling check as safety allow the resistant ISF to be used for insulinReq_sens providing a stronger ISF prediction
                 // if (TIR_sens_limited > 1 && ENactive && MealScaler == 1) insulinReq_sens_normalTarget = sens_normalTarget;
+            } else {
+                // No change so check for BG+ condition
+                if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1) sens_predType = "BG+";
             }
         }
 
