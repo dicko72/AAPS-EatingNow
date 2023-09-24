@@ -614,9 +614,9 @@
                 android:inputType="number"
                 android:title="MaxISF %"
                 android:key="@string/key_eatingnow_maxisfpct"
-                android:dialogMessage="Profile ISF will be used with this as a percentage.\n100 will limit TDD based ISF to profile ISF.\n150 will allow an ISF that is 150% stronger than profile."
+                android:dialogMessage="Profile ISF will be used with this as a percentage.\n100 will limit TDD based ISF to profile ISF.\n150 will allow an ISF that is 150% stronger than profile.\n0 is no limit."
                 validate:maxNumber="200"
-                validate:minNumber="100"
+                validate:minNumber="0"
                 validate:testType="numericRange" />
 
             <SwitchPreference
