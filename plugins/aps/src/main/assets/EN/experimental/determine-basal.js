@@ -1320,10 +1320,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // BG+ bg is stuck with resistance or UAM+ activated with minGuardBG
         if (sens_predType == "BG+") {
-            eventualBG = (target_bg + bg)/2;
             minGuardBG = threshold; // required to allow SMB consistently
-            minBG = bg;
-            eBGweight = 1;
+            minBG = target_bg;
+            eventualBG = bg;
+            eBGweight = 0.15;
             insulinReq_sens_normalTarget = sens_normalTarget; // use the SR adjusted sens_normalTarget
         }
 
