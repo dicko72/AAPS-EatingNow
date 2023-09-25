@@ -9,14 +9,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.ui.activities.TranslatedDaggerAppCompatActivity
+import app.aaps.database.entities.UserEntry.Action
+import app.aaps.database.entities.UserEntry.Sources
 import dagger.android.support.DaggerDialogFragment
-import info.nightscout.core.ui.activities.TranslatedDaggerAppCompatActivity
-import info.nightscout.database.entities.UserEntry.Action
-import info.nightscout.database.entities.UserEntry.Sources
-import info.nightscout.interfaces.logging.UserEntryLogger
-import info.nightscout.interfaces.ui.UiInteraction
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.shared.utils.T
 import info.nightscout.ui.databinding.DialogErrorBinding
 import javax.inject.Inject
 
@@ -44,7 +44,7 @@ class ErrorDialog : DaggerDialogFragment() {
         savedInstanceState: Bundle?
     ): View {
         val theme: Resources.Theme? = context?.theme
-        theme?.applyStyle(info.nightscout.core.ui.R.style.AppTheme_NoActionBar, true)
+        theme?.applyStyle(app.aaps.core.ui.R.style.AppTheme_NoActionBar, true)
 
         dialog?.window?.requestFeature(Window.FEATURE_NO_TITLE)
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
@@ -54,7 +54,7 @@ class ErrorDialog : DaggerDialogFragment() {
         savedInstanceState?.let { bundle ->
             bundle.getString("status")?.let { status = it }
             bundle.getString("title")?.let { title = it }
-            sound = bundle.getInt("sound", info.nightscout.core.ui.R.raw.error)
+            sound = bundle.getInt("sound", app.aaps.core.ui.R.raw.error)
         }
         aapsLogger.debug("Error dialog displayed")
         _binding = DialogErrorBinding.inflate(inflater, container, false)

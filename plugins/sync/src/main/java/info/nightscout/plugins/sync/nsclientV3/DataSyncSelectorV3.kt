@@ -1,22 +1,22 @@
 package info.nightscout.plugins.sync.nsclientV3
 
-import info.nightscout.annotations.OpenForTesting
-import info.nightscout.core.utils.JsonHelper
+import app.aaps.annotations.OpenForTesting
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.nsclient.StoreDataForDb
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.source.NSClientSource
+import app.aaps.core.interfaces.sync.DataSyncSelector
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.utils.JsonHelper
 import info.nightscout.database.impl.AppRepository
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.nsclient.StoreDataForDb
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.interfaces.source.NSClientSource
-import info.nightscout.interfaces.sync.DataSyncSelector
 import info.nightscout.plugins.sync.R
 import info.nightscout.plugins.sync.nsShared.events.EventNSClientUpdateGuiQueue
 import info.nightscout.plugins.sync.nsShared.events.EventNSClientUpdateGuiStatus
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
 import javax.inject.Inject
 import javax.inject.Singleton
 

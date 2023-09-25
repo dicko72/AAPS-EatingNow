@@ -3,14 +3,14 @@ package info.nightscout.plugins.sync.nsclientV3.workers
 import android.content.Context
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import info.nightscout.core.utils.receivers.DataWorkerStorage
-import info.nightscout.core.utils.worker.LoggingWorker
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventNSClientNewLog
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.main.utils.worker.LoggingWorker
+import app.aaps.core.utils.receivers.DataWorkerStorage
 import info.nightscout.plugins.sync.nsclient.data.NSDeviceStatusHandler
 import info.nightscout.plugins.sync.nsclientV3.NSClientV3Plugin
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventNSClientNewLog
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.shared.utils.T
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 

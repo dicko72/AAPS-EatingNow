@@ -7,27 +7,27 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.extensions.toVisibility
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.Profile
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.DecimalFormatter
+import app.aaps.core.interfaces.utils.HardLimits
+import app.aaps.core.main.R
+import app.aaps.core.main.extensions.getCustomizedName
+import app.aaps.core.main.extensions.pureProfileFromJson
+import app.aaps.core.main.profile.ProfileSealed
+import app.aaps.core.utils.HtmlHelper
+import app.aaps.database.ValueWrapper
 import dagger.android.HasAndroidInjector
 import dagger.android.support.DaggerDialogFragment
-import info.nightscout.core.extensions.getCustomizedName
-import info.nightscout.core.extensions.pureProfileFromJson
-import info.nightscout.core.main.R
-import info.nightscout.core.profile.ProfileSealed
-import info.nightscout.core.utils.HtmlHelper
-import info.nightscout.database.ValueWrapper
 import info.nightscout.database.impl.AppRepository
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.profile.Profile
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.interfaces.ui.UiInteraction
-import info.nightscout.interfaces.utils.DecimalFormatter
-import info.nightscout.interfaces.utils.HardLimits
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.shared.extensions.toVisibility
-import info.nightscout.shared.interfaces.ProfileUtil
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.utils.DateUtil
 import info.nightscout.ui.databinding.DialogProfileviewerBinding
 import org.json.JSONObject
 import java.text.DecimalFormat
@@ -138,7 +138,7 @@ class ProfileViewerDialog : DaggerDialogFragment() {
             profile?.let { profile1 ->
                 profile2?.let { profile2 ->
                     binding.units.text = profileFunction.getUnits().asText
-                    binding.dia.text = HtmlHelper.fromHtml(formatColors("", profile1.dia, profile2.dia, DecimalFormat("0.00"), rh.gs(info.nightscout.interfaces.R.string.shorthour)))
+                    binding.dia.text = HtmlHelper.fromHtml(formatColors("", profile1.dia, profile2.dia, DecimalFormat("0.00"), rh.gs(app.aaps.core.interfaces.R.string.shorthour)))
                     val profileNames = profileName!!.split("\n").toTypedArray()
                     binding.activeProfile.text = HtmlHelper.fromHtml(formatColors(profileNames[0], profileNames[1]))
                     binding.date.text = date
@@ -154,18 +154,18 @@ class ProfileViewerDialog : DaggerDialogFragment() {
 
                 binding.noProfile.visibility = View.GONE
                 val validity = profile1.isValid("ProfileViewDialog", activePlugin.activePump, config, rh, rxBus, hardLimits, false)
-                binding.invalidProfile.text = rh.gs(info.nightscout.core.ui.R.string.invalid_profile) + "\n" + validity.reasons.joinToString(separator = "\n")
+                binding.invalidProfile.text = rh.gs(app.aaps.core.ui.R.string.invalid_profile) + "\n" + validity.reasons.joinToString(separator = "\n")
                 binding.invalidProfile.visibility = validity.isValid.not().toVisibility()
             }
         else
             profile?.let {
                 binding.units.text = it.units.asText
-                binding.dia.text = rh.gs(info.nightscout.core.ui.R.string.format_hours, it.dia)
+                binding.dia.text = rh.gs(app.aaps.core.ui.R.string.format_hours, it.dia)
                 binding.activeProfile.text = profileName
                 binding.date.text = date
                 binding.ic.text = it.getIcList(rh, dateUtil)
                 binding.isf.text = it.getIsfList(rh, dateUtil)
-                binding.basal.text = "∑ " + rh.gs(info.nightscout.core.ui.R.string.format_insulin_units, it.baseBasalSum()) + "\n" + it.getBasalList(rh, dateUtil)
+                binding.basal.text = "∑ " + rh.gs(app.aaps.core.ui.R.string.format_insulin_units, it.baseBasalSum()) + "\n" + it.getBasalList(rh, dateUtil)
                 binding.target.text = it.getTargetList(rh, dateUtil)
                 binding.basalGraph.show(it)
                 binding.isfGraph.show(it)
@@ -174,7 +174,7 @@ class ProfileViewerDialog : DaggerDialogFragment() {
 
                 binding.noProfile.visibility = View.GONE
                 val validity = it.isValid("ProfileViewDialog", activePlugin.activePump, config, rh, rxBus, hardLimits, false)
-                binding.invalidProfile.text = rh.gs(info.nightscout.core.ui.R.string.invalid_profile) + "\n" + validity.reasons.joinToString(separator = "\n")
+                binding.invalidProfile.text = rh.gs(app.aaps.core.ui.R.string.invalid_profile) + "\n" + validity.reasons.joinToString(separator = "\n")
                 binding.invalidProfile.visibility = validity.isValid.not().toVisibility()
             }
     }
@@ -204,20 +204,20 @@ class ProfileViewerDialog : DaggerDialogFragment() {
     }
 
     private fun formatColors(label: String, text1: String, text2: String, units: String): String {
-        var s = "<font color='${rh.gac(context, info.nightscout.core.ui.R.attr.defaultTextColor)}'>$label</font>"
+        var s = "<font color='${rh.gac(context, app.aaps.core.ui.R.attr.defaultTextColor)}'>$label</font>"
         s += "    "
-        s += "<font color='${rh.gac(context, info.nightscout.core.ui.R.attr.tempBasalColor)}'>$text1</font>"
+        s += "<font color='${rh.gac(context, app.aaps.core.ui.R.attr.tempBasalColor)}'>$text1</font>"
         s += "    "
-        s += "<font color='${rh.gac(context, info.nightscout.core.ui.R.attr.examinedProfileColor)}'>$text2</font>"
+        s += "<font color='${rh.gac(context, app.aaps.core.ui.R.attr.examinedProfileColor)}'>$text2</font>"
         s += "    "
-        s += "<font color='${rh.gac(context, info.nightscout.core.ui.R.attr.defaultTextColor)}'>$units</font>"
+        s += "<font color='${rh.gac(context, app.aaps.core.ui.R.attr.defaultTextColor)}'>$units</font>"
         return s
     }
 
     private fun formatColors(text1: String, text2: String): String {
-        var s = "<font color='${rh.gac(context, info.nightscout.core.ui.R.attr.tempBasalColor)}'>$text1</font>"
+        var s = "<font color='${rh.gac(context, app.aaps.core.ui.R.attr.tempBasalColor)}'>$text1</font>"
         s += "<BR/>"
-        s += "<font color='${rh.gac(context, info.nightscout.core.ui.R.attr.examinedProfileColor)}'>$text2</font>"
+        s += "<font color='${rh.gac(context, app.aaps.core.ui.R.attr.examinedProfileColor)}'>$text2</font>"
         return s
     }
 
@@ -229,7 +229,7 @@ class ProfileViewerDialog : DaggerDialogFragment() {
             val val1 = profile1.getBasalTimeFromMidnight(hour * 60 * 60)
             val val2 = profile2.getBasalTimeFromMidnight(hour * 60 * 60)
             if (val1 != prev1 || val2 != prev2) {
-                s.append(formatColors(dateUtil.formatHHMM(hour * 60 * 60), val1, val2, DecimalFormat("0.00"), " " + rh.gs(info.nightscout.core.ui.R.string.profile_ins_units_per_hour)))
+                s.append(formatColors(dateUtil.formatHHMM(hour * 60 * 60), val1, val2, DecimalFormat("0.00"), " " + rh.gs(app.aaps.core.ui.R.string.profile_ins_units_per_hour)))
                 s.append("<br>")
             }
             prev1 = val1
@@ -241,7 +241,7 @@ class ProfileViewerDialog : DaggerDialogFragment() {
                 profile1.baseBasalSum(),
                 profile2.baseBasalSum(),
                 DecimalFormat("0.00"),
-                rh.gs(info.nightscout.core.ui.R.string.insulin_unit_shortname)
+                rh.gs(app.aaps.core.ui.R.string.insulin_unit_shortname)
             )
         )
         return HtmlHelper.fromHtml(s.toString())
@@ -255,7 +255,7 @@ class ProfileViewerDialog : DaggerDialogFragment() {
             val val1 = profile1.getIcTimeFromMidnight(hour * 60 * 60)
             val val2 = profile2.getIcTimeFromMidnight(hour * 60 * 60)
             if (val1 != prev1 || val2 != prev2) {
-                s.append(formatColors(dateUtil.formatHHMM(hour * 60 * 60), val1, val2, DecimalFormat("0.0"), " " + rh.gs(info.nightscout.core.ui.R.string.profile_carbs_per_unit)))
+                s.append(formatColors(dateUtil.formatHHMM(hour * 60 * 60), val1, val2, DecimalFormat("0.0"), " " + rh.gs(app.aaps.core.ui.R.string.profile_carbs_per_unit)))
                 s.append("<br>")
             }
             prev1 = val1
@@ -273,7 +273,7 @@ class ProfileViewerDialog : DaggerDialogFragment() {
             val val1 = profileUtil.fromMgdlToUnits(profile1.getIsfMgdlTimeFromMidnight(hour * 60 * 60))
             val val2 = profileUtil.fromMgdlToUnits(profile2.getIsfMgdlTimeFromMidnight(hour * 60 * 60))
             if (val1 != prev1 || val2 != prev2) {
-                s.append(formatColors(dateUtil.formatHHMM(hour * 60 * 60), val1, val2, DecimalFormat("0.0"), units.asText + " " + rh.gs(info.nightscout.core.ui.R.string.profile_per_unit)))
+                s.append(formatColors(dateUtil.formatHHMM(hour * 60 * 60), val1, val2, DecimalFormat("0.0"), units.asText + " " + rh.gs(app.aaps.core.ui.R.string.profile_per_unit)))
                 s.append("<br>")
             }
             prev1 = val1

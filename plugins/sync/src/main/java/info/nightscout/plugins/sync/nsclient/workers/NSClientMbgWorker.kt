@@ -3,13 +3,13 @@ package info.nightscout.plugins.sync.nsclient.workers
 import android.content.Context
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import info.nightscout.core.utils.receivers.DataWorkerStorage
-import info.nightscout.core.utils.worker.LoggingWorker
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.nsclient.StoreDataForDb
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.nsclient.StoreDataForDb
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.main.utils.worker.LoggingWorker
+import app.aaps.core.utils.receivers.DataWorkerStorage
 import info.nightscout.plugins.sync.nsclient.data.NSMbg
 import info.nightscout.plugins.sync.nsclient.extensions.therapyEventFromNsMbg
-import info.nightscout.shared.sharedPreferences.SP
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 

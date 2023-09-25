@@ -1,15 +1,15 @@
 package info.nightscout.plugins.iob.iobCobCalculator.data
 
+import app.aaps.core.interfaces.aps.AutosensData
+import app.aaps.core.interfaces.aps.AutosensResult
+import app.aaps.core.interfaces.configuration.Constants
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.utils.DateUtil
 import dagger.android.HasAndroidInjector
-import info.nightscout.interfaces.Constants
-import info.nightscout.interfaces.aps.AutosensData
-import info.nightscout.interfaces.aps.AutosensResult
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.min

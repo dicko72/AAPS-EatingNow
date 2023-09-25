@@ -1,13 +1,13 @@
 package info.nightscout.plugins.sync.tidepool.elements
 
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.database.entities.GlucoseValue
 import com.google.gson.annotations.Expose
-import info.nightscout.database.entities.GlucoseValue
-import info.nightscout.shared.utils.DateUtil
 import java.util.LinkedList
 import java.util.UUID
 
-class SensorGlucoseElement(bgReading: GlucoseValue, private val dateUtil: DateUtil)
-    : BaseElement(bgReading.timestamp, UUID.nameUUIDFromBytes(("AAPS-cgm" + bgReading.timestamp).toByteArray()).toString(), dateUtil) {
+class SensorGlucoseElement(bgReading: GlucoseValue, private val dateUtil: DateUtil) :
+    BaseElement(bgReading.timestamp, UUID.nameUUIDFromBytes(("AAPS-cgm" + bgReading.timestamp).toByteArray()).toString(), dateUtil) {
 
     @Expose
     internal var units: String = "mg/dL"

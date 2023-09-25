@@ -1,16 +1,17 @@
 package info.nightscout.plugins.sync.nsclient.extensions
 
-import info.nightscout.core.utils.JsonHelper
-import info.nightscout.database.entities.Bolus
-import info.nightscout.database.entities.embedments.InterfaceIDs
-import info.nightscout.shared.utils.DateUtil
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.utils.JsonHelper
+import app.aaps.database.entities.Bolus
+import app.aaps.database.entities.TherapyEvent
+import app.aaps.database.entities.embedments.InterfaceIDs
 import org.json.JSONObject
 
 fun Bolus.toJson(isAdd: Boolean, dateUtil: DateUtil): JSONObject =
     JSONObject()
         .put(
             "eventType",
-            if (type == Bolus.Type.SMB) info.nightscout.database.entities.TherapyEvent.Type.CORRECTION_BOLUS.text else info.nightscout.database.entities.TherapyEvent.Type.MEAL_BOLUS.text
+            if (type == Bolus.Type.SMB) TherapyEvent.Type.CORRECTION_BOLUS.text else TherapyEvent.Type.MEAL_BOLUS.text
         )
         .put("insulin", amount)
         .put("created_at", dateUtil.toISOString(timestamp))
@@ -26,12 +27,17 @@ fun Bolus.toJson(isAdd: Boolean, dateUtil: DateUtil): JSONObject =
         }
 
 fun Bolus.Companion.fromJson(jsonObject: JSONObject): Bolus? {
-    val timestamp = JsonHelper.safeGetLongAllowNull(jsonObject, "mills", null) ?: return null
+    val timestamp =
+        JsonHelper.safeGetLongAllowNull(jsonObject, "mills", null)
+            ?: JsonHelper.safeGetLongAllowNull(jsonObject, "date", null)
+            ?: return null
     val amount = JsonHelper.safeGetDoubleAllowNull(jsonObject, "insulin") ?: return null
     val type = Bolus.Type.fromString(JsonHelper.safeGetString(jsonObject, "type"))
     val isValid = JsonHelper.safeGetBoolean(jsonObject, "isValid", true)
     val notes = JsonHelper.safeGetStringAllowNull(jsonObject, "notes", null)
-    val id = JsonHelper.safeGetStringAllowNull(jsonObject, "_id", null) ?: return null
+    val id = JsonHelper.safeGetStringAllowNull(jsonObject, "identifier", null)
+        ?: JsonHelper.safeGetStringAllowNull(jsonObject, "_id", null)
+        ?: return null
     val pumpId = JsonHelper.safeGetLongAllowNull(jsonObject, "pumpId", null)
     val pumpType = InterfaceIDs.PumpType.fromString(JsonHelper.safeGetStringAllowNull(jsonObject, "pumpType", null))
     val pumpSerial = JsonHelper.safeGetStringAllowNull(jsonObject, "pumpSerial", null)

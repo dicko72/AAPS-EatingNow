@@ -1,5 +1,7 @@
+// Modified for Eating Now
 package info.nightscout.plugins.general.overview
 
+import app.aaps.database.entities.TemporaryTarget //EN
 import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.content.ActivityNotFoundException
@@ -24,51 +26,77 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.text.toSpanned
 import androidx.recyclerview.widget.LinearLayoutManager
+import app.aaps.core.interfaces.aps.Loop
+import app.aaps.core.interfaces.aps.VariableSensitivityResult
+import app.aaps.core.interfaces.automation.Automation
+import app.aaps.core.interfaces.bgQualityCheck.BgQualityCheck
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.configuration.Constants
+import app.aaps.core.interfaces.constraints.ConstraintsChecker
+import app.aaps.core.interfaces.db.GlucoseUnit
+import app.aaps.core.interfaces.extensions.runOnUiThread
+import app.aaps.core.interfaces.extensions.toVisibility
+import app.aaps.core.interfaces.extensions.toVisibilityKeepSpace
+import app.aaps.core.interfaces.iob.GlucoseStatusProvider
+import app.aaps.core.interfaces.iob.IobCobCalculator
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.nsclient.NSSettingsStatus
+import app.aaps.core.interfaces.nsclient.ProcessedDeviceStatusData
+import app.aaps.core.interfaces.overview.OverviewMenus
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.profile.DefaultValueHelper
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.protection.ProtectionCheck
+import app.aaps.core.interfaces.pump.defs.PumpType
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventAcceptOpenLoopChange
+import app.aaps.core.interfaces.rx.events.EventBucketedDataCreated
+import app.aaps.core.interfaces.rx.events.EventEffectiveProfileSwitchChanged
+import app.aaps.core.interfaces.rx.events.EventExtendedBolusChange
+import app.aaps.core.interfaces.rx.events.EventMobileToWear
+import app.aaps.core.interfaces.rx.events.EventNewOpenLoopNotification
+import app.aaps.core.interfaces.rx.events.EventPreferenceChange
+import app.aaps.core.interfaces.rx.events.EventPumpStatusChanged
+import app.aaps.core.interfaces.rx.events.EventRefreshOverview
+import app.aaps.core.interfaces.rx.events.EventScale
+import app.aaps.core.interfaces.rx.events.EventTempBasalChange
+import app.aaps.core.interfaces.rx.events.EventTempTargetChange
+import app.aaps.core.interfaces.rx.events.EventUpdateOverviewCalcProgress
+import app.aaps.core.interfaces.rx.events.EventUpdateOverviewGraph
+import app.aaps.core.interfaces.rx.events.EventUpdateOverviewIobCob
+import app.aaps.core.interfaces.rx.events.EventUpdateOverviewSensitivity
+import app.aaps.core.interfaces.rx.weardata.EventData
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.source.DexcomBoyda
+import app.aaps.core.interfaces.source.XDripSource
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.DecimalFormatter
+import app.aaps.core.interfaces.utils.TrendCalculator
+import app.aaps.core.main.constraints.ConstraintObject
+import app.aaps.core.main.extensions.directionToIcon
+import app.aaps.core.main.graph.OverviewData
+import app.aaps.core.main.iob.displayText
+import app.aaps.core.main.profile.ProfileSealed
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.main.wizard.QuickWizard
+import app.aaps.core.ui.UIRunnable
+import app.aaps.core.ui.dialogs.OKDialog
+import app.aaps.core.ui.elements.SingleClickButton
+import app.aaps.core.ui.toast.ToastUtils
+import app.aaps.core.utils.JsonHelper
+import app.aaps.database.entities.UserEntry.Action
+import app.aaps.database.entities.UserEntry.Sources
+import app.aaps.database.entities.interfaces.end
 import com.jjoe64.graphview.GraphView
 import dagger.android.HasAndroidInjector
 import dagger.android.support.DaggerFragment
-import info.nightscout.core.constraints.ConstraintObject
-import info.nightscout.core.extensions.directionToIcon
-import info.nightscout.core.graph.OverviewData
-import info.nightscout.core.iob.displayText
-import info.nightscout.core.profile.ProfileSealed
-import info.nightscout.core.ui.UIRunnable
-import info.nightscout.core.ui.dialogs.OKDialog
-import info.nightscout.core.ui.elements.SingleClickButton
-import info.nightscout.core.ui.toast.ToastUtils
-import info.nightscout.core.utils.JsonHelper
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.core.wizard.QuickWizard
-import info.nightscout.database.entities.TemporaryTarget //EN
-import info.nightscout.database.entities.UserEntry.Action
-import info.nightscout.database.entities.UserEntry.Sources
-import info.nightscout.database.entities.interfaces.end
 import info.nightscout.database.impl.AppRepository
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.Constants
-import info.nightscout.interfaces.GlucoseUnit
-import info.nightscout.interfaces.aps.Loop
-import info.nightscout.interfaces.aps.VariableSensitivityResult
-import info.nightscout.interfaces.automation.Automation
-import info.nightscout.interfaces.bgQualityCheck.BgQualityCheck
-import info.nightscout.interfaces.constraints.ConstraintsChecker
-import info.nightscout.interfaces.iob.GlucoseStatusProvider
-import info.nightscout.interfaces.iob.IobCobCalculator
-import info.nightscout.interfaces.logging.UserEntryLogger
-import info.nightscout.interfaces.nsclient.NSSettingsStatus
-import info.nightscout.interfaces.nsclient.ProcessedDeviceStatusData
-import info.nightscout.interfaces.overview.OverviewMenus
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.plugin.PluginBase
-import info.nightscout.interfaces.profile.DefaultValueHelper
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.interfaces.protection.ProtectionCheck
-import info.nightscout.interfaces.pump.defs.PumpType
-import info.nightscout.interfaces.source.DexcomBoyda
-import info.nightscout.interfaces.source.XDripSource
-import info.nightscout.interfaces.ui.UiInteraction
-import info.nightscout.interfaces.utils.DecimalFormatter
-import info.nightscout.interfaces.utils.TrendCalculator
 import info.nightscout.plugins.R
 import info.nightscout.plugins.databinding.OverviewFragmentBinding
 import info.nightscout.plugins.general.overview.graphData.GraphData
@@ -76,33 +104,6 @@ import info.nightscout.plugins.general.overview.notifications.NotificationStore
 import info.nightscout.plugins.general.overview.notifications.events.EventUpdateOverviewNotification
 import info.nightscout.plugins.general.overview.ui.StatusLightHandler
 import info.nightscout.plugins.skins.SkinProvider
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventAcceptOpenLoopChange
-import info.nightscout.rx.events.EventBucketedDataCreated
-import info.nightscout.rx.events.EventEffectiveProfileSwitchChanged
-import info.nightscout.rx.events.EventExtendedBolusChange
-import info.nightscout.rx.events.EventMobileToWear
-import info.nightscout.rx.events.EventNewOpenLoopNotification
-import info.nightscout.rx.events.EventPreferenceChange
-import info.nightscout.rx.events.EventPumpStatusChanged
-import info.nightscout.rx.events.EventRefreshOverview
-import info.nightscout.rx.events.EventScale
-import info.nightscout.rx.events.EventTempBasalChange
-import info.nightscout.rx.events.EventTempTargetChange
-import info.nightscout.rx.events.EventUpdateOverviewCalcProgress
-import info.nightscout.rx.events.EventUpdateOverviewGraph
-import info.nightscout.rx.events.EventUpdateOverviewIobCob
-import info.nightscout.rx.events.EventUpdateOverviewSensitivity
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.weardata.EventData
-import info.nightscout.shared.extensions.runOnUiThread
-import info.nightscout.shared.extensions.toVisibility
-import info.nightscout.shared.extensions.toVisibilityKeepSpace
-import info.nightscout.shared.interfaces.ProfileUtil
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import java.util.Locale
@@ -191,13 +192,13 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
         smallHeight = screenHeight <= Constants.SMALL_HEIGHT
         val landscape = screenHeight < screenWidth
 
-        skinProvider.activeSkin().preProcessLandscapeOverviewLayout(binding, landscape, rh.gb(info.nightscout.core.ui.R.bool.isTablet), smallHeight)
+        skinProvider.activeSkin().preProcessLandscapeOverviewLayout(binding, landscape, rh.gb(app.aaps.core.ui.R.bool.isTablet), smallHeight)
         binding.nsclientCard.visibility = config.NSCLIENT.toVisibility()
 
         binding.notifications.setHasFixedSize(false)
         binding.notifications.layoutManager = LinearLayoutManager(view.context)
         axisWidth = if (dm.densityDpi <= 120) 3 else if (dm.densityDpi <= 160) 10 else if (dm.densityDpi <= 320) 35 else if (dm.densityDpi <= 420) 50 else if (dm.densityDpi <= 560) 70 else 80
-        binding.graphsLayout.bgGraph.gridLabelRenderer?.gridColor = rh.gac(context, info.nightscout.core.ui.R.attr.graphGrid)
+        binding.graphsLayout.bgGraph.gridLabelRenderer?.gridColor = rh.gac(context, app.aaps.core.ui.R.attr.graphGrid)
         binding.graphsLayout.bgGraph.gridLabelRenderer?.reloadStyles()
         binding.graphsLayout.bgGraph.gridLabelRenderer?.labelVerticalWidth = axisWidth
         binding.graphsLayout.bgGraph.layoutParams?.height = rh.dpToPx(skinProvider.activeSkin().mainGraphHeight)
@@ -448,7 +449,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                             if (lastRun?.lastAPSRun != null && lastRun.constraintsProcessed?.isChangeRequested == true) {
                                 protectionCheck.queryProtection(activity, ProtectionCheck.Protection.BOLUS, UIRunnable {
                                     if (isAdded)
-                                        OKDialog.showConfirmation(activity, rh.gs(info.nightscout.core.ui.R.string.tempbasal_label), lastRun.constraintsProcessed?.toSpanned()
+                                        OKDialog.showConfirmation(activity, rh.gs(app.aaps.core.ui.R.string.tempbasal_label), lastRun.constraintsProcessed?.toSpanned()
                                             ?: "".toSpanned(), {
                                                                       uel.log(Action.ACCEPTS_TEMP_BASAL, Sources.Overview)
                                                                       (context?.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?)?.cancel(Constants.notificationID)
@@ -527,7 +528,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                 val carbsAfterConstraints = constraintChecker.applyCarbsConstraints(ConstraintObject(quickWizardEntry.carbs(), aapsLogger)).value()
                 activity?.let {
                     if (abs(wizard.insulinAfterConstraints - wizard.calculatedTotalInsulin) >= pump.pumpDescription.pumpType.determineCorrectBolusStepSize(wizard.insulinAfterConstraints) || carbsAfterConstraints != quickWizardEntry.carbs()) {
-                        OKDialog.show(it, rh.gs(info.nightscout.core.ui.R.string.treatmentdeliveryerror), rh.gs(R.string.constraints_violation) + "\n" + rh.gs(R.string.change_your_input))
+                        OKDialog.show(it, rh.gs(app.aaps.core.ui.R.string.treatmentdeliveryerror), rh.gs(R.string.constraints_violation) + "\n" + rh.gs(R.string.change_your_input))
                         return
                     }
                     wizard.confirmAndExecute(it)
@@ -551,8 +552,8 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
             if (quickWizardEntry != null && lastBG != null && profile != null && pump.isInitialized() && !pump.isSuspended() && !loop.isDisconnected) {
                 binding.buttonsLayout.quickWizardButton.visibility = View.VISIBLE
                 val wizard = quickWizardEntry.doCalc(profile, profileName, lastBG)
-                binding.buttonsLayout.quickWizardButton.text = quickWizardEntry.buttonText() + "\n" + rh.gs(info.nightscout.core.main.R.string.format_carbs, quickWizardEntry.carbs()) +
-                    " " + rh.gs(info.nightscout.core.ui.R.string.format_insulin_units, wizard.calculatedTotalInsulin)
+                binding.buttonsLayout.quickWizardButton.text = quickWizardEntry.buttonText() + "\n" + rh.gs(app.aaps.core.main.R.string.format_carbs, quickWizardEntry.carbs()) +
+                    " " + rh.gs(app.aaps.core.ui.R.string.format_insulin_units, wizard.calculatedTotalInsulin)
                 if (wizard.calculatedTotalInsulin <= 0) binding.buttonsLayout.quickWizardButton.visibility = View.GONE
             } else binding.buttonsLayout.quickWizardButton.visibility = View.GONE
         }
@@ -596,16 +597,16 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                 binding.buttonsLayout.cgmButton.setCompoundDrawablesWithIntrinsicBounds(null, rh.gd(R.drawable.ic_byoda), null, null)
                 for (drawable in binding.buttonsLayout.cgmButton.compoundDrawables) {
                     drawable?.mutate()
-                    drawable?.colorFilter = PorterDuffColorFilter(rh.gac(context, info.nightscout.core.ui.R.attr.cgmDexColor), PorterDuff.Mode.SRC_IN)
+                    drawable?.colorFilter = PorterDuffColorFilter(rh.gac(context, app.aaps.core.ui.R.attr.cgmDexColor), PorterDuff.Mode.SRC_IN)
                 }
-                binding.buttonsLayout.cgmButton.setTextColor(rh.gac(context, info.nightscout.core.ui.R.attr.cgmDexColor))
+                binding.buttonsLayout.cgmButton.setTextColor(rh.gac(context, app.aaps.core.ui.R.attr.cgmDexColor))
             } else if (xDripIsBgSource) {
-                binding.buttonsLayout.cgmButton.setCompoundDrawablesWithIntrinsicBounds(null, rh.gd(info.nightscout.core.main.R.drawable.ic_xdrip), null, null)
+                binding.buttonsLayout.cgmButton.setCompoundDrawablesWithIntrinsicBounds(null, rh.gd(app.aaps.core.main.R.drawable.ic_xdrip), null, null)
                 for (drawable in binding.buttonsLayout.cgmButton.compoundDrawables) {
                     drawable?.mutate()
-                    drawable?.colorFilter = PorterDuffColorFilter(rh.gac(context, info.nightscout.core.ui.R.attr.cgmXdripColor), PorterDuff.Mode.SRC_IN)
+                    drawable?.colorFilter = PorterDuffColorFilter(rh.gac(context, app.aaps.core.ui.R.attr.cgmXdripColor), PorterDuff.Mode.SRC_IN)
                 }
-                binding.buttonsLayout.cgmButton.setTextColor(rh.gac(context, info.nightscout.core.ui.R.attr.cgmXdripColor))
+                binding.buttonsLayout.cgmButton.setTextColor(rh.gac(context, app.aaps.core.ui.R.attr.cgmXdripColor))
             }
             binding.buttonsLayout.cgmButton.visibility = (sp.getBoolean(R.string.key_show_cgm_button, false) && (xDripIsBgSource || dexcomIsSource)).toVisibility()
 
@@ -616,13 +617,13 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                 for (event in events)
                     if (event.isEnabled && event.canRun())
                         context?.let { context ->
-                            SingleClickButton(context, null, info.nightscout.core.ui.R.attr.customBtnStyle).also {
-                                it.setTextColor(rh.gac(context, info.nightscout.core.ui.R.attr.treatmentButton))
+                            SingleClickButton(context, null, app.aaps.core.ui.R.attr.customBtnStyle).also {
+                                it.setTextColor(rh.gac(context, app.aaps.core.ui.R.attr.treatmentButton))
                                 it.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
                                 it.layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 0.5f).also { l ->
                                     l.setMargins(0, 0, rh.dpToPx(-4), 0)
                                 }
-                                it.setCompoundDrawablesWithIntrinsicBounds(null, rh.gd(info.nightscout.core.ui.R.drawable.ic_user_options), null, null)
+                                it.setCompoundDrawablesWithIntrinsicBounds(null, rh.gd(app.aaps.core.ui.R.drawable.ic_user_options), null, null)
                                 it.text = event.title
 
                                 it.setOnClickListener {
@@ -645,7 +646,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 binding.infoLayout.apsMode.stateDescription = rh.gs(stringRes)
             } else {
-                binding.infoLayout.apsMode.contentDescription = rh.gs(info.nightscout.core.ui.R.string.aps_mode_title) + " " + rh.gs(stringRes)
+                binding.infoLayout.apsMode.contentDescription = rh.gs(app.aaps.core.ui.R.string.aps_mode_title) + " " + rh.gs(stringRes)
             }
         }
 
@@ -657,21 +658,21 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                 when {
                     (loop as PluginBase).isEnabled() && loop.isSuperBolus                       -> {
                         binding.infoLayout.apsMode.setImageResource(R.drawable.ic_loop_superbolus)
-                        apsModeSetA11yLabel(info.nightscout.core.ui.R.string.superbolus)
+                        apsModeSetA11yLabel(app.aaps.core.ui.R.string.superbolus)
                         binding.infoLayout.apsModeText.text = dateUtil.age(loop.minutesToEndOfSuspend() * 60000L, true, rh)
                         binding.infoLayout.apsModeText.visibility = View.VISIBLE
                     }
 
                     loop.isDisconnected                                                         -> {
-                        binding.infoLayout.apsMode.setImageResource(info.nightscout.core.ui.R.drawable.ic_loop_disconnected)
-                        apsModeSetA11yLabel(info.nightscout.core.ui.R.string.disconnected)
+                        binding.infoLayout.apsMode.setImageResource(app.aaps.core.ui.R.drawable.ic_loop_disconnected)
+                        apsModeSetA11yLabel(app.aaps.core.ui.R.string.disconnected)
                         binding.infoLayout.apsModeText.text = dateUtil.age(loop.minutesToEndOfSuspend() * 60000L, true, rh)
                         binding.infoLayout.apsModeText.visibility = View.VISIBLE
                     }
 
                     (loop as PluginBase).isEnabled() && loop.isSuspended                        -> {
-                        binding.infoLayout.apsMode.setImageResource(info.nightscout.core.ui.R.drawable.ic_loop_paused)
-                        apsModeSetA11yLabel(info.nightscout.core.ui.R.string.suspendloop_label)
+                        binding.infoLayout.apsMode.setImageResource(app.aaps.core.ui.R.drawable.ic_loop_paused)
+                        apsModeSetA11yLabel(app.aaps.core.ui.R.string.suspendloop_label)
                         binding.infoLayout.apsModeText.text = dateUtil.age(loop.minutesToEndOfSuspend() * 60000L, true, rh)
                         binding.infoLayout.apsModeText.visibility = View.VISIBLE
                     }
@@ -681,36 +682,36 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                             if (pump.model() == PumpType.OMNIPOD_EROS || pump.model() == PumpType.OMNIPOD_DASH) {
                                 // For Omnipod, indicate the pump as disconnected when it's suspended.
                                 // The only way to 'reconnect' it, is through the Omnipod tab
-                                apsModeSetA11yLabel(info.nightscout.core.ui.R.string.disconnected)
-                                info.nightscout.core.ui.R.drawable.ic_loop_disconnected
+                                apsModeSetA11yLabel(app.aaps.core.ui.R.string.disconnected)
+                                app.aaps.core.ui.R.drawable.ic_loop_disconnected
                             } else {
-                                apsModeSetA11yLabel(info.nightscout.core.ui.R.string.pump_paused)
-                                info.nightscout.core.ui.R.drawable.ic_loop_paused
+                                apsModeSetA11yLabel(app.aaps.core.ui.R.string.pump_paused)
+                                app.aaps.core.ui.R.drawable.ic_loop_paused
                             }
                         )
                         binding.infoLayout.apsModeText.visibility = View.GONE
                     }
 
                     (loop as PluginBase).isEnabled() && closedLoopEnabled.value() && loop.isLGS -> {
-                        binding.infoLayout.apsMode.setImageResource(info.nightscout.core.ui.R.drawable.ic_loop_lgs)
-                        apsModeSetA11yLabel(info.nightscout.core.ui.R.string.uel_lgs_loop_mode)
+                        binding.infoLayout.apsMode.setImageResource(app.aaps.core.ui.R.drawable.ic_loop_lgs)
+                        apsModeSetA11yLabel(app.aaps.core.ui.R.string.uel_lgs_loop_mode)
                         binding.infoLayout.apsModeText.visibility = View.GONE
                     }
 
                     (loop as PluginBase).isEnabled() && closedLoopEnabled.value()               -> {
-                        binding.infoLayout.apsMode.setImageResource(info.nightscout.core.main.R.drawable.ic_loop_closed)
-                        apsModeSetA11yLabel(info.nightscout.core.ui.R.string.closedloop)
+                        binding.infoLayout.apsMode.setImageResource(app.aaps.core.main.R.drawable.ic_loop_closed)
+                        apsModeSetA11yLabel(app.aaps.core.ui.R.string.closedloop)
                         binding.infoLayout.apsModeText.visibility = View.GONE
                     }
 
                     (loop as PluginBase).isEnabled() && !closedLoopEnabled.value()              -> {
-                        binding.infoLayout.apsMode.setImageResource(info.nightscout.core.ui.R.drawable.ic_loop_open)
-                        apsModeSetA11yLabel(info.nightscout.core.ui.R.string.openloop)
+                        binding.infoLayout.apsMode.setImageResource(app.aaps.core.ui.R.drawable.ic_loop_open)
+                        apsModeSetA11yLabel(app.aaps.core.ui.R.string.openloop)
                         binding.infoLayout.apsModeText.visibility = View.GONE
                     }
 
                     else                                                                        -> {
-                        binding.infoLayout.apsMode.setImageResource(info.nightscout.core.ui.R.drawable.ic_loop_disabled)
+                        binding.infoLayout.apsMode.setImageResource(app.aaps.core.ui.R.drawable.ic_loop_disabled)
                         apsModeSetA11yLabel(R.string.disabled_loop)
                         binding.infoLayout.apsModeText.visibility = View.GONE
                     }
@@ -724,7 +725,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
 
             // pump status from ns
             binding.pump.text = processedDeviceStatusData.pumpStatus(nsSettingsStatus)
-            binding.pump.setOnClickListener { activity?.let { OKDialog.show(it, rh.gs(info.nightscout.core.ui.R.string.pump), processedDeviceStatusData.extendedPumpStatus) } }
+            binding.pump.setOnClickListener { activity?.let { OKDialog.show(it, rh.gs(app.aaps.core.ui.R.string.pump), processedDeviceStatusData.extendedPumpStatus) } }
 
             // OpenAPS status from ns
             binding.openaps.text = processedDeviceStatusData.openApsStatus
@@ -750,12 +751,12 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                 val graph = GraphView(context)
                 graph.layoutParams =
                     LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, rh.dpToPx(skinProvider.activeSkin().secondaryGraphHeight)).also { it.setMargins(0, rh.dpToPx(15), 0, rh.dpToPx(10)) }
-                graph.gridLabelRenderer?.gridColor = rh.gac(context, info.nightscout.core.ui.R.attr.graphGrid)
+                graph.gridLabelRenderer?.gridColor = rh.gac(context, app.aaps.core.ui.R.attr.graphGrid)
                 graph.gridLabelRenderer?.reloadStyles()
                 graph.gridLabelRenderer?.isHorizontalLabelsVisible = false
                 graph.gridLabelRenderer?.labelVerticalWidth = axisWidth
                 graph.gridLabelRenderer?.numVerticalLabels = 3
-                graph.viewport.backgroundColor = rh.gac(context, info.nightscout.core.ui.R.attr.viewPortBackgroundColor)
+                graph.viewport.backgroundColor = rh.gac(context, app.aaps.core.ui.R.attr.viewPortBackgroundColor)
                 relativeLayout.addView(graph)
 
                 val label = TextView(context)
@@ -803,7 +804,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
             trendArrow?.let { binding.infoLayout.arrow.setImageResource(it.directionToIcon()) }
             binding.infoLayout.arrow.visibility = (trendArrow != null).toVisibilityKeepSpace()
             binding.infoLayout.arrow.setColorFilter(lastBgColor)
-            binding.infoLayout.arrow.contentDescription = lastBgDescription + " " + rh.gs(info.nightscout.core.ui.R.string.and) + " " + trendDescription
+            binding.infoLayout.arrow.contentDescription = lastBgDescription + " " + rh.gs(app.aaps.core.ui.R.string.and) + " " + trendDescription
 
             if (glucoseStatus != null) {
                 binding.infoLayout.deltaLarge.text = profileUtil.fromMgdlToSignedStringInUnits(glucoseStatus.delta)
@@ -813,7 +814,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                 binding.infoLayout.longAvgDelta.text = profileUtil.fromMgdlToSignedStringInUnits(glucoseStatus.longAvgDelta)
             } else {
                 binding.infoLayout.deltaLarge.text = ""
-                binding.infoLayout.delta.text = "Δ " + rh.gs(info.nightscout.core.ui.R.string.value_unavailable_short)
+                binding.infoLayout.delta.text = "Δ " + rh.gs(app.aaps.core.ui.R.string.value_unavailable_short)
                 binding.infoLayout.avgDelta.text = ""
                 binding.infoLayout.longAvgDelta.text = ""
             }
@@ -851,18 +852,18 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
             val profileBackgroundColor = profile?.let {
                 if (it is ProfileSealed.EPS) {
                     if (it.value.originalPercentage != 100 || it.value.originalTimeshift != 0L || it.value.originalDuration != 0L)
-                        info.nightscout.core.ui.R.attr.ribbonWarningColor
-                    else info.nightscout.core.ui.R.attr.ribbonDefaultColor
-                } else info.nightscout.core.ui.R.attr.ribbonDefaultColor
-            } ?: info.nightscout.core.ui.R.attr.ribbonCriticalColor
+                        app.aaps.core.ui.R.attr.ribbonWarningColor
+                    else app.aaps.core.ui.R.attr.ribbonDefaultColor
+                } else app.aaps.core.ui.R.attr.ribbonDefaultColor
+            } ?: app.aaps.core.ui.R.attr.ribbonCriticalColor
 
             val profileTextColor = profile?.let {
                 if (it is ProfileSealed.EPS) {
                     if (it.value.originalPercentage != 100 || it.value.originalTimeshift != 0L || it.value.originalDuration != 0L)
-                        info.nightscout.core.ui.R.attr.ribbonTextWarningColor
-                    else info.nightscout.core.ui.R.attr.ribbonTextDefaultColor
-                } else info.nightscout.core.ui.R.attr.ribbonTextDefaultColor
-            } ?: info.nightscout.core.ui.R.attr.ribbonTextDefaultColor
+                        app.aaps.core.ui.R.attr.ribbonTextWarningColor
+                    else app.aaps.core.ui.R.attr.ribbonTextDefaultColor
+                } else app.aaps.core.ui.R.attr.ribbonTextDefaultColor
+            } ?: app.aaps.core.ui.R.attr.ribbonTextDefaultColor
             setRibbon(binding.activeProfile, profileTextColor, profileBackgroundColor, profileFunction.getProfileNameWithRemainingTime())
         }
     }
@@ -877,7 +878,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
             binding.infoLayout.baseBasal.text = temporaryBasalText
             binding.infoLayout.baseBasal.setTextColor(temporaryBasalColor)
             binding.infoLayout.baseBasalIcon.setImageResource(temporaryBasalIcon)
-            binding.infoLayout.basalLayout.setOnClickListener { activity?.let { OKDialog.show(it, rh.gs(info.nightscout.core.ui.R.string.basal), temporaryBasalDialogText) } }
+            binding.infoLayout.basalLayout.setOnClickListener { activity?.let { OKDialog.show(it, rh.gs(app.aaps.core.ui.R.string.basal), temporaryBasalDialogText) } }
         }
     }
 
@@ -889,7 +890,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
         runOnUiThread {
             _binding ?: return@runOnUiThread
             binding.infoLayout.extendedBolus.text = extendedBolusText
-            binding.infoLayout.extendedLayout.setOnClickListener { activity?.let { OKDialog.show(it, rh.gs(info.nightscout.core.ui.R.string.extended_bolus), extendedBolusDialogText) } }
+            binding.infoLayout.extendedLayout.setOnClickListener { activity?.let { OKDialog.show(it, rh.gs(app.aaps.core.ui.R.string.extended_bolus), extendedBolusDialogText) } }
             binding.infoLayout.extendedLayout.visibility = (extendedBolus != null && !pump.isFakingTempsByExtendedBoluses).toVisibility()
         }
     }
@@ -901,7 +902,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
         val pump = activePlugin.activePump
         val isPatchPump = pump.pumpDescription.isPatchPump
         binding.statusLightsLayout.apply {
-            cannulaOrPatch.setImageResource(if (isPatchPump) info.nightscout.core.main.R.drawable.ic_patch_pump_outline else R.drawable.ic_cp_age_cannula)
+            cannulaOrPatch.setImageResource(if (isPatchPump) app.aaps.core.main.R.drawable.ic_patch_pump_outline else R.drawable.ic_cp_age_cannula)
             cannulaOrPatch.contentDescription = rh.gs(if (isPatchPump) R.string.statuslights_patch_pump_age else R.string.statuslights_cannula_age)
             insulinAge.visibility = isPatchPump.not().toVisibility()
             batteryLayout.visibility = (!isPatchPump || pump.pumpDescription.useHardwareLink).toVisibility()
@@ -931,9 +932,9 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
         runOnUiThread {
             _binding ?: return@runOnUiThread
             binding.infoLayout.iob.text = iobText
-            binding.infoLayout.iobLayout.setOnClickListener { activity?.let { OKDialog.show(it, rh.gs(info.nightscout.core.ui.R.string.iob), iobDialogText) } }
+            binding.infoLayout.iobLayout.setOnClickListener { activity?.let { OKDialog.show(it, rh.gs(app.aaps.core.ui.R.string.iob), iobDialogText) } }
             // cob
-            var cobText = displayText ?: rh.gs(info.nightscout.core.ui.R.string.value_unavailable_short)
+            var cobText = displayText ?: rh.gs(app.aaps.core.ui.R.string.value_unavailable_short)
 
             val constraintsProcessed = loop.lastRun?.constraintsProcessed
             val lastRun = loop.lastRun
@@ -941,7 +942,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                 if (constraintsProcessed.carbsReq > 0) {
                     //only display carbsreq when carbs have not been entered recently
                     if (lastCarbsTime < lastRun.lastAPSRun) {
-                        cobText += "\n" + constraintsProcessed.carbsReq + " " + rh.gs(info.nightscout.core.ui.R.string.required)
+                        cobText += "\n" + constraintsProcessed.carbsReq + " " + rh.gs(app.aaps.core.ui.R.string.required)
                     }
                     if (carbAnimation?.isRunning == false)
                         carbAnimation?.start()
@@ -961,13 +962,13 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
         var ENTTtext = ""
         if (tempTarget?.reason == TemporaryTarget.Reason.EATING_NOW) ENTTtext = "EATING NOW "
         if (tempTarget?.reason == TemporaryTarget.Reason.EATING_NOW_PB) ENTTtext = "EATING NOW PB "
-            runOnUiThread {
+        runOnUiThread {
             _binding ?: return@runOnUiThread
             if (tempTarget != null) {
                 setRibbon(
                     binding.tempTarget,
-                    info.nightscout.core.ui.R.attr.ribbonTextWarningColor,
-                    info.nightscout.core.ui.R.attr.ribbonWarningColor,
+                    app.aaps.core.ui.R.attr.ribbonTextWarningColor,
+                    app.aaps.core.ui.R.attr.ribbonWarningColor,
                     ENTTtext + profileUtil.toTargetRangeString(tempTarget.lowTarget, tempTarget.highTarget, GlucoseUnit.MGDL, units) + " " + dateUtil.untilString(tempTarget.end, rh)
                 )
             } else {
@@ -979,15 +980,15 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                         aapsLogger.debug("Adjusted target. Profile: ${profile.getTargetMgdl()} APS: $targetUsed")
                         setRibbon(
                             binding.tempTarget,
-                            info.nightscout.core.ui.R.attr.ribbonTextWarningColor,
-                            info.nightscout.core.ui.R.attr.tempTargetBackgroundColor,
+                            app.aaps.core.ui.R.attr.ribbonTextWarningColor,
+                            app.aaps.core.ui.R.attr.tempTargetBackgroundColor,
                             profileUtil.toTargetRangeString(targetUsed, targetUsed, GlucoseUnit.MGDL, units)
                         )
                     } else {
                         setRibbon(
                             binding.tempTarget,
-                            info.nightscout.core.ui.R.attr.ribbonTextDefaultColor,
-                            info.nightscout.core.ui.R.attr.ribbonDefaultColor,
+                            app.aaps.core.ui.R.attr.ribbonTextDefaultColor,
+                            app.aaps.core.ui.R.attr.ribbonDefaultColor,
                             profileUtil.toTargetRangeString(profile.getTargetLowMgdl(), profile.getTargetHighMgdl(), GlucoseUnit.MGDL, units)
                         )
                     }
@@ -1101,10 +1102,12 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
     private fun updateSensitivity() {
         _binding ?: return
         val lastAutosensData = overviewData.lastAutosensData(iobCobCalculator)
-        if (constraintChecker.isAutosensModeEnabled().value() || !(config.NSCLIENT && lastAutosensData == null)) {
-            binding.infoLayout.sensitivityIcon.setImageResource(info.nightscout.core.main.R.drawable.ic_swap_vert_black_48dp_green)
+        if (config.NSCLIENT && sp.getBoolean(info.nightscout.core.utils.R.string.key_used_autosens_on_main_phone, false) ||
+            !config.NSCLIENT && constraintChecker.isAutosensModeEnabled().value()
+        ) {
+            binding.infoLayout.sensitivityIcon.setImageResource(app.aaps.core.main.R.drawable.ic_swap_vert_black_48dp_green)
         } else {
-            binding.infoLayout.sensitivityIcon.setImageResource(info.nightscout.core.main.R.drawable.ic_x_swap_vert)
+            binding.infoLayout.sensitivityIcon.setImageResource(app.aaps.core.main.R.drawable.ic_x_swap_vert)
         }
 
         binding.infoLayout.sensitivity.text =

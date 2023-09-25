@@ -1,14 +1,16 @@
 package info.nightscout.core.extensions
 
-import info.nightscout.database.entities.TherapyEvent
-import info.nightscout.database.entities.embedments.InterfaceIDs
-import info.nightscout.shared.utils.T
-import info.nightscout.sharedtests.TestBaseWithProfile
-import org.junit.jupiter.api.Assertions
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.main.extensions.isOlderThan
+import app.aaps.database.entities.TherapyEvent
+import app.aaps.database.entities.embedments.InterfaceIDs
+import app.aaps.shared.tests.TestBaseWithProfile
+import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 
 class TherapyEventExtensionKtTest : TestBaseWithProfile() {
+
     @Test
     fun isOlderThan() {
         val therapyEvent = TherapyEvent(
@@ -29,8 +31,8 @@ class TherapyEventExtensionKtTest : TestBaseWithProfile() {
             )
         )
         Mockito.`when`(dateUtil.now()).thenReturn(now + T.mins(30).msecs())
-        Assertions.assertFalse(therapyEvent.isOlderThan(1.0, dateUtil))
+        assertThat(therapyEvent.isOlderThan(1.0, dateUtil)).isFalse()
         Mockito.`when`(dateUtil.now()).thenReturn(now + T.hours(2).msecs())
-        Assertions.assertTrue(therapyEvent.isOlderThan(1.0, dateUtil))
+        assertThat(therapyEvent.isOlderThan(1.0, dateUtil)).isTrue()
     }
 }

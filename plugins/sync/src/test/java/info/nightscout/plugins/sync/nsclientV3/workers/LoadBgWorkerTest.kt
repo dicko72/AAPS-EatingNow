@@ -6,34 +6,34 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkContinuation
 import androidx.work.WorkManager
 import androidx.work.testing.TestListenableWorkerBuilder
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.nsclient.StoreDataForDb
+import app.aaps.core.interfaces.receivers.ReceiverStatusStore
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.source.NSClientSource
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.DecimalFormatter
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.nssdk.interfaces.NSAndroidClient
+import app.aaps.core.nssdk.remotemodel.LastModified
+import app.aaps.core.utils.receivers.DataWorkerStorage
+import app.aaps.database.entities.GlucoseValue
+import app.aaps.database.entities.embedments.InterfaceIDs
+import app.aaps.implementation.utils.DecimalFormatterImpl
+import app.aaps.shared.tests.TestBase
+import com.google.common.truth.Truth.assertThat
 import dagger.android.AndroidInjector
 import dagger.android.HasAndroidInjector
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.core.utils.receivers.DataWorkerStorage
-import info.nightscout.database.entities.GlucoseValue
-import info.nightscout.database.entities.embedments.InterfaceIDs
 import info.nightscout.database.impl.AppRepository
-import info.nightscout.implementation.utils.DecimalFormatterImpl
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.nsclient.StoreDataForDb
-import info.nightscout.interfaces.receivers.ReceiverStatusStore
-import info.nightscout.interfaces.source.NSClientSource
-import info.nightscout.interfaces.ui.UiInteraction
-import info.nightscout.interfaces.utils.DecimalFormatter
 import info.nightscout.plugins.sync.nsShared.NsIncomingDataProcessor
 import info.nightscout.plugins.sync.nsclient.ReceiverDelegate
 import info.nightscout.plugins.sync.nsclient.data.NSDeviceStatusHandler
 import info.nightscout.plugins.sync.nsclientV3.DataSyncSelectorV3
 import info.nightscout.plugins.sync.nsclientV3.NSClientV3Plugin
 import info.nightscout.plugins.sync.nsclientV3.extensions.toNSSvgV3
-import info.nightscout.sdk.interfaces.NSAndroidClient
-import info.nightscout.sdk.remotemodel.LastModified
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.sharedtests.TestBase
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.any
@@ -42,6 +42,7 @@ import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
 import org.mockito.Mockito
+import kotlin.test.assertIs
 
 internal class LoadBgWorkerTest : TestBase() {
 
@@ -111,7 +112,7 @@ internal class LoadBgWorkerTest : TestBase() {
         sut = TestListenableWorkerBuilder<LoadBgWorker>(context).build()
 
         val result = sut.doWorkAndLog()
-        Assertions.assertTrue(result is ListenableWorker.Result.Failure)
+        assertIs<ListenableWorker.Result.Failure>(result)
     }
 
     @Test
@@ -121,8 +122,8 @@ internal class LoadBgWorkerTest : TestBase() {
         Mockito.`when`(sp.getBoolean(info.nightscout.core.utils.R.string.key_ns_receive_cgm, false)).thenReturn(false)
 
         val result = sut.doWorkAndLog()
-        Assertions.assertTrue(result is ListenableWorker.Result.Success)
-        Assertions.assertTrue(result.outputData.getString("Result") == "Load not enabled")
+        assertIs<ListenableWorker.Result.Success>(result)
+        assertThat(result.outputData.getString("Result")).isEqualTo("Load not enabled")
     }
 
     @Test
@@ -136,8 +137,8 @@ internal class LoadBgWorkerTest : TestBase() {
         Mockito.`when`(nsAndroidClient.getSgvsNewerThan(anyLong(), anyInt())).thenReturn(NSAndroidClient.ReadResponse(200, 0, emptyList()))
 
         val result = sut.doWorkAndLog()
-        Assertions.assertEquals(now - 1000, nsClientV3Plugin.lastLoadedSrvModified.collections.entries)
-        Assertions.assertTrue(result is ListenableWorker.Result.Success)
+        assertThat(nsClientV3Plugin.lastLoadedSrvModified.collections.entries).isEqualTo(now - 1000)
+        assertIs<ListenableWorker.Result.Success>(result)
     }
 
     @Test
@@ -165,7 +166,7 @@ internal class LoadBgWorkerTest : TestBase() {
         Mockito.`when`(nsAndroidClient.getSgvsNewerThan(anyLong(), anyInt())).thenReturn(NSAndroidClient.ReadResponse(200, 0, listOf(glucoseValue.toNSSvgV3())))
 
         val result = sut.doWorkAndLog()
-        Assertions.assertTrue(result is ListenableWorker.Result.Success)
+        assertIs<ListenableWorker.Result.Success>(result)
     }
 
     @Test
@@ -179,7 +180,7 @@ internal class LoadBgWorkerTest : TestBase() {
         Mockito.`when`(nsAndroidClient.getSgvsNewerThan(anyLong(), anyInt())).thenReturn(NSAndroidClient.ReadResponse(200, 0, emptyList()))
 
         val result = sut.doWorkAndLog()
-        Assertions.assertEquals(now - 1000, nsClientV3Plugin.lastLoadedSrvModified.collections.entries)
-        Assertions.assertTrue(result is ListenableWorker.Result.Success)
+        assertThat(nsClientV3Plugin.lastLoadedSrvModified.collections.entries).isEqualTo(now - 1000)
+        assertIs<ListenableWorker.Result.Success>(result)
     }
 }

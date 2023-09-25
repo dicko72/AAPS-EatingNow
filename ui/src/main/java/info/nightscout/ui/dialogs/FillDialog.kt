@@ -5,30 +5,30 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import app.aaps.core.interfaces.constraints.ConstraintsChecker
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.protection.ProtectionCheck
+import app.aaps.core.interfaces.pump.DetailedBolusInfo
+import app.aaps.core.interfaces.queue.Callback
+import app.aaps.core.interfaces.queue.CommandQueue
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.DecimalFormatter
+import app.aaps.core.interfaces.utils.SafeParse
+import app.aaps.core.main.constraints.ConstraintObject
+import app.aaps.core.main.utils.extensions.formatColor
+import app.aaps.core.ui.dialogs.OKDialog
+import app.aaps.core.ui.toast.ToastUtils
+import app.aaps.core.utils.HtmlHelper
+import app.aaps.database.entities.TherapyEvent
+import app.aaps.database.entities.UserEntry
+import app.aaps.database.entities.ValueWithUnit
 import com.google.common.base.Joiner
 import dagger.android.HasAndroidInjector
-import info.nightscout.core.constraints.ConstraintObject
-import info.nightscout.core.ui.dialogs.OKDialog
-import info.nightscout.core.ui.toast.ToastUtils
-import info.nightscout.core.utils.HtmlHelper
-import info.nightscout.core.utils.extensions.formatColor
-import info.nightscout.database.entities.TherapyEvent
-import info.nightscout.database.entities.UserEntry
-import info.nightscout.database.entities.ValueWithUnit
 import info.nightscout.database.impl.AppRepository
 import info.nightscout.database.impl.transactions.InsertIfNewByTimestampTherapyEventTransaction
-import info.nightscout.interfaces.constraints.ConstraintsChecker
-import info.nightscout.interfaces.logging.UserEntryLogger
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.protection.ProtectionCheck
-import info.nightscout.interfaces.pump.DetailedBolusInfo
-import info.nightscout.interfaces.queue.Callback
-import info.nightscout.interfaces.queue.CommandQueue
-import info.nightscout.interfaces.ui.UiInteraction
-import info.nightscout.interfaces.utils.DecimalFormatter
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.SafeParse
-import info.nightscout.shared.interfaces.ResourceHelper
 import info.nightscout.ui.R
 import info.nightscout.ui.databinding.DialogFillBinding
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -123,31 +123,31 @@ class FillDialog : DialogFragmentWithDate() {
             actions.add(rh.gs(R.string.fill_warning))
             actions.add("")
             actions.add(
-                rh.gs(info.nightscout.core.ui.R.string.bolus) + ": " + decimalFormatter.toPumpSupportedBolus(insulinAfterConstraints, activePlugin.activePump.pumpDescription.bolusStep)
-                    .formatColor(context, rh, info.nightscout.core.ui.R.attr.insulinButtonColor)
+                rh.gs(app.aaps.core.ui.R.string.bolus) + ": " + decimalFormatter.toPumpSupportedBolus(insulinAfterConstraints, activePlugin.activePump.pumpDescription.bolusStep)
+                    .formatColor(context, rh, app.aaps.core.ui.R.attr.insulinButtonColor)
             )
             if (abs(insulinAfterConstraints - insulin) > 0.01)
                 actions.add(
-                    rh.gs(info.nightscout.core.ui.R.string.bolus_constraint_applied_warn, insulin, insulinAfterConstraints).formatColor(context, rh, info.nightscout.core.ui.R.attr.warningColor)
+                    rh.gs(app.aaps.core.ui.R.string.bolus_constraint_applied_warn, insulin, insulinAfterConstraints).formatColor(context, rh, app.aaps.core.ui.R.attr.warningColor)
                 )
         }
         val siteChange = binding.fillCatheterChange.isChecked
         if (siteChange)
-            actions.add(rh.gs(R.string.record_pump_site_change).formatColor(context, rh, info.nightscout.core.ui.R.attr.actionsConfirmColor))
+            actions.add(rh.gs(R.string.record_pump_site_change).formatColor(context, rh, app.aaps.core.ui.R.attr.actionsConfirmColor))
         val insulinChange = binding.fillCartridgeChange.isChecked
         if (insulinChange)
-            actions.add(rh.gs(R.string.record_insulin_cartridge_change).formatColor(context, rh, info.nightscout.core.ui.R.attr.actionsConfirmColor))
+            actions.add(rh.gs(R.string.record_insulin_cartridge_change).formatColor(context, rh, app.aaps.core.ui.R.attr.actionsConfirmColor))
         val notes: String = binding.notesLayout.notes.text.toString()
         if (notes.isNotEmpty())
-            actions.add(rh.gs(info.nightscout.core.ui.R.string.notes_label) + ": " + notes)
+            actions.add(rh.gs(app.aaps.core.ui.R.string.notes_label) + ": " + notes)
         eventTime -= eventTime % 1000
 
         if (eventTimeChanged)
-            actions.add(rh.gs(info.nightscout.core.ui.R.string.time) + ": " + dateUtil.dateAndTimeString(eventTime))
+            actions.add(rh.gs(app.aaps.core.ui.R.string.time) + ": " + dateUtil.dateAndTimeString(eventTime))
 
         if (insulinAfterConstraints > 0 || binding.fillCatheterChange.isChecked || binding.fillCartridgeChange.isChecked) {
             activity?.let { activity ->
-                OKDialog.showConfirmation(activity, rh.gs(info.nightscout.core.ui.R.string.prime_fill), HtmlHelper.fromHtml(Joiner.on("<br/>").join(actions)), {
+                OKDialog.showConfirmation(activity, rh.gs(app.aaps.core.ui.R.string.prime_fill), HtmlHelper.fromHtml(Joiner.on("<br/>").join(actions)), {
                     if (insulinAfterConstraints > 0) {
                         uel.log(
                             UserEntry.Action.PRIME_BOLUS, UserEntry.Sources.FillDialog,
@@ -199,7 +199,7 @@ class FillDialog : DialogFragmentWithDate() {
             }
         } else {
             activity?.let { activity ->
-                OKDialog.show(activity, rh.gs(info.nightscout.core.ui.R.string.prime_fill), rh.gs(info.nightscout.core.ui.R.string.no_action_selected))
+                OKDialog.show(activity, rh.gs(app.aaps.core.ui.R.string.prime_fill), rh.gs(app.aaps.core.ui.R.string.no_action_selected))
             }
         }
         dismiss()
@@ -215,7 +215,7 @@ class FillDialog : DialogFragmentWithDate() {
         commandQueue.bolus(detailedBolusInfo, object : Callback() {
             override fun run() {
                 if (!result.success) {
-                    uiInteraction.runAlarm(result.comment, rh.gs(info.nightscout.core.ui.R.string.treatmentdeliveryerror), info.nightscout.core.ui.R.raw.boluserror)
+                    uiInteraction.runAlarm(result.comment, rh.gs(app.aaps.core.ui.R.string.treatmentdeliveryerror), app.aaps.core.ui.R.raw.boluserror)
                 }
             }
         })

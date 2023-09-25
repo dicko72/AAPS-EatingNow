@@ -1,15 +1,15 @@
 package info.nightscout.source
 
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.plugin.PluginDescription
+import app.aaps.core.interfaces.plugin.PluginType
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.source.BgSource
+import app.aaps.core.interfaces.source.NSClientSource
+import app.aaps.database.entities.GlucoseValue
 import dagger.android.HasAndroidInjector
-import info.nightscout.database.entities.GlucoseValue
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.plugin.PluginBase
-import info.nightscout.interfaces.plugin.PluginDescription
-import info.nightscout.interfaces.plugin.PluginType
-import info.nightscout.interfaces.source.BgSource
-import info.nightscout.interfaces.source.NSClientSource
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.shared.interfaces.ResourceHelper
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,7 +23,7 @@ class NSClientSourcePlugin @Inject constructor(
     PluginDescription()
         .mainType(PluginType.BGSOURCE)
         .fragmentClass(BGSourceFragment::class.java.name)
-        .pluginIcon(info.nightscout.core.main.R.drawable.ic_nsclient_bg)
+        .pluginIcon(app.aaps.core.main.R.drawable.ic_nsclient_bg)
         .pluginName(R.string.ns_client_bg)
         .shortName(R.string.ns_client_bg_short)
         .description(R.string.description_source_ns_client)

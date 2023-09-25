@@ -1,4 +1,5 @@
-package info.nightscout.interfaces.aps
+// Modified for Eating Now
+package app.aaps.core.interfaces.aps
 
 @Suppress("SpellCheckingInspection")
 object SMBDefaults {

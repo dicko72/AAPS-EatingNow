@@ -16,21 +16,21 @@ import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import info.nightscout.core.ui.activities.TranslatedDaggerAppCompatActivity
-import info.nightscout.core.ui.dialogs.OKDialog
-import info.nightscout.core.utils.ActionModeHelper
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.core.wizard.QuickWizard
-import info.nightscout.core.wizard.QuickWizardEntry
-import info.nightscout.core.ui.dragHelpers.ItemTouchHelperAdapter
-import info.nightscout.core.ui.dragHelpers.OnStartDragListener
-import info.nightscout.core.ui.dragHelpers.SimpleItemTouchHelperCallback
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.shared.extensions.toVisibility
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
+import app.aaps.core.main.utils.ActionModeHelper
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.main.wizard.QuickWizard
+import app.aaps.core.main.wizard.QuickWizardEntry
+import app.aaps.core.interfaces.extensions.toVisibility
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.ui.activities.TranslatedDaggerAppCompatActivity
+import app.aaps.core.ui.dialogs.OKDialog
+import app.aaps.core.ui.dragHelpers.ItemTouchHelperAdapter
+import app.aaps.core.ui.dragHelpers.OnStartDragListener
+import app.aaps.core.ui.dragHelpers.SimpleItemTouchHelperCallback
 import info.nightscout.ui.R
 import info.nightscout.ui.databinding.ActivityQuickwizardListBinding
 import info.nightscout.ui.databinding.QuickwizardListItemBinding
@@ -74,15 +74,15 @@ class QuickWizardListActivity : TranslatedDaggerAppCompatActivity(), OnStartDrag
             holder.binding.from.text = dateUtil.timeString(entry.validFromDate())
             holder.binding.to.text = dateUtil.timeString(entry.validToDate())
             holder.binding.buttonText.text = entry.buttonText()
-            holder.binding.carbs.text = rh.gs(info.nightscout.core.main.R.string.format_carbs, entry.carbs())
+            holder.binding.carbs.text = rh.gs(app.aaps.core.main.R.string.format_carbs, entry.carbs())
             if (entry.device() == QuickWizardEntry.DEVICE_ALL) {
                 holder.binding.device.visibility = View.GONE
             } else {
                 holder.binding.device.visibility = View.VISIBLE
                 holder.binding.device.setImageResource(
                     when (quickWizard[position].device()) {
-                        QuickWizardEntry.DEVICE_WATCH -> info.nightscout.core.main.R.drawable.ic_watch
-                        else                          -> info.nightscout.core.main.R.drawable.ic_smartphone
+                        QuickWizardEntry.DEVICE_WATCH -> app.aaps.core.main.R.drawable.ic_watch
+                        else                          -> app.aaps.core.main.R.drawable.ic_smartphone
                     }
                 )
                 holder.binding.device.contentDescription = when (quickWizard[position].device()) {
@@ -139,7 +139,7 @@ class QuickWizardListActivity : TranslatedDaggerAppCompatActivity(), OnStartDrag
         actionHelper.setOnRemoveHandler { removeSelected(it) }
         actionHelper.enableSort = true
 
-        title = rh.gs(info.nightscout.core.ui.R.string.quickwizard)
+        title = rh.gs(app.aaps.core.ui.R.string.quickwizard)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
@@ -156,7 +156,7 @@ class QuickWizardListActivity : TranslatedDaggerAppCompatActivity(), OnStartDrag
         }
         addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(info.nightscout.core.main.R.menu.menu_actions, menu)
+                menuInflater.inflate(app.aaps.core.main.R.menu.menu_actions, menu)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
@@ -182,7 +182,7 @@ class QuickWizardListActivity : TranslatedDaggerAppCompatActivity(), OnStartDrag
     }
 
     private fun removeSelected(selectedItems: SparseArray<QuickWizardEntry>) {
-        OKDialog.showConfirmation(this, rh.gs(info.nightscout.core.ui.R.string.removerecord), getConfirmationText(selectedItems), Runnable {
+        OKDialog.showConfirmation(this, rh.gs(app.aaps.core.ui.R.string.removerecord), getConfirmationText(selectedItems), Runnable {
             selectedItems.forEach { _, item ->
                 quickWizard.remove(item.position)
                 rxBus.send(EventQuickWizardChange())
@@ -194,10 +194,10 @@ class QuickWizardListActivity : TranslatedDaggerAppCompatActivity(), OnStartDrag
     private fun getConfirmationText(selectedItems: SparseArray<QuickWizardEntry>): String {
         if (selectedItems.size() == 1) {
             val entry = selectedItems.valueAt(0)
-            return "${rh.gs(info.nightscout.core.ui.R.string.remove_button)} ${entry.buttonText()} ${rh.gs(info.nightscout.core.main.R.string.format_carbs, entry.carbs())}\n" +
+            return "${rh.gs(app.aaps.core.ui.R.string.remove_button)} ${entry.buttonText()} ${rh.gs(app.aaps.core.main.R.string.format_carbs, entry.carbs())}\n" +
                 "${dateUtil.timeString(entry.validFromDate())} - ${dateUtil.timeString(entry.validToDate())}"
         }
-        return rh.gs(info.nightscout.core.ui.R.string.confirm_remove_multiple_items, selectedItems.size())
+        return rh.gs(app.aaps.core.ui.R.string.confirm_remove_multiple_items, selectedItems.size())
     }
 
 }

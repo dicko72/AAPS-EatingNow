@@ -2,14 +2,14 @@ package info.nightscout.ui.activities
 
 import android.os.Bundle
 import android.widget.ArrayAdapter
-import info.nightscout.core.ui.activities.TranslatedDaggerAppCompatActivity
-import info.nightscout.core.ui.toast.ToastUtils
-import info.nightscout.core.utils.fabric.InstanceId
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.interfaces.ui.UiInteraction
-import info.nightscout.shared.SafeParse
-import info.nightscout.shared.utils.DateUtil
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.SafeParse
+import app.aaps.core.ui.activities.TranslatedDaggerAppCompatActivity
+import app.aaps.core.ui.toast.ToastUtils
+import app.aaps.core.utils.fabric.InstanceId
 import info.nightscout.ui.R
 import info.nightscout.ui.databinding.ActivitySurveyBinding
 import info.nightscout.ui.defaultProfile.DefaultProfile
@@ -34,7 +34,7 @@ class SurveyActivity : TranslatedDaggerAppCompatActivity() {
 
         val profileStore = activePlugin.activeProfileSource.profile
         val profileList = profileStore?.getProfileList() ?: return
-        binding.spinner.adapter = ArrayAdapter(this, info.nightscout.core.ui.R.layout.spinner_centered, profileList)
+        binding.spinner.adapter = ArrayAdapter(this, app.aaps.core.ui.R.layout.spinner_centered, profileList)
 
         binding.profile.setOnClickListener {
             val age = SafeParse.stringToInt(binding.age.text.toString())
@@ -86,25 +86,25 @@ class SurveyActivity : TranslatedDaggerAppCompatActivity() {
             val specificProfile = profileStore.getSpecificProfile(profileName)
 
             r.profileJson = specificProfile.toString()
-/*
-            val auth = FirebaseAuth.getInstance()
-            auth.signInAnonymously()
-                .addOnCompleteListener(this) { task ->
-                    if (task.isSuccessful) {
-                        aapsLogger.debug(LTag.CORE, "signInAnonymously:success")
-                        //val user = auth.currentUser // do we need this, seems unused?
+            /*
+                        val auth = FirebaseAuth.getInstance()
+                        auth.signInAnonymously()
+                            .addOnCompleteListener(this) { task ->
+                                if (task.isSuccessful) {
+                                    aapsLogger.debug(LTag.CORE, "signInAnonymously:success")
+                                    //val user = auth.currentUser // do we need this, seems unused?
 
-                        val database = FirebaseDatabase.getInstance().reference
-                        database.child("survey").child(r.id).setValue(r)
-                    } else {
-                        aapsLogger.error("signInAnonymously:failure", task.exception!!)
-                        ToastUtils.warnToast(this, "Authentication failed.")
-                        //updateUI(null)
-                    }
+                                    val database = FirebaseDatabase.getInstance().reference
+                                    database.child("survey").child(r.id).setValue(r)
+                                } else {
+                                    aapsLogger.error("signInAnonymously:failure", task.exception!!)
+                                    ToastUtils.warnToast(this, "Authentication failed.")
+                                    //updateUI(null)
+                                }
 
-                    // ...
-                }
-  */
+                                // ...
+                            }
+              */
             finish()
         }
     }

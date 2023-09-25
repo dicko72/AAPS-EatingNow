@@ -4,39 +4,41 @@ import android.content.Context
 import androidx.annotation.StringRes
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
+import app.aaps.core.main.events.EventIobCalculationProgress
+import app.aaps.core.main.events.EventNewNotification
+import app.aaps.core.main.graph.OverviewData
+import app.aaps.core.main.utils.extensions.putDouble
+import app.aaps.core.main.utils.extensions.putInt
+import app.aaps.core.main.utils.extensions.putString
+import app.aaps.core.main.utils.extensions.storeBoolean
+import app.aaps.core.main.utils.extensions.storeDouble
+import app.aaps.core.main.utils.extensions.storeInt
+import app.aaps.core.main.utils.extensions.storeString
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.constraints.ConstraintsChecker
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.overview.Overview
+import app.aaps.core.interfaces.overview.OverviewMenus
+import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.plugin.PluginDescription
+import app.aaps.core.interfaces.plugin.PluginType
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventDismissNotification
+import app.aaps.core.interfaces.rx.events.EventNewHistoryData
+import app.aaps.core.interfaces.rx.events.EventPumpStatusChanged
+import app.aaps.core.interfaces.rx.events.EventUpdateOverviewCalcProgress
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.shared.impl.rx.bus.RxBusImpl
 import dagger.android.HasAndroidInjector
-import info.nightscout.core.events.EventIobCalculationProgress
-import info.nightscout.core.events.EventNewNotification
-import info.nightscout.core.graph.OverviewData
-import info.nightscout.core.ui.dialogs.OKDialog
-import info.nightscout.core.utils.extensions.putDouble
-import info.nightscout.core.utils.extensions.putInt
-import info.nightscout.core.utils.extensions.putString
-import info.nightscout.core.utils.extensions.storeDouble
-import info.nightscout.core.utils.extensions.storeInt
-import info.nightscout.core.utils.extensions.storeString
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.core.validators.ValidatingEditTextPreference
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.Overview
-import info.nightscout.interfaces.overview.OverviewMenus
-import info.nightscout.interfaces.plugin.PluginBase
-import info.nightscout.interfaces.plugin.PluginDescription
-import info.nightscout.interfaces.plugin.PluginType
+import app.aaps.core.ui.dialogs.OKDialog
+import app.aaps.core.validators.ValidatingEditTextPreference
 import info.nightscout.plugins.R
 import info.nightscout.plugins.general.overview.notifications.NotificationStore
 import info.nightscout.plugins.general.overview.notifications.NotificationWithAction
 import info.nightscout.plugins.general.overview.notifications.events.EventUpdateOverviewNotification
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventDismissNotification
-import info.nightscout.rx.events.EventNewHistoryData
-import info.nightscout.rx.events.EventPumpStatusChanged
-import info.nightscout.rx.events.EventUpdateOverviewCalcProgress
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.shared.impl.rx.bus.RxBusImpl
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import org.json.JSONObject
@@ -56,14 +58,15 @@ class OverviewPlugin @Inject constructor(
     private val config: Config,
     private val overviewData: OverviewData,
     private val overviewMenus: OverviewMenus,
-    private val context: Context
+    private val context: Context,
+    private val constraintsChecker: ConstraintsChecker
 ) : PluginBase(
     PluginDescription()
         .mainType(PluginType.GENERAL)
         .fragmentClass(OverviewFragment::class.qualifiedName)
         .alwaysVisible(true)
         .alwaysEnabled(true)
-        .pluginIcon(info.nightscout.core.ui.R.drawable.ic_home)
+        .pluginIcon(app.aaps.core.ui.R.drawable.ic_home)
         .pluginName(R.string.overview)
         .shortName(R.string.overview_shortname)
         .preferencesId(R.xml.pref_overview)
@@ -187,6 +190,7 @@ class OverviewPlugin @Inject constructor(
             .putDouble(R.string.key_statuslights_bat_warning, sp, rh)
             .putDouble(R.string.key_statuslights_bat_critical, sp, rh)
             .putInt(info.nightscout.core.utils.R.string.key_boluswizard_percentage, sp, rh)
+            .put(rh.gs(info.nightscout.core.utils.R.string.key_used_autosens_on_main_phone), constraintsChecker.isAutosensModeEnabled().value()) // can be disabled by activated DynISF
 
     override fun applyConfiguration(configuration: JSONObject) {
         val previousUnits = sp.getString(info.nightscout.core.utils.R.string.key_units, "random")
@@ -216,6 +220,8 @@ class OverviewPlugin @Inject constructor(
             .storeDouble(R.string.key_statuslights_bat_warning, sp, rh)
             .storeDouble(R.string.key_statuslights_bat_critical, sp, rh)
             .storeInt(info.nightscout.core.utils.R.string.key_boluswizard_percentage, sp, rh)
+            .storeBoolean(info.nightscout.core.utils.R.string.key_used_autosens_on_main_phone, sp, rh)
+
         val newUnits = sp.getString(info.nightscout.core.utils.R.string.key_units, "new")
         if (previousUnits != newUnits) {
             overviewData.reset()

@@ -1,40 +1,40 @@
 package info.nightscout.plugins.profile
 
 import androidx.fragment.app.FragmentActivity
+import app.aaps.annotations.OpenForTesting
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.configuration.Constants
+import app.aaps.core.interfaces.db.GlucoseUnit
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.notifications.Notification
+import app.aaps.core.interfaces.objects.Instantiator
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.plugin.PluginDescription
+import app.aaps.core.interfaces.plugin.PluginType
+import app.aaps.core.interfaces.profile.Profile
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.ProfileSource
+import app.aaps.core.interfaces.profile.ProfileStore
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.profile.PureProfile
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventLocalProfileChanged
+import app.aaps.core.interfaces.rx.events.EventProfileStoreChanged
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.DecimalFormatter
+import app.aaps.core.interfaces.utils.HardLimits
+import app.aaps.core.main.extensions.blockFromJsonArray
+import app.aaps.core.main.extensions.pureProfileFromJson
+import app.aaps.core.main.profile.ProfileSealed
+import app.aaps.core.ui.dialogs.OKDialog
+import app.aaps.core.ui.toast.ToastUtils
+import app.aaps.core.utils.JsonHelper
 import dagger.android.HasAndroidInjector
-import info.nightscout.annotations.OpenForTesting
-import info.nightscout.core.extensions.blockFromJsonArray
-import info.nightscout.core.extensions.pureProfileFromJson
-import info.nightscout.core.profile.ProfileSealed
-import info.nightscout.core.ui.dialogs.OKDialog
-import info.nightscout.core.ui.toast.ToastUtils
-import info.nightscout.core.utils.JsonHelper
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.Constants
-import info.nightscout.interfaces.GlucoseUnit
-import info.nightscout.interfaces.notifications.Notification
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.plugin.PluginBase
-import info.nightscout.interfaces.plugin.PluginDescription
-import info.nightscout.interfaces.plugin.PluginType
-import info.nightscout.interfaces.profile.Instantiator
-import info.nightscout.interfaces.profile.Profile
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.interfaces.profile.ProfileSource
-import info.nightscout.interfaces.profile.ProfileStore
-import info.nightscout.interfaces.profile.PureProfile
-import info.nightscout.interfaces.utils.DecimalFormatter
-import info.nightscout.interfaces.utils.HardLimits
 import info.nightscout.plugins.R
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventLocalProfileChanged
-import info.nightscout.rx.events.EventProfileStoreChanged
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.interfaces.ProfileUtil
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -63,7 +63,7 @@ class ProfilePlugin @Inject constructor(
         .mainType(PluginType.PROFILE)
         .fragmentClass(ProfileFragment::class.java.name)
         .enableByDefault(true)
-        .pluginIcon(info.nightscout.core.main.R.drawable.ic_local_profile)
+        .pluginIcon(app.aaps.core.main.R.drawable.ic_local_profile)
         .pluginName(R.string.localprofile)
         .shortName(R.string.localprofile_shortname)
         .description(R.string.description_profile_local)
@@ -93,7 +93,7 @@ class ProfilePlugin @Inject constructor(
         val pumpDescription = activePlugin.activePump.pumpDescription
         with(profiles[currentProfileIndex]) {
             if (dia < hardLimits.minDia() || dia > hardLimits.maxDia()) {
-                ToastUtils.errorToast(activity, rh.gs(info.nightscout.core.ui.R.string.value_out_of_hard_limits, rh.gs(info.nightscout.core.ui.R.string.profile_dia), dia))
+                ToastUtils.errorToast(activity, rh.gs(app.aaps.core.ui.R.string.value_out_of_hard_limits, rh.gs(app.aaps.core.ui.R.string.profile_dia), dia))
                 return false
             }
             if (name.isEmpty()) {

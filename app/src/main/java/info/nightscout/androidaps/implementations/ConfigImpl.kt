@@ -1,10 +1,11 @@
-package info.nightscout.androidaps.implementations
+// Modified for Eating Now
+package app.aaps.implementations
 
 import android.os.Build
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.maintenance.PrefFileListProvider
 import info.nightscout.androidaps.BuildConfig
 import info.nightscout.androidaps.R
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.maintenance.PrefFileListProvider
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton

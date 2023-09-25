@@ -1,14 +1,15 @@
-package info.nightscout.implementation
+// Modified for Eating Now
+package app.aaps.implementation.utils
 
 import android.content.Context
-import info.nightscout.annotations.OpenForTesting
+import app.aaps.annotations.OpenForTesting
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.HardLimits
 import info.nightscout.database.impl.AppRepository
 import info.nightscout.database.impl.transactions.InsertTherapyEventAnnouncementTransaction
-import info.nightscout.interfaces.ui.UiInteraction
-import info.nightscout.interfaces.utils.HardLimits
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import javax.inject.Inject
@@ -94,12 +95,12 @@ class HardLimitsImpl @Inject constructor(
         if (newValue < lowLimit || newValue > highLimit) {
             newValue = max(newValue, lowLimit)
             newValue = min(newValue, highLimit)
-            var msg = rh.gs(info.nightscout.core.ui.R.string.valueoutofrange, rh.gs(valueName))
+            var msg = rh.gs(app.aaps.core.ui.R.string.valueoutofrange, rh.gs(valueName))
             msg += ".\n"
-            msg += rh.gs(info.nightscout.core.ui.R.string.valuelimitedto, value, newValue)
+            msg += rh.gs(app.aaps.core.ui.R.string.valuelimitedto, value, newValue)
             aapsLogger.error(msg)
             disposable += repository.runTransaction(InsertTherapyEventAnnouncementTransaction(msg)).subscribe()
-            uiInteraction.showToastAndNotification(context, msg, info.nightscout.core.ui.R.raw.error)
+            uiInteraction.showToastAndNotification(context, msg, app.aaps.core.ui.R.raw.error)
         }
         return newValue
     }

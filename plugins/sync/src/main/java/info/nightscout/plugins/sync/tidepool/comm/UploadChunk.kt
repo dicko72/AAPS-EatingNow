@@ -1,10 +1,17 @@
 package info.nightscout.plugins.sync.tidepool.comm
 
-import info.nightscout.database.entities.EffectiveProfileSwitch
-import info.nightscout.database.entities.TemporaryBasal
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.T
+import app.aaps.database.entities.EffectiveProfileSwitch
+import app.aaps.database.entities.TemporaryBasal
 import info.nightscout.database.impl.AppRepository
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.profile.ProfileFunction
 import info.nightscout.plugins.sync.R
 import info.nightscout.plugins.sync.tidepool.elements.BasalElement
 import info.nightscout.plugins.sync.tidepool.elements.BaseElement
@@ -15,13 +22,6 @@ import info.nightscout.plugins.sync.tidepool.elements.SensorGlucoseElement
 import info.nightscout.plugins.sync.tidepool.elements.WizardElement
 import info.nightscout.plugins.sync.tidepool.events.EventTidepoolStatus
 import info.nightscout.plugins.sync.tidepool.utils.GsonInstance
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.interfaces.ProfileUtil
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.shared.utils.T
 import java.util.LinkedList
 import javax.inject.Inject
 import javax.inject.Singleton

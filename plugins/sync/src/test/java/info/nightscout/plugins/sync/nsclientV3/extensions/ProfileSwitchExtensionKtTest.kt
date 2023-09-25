@@ -1,14 +1,14 @@
 package info.nightscout.plugins.sync.nsclientV3.extensions
 
-import info.nightscout.core.extensions.fromConstant
-import info.nightscout.database.entities.ProfileSwitch
-import info.nightscout.database.entities.embedments.InsulinConfiguration
-import info.nightscout.database.entities.embedments.InterfaceIDs
-import info.nightscout.interfaces.insulin.Insulin
-import info.nightscout.sdk.localmodel.treatment.NSProfileSwitch
-import info.nightscout.sdk.mapper.convertToRemoteAndBack
-import info.nightscout.sharedtests.TestBaseWithProfile
-import org.junit.jupiter.api.Assertions
+import app.aaps.core.interfaces.insulin.Insulin
+import app.aaps.core.main.extensions.fromConstant
+import app.aaps.core.nssdk.localmodel.treatment.NSProfileSwitch
+import app.aaps.core.nssdk.mapper.convertToRemoteAndBack
+import app.aaps.database.entities.ProfileSwitch
+import app.aaps.database.entities.embedments.InsulinConfiguration
+import app.aaps.database.entities.embedments.InterfaceIDs
+import app.aaps.shared.tests.TestBaseWithProfile
+import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mock
@@ -26,6 +26,7 @@ internal class ProfileSwitchExtensionKtTest : TestBaseWithProfile() {
         Mockito.`when`(insulin.insulinConfiguration).thenReturn(insulinConfiguration)
         Mockito.`when`(activePlugin.activeInsulin).thenReturn(insulin)
     }
+
     @Test
     fun toProfileSwitch() {
         var profileSwitch = ProfileSwitch(
@@ -52,8 +53,8 @@ internal class ProfileSwitchExtensionKtTest : TestBaseWithProfile() {
         )
 
         var profileSwitch2 = (profileSwitch.toNSProfileSwitch(dateUtil, decimalFormatter).convertToRemoteAndBack() as NSProfileSwitch).toProfileSwitch(activePlugin, dateUtil)!!
-        Assertions.assertTrue(profileSwitch.contentEqualsTo(profileSwitch2))
-        Assertions.assertTrue(profileSwitch.interfaceIdsEqualsTo(profileSwitch2))
+        assertThat(profileSwitch.contentEqualsTo(profileSwitch2)).isTrue()
+        assertThat(profileSwitch.interfaceIdsEqualsTo(profileSwitch2)).isTrue()
 
         profileSwitch = ProfileSwitch(
             timestamp = 10000,
@@ -79,7 +80,7 @@ internal class ProfileSwitchExtensionKtTest : TestBaseWithProfile() {
         )
 
         profileSwitch2 = (profileSwitch.toNSProfileSwitch(dateUtil, decimalFormatter).convertToRemoteAndBack() as NSProfileSwitch).toProfileSwitch(activePlugin, dateUtil)!!
-        Assertions.assertTrue(profileSwitch.contentEqualsTo(profileSwitch2))
-        Assertions.assertTrue(profileSwitch.interfaceIdsEqualsTo(profileSwitch2))
+        assertThat(profileSwitch.contentEqualsTo(profileSwitch2)).isTrue()
+        assertThat(profileSwitch.interfaceIdsEqualsTo(profileSwitch2)).isTrue()
     }
 }

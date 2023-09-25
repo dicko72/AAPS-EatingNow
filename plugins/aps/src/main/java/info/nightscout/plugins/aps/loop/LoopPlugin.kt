@@ -1,4 +1,4 @@
-package info.nightscout.plugins.aps.loop
+package app.aaps.plugins.aps.loop
 
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
@@ -12,70 +12,70 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.SystemClock
 import androidx.core.app.NotificationCompat
+import app.aaps.annotations.OpenForTesting
+import app.aaps.core.interfaces.aps.APSResult
+import app.aaps.core.interfaces.aps.ApsMode
+import app.aaps.core.interfaces.aps.Loop
+import app.aaps.core.interfaces.aps.Loop.LastRun
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.configuration.Constants
+import app.aaps.core.interfaces.constraints.Constraint
+import app.aaps.core.interfaces.constraints.ConstraintsChecker
+import app.aaps.core.interfaces.iob.IobCobCalculator
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.notifications.Notification
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.plugin.PluginDescription
+import app.aaps.core.interfaces.plugin.PluginType
+import app.aaps.core.interfaces.profile.Profile
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.pump.DetailedBolusInfo
+import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpSync
+import app.aaps.core.interfaces.pump.VirtualPump
+import app.aaps.core.interfaces.pump.defs.PumpDescription
+import app.aaps.core.interfaces.queue.Callback
+import app.aaps.core.interfaces.queue.CommandQueue
+import app.aaps.core.interfaces.receivers.ReceiverStatusStore
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventAcceptOpenLoopChange
+import app.aaps.core.interfaces.rx.events.EventDismissNotification
+import app.aaps.core.interfaces.rx.events.EventLoopUpdateGui
+import app.aaps.core.interfaces.rx.events.EventMobileToWear
+import app.aaps.core.interfaces.rx.events.EventNewOpenLoopNotification
+import app.aaps.core.interfaces.rx.events.EventTempTargetChange
+import app.aaps.core.interfaces.rx.weardata.EventData
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.HardLimits
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.main.constraints.ConstraintObject
+import app.aaps.core.main.events.EventNewNotification
+import app.aaps.core.main.extensions.convertedToAbsolute
+import app.aaps.core.main.extensions.convertedToPercent
+import app.aaps.core.main.extensions.plannedRemainingMinutes
+import app.aaps.core.main.iob.json
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.nssdk.interfaces.RunningConfiguration
+import app.aaps.database.ValueWrapper
+import app.aaps.database.entities.DeviceStatus
+import app.aaps.database.entities.OfflineEvent
+import app.aaps.database.entities.UserEntry.Action
+import app.aaps.database.entities.UserEntry.Sources
+import app.aaps.database.entities.ValueWithUnit
+import app.aaps.plugins.aps.R
+import app.aaps.plugins.aps.loop.events.EventLoopSetLastRunGui
+import app.aaps.plugins.aps.loop.extensions.json
 import dagger.android.HasAndroidInjector
-import info.nightscout.annotations.OpenForTesting
-import info.nightscout.core.constraints.ConstraintObject
-import info.nightscout.core.events.EventNewNotification
-import info.nightscout.core.extensions.convertedToAbsolute
-import info.nightscout.core.extensions.convertedToPercent
-import info.nightscout.core.extensions.plannedRemainingMinutes
-import info.nightscout.core.iob.json
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.database.ValueWrapper
-import info.nightscout.database.entities.DeviceStatus
-import info.nightscout.database.entities.OfflineEvent
-import info.nightscout.database.entities.UserEntry.Action
-import info.nightscout.database.entities.UserEntry.Sources
-import info.nightscout.database.entities.ValueWithUnit
 import info.nightscout.database.impl.AppRepository
 import info.nightscout.database.impl.transactions.InsertAndCancelCurrentOfflineEventTransaction
 import info.nightscout.database.impl.transactions.InsertTherapyEventAnnouncementTransaction
-import info.nightscout.interfaces.ApsMode
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.Constants
-import info.nightscout.interfaces.aps.APSResult
-import info.nightscout.interfaces.aps.Loop
-import info.nightscout.interfaces.aps.Loop.LastRun
-import info.nightscout.interfaces.constraints.Constraint
-import info.nightscout.interfaces.constraints.ConstraintsChecker
-import info.nightscout.interfaces.iob.IobCobCalculator
-import info.nightscout.interfaces.logging.UserEntryLogger
-import info.nightscout.interfaces.notifications.Notification
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.plugin.PluginBase
-import info.nightscout.interfaces.plugin.PluginDescription
-import info.nightscout.interfaces.plugin.PluginType
-import info.nightscout.interfaces.profile.Profile
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.interfaces.pump.DetailedBolusInfo
-import info.nightscout.interfaces.pump.PumpEnactResult
-import info.nightscout.interfaces.pump.PumpSync
-import info.nightscout.interfaces.pump.VirtualPump
-import info.nightscout.interfaces.pump.defs.PumpDescription
-import info.nightscout.interfaces.queue.Callback
-import info.nightscout.interfaces.queue.CommandQueue
-import info.nightscout.interfaces.receivers.ReceiverStatusStore
-import info.nightscout.interfaces.ui.UiInteraction
-import info.nightscout.interfaces.utils.HardLimits
-import info.nightscout.plugins.aps.R
-import info.nightscout.plugins.aps.loop.events.EventLoopSetLastRunGui
-import info.nightscout.plugins.aps.loop.extensions.json
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventAcceptOpenLoopChange
-import info.nightscout.rx.events.EventDismissNotification
-import info.nightscout.rx.events.EventLoopUpdateGui
-import info.nightscout.rx.events.EventMobileToWear
-import info.nightscout.rx.events.EventNewOpenLoopNotification
-import info.nightscout.rx.events.EventTempTargetChange
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.rx.weardata.EventData
-import info.nightscout.sdk.interfaces.RunningConfiguration
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.shared.utils.T
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import org.json.JSONObject
@@ -111,8 +111,8 @@ class LoopPlugin @Inject constructor(
     PluginDescription()
         .mainType(PluginType.LOOP)
         .fragmentClass(LoopFragment::class.java.name)
-        .pluginIcon(info.nightscout.core.main.R.drawable.ic_loop_closed_white)
-        .pluginName(info.nightscout.core.ui.R.string.loop)
+        .pluginIcon(app.aaps.core.main.R.drawable.ic_loop_closed_white)
+        .pluginName(app.aaps.core.ui.R.string.loop)
         .shortName(R.string.loop_shortname)
         .preferencesId(R.xml.pref_loop)
         .enableByDefault(config.APS)
@@ -230,7 +230,7 @@ class LoopPlugin @Inject constructor(
             val loopEnabled = constraintChecker.isLoopInvocationAllowed()
             if (!loopEnabled.value()) {
                 val message = """
-                    ${rh.gs(info.nightscout.core.ui.R.string.loop_disabled)}
+                    ${rh.gs(app.aaps.core.ui.R.string.loop_disabled)}
                     ${loopEnabled.getReasons()}
                     """.trimIndent()
                 aapsLogger.debug(LTag.APS, message)
@@ -242,14 +242,14 @@ class LoopPlugin @Inject constructor(
             if (!isEnabled(PluginType.LOOP)) return
             val profile = profileFunction.getProfile()
             if (profile == null || !profileFunction.isProfileValid("Loop")) {
-                aapsLogger.debug(LTag.APS, rh.gs(info.nightscout.core.ui.R.string.no_profile_set))
-                rxBus.send(EventLoopSetLastRunGui(rh.gs(info.nightscout.core.ui.R.string.no_profile_set)))
+                aapsLogger.debug(LTag.APS, rh.gs(app.aaps.core.ui.R.string.no_profile_set))
+                rxBus.send(EventLoopSetLastRunGui(rh.gs(app.aaps.core.ui.R.string.no_profile_set)))
                 return
             }
 
             if (!isEmptyQueue()) {
-                aapsLogger.debug(LTag.APS, rh.gs(info.nightscout.core.ui.R.string.pump_busy))
-                rxBus.send(EventLoopSetLastRunGui(rh.gs(info.nightscout.core.ui.R.string.pump_busy)))
+                aapsLogger.debug(LTag.APS, rh.gs(app.aaps.core.ui.R.string.pump_busy))
+                rxBus.send(EventLoopSetLastRunGui(rh.gs(app.aaps.core.ui.R.string.pump_busy)))
                 return
             }
 
@@ -303,13 +303,13 @@ class LoopPlugin @Inject constructor(
                 buildAndStoreDeviceStatus()
 
                 if (isSuspended) {
-                    aapsLogger.debug(LTag.APS, rh.gs(info.nightscout.core.ui.R.string.loopsuspended))
-                    rxBus.send(EventLoopSetLastRunGui(rh.gs(info.nightscout.core.ui.R.string.loopsuspended)))
+                    aapsLogger.debug(LTag.APS, rh.gs(app.aaps.core.ui.R.string.loopsuspended))
+                    rxBus.send(EventLoopSetLastRunGui(rh.gs(app.aaps.core.ui.R.string.loopsuspended)))
                     return
                 }
                 if (pump.isSuspended()) {
-                    aapsLogger.debug(LTag.APS, rh.gs(info.nightscout.core.ui.R.string.pumpsuspended))
-                    rxBus.send(EventLoopSetLastRunGui(rh.gs(info.nightscout.core.ui.R.string.pumpsuspended)))
+                    aapsLogger.debug(LTag.APS, rh.gs(app.aaps.core.ui.R.string.pumpsuspended))
+                    rxBus.send(EventLoopSetLastRunGui(rh.gs(app.aaps.core.ui.R.string.pumpsuspended)))
                     return
                 }
                 closedLoopEnabled = constraintChecker.isClosedLoopAllowed()
@@ -324,7 +324,7 @@ class LoopPlugin @Inject constructor(
                             if (sp.getBoolean(
                                     info.nightscout.core.utils.R.string.key_enable_carbs_required_alert_local,
                                     true
-                                ) && !sp.getBoolean(info.nightscout.core.ui.R.string.key_raise_notifications_as_android_notifications, true)
+                                ) && !sp.getBoolean(app.aaps.core.ui.R.string.key_raise_notifications_as_android_notifications, true)
                             ) {
                                 val carbReqLocal = Notification(Notification.CARBS_REQUIRED, resultAfterConstraints.carbsRequiredText, Notification.NORMAL)
                                 rxBus.send(EventNewNotification(carbReqLocal))
@@ -335,22 +335,22 @@ class LoopPlugin @Inject constructor(
                             if (sp.getBoolean(
                                     info.nightscout.core.utils.R.string.key_enable_carbs_required_alert_local,
                                     true
-                                ) && sp.getBoolean(info.nightscout.core.ui.R.string.key_raise_notifications_as_android_notifications, true)
+                                ) && sp.getBoolean(app.aaps.core.ui.R.string.key_raise_notifications_as_android_notifications, true)
                             ) {
                                 val intentAction5m = Intent(context, CarbSuggestionReceiver::class.java)
                                 intentAction5m.putExtra("ignoreDuration", 5)
                                 val pendingIntent5m = PendingIntent.getBroadcast(context, 1, intentAction5m, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-                                val actionIgnore5m = NotificationCompat.Action(info.nightscout.core.main.R.drawable.ic_notif_aaps, rh.gs(R.string.ignore5m, "Ignore 5m"), pendingIntent5m)
+                                val actionIgnore5m = NotificationCompat.Action(app.aaps.core.main.R.drawable.ic_notif_aaps, rh.gs(R.string.ignore5m, "Ignore 5m"), pendingIntent5m)
                                 val intentAction15m = Intent(context, CarbSuggestionReceiver::class.java)
                                 intentAction15m.putExtra("ignoreDuration", 15)
                                 val pendingIntent15m = PendingIntent.getBroadcast(context, 1, intentAction15m, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-                                val actionIgnore15m = NotificationCompat.Action(info.nightscout.core.main.R.drawable.ic_notif_aaps, rh.gs(R.string.ignore15m, "Ignore 15m"), pendingIntent15m)
+                                val actionIgnore15m = NotificationCompat.Action(app.aaps.core.main.R.drawable.ic_notif_aaps, rh.gs(R.string.ignore15m, "Ignore 15m"), pendingIntent15m)
                                 val intentAction30m = Intent(context, CarbSuggestionReceiver::class.java)
                                 intentAction30m.putExtra("ignoreDuration", 30)
                                 val pendingIntent30m = PendingIntent.getBroadcast(context, 1, intentAction30m, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-                                val actionIgnore30m = NotificationCompat.Action(info.nightscout.core.main.R.drawable.ic_notif_aaps, rh.gs(R.string.ignore30m, "Ignore 30m"), pendingIntent30m)
+                                val actionIgnore30m = NotificationCompat.Action(app.aaps.core.main.R.drawable.ic_notif_aaps, rh.gs(R.string.ignore30m, "Ignore 30m"), pendingIntent30m)
                                 val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-                                builder.setSmallIcon(info.nightscout.core.ui.R.drawable.notif_icon)
+                                builder.setSmallIcon(app.aaps.core.ui.R.drawable.notif_icon)
                                     .setContentTitle(rh.gs(R.string.carbs_suggestion))
                                     .setContentText(resultAfterConstraints.carbsRequiredText)
                                     .setAutoCancel(true)
@@ -366,14 +366,14 @@ class LoopPlugin @Inject constructor(
                                 // mId allows you to update the notification later on.
                                 mNotificationManager.notify(Constants.notificationID, builder.build())
                                 uel.log(
-                                    Action.CAREPORTAL, Sources.Loop, rh.gs(info.nightscout.core.ui.R.string.carbsreq, resultAfterConstraints.carbsReq, resultAfterConstraints.carbsReqWithin),
+                                    Action.CAREPORTAL, Sources.Loop, rh.gs(app.aaps.core.ui.R.string.carbsreq, resultAfterConstraints.carbsReq, resultAfterConstraints.carbsReqWithin),
                                     ValueWithUnit.Gram(resultAfterConstraints.carbsReq),
                                     ValueWithUnit.Minute(resultAfterConstraints.carbsReqWithin)
                                 )
                                 rxBus.send(EventNewOpenLoopNotification())
 
                                 //only send to wear if Native notifications are turned off
-                                if (!sp.getBoolean(info.nightscout.core.ui.R.string.key_raise_notifications_as_android_notifications, true)) {
+                                if (!sp.getBoolean(app.aaps.core.ui.R.string.key_raise_notifications_as_android_notifications, true)) {
                                     // Send to Wear
                                     sendToWear()
                                 }
@@ -435,7 +435,7 @@ class LoopPlugin @Inject constructor(
                 } else {
                     if (resultAfterConstraints.isChangeRequested && allowNotification) {
                         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-                        builder.setSmallIcon(info.nightscout.core.ui.R.drawable.notif_icon)
+                        builder.setSmallIcon(app.aaps.core.ui.R.drawable.notif_icon)
                             .setContentTitle(rh.gs(R.string.open_loop_new_suggestion))
                             .setContentText(resultAfterConstraints.toString())
                             .setAutoCancel(true)
@@ -535,7 +535,7 @@ class LoopPlugin @Inject constructor(
      */
     private fun applyTBRRequest(request: APSResult, profile: Profile, callback: Callback?) {
         if (!request.isTempBasalRequested) {
-            callback?.result(PumpEnactResult(injector).enacted(false).success(true).comment(info.nightscout.core.ui.R.string.nochangerequested))?.run()
+            callback?.result(PumpEnactResult(injector).enacted(false).success(true).comment(app.aaps.core.ui.R.string.nochangerequested))?.run()
             return
         }
         val pump = activePlugin.activePump
@@ -545,8 +545,8 @@ class LoopPlugin @Inject constructor(
             return
         }
         if (pump.isSuspended()) {
-            aapsLogger.debug(LTag.APS, "applyAPSRequest: " + rh.gs(info.nightscout.core.ui.R.string.pumpsuspended))
-            callback?.result(PumpEnactResult(injector).comment(info.nightscout.core.ui.R.string.pumpsuspended).enacted(false).success(false))?.run()
+            aapsLogger.debug(LTag.APS, "applyAPSRequest: " + rh.gs(app.aaps.core.ui.R.string.pumpsuspended))
+            callback?.result(PumpEnactResult(injector).comment(app.aaps.core.ui.R.string.pumpsuspended).enacted(false).success(false))?.run()
             return
         }
         aapsLogger.debug(LTag.APS, "applyAPSRequest: $request")
@@ -586,7 +586,7 @@ class LoopPlugin @Inject constructor(
                 callback?.result(
                     PumpEnactResult(injector).percent(request.percent)
                         .enacted(false).success(true).duration(activeTemp.plannedRemainingMinutes)
-                        .comment(info.nightscout.core.ui.R.string.let_temp_basal_run)
+                        .comment(app.aaps.core.ui.R.string.let_temp_basal_run)
                 )?.run()
             } else {
                 aapsLogger.debug(LTag.APS, "applyAPSRequest: tempBasalPercent()")
@@ -609,7 +609,7 @@ class LoopPlugin @Inject constructor(
                 callback?.result(
                     PumpEnactResult(injector).absolute(activeTemp.convertedToAbsolute(now, profile))
                         .enacted(false).success(true).duration(activeTemp.plannedRemainingMinutes)
-                        .comment(info.nightscout.core.ui.R.string.let_temp_basal_run)
+                        .comment(app.aaps.core.ui.R.string.let_temp_basal_run)
                 )?.run()
             } else {
                 aapsLogger.debug(LTag.APS, "applyAPSRequest: setTempBasalAbsolute()")
@@ -645,8 +645,8 @@ class LoopPlugin @Inject constructor(
             return
         }
         if (pump.isSuspended()) {
-            aapsLogger.debug(LTag.APS, "applySMBRequest: " + rh.gs(info.nightscout.core.ui.R.string.pumpsuspended))
-            callback?.result(PumpEnactResult(injector).comment(info.nightscout.core.ui.R.string.pumpsuspended).enacted(false).success(false))?.run()
+            aapsLogger.debug(LTag.APS, "applySMBRequest: " + rh.gs(app.aaps.core.ui.R.string.pumpsuspended))
+            callback?.result(PumpEnactResult(injector).comment(app.aaps.core.ui.R.string.pumpsuspended).enacted(false).success(false))?.run()
             return
         }
         aapsLogger.debug(LTag.APS, "applySMBRequest: $request")
@@ -681,7 +681,7 @@ class LoopPlugin @Inject constructor(
             commandQueue.tempBasalAbsolute(0.0, durationInMinutes, true, profile, PumpSync.TemporaryBasalType.EMULATED_PUMP_SUSPEND, object : Callback() {
                 override fun run() {
                     if (!result.success) {
-                        uiInteraction.runAlarm(result.comment, rh.gs(info.nightscout.core.ui.R.string.temp_basal_delivery_error), info.nightscout.core.ui.R.raw.boluserror)
+                        uiInteraction.runAlarm(result.comment, rh.gs(app.aaps.core.ui.R.string.temp_basal_delivery_error), app.aaps.core.ui.R.raw.boluserror)
                     }
                 }
             })
@@ -689,7 +689,7 @@ class LoopPlugin @Inject constructor(
             commandQueue.tempBasalPercent(0, durationInMinutes, true, profile, PumpSync.TemporaryBasalType.EMULATED_PUMP_SUSPEND, object : Callback() {
                 override fun run() {
                     if (!result.success) {
-                        uiInteraction.runAlarm(result.comment, rh.gs(info.nightscout.core.ui.R.string.temp_basal_delivery_error), info.nightscout.core.ui.R.raw.boluserror)
+                        uiInteraction.runAlarm(result.comment, rh.gs(app.aaps.core.ui.R.string.temp_basal_delivery_error), app.aaps.core.ui.R.raw.boluserror)
                     }
                 }
             })
@@ -698,7 +698,7 @@ class LoopPlugin @Inject constructor(
             commandQueue.cancelExtended(object : Callback() {
                 override fun run() {
                     if (!result.success) {
-                        uiInteraction.runAlarm(result.comment, rh.gs(info.nightscout.core.ui.R.string.extendedbolusdeliveryerror), info.nightscout.core.ui.R.raw.boluserror)
+                        uiInteraction.runAlarm(result.comment, rh.gs(app.aaps.core.ui.R.string.extendedbolusdeliveryerror), app.aaps.core.ui.R.raw.boluserror)
                     }
                 }
             })
@@ -716,7 +716,7 @@ class LoopPlugin @Inject constructor(
         commandQueue.cancelTempBasal(true, object : Callback() {
             override fun run() {
                 if (!result.success) {
-                    uiInteraction.runAlarm(result.comment, rh.gs(info.nightscout.core.ui.R.string.temp_basal_delivery_error), info.nightscout.core.ui.R.raw.boluserror)
+                    uiInteraction.runAlarm(result.comment, rh.gs(app.aaps.core.ui.R.string.temp_basal_delivery_error), app.aaps.core.ui.R.raw.boluserror)
                 }
             }
         })

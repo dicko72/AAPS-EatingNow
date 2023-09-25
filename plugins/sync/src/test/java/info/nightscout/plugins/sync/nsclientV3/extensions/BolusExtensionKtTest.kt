@@ -1,11 +1,10 @@
 package info.nightscout.plugins.sync.nsclientV3.extensions
 
-import info.nightscout.database.entities.Bolus
-import info.nightscout.database.entities.embedments.InterfaceIDs
-import info.nightscout.sdk.localmodel.treatment.NSBolus
-import info.nightscout.sdk.mapper.convertToRemoteAndBack
-import org.junit.jupiter.api.Assertions
-
+import app.aaps.core.nssdk.localmodel.treatment.NSBolus
+import app.aaps.core.nssdk.mapper.convertToRemoteAndBack
+import app.aaps.database.entities.Bolus
+import app.aaps.database.entities.embedments.InterfaceIDs
+import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 
 @Suppress("SpellCheckingInspection")
@@ -29,8 +28,8 @@ internal class BolusExtensionKtTest {
         )
 
         var bolus2 = (bolus.toNSBolus().convertToRemoteAndBack() as NSBolus).toBolus()
-        Assertions.assertTrue(bolus.contentEqualsTo(bolus2))
-        Assertions.assertTrue(bolus.interfaceIdsEqualsTo(bolus2))
+        assertThat(bolus.contentEqualsTo(bolus2)).isTrue()
+        assertThat(bolus.interfaceIdsEqualsTo(bolus2)).isTrue()
 
         bolus = Bolus(
             timestamp = 10000,
@@ -48,7 +47,7 @@ internal class BolusExtensionKtTest {
         )
 
         bolus2 = (bolus.toNSBolus().convertToRemoteAndBack() as NSBolus).toBolus()
-        Assertions.assertTrue(bolus.contentEqualsTo(bolus2))
-        Assertions.assertTrue(bolus.interfaceIdsEqualsTo(bolus2))
+        assertThat(bolus.contentEqualsTo(bolus2)).isTrue()
+        assertThat(bolus.interfaceIdsEqualsTo(bolus2)).isTrue()
     }
 }

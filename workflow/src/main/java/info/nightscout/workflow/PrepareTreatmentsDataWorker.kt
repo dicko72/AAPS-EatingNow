@@ -3,32 +3,32 @@ package info.nightscout.workflow
 import android.content.Context
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import info.nightscout.core.events.EventIobCalculationProgress
-import info.nightscout.core.graph.OverviewData
-import info.nightscout.core.graph.data.BolusDataPoint
-import info.nightscout.core.graph.data.CarbsDataPoint
-import info.nightscout.core.graph.data.DataPointWithLabelInterface
-import info.nightscout.core.graph.data.EffectiveProfileSwitchDataPoint
-import info.nightscout.core.graph.data.ExtendedBolusDataPoint
-import info.nightscout.core.graph.data.HeartRateDataPoint
-import info.nightscout.core.graph.data.PointsWithLabelGraphSeries
-import info.nightscout.core.graph.data.TherapyEventDataPoint
-import info.nightscout.core.utils.receivers.DataWorkerStorage
-import info.nightscout.core.utils.worker.LoggingWorker
-import info.nightscout.core.workflow.CalculationWorkflow
-import info.nightscout.database.entities.Bolus
-import info.nightscout.database.entities.TherapyEvent
+import app.aaps.core.interfaces.db.GlucoseUnit
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.DefaultValueHelper
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.utils.DecimalFormatter
+import app.aaps.core.interfaces.utils.Round
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.interfaces.utils.Translator
+import app.aaps.core.main.events.EventIobCalculationProgress
+import app.aaps.core.main.graph.OverviewData
+import app.aaps.core.main.graph.data.BolusDataPoint
+import app.aaps.core.main.graph.data.CarbsDataPoint
+import app.aaps.core.main.graph.data.DataPointWithLabelInterface
+import app.aaps.core.main.graph.data.EffectiveProfileSwitchDataPoint
+import app.aaps.core.main.graph.data.ExtendedBolusDataPoint
+import app.aaps.core.main.graph.data.HeartRateDataPoint
+import app.aaps.core.main.graph.data.PointsWithLabelGraphSeries
+import app.aaps.core.main.graph.data.TherapyEventDataPoint
+import app.aaps.core.main.utils.worker.LoggingWorker
+import app.aaps.core.main.workflow.CalculationWorkflow
+import app.aaps.core.utils.receivers.DataWorkerStorage
+import app.aaps.database.entities.Bolus
+import app.aaps.database.entities.TherapyEvent
 import info.nightscout.database.impl.AppRepository
-import info.nightscout.interfaces.GlucoseUnit
-import info.nightscout.interfaces.Translator
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.profile.DefaultValueHelper
-import info.nightscout.interfaces.utils.DecimalFormatter
-import info.nightscout.interfaces.utils.Round
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.shared.interfaces.ProfileUtil
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.utils.T
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 
@@ -134,7 +134,7 @@ class PrepareTreatmentsDataWorker(
         data.overviewData.heartRateGraphSeries = PointsWithLabelGraphSeries<DataPointWithLabelInterface>(
             repository.getHeartRatesFromTimeToTime(fromTime, endTime)
                 .map { hr -> HeartRateDataPoint(hr, rh) }
-                .toTypedArray()).apply { color = rh.gac(null, info.nightscout.core.ui.R.attr.heartRateColor) }
+                .toTypedArray()).apply { color = rh.gac(null, app.aaps.core.ui.R.attr.heartRateColor) }
 
         rxBus.send(EventIobCalculationProgress(CalculationWorkflow.ProgressData.PREPARE_TREATMENTS_DATA, 100, null))
         return Result.success()

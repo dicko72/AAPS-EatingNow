@@ -1,14 +1,14 @@
 package info.nightscout.plugins.sync.nsclientV3.extensions
 
-import info.nightscout.core.extensions.pureProfileFromJson
-import info.nightscout.core.profile.ProfileSealed
-import info.nightscout.database.entities.EffectiveProfileSwitch
-import info.nightscout.database.entities.embedments.InterfaceIDs
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.main.extensions.pureProfileFromJson
+import app.aaps.core.main.profile.ProfileSealed
+import app.aaps.core.nssdk.localmodel.treatment.EventType
+import app.aaps.core.nssdk.localmodel.treatment.NSEffectiveProfileSwitch
+import app.aaps.database.entities.EffectiveProfileSwitch
+import app.aaps.database.entities.embedments.InterfaceIDs
 import info.nightscout.plugins.sync.nsclient.extensions.fromConstant
-import info.nightscout.sdk.localmodel.treatment.EventType
-import info.nightscout.sdk.localmodel.treatment.NSEffectiveProfileSwitch
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.shared.utils.T
 import java.security.InvalidParameterException
 
 fun NSEffectiveProfileSwitch.toEffectiveProfileSwitch(dateUtil: DateUtil): EffectiveProfileSwitch? {
@@ -35,7 +35,7 @@ fun NSEffectiveProfileSwitch.toEffectiveProfileSwitch(dateUtil: DateUtil): Effec
     )
 }
 
-fun EffectiveProfileSwitch.toNSEffectiveProfileSwitch(dateUtil: DateUtil) : NSEffectiveProfileSwitch =
+fun EffectiveProfileSwitch.toNSEffectiveProfileSwitch(dateUtil: DateUtil): NSEffectiveProfileSwitch =
     NSEffectiveProfileSwitch(
         eventType = EventType.NOTE,
         isValid = isValid,

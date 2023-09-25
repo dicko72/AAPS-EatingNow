@@ -6,27 +6,27 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import app.aaps.core.interfaces.extensions.toVisibility
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.PureProfile
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventLocalProfileChanged
+import app.aaps.core.interfaces.stats.TddCalculator
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.main.profile.ProfileSealed
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.ui.activities.TranslatedDaggerAppCompatActivity
+import app.aaps.core.ui.dialogs.OKDialog
+import app.aaps.core.ui.toast.ToastUtils
+import app.aaps.database.entities.EffectiveProfileSwitch
 import com.google.android.material.tabs.TabLayout
 import com.google.common.collect.Lists
-import info.nightscout.core.profile.ProfileSealed
-import info.nightscout.core.ui.activities.TranslatedDaggerAppCompatActivity
-import info.nightscout.core.ui.dialogs.OKDialog
-import info.nightscout.core.ui.toast.ToastUtils
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.database.entities.EffectiveProfileSwitch
 import info.nightscout.database.impl.AppRepository
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.interfaces.profile.PureProfile
-import info.nightscout.interfaces.stats.TddCalculator
-import info.nightscout.interfaces.ui.UiInteraction
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventLocalProfileChanged
-import info.nightscout.shared.extensions.toVisibility
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.shared.utils.T
 import info.nightscout.ui.R
 import info.nightscout.ui.databinding.ActivityProfilehelperBinding
 import info.nightscout.ui.defaultProfile.DefaultProfile
@@ -101,24 +101,24 @@ class ProfileHelperActivity : TranslatedDaggerAppCompatActivity() {
             rh.gs(R.string.dpv_default_profile),
             rh.gs(R.string.current_profile),
             rh.gs(R.string.available_profile),
-            rh.gs(info.nightscout.core.ui.R.string.careportal_profileswitch)
+            rh.gs(app.aaps.core.ui.R.string.careportal_profileswitch)
         )
-        binding.profileType.setAdapter(ArrayAdapter(this, info.nightscout.core.ui.R.layout.spinner_centered, profileTypeList))
+        binding.profileType.setAdapter(ArrayAdapter(this, app.aaps.core.ui.R.layout.spinner_centered, profileTypeList))
 
         binding.profileType.setOnItemClickListener { _, _, _, _ ->
             when (binding.profileType.text.toString()) {
-                rh.gs(R.string.motol_default_profile) -> switchTab(tabSelected, ProfileType.MOTOL_DEFAULT)
-                rh.gs(R.string.dpv_default_profile)   -> switchTab(tabSelected, ProfileType.DPV_DEFAULT)
-                rh.gs(R.string.current_profile)       -> switchTab(tabSelected, ProfileType.CURRENT)
-                rh.gs(R.string.available_profile)                                  -> switchTab(tabSelected, ProfileType.AVAILABLE_PROFILE)
-                rh.gs(info.nightscout.core.ui.R.string.careportal_profileswitch) -> switchTab(tabSelected, ProfileType.PROFILE_SWITCH)
+                rh.gs(R.string.motol_default_profile)                     -> switchTab(tabSelected, ProfileType.MOTOL_DEFAULT)
+                rh.gs(R.string.dpv_default_profile)                       -> switchTab(tabSelected, ProfileType.DPV_DEFAULT)
+                rh.gs(R.string.current_profile)                           -> switchTab(tabSelected, ProfileType.CURRENT)
+                rh.gs(R.string.available_profile)                         -> switchTab(tabSelected, ProfileType.AVAILABLE_PROFILE)
+                rh.gs(app.aaps.core.ui.R.string.careportal_profileswitch) -> switchTab(tabSelected, ProfileType.PROFILE_SWITCH)
             }
         }
 
         // Active profile
         profileList = activePlugin.activeProfileSource.profile?.getProfileList() ?: ArrayList()
 
-        binding.availableProfileList.setAdapter(ArrayAdapter(this, info.nightscout.core.ui.R.layout.spinner_centered, profileList))
+        binding.availableProfileList.setAdapter(ArrayAdapter(this, app.aaps.core.ui.R.layout.spinner_centered, profileList))
         binding.availableProfileList.setOnItemClickListener { _, _, index, _ ->
             profileUsed[tabSelected] = index
         }
@@ -127,7 +127,7 @@ class ProfileHelperActivity : TranslatedDaggerAppCompatActivity() {
         profileSwitch = repository.getEffectiveProfileSwitchDataFromTime(dateUtil.now() - T.months(2).msecs(), true).blockingGet()
 
         val profileswitchListNames = profileSwitch.map { it.originalCustomizedName }
-        binding.profileswitchList.setAdapter(ArrayAdapter(this, info.nightscout.core.ui.R.layout.spinner_centered, profileswitchListNames))
+        binding.profileswitchList.setAdapter(ArrayAdapter(this, app.aaps.core.ui.R.layout.spinner_centered, profileswitchListNames))
         binding.profileswitchList.setOnItemClickListener { _, _, index, _ ->
             profileSwitchUsed[tabSelected] = index
         }
@@ -142,7 +142,7 @@ class ProfileHelperActivity : TranslatedDaggerAppCompatActivity() {
             val profile = if (typeSelected[tabSelected] == ProfileType.MOTOL_DEFAULT) defaultProfile.profile(age, tdd, weight, profileFunction.getUnits())
             else defaultProfileDPV.profile(age, tdd, pct / 100.0, profileFunction.getUnits())
             profile?.let {
-                OKDialog.showConfirmation(this, rh.gs(info.nightscout.core.ui.R.string.careportal_profileswitch), rh.gs(info.nightscout.core.ui.R.string.copytolocalprofile), Runnable {
+                OKDialog.showConfirmation(this, rh.gs(app.aaps.core.ui.R.string.careportal_profileswitch), rh.gs(app.aaps.core.ui.R.string.copytolocalprofile), Runnable {
                     activePlugin.activeProfileSource.addProfile(
                         activePlugin.activeProfileSource.copyFrom(
                             it, "DefaultProfile " +
@@ -173,7 +173,7 @@ class ProfileHelperActivity : TranslatedDaggerAppCompatActivity() {
 
         binding.basalPctFromTdd.setParams(32.0, 32.0, 37.0, 1.0, DecimalFormat("0"), false, null)
 
-        binding.tdds.addView(TextView(this).apply { text = rh.gs(info.nightscout.core.ui.R.string.tdd) + ": " + rh.gs(R.string.calculation_in_progress) })
+        binding.tdds.addView(TextView(this).apply { text = rh.gs(app.aaps.core.ui.R.string.tdd) + ": " + rh.gs(R.string.calculation_in_progress) })
         disposable += Single.fromCallable { tddCalculator.stats(this) }
             .subscribeOn(aapsSchedulers.io)
             .observeOn(aapsSchedulers.main)
@@ -242,7 +242,7 @@ class ProfileHelperActivity : TranslatedDaggerAppCompatActivity() {
                     return@setOnClickListener
                 }
             }
-            ToastUtils.warnToast(this, info.nightscout.core.ui.R.string.invalid_input)
+            ToastUtils.warnToast(this, app.aaps.core.ui.R.string.invalid_input)
         }
         binding.ageLabel.labelFor = binding.age.editTextId
         binding.tddLabel.labelFor = binding.tdd.editTextId
@@ -295,7 +295,7 @@ class ProfileHelperActivity : TranslatedDaggerAppCompatActivity() {
                 ProfileType.DPV_DEFAULT       -> rh.gs(R.string.dpv_default_profile)
                 ProfileType.CURRENT           -> rh.gs(R.string.current_profile)
                 ProfileType.AVAILABLE_PROFILE -> rh.gs(R.string.available_profile)
-                ProfileType.PROFILE_SWITCH    -> rh.gs(info.nightscout.core.ui.R.string.careportal_profileswitch)
+                ProfileType.PROFILE_SWITCH    -> rh.gs(app.aaps.core.ui.R.string.careportal_profileswitch)
             },
             false
         )

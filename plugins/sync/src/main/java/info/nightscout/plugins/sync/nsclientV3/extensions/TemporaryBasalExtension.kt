@@ -1,12 +1,12 @@
 package info.nightscout.plugins.sync.nsclientV3.extensions
 
-import info.nightscout.core.extensions.convertedToAbsolute
-import info.nightscout.database.entities.TemporaryBasal
-import info.nightscout.database.entities.embedments.InterfaceIDs
-import info.nightscout.interfaces.profile.Profile
-import info.nightscout.sdk.localmodel.treatment.EventType
-import info.nightscout.sdk.localmodel.treatment.NSTemporaryBasal
-import info.nightscout.shared.utils.T
+import app.aaps.core.interfaces.profile.Profile
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.main.extensions.convertedToAbsolute
+import app.aaps.core.nssdk.localmodel.treatment.EventType
+import app.aaps.core.nssdk.localmodel.treatment.NSTemporaryBasal
+import app.aaps.database.entities.TemporaryBasal
+import app.aaps.database.entities.embedments.InterfaceIDs
 import java.security.InvalidParameterException
 
 fun NSTemporaryBasal.toTemporaryBasal(): TemporaryBasal =

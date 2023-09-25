@@ -5,12 +5,12 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventWearToMobile
+import app.aaps.core.interfaces.rx.weardata.EventData
+import app.aaps.shared.impl.extensions.safeGetPackageInfo
 import dagger.android.DaggerActivity
 import info.nightscout.androidaps.R
-import info.nightscout.rx.events.EventWearToMobile
-import info.nightscout.shared.extensions.safeGetPackageInfo
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.weardata.EventData
 import javax.inject.Inject
 
 /**

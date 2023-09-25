@@ -10,13 +10,13 @@ import android.view.ViewGroup
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.SafeParse
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.shared.utils.T
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.SafeParse
+import app.aaps.core.interfaces.utils.T
 import info.nightscout.ui.R
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -81,8 +81,8 @@ class ActivityMonitor @Inject constructor(
                     val lp = TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT).apply { weight = 1f }
                     row.layoutParams = TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT)
                     row.gravity = Gravity.CENTER_HORIZONTAL
-                    row.addView(TextView(context).apply { layoutParams = lp.apply { column = 0 }; text = rh.gs(info.nightscout.core.ui.R.string.activity) })
-                    row.addView(TextView(context).apply { layoutParams = lp.apply { column = 1 }; text = rh.gs(info.nightscout.core.ui.R.string.duration) })
+                    row.addView(TextView(context).apply { layoutParams = lp.apply { column = 0 }; text = rh.gs(app.aaps.core.ui.R.string.activity) })
+                    row.addView(TextView(context).apply { layoutParams = lp.apply { column = 1 }; text = rh.gs(app.aaps.core.ui.R.string.duration) })
                     row.addView(TextView(context).apply { layoutParams = lp.apply { column = 2 } })
                 }
             )
@@ -102,7 +102,7 @@ class ActivityMonitor @Inject constructor(
                             row.gravity = Gravity.CENTER_HORIZONTAL
                             row.addView(TextView(context).apply { layoutParams = lp.apply { column = 0 }; text = activity })
                             row.addView(TextView(context).apply { layoutParams = lp.apply { column = 1 }; text = duration })
-                            row.addView(TextView(context).apply { layoutParams = lp.apply { column = 2 }; text = rh.gs(info.nightscout.interfaces.R.string.in_days, days.toDouble()) })
+                            row.addView(TextView(context).apply { layoutParams = lp.apply { column = 2 }; text = rh.gs(app.aaps.core.interfaces.R.string.in_days, days.toDouble()) })
                         }
                     )
                 }

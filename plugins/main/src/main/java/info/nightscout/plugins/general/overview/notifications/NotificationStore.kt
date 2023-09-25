@@ -12,19 +12,19 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.NotificationCompat
 import androidx.recyclerview.widget.RecyclerView
-import info.nightscout.interfaces.NotificationHolder
-import info.nightscout.interfaces.notifications.Notification
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.ui.IconsProvider
-import info.nightscout.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.notifications.Notification
+import app.aaps.core.interfaces.notifications.NotificationHolder
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.ui.IconsProvider
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.DateUtil
 import info.nightscout.plugins.R
 import info.nightscout.plugins.databinding.OverviewNotificationItemBinding
 import info.nightscout.plugins.general.overview.notifications.events.EventUpdateOverviewNotification
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
 import java.util.Collections
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -67,7 +67,7 @@ class NotificationStore @Inject constructor(
             }
         }
         store.add(n)
-        if (sp.getBoolean(info.nightscout.core.ui.R.string.key_raise_notifications_as_android_notifications, true) && n !is NotificationWithAction)
+        if (sp.getBoolean(app.aaps.core.ui.R.string.key_raise_notifications_as_android_notifications, true) && n !is NotificationWithAction)
             raiseSystemNotification(n)
         if (n.soundId != null && n.soundId != 0) uiInteraction.startAlarm(n.soundId!!, n.text)
         Collections.sort(store, NotificationComparator())
@@ -117,11 +117,11 @@ class NotificationStore @Inject constructor(
             .setContentIntent(notificationHolder.openAppIntent(context))
         if (n.level == Notification.URGENT) {
             notificationBuilder.setVibrate(longArrayOf(1000, 1000, 1000, 1000))
-                .setContentTitle(rh.gs(info.nightscout.core.ui.R.string.urgent_alarm))
+                .setContentTitle(rh.gs(app.aaps.core.ui.R.string.urgent_alarm))
                 .setSound(sound, AudioManager.STREAM_ALARM)
         } else {
             notificationBuilder.setVibrate(longArrayOf(0, 100, 50, 100, 50))
-                .setContentTitle(rh.gs(info.nightscout.core.ui.R.string.info))
+                .setContentTitle(rh.gs(app.aaps.core.ui.R.string.info))
         }
         mgr.notify(n.id, notificationBuilder.build())
     }
@@ -161,15 +161,15 @@ class NotificationStore @Inject constructor(
             val notification = notificationsList[position]
             holder.binding.dismiss.tag = notification
             if (notification.buttonText != 0) holder.binding.dismiss.setText(notification.buttonText)
-            else holder.binding.dismiss.setText(info.nightscout.core.ui.R.string.snooze)
+            else holder.binding.dismiss.setText(app.aaps.core.ui.R.string.snooze)
             @Suppress("SetTextI18n")
             holder.binding.text.text = dateUtil.timeString(notification.date) + " " + notification.text
             when (notification.level) {
-                Notification.URGENT       -> holder.binding.cv.setBackgroundColor(rh.gac(info.nightscout.core.ui.R.attr.notificationUrgent))
-                Notification.NORMAL       -> holder.binding.cv.setBackgroundColor(rh.gac(info.nightscout.core.ui.R.attr.notificationNormal))
-                Notification.LOW          -> holder.binding.cv.setBackgroundColor(rh.gac(info.nightscout.core.ui.R.attr.notificationLow))
-                Notification.INFO         -> holder.binding.cv.setBackgroundColor(rh.gac(info.nightscout.core.ui.R.attr.notificationInfo))
-                Notification.ANNOUNCEMENT -> holder.binding.cv.setBackgroundColor(rh.gac(info.nightscout.core.ui.R.attr.notificationAnnouncement))
+                Notification.URGENT       -> holder.binding.cv.setBackgroundColor(rh.gac(app.aaps.core.ui.R.attr.notificationUrgent))
+                Notification.NORMAL       -> holder.binding.cv.setBackgroundColor(rh.gac(app.aaps.core.ui.R.attr.notificationNormal))
+                Notification.LOW          -> holder.binding.cv.setBackgroundColor(rh.gac(app.aaps.core.ui.R.attr.notificationLow))
+                Notification.INFO         -> holder.binding.cv.setBackgroundColor(rh.gac(app.aaps.core.ui.R.attr.notificationInfo))
+                Notification.ANNOUNCEMENT -> holder.binding.cv.setBackgroundColor(rh.gac(app.aaps.core.ui.R.attr.notificationAnnouncement))
             }
         }
 

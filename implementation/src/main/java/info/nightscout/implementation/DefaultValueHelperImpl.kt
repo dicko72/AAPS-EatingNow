@@ -1,11 +1,12 @@
-package info.nightscout.implementation
+// Modified for Eating Now
+package app.aaps.implementation.profile
 
-import info.nightscout.annotations.OpenForTesting
-import info.nightscout.interfaces.Constants
-import info.nightscout.interfaces.GlucoseUnit
-import info.nightscout.interfaces.profile.DefaultValueHelper
-import info.nightscout.shared.interfaces.ProfileUtil
-import info.nightscout.shared.sharedPreferences.SP
+import app.aaps.annotations.OpenForTesting
+import app.aaps.core.interfaces.configuration.Constants
+import app.aaps.core.interfaces.db.GlucoseUnit
+import app.aaps.core.interfaces.profile.DefaultValueHelper
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.sharedPreferences.SP
 import javax.inject.Inject
 import javax.inject.Singleton
 

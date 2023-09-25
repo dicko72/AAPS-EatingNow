@@ -15,46 +15,42 @@ import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.extensions.toVisibility
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventEffectiveProfileSwitchChanged
+import app.aaps.core.interfaces.rx.events.EventLocalProfileChanged
+import app.aaps.core.interfaces.rx.events.EventProfileSwitchChanged
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.DecimalFormatter
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.main.extensions.getCustomizedName
+import app.aaps.core.main.profile.ProfileSealed
+import app.aaps.core.main.utils.ActionModeHelper
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.ui.dialogs.OKDialog
+import app.aaps.core.ui.toast.ToastUtils
+import app.aaps.database.entities.UserEntry.Action
+import app.aaps.database.entities.UserEntry.Sources
+import app.aaps.database.entities.ValueWithUnit
 import dagger.android.support.DaggerFragment
-import info.nightscout.core.extensions.getCustomizedName
-import info.nightscout.core.profile.ProfileSealed
-import info.nightscout.core.ui.dialogs.OKDialog
-import info.nightscout.core.ui.toast.ToastUtils
-import info.nightscout.core.utils.ActionModeHelper
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.database.entities.UserEntry.Action
-import info.nightscout.database.entities.UserEntry.Sources
-import info.nightscout.database.entities.ValueWithUnit
 import info.nightscout.database.impl.AppRepository
 import info.nightscout.database.impl.transactions.InvalidateProfileSwitchTransaction
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.logging.UserEntryLogger
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.ui.UiInteraction
-import info.nightscout.interfaces.utils.DecimalFormatter
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventEffectiveProfileSwitchChanged
-import info.nightscout.rx.events.EventLocalProfileChanged
-import info.nightscout.rx.events.EventNSClientRestart
-import info.nightscout.rx.events.EventNewHistoryData
-import info.nightscout.rx.events.EventProfileSwitchChanged
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.extensions.toVisibility
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.shared.utils.T
 import info.nightscout.ui.R
 import info.nightscout.ui.activities.fragments.TreatmentsProfileSwitchFragment.RecyclerProfileViewAdapter.ProfileSwitchViewHolder
 import info.nightscout.ui.databinding.TreatmentsProfileswitchFragmentBinding
 import info.nightscout.ui.databinding.TreatmentsProfileswitchItemBinding
 import info.nightscout.ui.dialogs.ProfileViewerDialog
-import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
-import io.reactivex.rxjava3.kotlin.subscribeBy
 import javax.inject.Inject
 
 class TreatmentsProfileSwitchFragment : DaggerFragment(), MenuProvider {
@@ -96,30 +92,6 @@ class TreatmentsProfileSwitchFragment : DaggerFragment(), MenuProvider {
         binding.recyclerview.emptyView = binding.noRecordsText
         binding.recyclerview.loadingView = binding.progressBar
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
-    }
-
-    private fun refreshFromNightscout() {
-        activity?.let { activity ->
-            OKDialog.showConfirmation(activity, rh.gs(R.string.refresheventsfromnightscout) + "?") {
-                uel.log(Action.TREATMENTS_NS_REFRESH, Sources.Treatments)
-                disposable +=
-                    Completable.fromAction {
-                        repository.deleteAllEffectiveProfileSwitches()
-                        repository.deleteAllProfileSwitches()
-                    }
-                        .subscribeOn(aapsSchedulers.io)
-                        .observeOn(aapsSchedulers.main)
-                        .subscribeBy(
-                            onError = { aapsLogger.error("Error removing entries", it) },
-                            onComplete = {
-                                rxBus.send(EventProfileSwitchChanged())
-                                rxBus.send(EventEffectiveProfileSwitchChanged(0L))
-                                rxBus.send(EventNewHistoryData(0, false))
-                            }
-                        )
-                rxBus.send(EventNSClientRestart())
-            }
-        }
     }
 
     private fun profileSwitchWithInvalid(now: Long) = repository
@@ -201,10 +173,10 @@ class TreatmentsProfileSwitchFragment : DaggerFragment(), MenuProvider {
             holder.binding.date.visibility = newDay.toVisibility()
             holder.binding.date.text = if (newDay) dateUtil.dateStringRelative(profileSwitch.timestamp, rh) else ""
             holder.binding.time.text = dateUtil.timeString(profileSwitch.timestamp)
-            holder.binding.duration.text = rh.gs(info.nightscout.core.ui.R.string.format_mins, T.msecs(profileSwitch.duration ?: 0L).mins())
+            holder.binding.duration.text = rh.gs(app.aaps.core.ui.R.string.format_mins, T.msecs(profileSwitch.duration ?: 0L).mins())
             holder.binding.name.text =
                 if (profileSwitch is ProfileSealed.PS) profileSwitch.value.getCustomizedName(decimalFormatter) else if (profileSwitch is ProfileSealed.EPS) profileSwitch.value.originalCustomizedName else ""
-            if (profileSwitch.isInProgress(dateUtil)) holder.binding.date.setTextColor(rh.gac(context, info.nightscout.core.ui.R.attr.activeColor))
+            if (profileSwitch.isInProgress(dateUtil)) holder.binding.date.setTextColor(rh.gac(context, app.aaps.core.ui.R.attr.activeColor))
             else holder.binding.date.setTextColor(holder.binding.duration.currentTextColor)
             holder.binding.clone.tag = profileSwitch
             holder.binding.name.tag = profileSwitch
@@ -239,8 +211,8 @@ class TreatmentsProfileSwitchFragment : DaggerFragment(), MenuProvider {
                         val profileSealed = it.tag as ProfileSealed
                         OKDialog.showConfirmation(
                             activity,
-                            rh.gs(info.nightscout.core.ui.R.string.careportal_profileswitch),
-                            rh.gs(info.nightscout.core.ui.R.string.copytolocalprofile) + "\n" + profileSwitch.getCustomizedName(decimalFormatter) + "\n" + dateUtil.dateAndTimeString(profileSwitch.timestamp),
+                            rh.gs(app.aaps.core.ui.R.string.careportal_profileswitch),
+                            rh.gs(app.aaps.core.ui.R.string.copytolocalprofile) + "\n" + profileSwitch.getCustomizedName(decimalFormatter) + "\n" + dateUtil.dateAndTimeString(profileSwitch.timestamp),
                             Runnable {
                                 uel.log(
                                     Action.PROFILE_SWITCH_CLONED, Sources.Treatments,
@@ -286,8 +258,6 @@ class TreatmentsProfileSwitchFragment : DaggerFragment(), MenuProvider {
         this.menu = menu
         inflater.inflate(R.menu.menu_treatments_profile_switch, menu)
         updateMenuVisibility()
-        val nsUploadOnly = !sp.getBoolean(info.nightscout.core.utils.R.string.key_ns_receive_profile_switch, false) || !config.isEngineeringMode()
-        menu.findItem(R.id.nav_refresh_ns)?.isVisible = !nsUploadOnly
     }
 
     private fun updateMenuVisibility() {
@@ -315,25 +285,22 @@ class TreatmentsProfileSwitchFragment : DaggerFragment(), MenuProvider {
                 true
             }
 
-            R.id.nav_refresh_ns -> {
-                refreshFromNightscout()
-                true
-            }
-
             else -> false
         }
 
     private fun getConfirmationText(selectedItems: SparseArray<ProfileSealed>): String {
         if (selectedItems.size() == 1) {
             val profileSwitch = selectedItems.valueAt(0)
-            return rh.gs(info.nightscout.core.ui.R.string.careportal_profileswitch) + ": " + profileSwitch.profileName + "\n" + rh.gs(info.nightscout.core.ui.R.string.date) + ": " + dateUtil.dateAndTimeString(profileSwitch.timestamp)
+            return rh.gs(app.aaps.core.ui.R.string.careportal_profileswitch) + ": " + profileSwitch.profileName + "\n" + rh.gs(app.aaps.core.ui.R.string.date) + ": " + dateUtil.dateAndTimeString(
+                profileSwitch.timestamp
+            )
         }
-        return rh.gs(info.nightscout.core.ui.R.string.confirm_remove_multiple_items, selectedItems.size())
+        return rh.gs(app.aaps.core.ui.R.string.confirm_remove_multiple_items, selectedItems.size())
     }
 
     private fun removeSelected(selectedItems: SparseArray<ProfileSealed>) {
         activity?.let { activity ->
-            OKDialog.showConfirmation(activity, rh.gs(info.nightscout.core.ui.R.string.removerecord), getConfirmationText(selectedItems), Runnable {
+            OKDialog.showConfirmation(activity, rh.gs(app.aaps.core.ui.R.string.removerecord), getConfirmationText(selectedItems), Runnable {
                 selectedItems.forEach { _, profileSwitch ->
                     uel.log(
                         Action.PROFILE_SWITCH_REMOVED, Sources.Treatments, profileSwitch.profileName,
