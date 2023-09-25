@@ -2,12 +2,12 @@ package info.nightscout.androidaps.tile.source
 
 import android.content.Context
 import android.content.res.Resources
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.rx.weardata.EventData
+import app.aaps.core.interfaces.sharedPreferences.SP
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.interaction.actions.BackgroundActionActivity
 import info.nightscout.androidaps.interaction.actions.TempTargetActivity
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.weardata.EventData
-import info.nightscout.shared.sharedPreferences.SP
 import javax.inject.Inject
 import javax.inject.Singleton
 

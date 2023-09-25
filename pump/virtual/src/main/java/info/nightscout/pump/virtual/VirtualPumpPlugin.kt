@@ -3,44 +3,45 @@ package info.nightscout.pump.virtual
 import android.os.SystemClock
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.db.PersistenceLayer
+import app.aaps.core.interfaces.iob.IobCobCalculator
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.notifications.Notification
+import app.aaps.core.interfaces.nsclient.ProcessedDeviceStatusData
+import app.aaps.core.interfaces.plugin.PluginDescription
+import app.aaps.core.interfaces.plugin.PluginType
+import app.aaps.core.interfaces.profile.Profile
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.pump.BolusProgressData
+import app.aaps.core.interfaces.pump.DetailedBolusInfo
+import app.aaps.core.interfaces.pump.Pump
+import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpPluginBase
+import app.aaps.core.interfaces.pump.PumpSync
+import app.aaps.core.interfaces.pump.VirtualPump
+import app.aaps.core.interfaces.pump.defs.ManufacturerType
+import app.aaps.core.interfaces.pump.defs.PumpDescription
+import app.aaps.core.interfaces.pump.defs.PumpType
+import app.aaps.core.interfaces.queue.CommandQueue
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventOverviewBolusProgress
+import app.aaps.core.interfaces.rx.events.EventPreferenceChange
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.interfaces.utils.TimeChangeType
+import app.aaps.core.main.events.EventNewNotification
+import app.aaps.core.main.extensions.convertedToAbsolute
+import app.aaps.core.main.extensions.plannedRemainingMinutes
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.utils.fabric.InstanceId
 import dagger.android.HasAndroidInjector
-import info.nightscout.core.events.EventNewNotification
-import info.nightscout.core.extensions.convertedToAbsolute
-import info.nightscout.core.extensions.plannedRemainingMinutes
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.core.utils.fabric.InstanceId
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.iob.IobCobCalculator
-import info.nightscout.interfaces.notifications.Notification
-import info.nightscout.interfaces.nsclient.ProcessedDeviceStatusData
-import info.nightscout.interfaces.plugin.PluginDescription
-import info.nightscout.interfaces.plugin.PluginType
-import info.nightscout.interfaces.profile.Profile
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.interfaces.pump.BolusProgressData
-import info.nightscout.interfaces.pump.DetailedBolusInfo
-import info.nightscout.interfaces.pump.Pump
-import info.nightscout.interfaces.pump.PumpEnactResult
-import info.nightscout.interfaces.pump.PumpPluginBase
-import info.nightscout.interfaces.pump.PumpSync
-import info.nightscout.interfaces.pump.VirtualPump
-import info.nightscout.interfaces.pump.defs.ManufacturerType
-import info.nightscout.interfaces.pump.defs.PumpDescription
-import info.nightscout.interfaces.pump.defs.PumpType
-import info.nightscout.interfaces.queue.CommandQueue
-import info.nightscout.interfaces.utils.TimeChangeType
 import info.nightscout.pump.virtual.events.EventVirtualPumpUpdateGui
 import info.nightscout.pump.virtual.extensions.toText
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventOverviewBolusProgress
-import info.nightscout.rx.events.EventPreferenceChange
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.shared.utils.T
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import org.json.JSONException
@@ -64,13 +65,14 @@ open class VirtualPumpPlugin @Inject constructor(
     private val pumpSync: PumpSync,
     private val config: Config,
     private val dateUtil: DateUtil,
-    private val processedDeviceStatusData: ProcessedDeviceStatusData
+    private val processedDeviceStatusData: ProcessedDeviceStatusData,
+    private val persistenceLayer: PersistenceLayer
 ) : PumpPluginBase(
     PluginDescription()
         .mainType(PluginType.PUMP)
         .fragmentClass(VirtualPumpFragment::class.java.name)
-        .pluginIcon(info.nightscout.core.main.R.drawable.ic_virtual_pump)
-        .pluginName(info.nightscout.core.ui.R.string.virtual_pump)
+        .pluginIcon(app.aaps.core.main.R.drawable.ic_virtual_pump)
+        .pluginName(app.aaps.core.ui.R.string.virtual_pump)
         .shortName(R.string.virtual_pump_shortname)
         .preferencesId(R.xml.pref_virtual_pump)
         .description(R.string.description_pump_virtual)
@@ -158,7 +160,7 @@ open class VirtualPumpPlugin @Inject constructor(
 
     override fun setNewBasalProfile(profile: Profile): PumpEnactResult {
         lastDataTime = System.currentTimeMillis()
-        rxBus.send(EventNewNotification(Notification(Notification.PROFILE_SET_OK, rh.gs(info.nightscout.core.ui.R.string.profile_set_ok), Notification.INFO, 60)))
+        rxBus.send(EventNewNotification(Notification(Notification.PROFILE_SET_OK, rh.gs(app.aaps.core.ui.R.string.profile_set_ok), Notification.INFO, 60)))
         // Do nothing here. we are using database profile
         return PumpEnactResult(injector).success(true).enacted(true)
     }
@@ -183,13 +185,13 @@ open class VirtualPumpPlugin @Inject constructor(
             .success(true)
             .bolusDelivered(detailedBolusInfo.insulin)
             .enacted(detailedBolusInfo.insulin > 0 || detailedBolusInfo.carbs > 0)
-            .comment(rh.gs(info.nightscout.core.ui.R.string.virtualpump_resultok))
+            .comment(rh.gs(app.aaps.core.ui.R.string.virtualpump_resultok))
         val bolusingEvent = EventOverviewBolusProgress
         bolusingEvent.t = EventOverviewBolusProgress.Treatment(0.0, 0, detailedBolusInfo.bolusType == DetailedBolusInfo.BolusType.SMB, detailedBolusInfo.id)
         var delivering = 0.0
         while (delivering < detailedBolusInfo.insulin) {
             SystemClock.sleep(200)
-            bolusingEvent.status = rh.gs(info.nightscout.core.ui.R.string.bolus_delivering, delivering)
+            bolusingEvent.status = rh.gs(app.aaps.core.ui.R.string.bolus_delivering, delivering)
             bolusingEvent.percent = min((delivering / detailedBolusInfo.insulin * 100).toInt(), 100)
             rxBus.send(bolusingEvent)
             delivering += 0.1
@@ -197,33 +199,29 @@ open class VirtualPumpPlugin @Inject constructor(
                 return PumpEnactResult(injector)
                     .success(false)
                     .enacted(false)
-                    .comment(rh.gs(info.nightscout.core.ui.R.string.stop))
+                    .comment(rh.gs(app.aaps.core.ui.R.string.stop))
         }
         SystemClock.sleep(200)
-        bolusingEvent.status = rh.gs(info.nightscout.core.ui.R.string.bolus_delivered_successfully, detailedBolusInfo.insulin)
+        bolusingEvent.status = rh.gs(app.aaps.core.ui.R.string.bolus_delivered_successfully, detailedBolusInfo.insulin)
         bolusingEvent.percent = 100
         rxBus.send(bolusingEvent)
         SystemClock.sleep(1000)
         aapsLogger.debug(LTag.PUMP, "Delivering treatment insulin: " + detailedBolusInfo.insulin + "U carbs: " + detailedBolusInfo.carbs + "g " + result)
         rxBus.send(EventVirtualPumpUpdateGui())
         lastDataTime = System.currentTimeMillis()
-        if (detailedBolusInfo.insulin > 0)
-            pumpSync.syncBolusWithPumpId(
-                timestamp = detailedBolusInfo.timestamp,
-                amount = detailedBolusInfo.insulin,
-                type = detailedBolusInfo.bolusType,
-                pumpId = dateUtil.now(),
-                pumpType = pumpType ?: PumpType.GENERIC_AAPS,
-                pumpSerial = serialNumber()
-            )
-        if (detailedBolusInfo.carbs > 0)
-            pumpSync.syncCarbsWithTimestamp(
-                timestamp = detailedBolusInfo.carbsTimestamp ?: detailedBolusInfo.timestamp,
-                amount = detailedBolusInfo.carbs,
-                pumpId = null,
-                pumpType = pumpType ?: PumpType.GENERIC_AAPS,
-                pumpSerial = serialNumber()
-            )
+        if (detailedBolusInfo.insulin > 0) {
+            if (config.NSCLIENT) // do not store pump serial (record will not be marked PH)
+                persistenceLayer.insertOrUpdateBolus(detailedBolusInfo.createBolus())
+            else
+                pumpSync.syncBolusWithPumpId(
+                    timestamp = detailedBolusInfo.timestamp,
+                    amount = detailedBolusInfo.insulin,
+                    type = detailedBolusInfo.bolusType,
+                    pumpId = dateUtil.now(),
+                    pumpType = pumpType ?: PumpType.GENERIC_AAPS,
+                    pumpSerial = serialNumber()
+                )
+        }
         return result
     }
 
@@ -235,7 +233,7 @@ open class VirtualPumpPlugin @Inject constructor(
         result.isTempCancel = false
         result.absolute = absoluteRate
         result.duration = durationInMinutes
-        result.comment = rh.gs(info.nightscout.core.ui.R.string.virtualpump_resultok)
+        result.comment = rh.gs(app.aaps.core.ui.R.string.virtualpump_resultok)
         pumpSync.syncTemporaryBasalWithPumpId(
             timestamp = dateUtil.now(),
             rate = absoluteRate,
@@ -260,7 +258,7 @@ open class VirtualPumpPlugin @Inject constructor(
         result.isPercent = true
         result.isTempCancel = false
         result.duration = durationInMinutes
-        result.comment = rh.gs(info.nightscout.core.ui.R.string.virtualpump_resultok)
+        result.comment = rh.gs(app.aaps.core.ui.R.string.virtualpump_resultok)
         pumpSync.syncTemporaryBasalWithPumpId(
             timestamp = dateUtil.now(),
             rate = percent.toDouble(),
@@ -285,7 +283,7 @@ open class VirtualPumpPlugin @Inject constructor(
         result.bolusDelivered = insulin
         result.isTempCancel = false
         result.duration = durationInMinutes
-        result.comment = rh.gs(info.nightscout.core.ui.R.string.virtualpump_resultok)
+        result.comment = rh.gs(app.aaps.core.ui.R.string.virtualpump_resultok)
         pumpSync.syncExtendedBolusWithPumpId(
             timestamp = dateUtil.now(),
             amount = insulin,
@@ -305,7 +303,7 @@ open class VirtualPumpPlugin @Inject constructor(
         val result = PumpEnactResult(injector)
         result.success = true
         result.isTempCancel = true
-        result.comment = rh.gs(info.nightscout.core.ui.R.string.virtualpump_resultok)
+        result.comment = rh.gs(app.aaps.core.ui.R.string.virtualpump_resultok)
         if (pumpSync.expectedPumpState().temporaryBasal != null) {
             result.enacted = true
             pumpSync.syncStopTemporaryBasalWithPumpId(
@@ -334,7 +332,7 @@ open class VirtualPumpPlugin @Inject constructor(
         result.success = true
         result.enacted = true
         result.isTempCancel = true
-        result.comment = rh.gs(info.nightscout.core.ui.R.string.virtualpump_resultok)
+        result.comment = rh.gs(app.aaps.core.ui.R.string.virtualpump_resultok)
         aapsLogger.debug(LTag.PUMP, "Canceling extended bolus: ${result.toText(rh)}")
         rxBus.send(EventVirtualPumpUpdateGui())
         lastDataTime = System.currentTimeMillis()

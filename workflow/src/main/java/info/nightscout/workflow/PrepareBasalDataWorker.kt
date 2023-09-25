@@ -5,17 +5,17 @@ import android.graphics.DashPathEffect
 import android.graphics.Paint
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import app.aaps.core.interfaces.iob.IobCobCalculator
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.main.events.EventIobCalculationProgress
+import app.aaps.core.main.graph.OverviewData
+import app.aaps.core.main.graph.data.ScaledDataPoint
+import app.aaps.core.main.utils.worker.LoggingWorker
+import app.aaps.core.main.workflow.CalculationWorkflow
+import app.aaps.core.utils.receivers.DataWorkerStorage
 import com.jjoe64.graphview.series.LineGraphSeries
-import info.nightscout.core.events.EventIobCalculationProgress
-import info.nightscout.core.graph.OverviewData
-import info.nightscout.core.graph.data.ScaledDataPoint
-import info.nightscout.core.utils.receivers.DataWorkerStorage
-import info.nightscout.core.utils.worker.LoggingWorker
-import info.nightscout.core.workflow.CalculationWorkflow
-import info.nightscout.interfaces.iob.IobCobCalculator
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.shared.interfaces.ResourceHelper
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 
@@ -116,27 +116,29 @@ class PrepareBasalDataWorker(
         // create series
         data.overviewData.baseBasalGraphSeries = LineGraphSeries(Array(baseBasalArray.size) { i -> baseBasalArray[i] }).also {
             it.isDrawBackground = true
-            it.backgroundColor = rh.gac(ctx, info.nightscout.core.ui.R.attr.baseBasalColor )
+            it.backgroundColor = rh.gac(ctx, app.aaps.core.ui.R.attr.baseBasalColor)
             it.thickness = 0
         }
         data.overviewData.tempBasalGraphSeries = LineGraphSeries(Array(tempBasalArray.size) { i -> tempBasalArray[i] }).also {
             it.isDrawBackground = true
-            it.backgroundColor = rh.gac(ctx, info.nightscout.core.ui.R.attr.tempBasalColor )
+            it.backgroundColor = rh.gac(ctx, app.aaps.core.ui.R.attr.tempBasalColor)
             it.thickness = 0
         }
         data.overviewData.basalLineGraphSeries = LineGraphSeries(Array(basalLineArray.size) { i -> basalLineArray[i] }).also {
             it.setCustomPaint(Paint().also { paint ->
                 paint.style = Paint.Style.STROKE
+                @Suppress("DEPRECATION")
                 paint.strokeWidth = rh.getDisplayMetrics().scaledDensity * 2
                 paint.pathEffect = DashPathEffect(floatArrayOf(2f, 4f), 0f)
-                paint.color = rh.gac(ctx, info.nightscout.core.ui.R.attr.basal )
+                paint.color = rh.gac(ctx, app.aaps.core.ui.R.attr.basal)
             })
         }
         data.overviewData.absoluteBasalGraphSeries = LineGraphSeries(Array(absoluteBasalLineArray.size) { i -> absoluteBasalLineArray[i] }).also {
             it.setCustomPaint(Paint().also { absolutePaint ->
                 absolutePaint.style = Paint.Style.STROKE
+                @Suppress("DEPRECATION")
                 absolutePaint.strokeWidth = rh.getDisplayMetrics().scaledDensity * 2
-                absolutePaint.color =rh.gac(ctx, info.nightscout.core.ui.R.attr.basal )
+                absolutePaint.color = rh.gac(ctx, app.aaps.core.ui.R.attr.basal)
             })
         }
         rxBus.send(EventIobCalculationProgress(CalculationWorkflow.ProgressData.PREPARE_BASAL_DATA, 100, null))

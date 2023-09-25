@@ -16,31 +16,31 @@ import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.db.PersistenceLayer
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.plugin.PluginFragment
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventNSClientNewLog
+import app.aaps.core.interfaces.rx.events.EventNSClientRestart
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.ui.dialogs.OKDialog
+import app.aaps.core.utils.HtmlHelper
+import app.aaps.database.entities.UserEntry
 import dagger.android.support.DaggerFragment
-import info.nightscout.core.ui.dialogs.OKDialog
-import info.nightscout.core.utils.HtmlHelper
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.database.entities.UserEntry
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.db.PersistenceLayer
-import info.nightscout.interfaces.logging.UserEntryLogger
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.plugin.PluginBase
-import info.nightscout.interfaces.plugin.PluginFragment
 import info.nightscout.plugins.sync.R
 import info.nightscout.plugins.sync.databinding.NsClientFragmentBinding
 import info.nightscout.plugins.sync.databinding.NsClientLogItemBinding
 import info.nightscout.plugins.sync.nsShared.events.EventNSClientUpdateGuiData
 import info.nightscout.plugins.sync.nsShared.events.EventNSClientUpdateGuiQueue
 import info.nightscout.plugins.sync.nsShared.events.EventNSClientUpdateGuiStatus
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventNSClientNewLog
-import info.nightscout.rx.events.EventNSClientRestart
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
@@ -145,7 +145,7 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
                     OKDialog.showConfirmation(
                         context, rh.gs(R.string.ns_client), rh.gs(R.string.full_sync_comment),
                         Runnable {
-                            OKDialog.showConfirmation(requireContext(), rh.gs(R.string.ns_client), rh.gs(info.nightscout.core.ui.R.string.cleanup_db_confirm_sync), Runnable {
+                            OKDialog.showConfirmation(requireContext(), rh.gs(R.string.ns_client), rh.gs(app.aaps.core.ui.R.string.cleanup_db_confirm_sync), Runnable {
                                 disposable += Completable.fromAction { result = persistenceLayer.cleanupDatabase(93, deleteTrackedChanges = true) }
                                     .subscribeOn(aapsSchedulers.io)
                                     .observeOn(aapsSchedulers.main)
@@ -155,8 +155,8 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
                                             if (result.isNotEmpty())
                                                 OKDialog.show(
                                                     requireContext(),
-                                                    rh.gs(info.nightscout.core.ui.R.string.result),
-                                                    HtmlHelper.fromHtml("<b>" + rh.gs(info.nightscout.core.ui.R.string.cleared_entries) + "</b><br>" + result)
+                                                    rh.gs(app.aaps.core.ui.R.string.result),
+                                                    HtmlHelper.fromHtml("<b>" + rh.gs(app.aaps.core.ui.R.string.cleared_entries) + "</b><br>" + result)
                                                         .toSpanned()
                                                 )
                                             aapsLogger.info(LTag.CORE, "Cleaned up databases with result: $result")
@@ -222,7 +222,7 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
 
     private fun updateQueue() {
         val size = nsClientPlugin?.dataSyncSelector?.queueSize() ?: 0L
-        _binding?.queue?.text = if (size >= 0) size.toString() else rh.gs(info.nightscout.core.ui.R.string.value_unavailable_short)
+        _binding?.queue?.text = if (size >= 0) size.toString() else rh.gs(app.aaps.core.ui.R.string.value_unavailable_short)
     }
 
     private fun updateStatus() {
@@ -233,6 +233,7 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
     }
 
     private fun updateLog() {
+        _binding?.recyclerview?.recycledViewPool?.clear()
         _binding?.recyclerview?.swapAdapter(RecyclerViewAdapter(nsClientPlugin?.listLog ?: arrayListOf()), true)
     }
 

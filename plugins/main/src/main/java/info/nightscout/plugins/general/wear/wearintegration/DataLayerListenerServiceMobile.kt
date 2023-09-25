@@ -3,6 +3,22 @@ package info.nightscout.plugins.general.wear.wearintegration
 import android.os.Binder
 import android.os.Handler
 import android.os.HandlerThread
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.interfaces.aps.Loop
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.iob.IobCobCalculator
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventMobileDataToWear
+import app.aaps.core.interfaces.rx.events.EventMobileToWear
+import app.aaps.core.interfaces.rx.events.EventWearUpdateGui
+import app.aaps.core.interfaces.rx.weardata.EventData
+import app.aaps.core.interfaces.sharedPreferences.SP
 import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.CapabilityInfo
@@ -15,25 +31,9 @@ import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
 import com.google.android.gms.wearable.WearableListenerService
 import dagger.android.AndroidInjection
-import info.nightscout.core.utils.fabric.FabricPrivacy
 import info.nightscout.database.impl.AppRepository
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.aps.Loop
-import info.nightscout.interfaces.iob.IobCobCalculator
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.profile.ProfileFunction
 import info.nightscout.plugins.R
 import info.nightscout.plugins.general.wear.WearPlugin
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventMobileDataToWear
-import info.nightscout.rx.events.EventMobileToWear
-import info.nightscout.rx.events.EventWearUpdateGui
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.rx.weardata.EventData
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import kotlinx.coroutines.CancellationException
@@ -77,8 +77,9 @@ class DataLayerListenerServiceMobile : WearableListenerService() {
 
     private val disposable = CompositeDisposable()
 
-    private val rxPath get() = getString(info.nightscout.interfaces.R.string.path_rx_bridge)
-    private val rxDataPath get() = getString(info.nightscout.interfaces.R.string.path_rx_data_bridge)
+    private val rxPath get() = getString(app.aaps.core.interfaces.R.string.path_rx_bridge)
+    private val rxDataPath get() = getString(app.aaps.core.interfaces.R.string.path_rx_data_bridge)
+
     @ExperimentalSerializationApi
     override fun onCreate() {
         AndroidInjection.inject(this)
@@ -128,17 +129,19 @@ class DataLayerListenerServiceMobile : WearableListenerService() {
         }
         super.onDataChanged(dataEvents)
     }
+
     @ExperimentalSerializationApi
     override fun onMessageReceived(messageEvent: MessageEvent) {
         super.onMessageReceived(messageEvent)
 
         if (wearPlugin.isEnabled()) {
             when (messageEvent.path) {
-                rxPath -> {
+                rxPath     -> {
                     aapsLogger.debug(LTag.WEAR, "onMessageReceived rxPath: ${String(messageEvent.data)}")
                     val command = EventData.deserialize(String(messageEvent.data))
                     rxBus.send(command.also { it.sourceNodeId = messageEvent.sourceNodeId })
                 }
+
                 rxDataPath -> {
                     aapsLogger.debug(LTag.WEAR, "onMessageReceived rxDataPath: ${String(messageEvent.data)}")
                     val command = EventData.deserializeByte(messageEvent.data)

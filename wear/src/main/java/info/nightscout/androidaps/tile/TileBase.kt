@@ -1,8 +1,8 @@
+@file:Suppress("DEPRECATION")
+
 package info.nightscout.androidaps.tile
 
-import android.os.Build
 import androidx.annotation.DrawableRes
-import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.wear.tiles.ActionBuilders
 import androidx.wear.tiles.ColorBuilders.argb
@@ -11,7 +11,16 @@ import androidx.wear.tiles.DeviceParametersBuilders.SCREEN_SHAPE_ROUND
 import androidx.wear.tiles.DimensionBuilders.SpProp
 import androidx.wear.tiles.DimensionBuilders.dp
 import androidx.wear.tiles.DimensionBuilders.sp
-import androidx.wear.tiles.LayoutElementBuilders.*
+import androidx.wear.tiles.LayoutElementBuilders.Box
+import androidx.wear.tiles.LayoutElementBuilders.Column
+import androidx.wear.tiles.LayoutElementBuilders.FONT_WEIGHT_BOLD
+import androidx.wear.tiles.LayoutElementBuilders.FontStyle
+import androidx.wear.tiles.LayoutElementBuilders.Image
+import androidx.wear.tiles.LayoutElementBuilders.Layout
+import androidx.wear.tiles.LayoutElementBuilders.LayoutElement
+import androidx.wear.tiles.LayoutElementBuilders.Row
+import androidx.wear.tiles.LayoutElementBuilders.Spacer
+import androidx.wear.tiles.LayoutElementBuilders.Text
 import androidx.wear.tiles.ModifiersBuilders.Background
 import androidx.wear.tiles.ModifiersBuilders.Clickable
 import androidx.wear.tiles.ModifiersBuilders.Corner
@@ -26,13 +35,13 @@ import androidx.wear.tiles.TileBuilders.Tile
 import androidx.wear.tiles.TileService
 import androidx.wear.tiles.TimelineBuilders.Timeline
 import androidx.wear.tiles.TimelineBuilders.TimelineEntry
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.rx.weardata.EventData
+import app.aaps.core.interfaces.sharedPreferences.SP
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.android.AndroidInjection
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.comm.DataLayerListenerServiceWear
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.rx.weardata.EventData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -113,7 +122,6 @@ abstract class TileBase : TileService() {
         return source.getValidFor()
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     override fun onResourcesRequest(
         requestParams: ResourcesRequest
     ): ListenableFuture<Resources> = serviceScope.future {

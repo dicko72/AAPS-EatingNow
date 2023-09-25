@@ -1,25 +1,27 @@
-package info.nightscout.androidaps.implementations
+// Modified for Eating Now
+package app.aaps.implementations
 
+import info.nightscout.ui.dialogs.ENTempTargetDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.RawRes
 import androidx.annotation.StringRes
 import androidx.fragment.app.FragmentManager
+import app.aaps.MainActivity
+import app.aaps.activities.HistoryBrowseActivity
+import app.aaps.activities.MyPreferenceFragment
+import app.aaps.activities.PreferencesActivity
+import app.aaps.core.interfaces.notifications.Notification
+import app.aaps.core.interfaces.nsclient.NSAlarm
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.main.events.EventNewNotification
+import app.aaps.core.ui.toast.ToastUtils
+import app.aaps.plugins.configuration.activities.SingleFragmentActivity
 import dagger.android.HasAndroidInjector
-import info.nightscout.androidaps.MainActivity
 import info.nightscout.androidaps.R
-import info.nightscout.androidaps.activities.HistoryBrowseActivity
-import info.nightscout.androidaps.activities.MyPreferenceFragment
-import info.nightscout.androidaps.activities.PreferencesActivity
-import info.nightscout.configuration.activities.SingleFragmentActivity
-import info.nightscout.core.events.EventNewNotification
-import info.nightscout.core.ui.toast.ToastUtils
-import info.nightscout.interfaces.notifications.Notification
-import info.nightscout.interfaces.nsclient.NSAlarm
-import info.nightscout.interfaces.ui.UiInteraction
 import info.nightscout.plugins.general.overview.notifications.NotificationWithAction
-import info.nightscout.rx.bus.RxBus
 import info.nightscout.ui.activities.BolusProgressHelperActivity
 import info.nightscout.ui.activities.ErrorHelperActivity
 import info.nightscout.ui.activities.QuickWizardListActivity
@@ -36,7 +38,6 @@ import info.nightscout.ui.dialogs.ProfileSwitchDialog
 import info.nightscout.ui.dialogs.ProfileViewerDialog
 import info.nightscout.ui.dialogs.TempBasalDialog
 import info.nightscout.ui.dialogs.TempTargetDialog
-import info.nightscout.ui.dialogs.ENTempTargetDialog
 import info.nightscout.ui.dialogs.TreatmentDialog
 import info.nightscout.ui.dialogs.WizardDialog
 import info.nightscout.ui.services.AlarmSoundService
@@ -78,8 +79,8 @@ class UiInteractionImpl @Inject constructor(
     override fun runWizardDialog(fragmentManager: FragmentManager, carbs: Int?, name: String?) {
         WizardDialog().also { dialog ->
             dialog.arguments = Bundle().also { bundle ->
-                carbs?.let { bundle.putDouble("carbs_input", carbs.toDouble())}
-                name?.let {bundle.putString("notes_input", " $name - ${carbs}g") }
+                carbs?.let { bundle.putDouble("carbs_input", carbs.toDouble()) }
+                name?.let { bundle.putString("notes_input", " $name - ${carbs}g") }
             }
         }.show(fragmentManager, "Food Item")
 
@@ -166,6 +167,7 @@ class UiInteractionImpl @Inject constructor(
             }
             .show(fragmentManager, "CareDialog")
     }
+
     override fun runBolusProgressDialog(fragmentManager: FragmentManager, insulin: Double, id: Long) {
         BolusProgressDialog().also {
             it.setInsulin(insulin)

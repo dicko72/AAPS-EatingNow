@@ -4,16 +4,27 @@ import android.content.Context
 import android.text.Spanned
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import app.aaps.core.interfaces.configuration.Constants
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.plugin.PluginDescription
+import app.aaps.core.interfaces.plugin.PluginType
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventNSClientNewLog
+import app.aaps.core.interfaces.rx.events.EventNewBG
+import app.aaps.core.interfaces.rx.events.EventPreferenceChange
+import app.aaps.core.interfaces.rx.events.EventSWSyncStatus
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.sync.Sync
+import app.aaps.core.interfaces.sync.Tidepool
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.utils.HtmlHelper
 import dagger.android.HasAndroidInjector
-import info.nightscout.core.utils.HtmlHelper
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.interfaces.Constants
-import info.nightscout.interfaces.plugin.PluginBase
-import info.nightscout.interfaces.plugin.PluginDescription
-import info.nightscout.interfaces.plugin.PluginType
-import info.nightscout.interfaces.sync.Sync
-import info.nightscout.interfaces.sync.Tidepool
-import info.nightscout.interfaces.ui.UiInteraction
 import info.nightscout.plugins.sync.R
 import info.nightscout.plugins.sync.nsShared.events.EventConnectivityOptionChanged
 import info.nightscout.plugins.sync.nsclient.ReceiverDelegate
@@ -24,17 +35,6 @@ import info.nightscout.plugins.sync.tidepool.events.EventTidepoolResetData
 import info.nightscout.plugins.sync.tidepool.events.EventTidepoolStatus
 import info.nightscout.plugins.sync.tidepool.events.EventTidepoolUpdateGUI
 import info.nightscout.plugins.sync.tidepool.utils.RateLimit
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventNSClientNewLog
-import info.nightscout.rx.events.EventNewBG
-import info.nightscout.rx.events.EventPreferenceChange
-import info.nightscout.rx.events.EventSWSyncStatus
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.T
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import javax.inject.Inject
@@ -178,7 +178,7 @@ class TidepoolPlugin @Inject constructor(
             }
             textLog = HtmlHelper.fromHtml(newTextLog.toString())
         } catch (e: OutOfMemoryError) {
-            uiInteraction.showToastAndNotification(context, "Out of memory!\nStop using this phone !!!", info.nightscout.core.ui.R.raw.error)
+            uiInteraction.showToastAndNotification(context, "Out of memory!\nStop using this phone !!!", app.aaps.core.ui.R.raw.error)
         }
     }
 

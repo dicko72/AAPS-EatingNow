@@ -1,11 +1,12 @@
-package info.nightscout.interfaces.ui
+// Modified for Eating Now
+package app.aaps.core.interfaces.ui
 
 import android.content.Context
 import androidx.annotation.RawRes
 import androidx.annotation.StringRes
 import androidx.fragment.app.FragmentManager
+import app.aaps.core.interfaces.nsclient.NSAlarm
 import dagger.android.HasAndroidInjector
-import info.nightscout.interfaces.nsclient.NSAlarm
 
 /**
  * Interface to use activities located in different modules
@@ -24,6 +25,7 @@ interface UiInteraction {
     val quickWizardListActivity: Class<*>
 
     val prefGeneral: Int
+
     /**
      * Show ErrorHelperActivity and start alarm
      * @param ctx Context
@@ -54,7 +56,8 @@ interface UiInteraction {
         DB_PROFILE(3),
         PROFILE_COMPARE(4)
     }
-    fun runProfileViewerDialog(fragmentManager: FragmentManager, time: Long, mode: Mode, customProfile: String?= null, customProfileName: String? = null, customProfile2: String? = null)
+
+    fun runProfileViewerDialog(fragmentManager: FragmentManager, time: Long, mode: Mode, customProfile: String? = null, customProfileName: String? = null, customProfile2: String? = null)
     enum class EventType {
         BGCHECK,
         SENSOR_INSERT,

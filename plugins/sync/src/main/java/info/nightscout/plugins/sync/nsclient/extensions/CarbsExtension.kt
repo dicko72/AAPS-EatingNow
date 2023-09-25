@@ -1,10 +1,10 @@
 package info.nightscout.plugins.sync.nsclient.extensions
 
-import info.nightscout.core.utils.JsonHelper
-import info.nightscout.database.entities.Carbs
-import info.nightscout.database.entities.TherapyEvent
-import info.nightscout.database.entities.embedments.InterfaceIDs
-import info.nightscout.shared.utils.DateUtil
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.utils.JsonHelper
+import app.aaps.database.entities.Carbs
+import app.aaps.database.entities.TherapyEvent
+import app.aaps.database.entities.embedments.InterfaceIDs
 import org.json.JSONObject
 
 fun Carbs.toJson(isAdd: Boolean, dateUtil: DateUtil): JSONObject =
@@ -23,12 +23,17 @@ fun Carbs.toJson(isAdd: Boolean, dateUtil: DateUtil): JSONObject =
         }
 
 fun Carbs.Companion.fromJson(jsonObject: JSONObject): Carbs? {
-    val timestamp = JsonHelper.safeGetLongAllowNull(jsonObject, "mills", null) ?: return null
+    val timestamp =
+        JsonHelper.safeGetLongAllowNull(jsonObject, "mills", null)
+            ?: JsonHelper.safeGetLongAllowNull(jsonObject, "date", null)
+            ?: return null
     val duration = JsonHelper.safeGetLong(jsonObject, "duration")
     val amount = JsonHelper.safeGetDoubleAllowNull(jsonObject, "carbs") ?: return null
     val notes = JsonHelper.safeGetStringAllowNull(jsonObject, "notes", null)
     val isValid = JsonHelper.safeGetBoolean(jsonObject, "isValid", true)
-    val id = JsonHelper.safeGetStringAllowNull(jsonObject, "_id", null) ?: return null
+    val id = JsonHelper.safeGetStringAllowNull(jsonObject, "identifier", null)
+        ?: JsonHelper.safeGetStringAllowNull(jsonObject, "_id", null)
+        ?: return null
     val pumpId = JsonHelper.safeGetLongAllowNull(jsonObject, "pumpId", null)
     val pumpType = InterfaceIDs.PumpType.fromString(JsonHelper.safeGetStringAllowNull(jsonObject, "pumpType", null))
     val pumpSerial = JsonHelper.safeGetStringAllowNull(jsonObject, "pumpSerial", null)

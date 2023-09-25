@@ -7,21 +7,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.pump.BolusProgressData
+import app.aaps.core.interfaces.queue.CommandQueue
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventDismissBolusProgressIfRunning
+import app.aaps.core.interfaces.rx.events.EventOverviewBolusProgress
+import app.aaps.core.interfaces.rx.events.EventPumpStatusChanged
+import app.aaps.core.ui.activities.TranslatedDaggerAppCompatActivity
+import app.aaps.database.entities.UserEntry.Action
+import app.aaps.database.entities.UserEntry.Sources
 import dagger.android.support.DaggerDialogFragment
-import info.nightscout.core.ui.activities.TranslatedDaggerAppCompatActivity
-import info.nightscout.database.entities.UserEntry.Action
-import info.nightscout.database.entities.UserEntry.Sources
-import info.nightscout.interfaces.logging.UserEntryLogger
-import info.nightscout.interfaces.pump.BolusProgressData
-import info.nightscout.interfaces.queue.CommandQueue
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventDismissBolusProgressIfRunning
-import info.nightscout.rx.events.EventOverviewBolusProgress
-import info.nightscout.rx.events.EventPumpStatusChanged
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.interfaces.ResourceHelper
 import info.nightscout.ui.databinding.DialogBolusprogressBinding
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
@@ -71,7 +71,7 @@ class BolusProgressDialog : DaggerDialogFragment() {
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         isCancelable = false
         dialog?.setCanceledOnTouchOutside(false)
-        context?.theme?.applyStyle(info.nightscout.core.ui.R.style.AppTheme_NoActionBar, true)
+        context?.theme?.applyStyle(app.aaps.core.ui.R.style.AppTheme_NoActionBar, true)
 
         _binding = DialogBolusprogressBinding.inflate(inflater, container, false)
         return binding.root
@@ -81,9 +81,9 @@ class BolusProgressDialog : DaggerDialogFragment() {
         savedInstanceState?.let {
             amount = it.getDouble("amount")
             id = it.getLong("id")
-            state = it.getString("state") ?: rh.gs(info.nightscout.core.ui.R.string.waitingforpump)
+            state = it.getString("state") ?: rh.gs(app.aaps.core.ui.R.string.waitingforpump)
         }
-        binding.title.text = rh.gs(info.nightscout.core.ui.R.string.goingtodeliver, amount)
+        binding.title.text = rh.gs(app.aaps.core.ui.R.string.goingtodeliver, amount)
         binding.stop.setOnClickListener {
             aapsLogger.debug(LTag.UI, "Stop bolus delivery button pressed")
             BolusProgressData.stopPressed = true

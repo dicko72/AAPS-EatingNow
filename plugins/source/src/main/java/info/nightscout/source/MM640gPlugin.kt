@@ -3,20 +3,20 @@ package info.nightscout.source
 import android.content.Context
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.plugin.PluginDescription
+import app.aaps.core.interfaces.plugin.PluginType
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.source.BgSource
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.main.utils.worker.LoggingWorker
+import app.aaps.database.entities.GlucoseValue
+import app.aaps.database.transactions.TransactionGlucoseValue
 import dagger.android.HasAndroidInjector
-import info.nightscout.core.utils.worker.LoggingWorker
-import info.nightscout.database.entities.GlucoseValue
 import info.nightscout.database.impl.AppRepository
 import info.nightscout.database.impl.transactions.CgmSourceTransaction
-import info.nightscout.database.transactions.TransactionGlucoseValue
-import info.nightscout.interfaces.plugin.PluginBase
-import info.nightscout.interfaces.plugin.PluginDescription
-import info.nightscout.interfaces.plugin.PluginType
-import info.nightscout.interfaces.source.BgSource
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.utils.DateUtil
 import kotlinx.coroutines.Dispatchers
 import org.json.JSONArray
 import org.json.JSONException
@@ -33,7 +33,7 @@ class MM640gPlugin @Inject constructor(
         .mainType(PluginType.BGSOURCE)
         .fragmentClass(BGSourceFragment::class.java.name)
         .preferencesId(R.xml.pref_bgsource)
-        .pluginIcon(info.nightscout.core.main.R.drawable.ic_generic_cgm)
+        .pluginIcon(app.aaps.core.main.R.drawable.ic_generic_cgm)
         .pluginName(R.string.mm640g)
         .description(R.string.description_source_mm640g),
     aapsLogger, rh, injector

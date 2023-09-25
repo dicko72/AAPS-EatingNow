@@ -11,12 +11,12 @@ apply from: "${project.rootDir}/core/main/allopen_dependencies.gradle"
 apply from: "${project.rootDir}/core/main/test_dependencies.gradle"
 apply from: "${project.rootDir}/core/main/jacoco_global.gradle"
 android {
-    namespace 'info.nightscout.core.validators'
+    namespace 'app.aaps.core.validators'
 }
 
 
 dependencies {
     implementation project(':core:interfaces')
-    implementation project(':app-wear-shared:shared-impl')
+    implementation project(':shared:impl')
     api "com.google.android.material:material:$material_version"
 }

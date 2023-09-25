@@ -1,4 +1,5 @@
-package info.nightscout.androidaps
+// Modified for Eating Now
+package app.aaps
 
 import android.bluetooth.BluetoothDevice
 import android.content.Intent
@@ -13,40 +14,42 @@ import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
+import app.aaps.core.interfaces.alerts.LocalAlertUtils
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.configuration.ConfigBuilder
+import app.aaps.core.interfaces.extensions.runOnUiThread
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.notifications.Notification
+import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.versionChecker.VersionCheckerUtils
+import app.aaps.core.ui.locale.LocaleHelper
+import app.aaps.database.entities.TherapyEvent
+import app.aaps.database.entities.UserEntry
+import app.aaps.di.DaggerAppComponent
+import app.aaps.implementation.db.CompatDBHelper
+import app.aaps.implementation.lifecycle.ProcessLifecycleListener
+import app.aaps.implementation.plugin.PluginStore
+import app.aaps.implementation.receivers.NetworkChangeReceiver
+import app.aaps.plugins.aps.utils.StaticInjector
+import app.aaps.receivers.BTReceiver
+import app.aaps.receivers.ChargingStateReceiver
+import app.aaps.receivers.KeepAliveWorker
+import app.aaps.receivers.TimeDateOrTZChangeReceiver
 import dagger.android.AndroidInjector
 import dagger.android.DaggerApplication
-import info.nightscout.androidaps.di.DaggerAppComponent
-import info.nightscout.androidaps.receivers.BTReceiver
-import info.nightscout.androidaps.receivers.ChargingStateReceiver
-import info.nightscout.androidaps.receivers.KeepAliveWorker
-import info.nightscout.androidaps.receivers.TimeDateOrTZChangeReceiver
-import info.nightscout.core.ui.locale.LocaleHelper
-import info.nightscout.database.entities.TherapyEvent
-import info.nightscout.database.entities.UserEntry
+import info.nightscout.androidaps.BuildConfig
+import info.nightscout.androidaps.R
 import info.nightscout.database.impl.AppRepository
 import info.nightscout.database.impl.transactions.InsertIfNewByTimestampTherapyEventTransaction
 import info.nightscout.database.impl.transactions.VersionChangeTransaction
-import info.nightscout.implementation.db.CompatDBHelper
-import info.nightscout.implementation.lifecycle.ProcessLifecycleListener
-import info.nightscout.implementation.plugin.PluginStore
-import info.nightscout.implementation.receivers.NetworkChangeReceiver
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.ConfigBuilder
-import info.nightscout.interfaces.LocalAlertUtils
-import info.nightscout.interfaces.logging.UserEntryLogger
-import info.nightscout.interfaces.notifications.Notification
-import info.nightscout.interfaces.plugin.PluginBase
-import info.nightscout.interfaces.ui.UiInteraction
-import info.nightscout.interfaces.versionChecker.VersionCheckerUtils
-import info.nightscout.plugins.aps.utils.StaticInjector
 import info.nightscout.plugins.general.overview.notifications.NotificationStore
 import info.nightscout.plugins.general.themes.ThemeSwitcherPlugin
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.extensions.runOnUiThread
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
 import info.nightscout.ui.activityMonitor.ActivityMonitor
 import info.nightscout.ui.widget.Widget
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -126,7 +129,7 @@ class MainApp : DaggerApplication() {
                 {
                     // check if identification is set
                     if (config.isDev() && sp.getStringOrNull(info.nightscout.core.utils.R.string.key_email_for_crash_report, null).isNullOrBlank())
-                        // notificationStore.add(Notification(Notification.IDENTIFICATION_NOT_SET, rh.get().gs(R.string.identification_not_set), Notification.INFO))
+                    // notificationStore.add(Notification(Notification.IDENTIFICATION_NOT_SET, rh.get().gs(R.string.identification_not_set), Notification.INFO))
                     // log version
                     disposable += repository.runTransaction(VersionChangeTransaction(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE, gitRemote, commitHash)).subscribe()
                     // log app start
@@ -136,7 +139,7 @@ class MainApp : DaggerApplication() {
                                 InsertIfNewByTimestampTherapyEventTransaction(
                                     timestamp = dateUtil.now(),
                                     type = TherapyEvent.Type.NOTE,
-                                    note = rh.get().gs(info.nightscout.core.ui.R.string.androidaps_start) + " - " + Build.MANUFACTURER + " " + Build.MODEL,
+                                    note = rh.get().gs(app.aaps.core.ui.R.string.androidaps_start) + " - " + Build.MANUFACTURER + " " + Build.MODEL,
                                     glucoseUnit = TherapyEvent.GlucoseUnit.MGDL
                                 )
                             )
@@ -199,7 +202,7 @@ class MainApp : DaggerApplication() {
         // set values for different builds
         if (!sp.contains(R.string.key_ns_alarms)) sp.putBoolean(R.string.key_ns_alarms, config.NSCLIENT)
         if (!sp.contains(R.string.key_ns_announcements)) sp.putBoolean(R.string.key_ns_announcements, config.NSCLIENT)
-        if (!sp.contains(info.nightscout.core.ui.R.string.key_language)) sp.putString(info.nightscout.core.ui.R.string.key_language, "default")
+        if (!sp.contains(app.aaps.core.ui.R.string.key_language)) sp.putString(app.aaps.core.ui.R.string.key_language, "default")
         // 3.1.0
         if (sp.contains("ns_wifionly")) {
             if (sp.getBoolean("ns_wifionly", false)) {
@@ -223,8 +226,8 @@ class MainApp : DaggerApplication() {
         }
         if (!sp.contains(info.nightscout.plugins.sync.R.string.key_ns_log_app_started_event))
             sp.putBoolean(info.nightscout.plugins.sync.R.string.key_ns_log_app_started_event, config.APS)
-        if (sp.getString(info.nightscout.configuration.R.string.key_maintenance_logs_email, "") == "logs@androidaps.org")
-            sp.putString(info.nightscout.configuration.R.string.key_maintenance_logs_email, "logs@aaps.app")
+        if (sp.getString(app.aaps.plugins.configuration.R.string.key_maintenance_logs_email, "") == "logs@androidaps.org")
+            sp.putString(app.aaps.plugins.configuration.R.string.key_maintenance_logs_email, "logs@aaps.app")
         // fix values for theme switching
         sp.putString(info.nightscout.plugins.R.string.value_dark_theme, "dark")
         sp.putString(info.nightscout.plugins.R.string.value_light_theme, "light")

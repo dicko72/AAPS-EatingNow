@@ -1,11 +1,11 @@
 package info.nightscout.plugins.sync.nsclientV3.extensions
 
-import info.nightscout.database.entities.TherapyEvent
-import info.nightscout.database.entities.embedments.InterfaceIDs
-import info.nightscout.sdk.localmodel.entry.NsUnits
-import info.nightscout.sdk.localmodel.treatment.EventType
-import info.nightscout.sdk.localmodel.treatment.NSTherapyEvent
-import info.nightscout.shared.utils.T
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.nssdk.localmodel.entry.NsUnits
+import app.aaps.core.nssdk.localmodel.treatment.EventType
+import app.aaps.core.nssdk.localmodel.treatment.NSTherapyEvent
+import app.aaps.database.entities.TherapyEvent
+import app.aaps.database.entities.embedments.InterfaceIDs
 import java.security.InvalidParameterException
 
 fun NSTherapyEvent.toTherapyEvent(): TherapyEvent =

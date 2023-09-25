@@ -1,39 +1,39 @@
 package info.nightscout.plugins.general.smsCommunicator
 
 import android.telephony.SmsManager
+import app.aaps.core.interfaces.aps.ApsMode
+import app.aaps.core.interfaces.aps.AutosensDataStore
+import app.aaps.core.interfaces.aps.Loop
+import app.aaps.core.interfaces.configuration.Constants
+import app.aaps.core.interfaces.constraints.ConstraintsChecker
+import app.aaps.core.interfaces.iob.CobInfo
+import app.aaps.core.interfaces.iob.InMemoryGlucoseValue
+import app.aaps.core.interfaces.iob.IobTotal
+import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.plugin.PluginType
+import app.aaps.core.interfaces.profile.ProfileSource
+import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.queue.Callback
+import app.aaps.core.interfaces.queue.CommandQueue
+import app.aaps.core.interfaces.smsCommunicator.Sms
+import app.aaps.core.interfaces.sync.XDripBroadcast
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.main.constraints.ConstraintObject
+import app.aaps.database.entities.GlucoseValue
+import app.aaps.implementation.iob.GlucoseStatusProviderImpl
+import app.aaps.shared.tests.TestBaseWithProfile
 import com.google.common.truth.Truth.assertThat
 import dagger.android.AndroidInjector
 import dagger.android.HasAndroidInjector
-import info.nightscout.core.constraints.ConstraintObject
-import info.nightscout.database.entities.GlucoseValue
 import info.nightscout.database.impl.AppRepository
 import info.nightscout.database.impl.transactions.CancelCurrentOfflineEventIfAnyTransaction
 import info.nightscout.database.impl.transactions.InsertAndCancelCurrentOfflineEventTransaction
 import info.nightscout.database.impl.transactions.InsertAndCancelCurrentTemporaryTargetTransaction
 import info.nightscout.database.impl.transactions.Transaction
-import info.nightscout.implementation.iob.GlucoseStatusProviderImpl
-import info.nightscout.interfaces.ApsMode
-import info.nightscout.interfaces.Constants
-import info.nightscout.interfaces.XDripBroadcast
-import info.nightscout.interfaces.aps.AutosensDataStore
-import info.nightscout.interfaces.aps.Loop
-import info.nightscout.interfaces.constraints.ConstraintsChecker
-import info.nightscout.interfaces.iob.CobInfo
-import info.nightscout.interfaces.iob.InMemoryGlucoseValue
-import info.nightscout.interfaces.iob.IobTotal
-import info.nightscout.interfaces.logging.UserEntryLogger
-import info.nightscout.interfaces.plugin.PluginType
-import info.nightscout.interfaces.profile.ProfileSource
-import info.nightscout.interfaces.pump.PumpEnactResult
-import info.nightscout.interfaces.queue.Callback
-import info.nightscout.interfaces.queue.CommandQueue
-import info.nightscout.interfaces.smsCommunicator.Sms
 import info.nightscout.plugins.R
 import info.nightscout.plugins.general.smsCommunicator.otp.OneTimePassword
 import info.nightscout.plugins.general.smsCommunicator.otp.OneTimePasswordValidationResult
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.shared.utils.T
-import info.nightscout.sharedtests.TestBaseWithProfile
 import io.reactivex.rxjava3.core.Single
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -175,7 +175,7 @@ class SmsCommunicatorPluginTest : TestBaseWithProfile() {
         `when`(rh.gs(R.string.smscommunicator_tt_set)).thenReturn("Target %1\$s for %2\$d minutes set successfully")
         `when`(rh.gs(R.string.smscommunicator_tt_canceled)).thenReturn("Temp Target canceled successfully")
         `when`(rh.gs(R.string.sms_loop_suspended_for)).thenReturn("Suspended (%1\$d m)")
-        `when`(rh.gs(info.nightscout.core.ui.R.string.loopisdisabled)).thenReturn("Loop is disabled")
+        `when`(rh.gs(app.aaps.core.ui.R.string.loopisdisabled)).thenReturn("Loop is disabled")
         `when`(rh.gs(R.string.smscommunicator_loop_is_enabled)).thenReturn("Loop is enabled")
         `when`(rh.gs(R.string.wrong_format)).thenReturn("Wrong format")
         `when`(rh.gs(eq(R.string.sms_wrong_tbr_duration), ArgumentMatchers.any())).thenAnswer { i: InvocationOnMock ->
@@ -190,7 +190,7 @@ class SmsCommunicatorPluginTest : TestBaseWithProfile() {
         `when`(rh.gs(R.string.smscommunicator_suspend_reply_with_code)).thenReturn("To suspend loop for %1\$d minutes reply with code %2\$s")
         `when`(rh.gs(R.string.smscommunicator_loop_suspended)).thenReturn("Loop suspended")
         `when`(rh.gs(R.string.smscommunicator_unknown_command)).thenReturn("Unknown command or wrong reply")
-        `when`(rh.gs(info.nightscout.core.ui.R.string.notconfigured)).thenReturn("Not configured")
+        `when`(rh.gs(app.aaps.core.ui.R.string.notconfigured)).thenReturn("Not configured")
         `when`(rh.gs(R.string.smscommunicator_profile_reply_with_code)).thenReturn("To switch profile to %1\$s %2\$d%% reply with code %3\$s")
         `when`(rh.gs(R.string.sms_profile_switch_created)).thenReturn("Profile switch created")
         `when`(rh.gs(R.string.smscommunicator_basal_stop_reply_with_code)).thenReturn("To stop temp basal reply with code %1\$s")
@@ -209,12 +209,12 @@ class SmsCommunicatorPluginTest : TestBaseWithProfile() {
         `when`(rh.gs(R.string.smscommunicator_calibration_sent)).thenReturn("Calibration sent. Receiving must be enabled in xDrip.")
         `when`(rh.gs(R.string.smscommunicator_carbs_reply_with_code)).thenReturn("To enter %1\$dg at %2\$s reply with code %3\$s")
         `when`(rh.gs(R.string.smscommunicator_carbs_set)).thenReturn("Carbs %1\$dg entered successfully")
-        `when`(rh.gs(info.nightscout.core.ui.R.string.noprofile)).thenReturn("No profile loaded from NS yet")
-        `when`(rh.gs(info.nightscout.core.ui.R.string.pumpsuspended)).thenReturn("Pump suspended")
+        `when`(rh.gs(app.aaps.core.ui.R.string.noprofile)).thenReturn("No profile loaded from NS yet")
+        `when`(rh.gs(app.aaps.core.ui.R.string.pumpsuspended)).thenReturn("Pump suspended")
         `when`(rh.gs(R.string.sms_delta)).thenReturn("Delta:")
         `when`(rh.gs(R.string.sms_bolus)).thenReturn("Bolus:")
         `when`(rh.gs(R.string.sms_basal)).thenReturn("Basal:")
-        `when`(rh.gs(info.nightscout.core.ui.R.string.cob)).thenReturn("COB")
+        `when`(rh.gs(app.aaps.core.ui.R.string.cob)).thenReturn("COB")
         `when`(rh.gs(R.string.smscommunicator_meal_bolus_delivered)).thenReturn("Meal Bolus %1\$.2fU delivered successfully")
         `when`(rh.gs(R.string.smscommunicator_meal_bolus_delivered_tt)).thenReturn("Target %1\$s for %2\$d minutes")
         `when`(rh.gs(R.string.sms_actual_bg)).thenReturn("BG:")
@@ -228,19 +228,19 @@ class SmsCommunicatorPluginTest : TestBaseWithProfile() {
         `when`(rh.gs(R.string.smscommunicator_pump_connect_fail)).thenReturn("Connection to pump failed")
         `when`(rh.gs(R.string.smscommunicator_pump_disconnected)).thenReturn("Pump disconnected")
         `when`(rh.gs(R.string.smscommunicator_code_from_authenticator_for)).thenReturn("from Authenticator app for: %1\$s followed by PIN")
-        `when`(rh.gs(info.nightscout.core.ui.R.string.patient_name_default)).thenReturn("User")
-        `when`(rh.gs(info.nightscout.core.ui.R.string.invalid_profile)).thenReturn("Invalid profile !!!")
-        `when`(rh.gs(info.nightscout.core.ui.R.string.sms)).thenReturn("SMS")
-        `when`(rh.gsNotLocalised(info.nightscout.core.ui.R.string.loopsuspended)).thenReturn("Loop suspended")
+        `when`(rh.gs(app.aaps.core.ui.R.string.patient_name_default)).thenReturn("User")
+        `when`(rh.gs(app.aaps.core.ui.R.string.invalid_profile)).thenReturn("Invalid profile !!!")
+        `when`(rh.gs(app.aaps.core.ui.R.string.sms)).thenReturn("SMS")
+        `when`(rh.gsNotLocalised(app.aaps.core.ui.R.string.loopsuspended)).thenReturn("Loop suspended")
         `when`(rh.gsNotLocalised(R.string.smscommunicator_stopped_sms)).thenReturn("SMS Remote Service stopped. To reactivate it, use AAPS on master smartphone.")
         `when`(rh.gsNotLocalised(R.string.sms_profile_switch_created)).thenReturn("Profile switch created")
         `when`(rh.gsNotLocalised(R.string.smscommunicator_tempbasal_canceled)).thenReturn("Temp basal canceled")
         `when`(rh.gsNotLocalised(R.string.smscommunicator_calibration_sent)).thenReturn("Calibration sent. Receiving must be enabled in xDrip+.")
         `when`(rh.gsNotLocalised(R.string.smscommunicator_tt_canceled)).thenReturn("Temp Target canceled successfully")
-        `when`(rh.gs(info.nightscout.core.ui.R.string.closedloop)).thenReturn(modeClosed)
-        `when`(rh.gs(info.nightscout.core.ui.R.string.openloop)).thenReturn(modeOpen)
-        `when`(rh.gs(info.nightscout.core.ui.R.string.lowglucosesuspend)).thenReturn(modeLgs)
-        `when`(rh.gs(info.nightscout.core.ui.R.string.unknown)).thenReturn(modeUnknown)
+        `when`(rh.gs(app.aaps.core.ui.R.string.closedloop)).thenReturn(modeClosed)
+        `when`(rh.gs(app.aaps.core.ui.R.string.openloop)).thenReturn(modeOpen)
+        `when`(rh.gs(app.aaps.core.ui.R.string.lowglucosesuspend)).thenReturn(modeLgs)
+        `when`(rh.gs(app.aaps.core.ui.R.string.unknown)).thenReturn(modeUnknown)
         `when`(rh.gs(R.string.smscommunicator_set_closed_loop_reply_with_code)).thenReturn("In order to switch Loop mode to Closed loop reply with code %1\$s")
         `when`(rh.gs(R.string.smscommunicator_current_loop_mode)).thenReturn("Current loop mode: %1\$s")
         `when`(rh.gs(R.string.smscommunicator_set_lgs_reply_with_code)).thenReturn("In order to switch Loop mode to LGS (Low Glucose Suspend) reply with code %1\$s")

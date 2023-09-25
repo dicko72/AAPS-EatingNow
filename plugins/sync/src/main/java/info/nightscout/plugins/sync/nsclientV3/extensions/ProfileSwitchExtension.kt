@@ -1,17 +1,17 @@
 package info.nightscout.plugins.sync.nsclientV3.extensions
 
-import info.nightscout.core.extensions.fromConstant
-import info.nightscout.core.extensions.getCustomizedName
-import info.nightscout.core.extensions.pureProfileFromJson
-import info.nightscout.core.profile.ProfileSealed
-import info.nightscout.database.entities.ProfileSwitch
-import info.nightscout.database.entities.embedments.InterfaceIDs
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.utils.DecimalFormatter
-import info.nightscout.sdk.localmodel.treatment.EventType
-import info.nightscout.sdk.localmodel.treatment.NSProfileSwitch
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.shared.utils.T
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.DecimalFormatter
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.main.extensions.fromConstant
+import app.aaps.core.main.extensions.getCustomizedName
+import app.aaps.core.main.extensions.pureProfileFromJson
+import app.aaps.core.main.profile.ProfileSealed
+import app.aaps.core.nssdk.localmodel.treatment.EventType
+import app.aaps.core.nssdk.localmodel.treatment.NSProfileSwitch
+import app.aaps.database.entities.ProfileSwitch
+import app.aaps.database.entities.embedments.InterfaceIDs
 import java.security.InvalidParameterException
 
 fun NSProfileSwitch.toProfileSwitch(activePlugin: ActivePlugin, dateUtil: DateUtil): ProfileSwitch? {

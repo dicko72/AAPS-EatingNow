@@ -6,32 +6,32 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.RemoteInput
+import app.aaps.core.main.extensions.toStringShort
+import app.aaps.core.main.iob.generateCOBString
+import app.aaps.core.main.iob.round
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.iob.GlucoseStatusProvider
+import app.aaps.core.interfaces.iob.IobCobCalculator
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.notifications.NotificationHolder
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.plugin.PluginDescription
+import app.aaps.core.interfaces.plugin.PluginType
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventAutosensCalculationFinished
+import app.aaps.core.interfaces.rx.events.EventInitializationChanged
+import app.aaps.core.interfaces.rx.events.EventPreferenceChange
+import app.aaps.core.interfaces.rx.events.EventRefreshOverview
+import app.aaps.core.interfaces.ui.IconsProvider
+import app.aaps.core.interfaces.utils.DecimalFormatter
 import dagger.android.HasAndroidInjector
-import info.nightscout.core.extensions.toStringShort
-import info.nightscout.core.iob.generateCOBString
-import info.nightscout.core.iob.round
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.NotificationHolder
-import info.nightscout.interfaces.iob.GlucoseStatusProvider
-import info.nightscout.interfaces.iob.IobCobCalculator
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.plugin.PluginBase
-import info.nightscout.interfaces.plugin.PluginDescription
-import info.nightscout.interfaces.plugin.PluginType
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.interfaces.ui.IconsProvider
-import info.nightscout.interfaces.utils.DecimalFormatter
 import info.nightscout.plugins.R
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventAutosensCalculationFinished
-import info.nightscout.rx.events.EventInitializationChanged
-import info.nightscout.rx.events.EventPreferenceChange
-import info.nightscout.rx.events.EventRefreshOverview
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.shared.interfaces.ProfileUtil
-import info.nightscout.shared.interfaces.ResourceHelper
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import javax.inject.Inject
@@ -137,7 +137,7 @@ class PersistentNotificationPlugin @Inject constructor(
                     line1aa += "$line1."
                 }
             } else {
-                line1aa = rh.gs(info.nightscout.core.ui.R.string.missed_bg_readings)
+                line1aa = rh.gs(app.aaps.core.ui.R.string.missed_bg_readings)
                 line1 = line1aa
             }
             val activeTemp = iobCobCalculator.getTempBasalIncludingConvertedExtended(System.currentTimeMillis())
@@ -149,15 +149,15 @@ class PersistentNotificationPlugin @Inject constructor(
             val bolusIob = iobCobCalculator.calculateIobFromBolus().round()
             val basalIob = iobCobCalculator.calculateIobFromTempBasalsIncludingConvertedExtended().round()
             line2 =
-                rh.gs(info.nightscout.core.ui.R.string.treatments_iob_label_string) + " " + decimalFormatter.to2Decimal(bolusIob.iob + basalIob.basaliob) + "U " + rh.gs(
-                    info.nightscout.core.ui.R
+                rh.gs(app.aaps.core.ui.R.string.treatments_iob_label_string) + " " + decimalFormatter.to2Decimal(bolusIob.iob + basalIob.basaliob) + "U " + rh.gs(
+                    app.aaps.core.ui.R
                         .string.cob
                 ) + ": " + iobCobCalculator.getCobInfo(
                     "PersistentNotificationPlugin"
                 ).generateCOBString(decimalFormatter)
             val line2aa =
-                rh.gs(info.nightscout.core.ui.R.string.treatments_iob_label_string) + " " + decimalFormatter.to2Decimal(bolusIob.iob + basalIob.basaliob) + "U. " + rh.gs(
-                    info.nightscout.core.ui.R
+                rh.gs(app.aaps.core.ui.R.string.treatments_iob_label_string) + " " + decimalFormatter.to2Decimal(bolusIob.iob + basalIob.basaliob) + "U. " + rh.gs(
+                    app.aaps.core.ui.R
                         .string.cob
                 ) + ": " + iobCobCalculator.getCobInfo(
                     "PersistentNotificationPlugin"
@@ -200,7 +200,7 @@ class PersistentNotificationPlugin @Inject constructor(
             unreadConversationBuilder.addMessage(line3aa)
             /// End Android Auto
         } else {
-            line1 = rh.gs(info.nightscout.core.ui.R.string.no_profile_set)
+            line1 = rh.gs(app.aaps.core.ui.R.string.no_profile_set)
         }
         val builder = NotificationCompat.Builder(context, notificationHolder.channelID)
         builder.setOngoing(true)

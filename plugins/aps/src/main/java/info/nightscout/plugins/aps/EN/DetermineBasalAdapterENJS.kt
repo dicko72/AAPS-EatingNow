@@ -1,43 +1,48 @@
-package info.nightscout.plugins.aps.EN
+// Modified for Eating Now
+package app.aaps.plugins.aps.EN
 
 // Eating now
-import info.nightscout.core.profile.ProfileSealed
+import app.aaps.core.main.profile.ProfileSealed
 import info.nightscout.database.impl.AppRepository
-import info.nightscout.database.ValueWrapper
-import info.nightscout.database.entities.Bolus
-import info.nightscout.database.entities.TherapyEvent
-// import info.nightscout.interfaces.aps.ENDefaults
+import app.aaps.database.ValueWrapper
+import app.aaps.database.entities.Bolus
+import app.aaps.database.entities.TherapyEvent
 import kotlin.math.roundToInt
-import info.nightscout.interfaces.stats.TddCalculator
-import info.nightscout.interfaces.stats.TirCalculator
-// import info.nightscout.androidaps.utils.DateUtil
-import info.nightscout.interfaces.utils.MidnightTime
-// import info.nightscout.plugins.aps.loop.LoopVariantPreference
+import app.aaps.core.interfaces.stats.TddCalculator
+import app.aaps.core.interfaces.stats.TirCalculator
+import app.aaps.core.interfaces.utils.MidnightTime
+import app.aaps.core.main.extensions.convertedToAbsolute
+import app.aaps.core.main.extensions.getPassedDurationToTimeInMinutes
+import app.aaps.core.main.extensions.plannedRemainingMinutes
+import app.aaps.database.entities.TemporaryTarget
+import app.aaps.plugins.aps.openAPSSMB.DetermineBasalResultSMB
+import app.aaps.plugins.aps.loop.LoopVariantPreference
+import app.aaps.core.interfaces.profile.ProfileUtil
+
+import app.aaps.core.interfaces.aps.DetermineBasalAdapter
+import app.aaps.core.interfaces.aps.SMBDefaults
+import app.aaps.core.interfaces.constraints.ConstraintsChecker
+import app.aaps.core.interfaces.db.GlucoseUnit
+import app.aaps.core.interfaces.iob.GlucoseStatus
+import app.aaps.core.interfaces.iob.IobCobCalculator
+import app.aaps.core.interfaces.iob.IobTotal
+import app.aaps.core.interfaces.iob.MealData
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.Profile
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.utils.SafeParse
+
+import app.aaps.core.main.extensions.convertedToAbsolute
+import app.aaps.core.main.extensions.getPassedDurationToTimeInMinutes
+import app.aaps.core.main.extensions.plannedRemainingMinutes
+import app.aaps.plugins.aps.APSResultObject
+import app.aaps.plugins.aps.R
+import app.aaps.plugins.aps.logger.LoggerCallback
+import app.aaps.plugins.aps.utils.ScriptReader
 import dagger.android.HasAndroidInjector
-import info.nightscout.core.extensions.convertedToAbsolute
-import info.nightscout.core.extensions.getPassedDurationToTimeInMinutes
-import info.nightscout.core.extensions.plannedRemainingMinutes
-import info.nightscout.database.entities.TemporaryTarget
-import info.nightscout.interfaces.GlucoseUnit
-import info.nightscout.interfaces.aps.DetermineBasalAdapter
-import info.nightscout.interfaces.aps.SMBDefaults
-import info.nightscout.interfaces.constraints.ConstraintsChecker
-import info.nightscout.interfaces.iob.GlucoseStatus
-import info.nightscout.interfaces.iob.IobCobCalculator
-import info.nightscout.interfaces.iob.IobTotal
-import info.nightscout.interfaces.iob.MealData
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.profile.Profile
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.plugins.aps.APSResultObject
-import info.nightscout.plugins.aps.R
-import info.nightscout.plugins.aps.logger.LoggerCallback
-import info.nightscout.plugins.aps.openAPSSMB.DetermineBasalResultSMB
-import info.nightscout.plugins.aps.utils.ScriptReader
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.SafeParse
-import info.nightscout.shared.sharedPreferences.SP
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -53,8 +58,6 @@ import java.io.IOException
 import java.lang.reflect.InvocationTargetException
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
-import info.nightscout.plugins.aps.loop.LoopVariantPreference
-import info.nightscout.shared.interfaces.ProfileUtil
 
 class DetermineBasalAdapterENJS internal constructor(private val scriptReader: ScriptReader, private val injector: HasAndroidInjector) : DetermineBasalAdapter {
 
@@ -68,9 +71,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
 
     // Eating Now
-    // @Inject lateinit var rh: ResourceHelper
     @Inject lateinit var repository: AppRepository
-    // @Inject lateinit var dateUtil: DateUtil
     @Inject lateinit var tddCalculator: TddCalculator
     @Inject lateinit var tirCalculator: TirCalculator
 
@@ -266,10 +267,10 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("carbsReqThreshold", sp.getInt(R.string.key_carbsReqThreshold, SMBDefaults.carbsReqThreshold))
         this.profile.put("current_basal", basalRate)
         this.profile.put("temptargetSet", tempTargetSet)
-        this.profile.put("use_autosens", sp.getBoolean(R.string.key_openapsama_use_autosens, false))
+        this.profile.put("use_autosens", sp.getBoolean(info.nightscout.core.utils.R.string.key_use_autosens, false))
         //this.profile.put("use_autosens", true)
         this.profile.put("autosens_min", SafeParse.stringToDouble(sp.getString(info.nightscout.core.utils.R.string.key_openapsama_autosens_min, "0.8")))
-        this.profile.put("autosens_max", SafeParse.stringToDouble(sp.getString(info.nightscout.core.utils.R.string.key_openapsama_autosens_max, "1.2")))
+        this.profile.put("autosens_max", SafeParse.stringToDouble(sp.getString(app.aaps.core.utils.R.string.key_openapsama_autosens_max, "1.2")))
 //**********************************************************************************************************************************************
         // patches ==== START
         this.profile.put("EatingNowTimeStart", sp.getInt(R.string.key_eatingnow_timestart, 9))

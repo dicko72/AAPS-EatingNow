@@ -6,34 +6,34 @@ import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.plugin.PluginDescription
+import app.aaps.core.interfaces.plugin.PluginType
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.source.BgSource
+import app.aaps.core.interfaces.source.DexcomBoyda
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.main.extensions.fromConstant
+import app.aaps.core.main.utils.worker.LoggingWorker
+import app.aaps.core.utils.receivers.DataWorkerStorage
+import app.aaps.database.entities.GlucoseValue
+import app.aaps.database.entities.TherapyEvent
+import app.aaps.database.entities.UserEntry.Action
+import app.aaps.database.entities.UserEntry.Sources
+import app.aaps.database.entities.ValueWithUnit
+import app.aaps.database.transactions.TransactionGlucoseValue
+import app.aaps.shared.impl.extensions.safeGetInstalledPackages
 import dagger.android.HasAndroidInjector
-import info.nightscout.core.extensions.fromConstant
-import info.nightscout.core.utils.receivers.DataWorkerStorage
-import info.nightscout.core.utils.worker.LoggingWorker
-import info.nightscout.database.entities.GlucoseValue
-import info.nightscout.database.entities.TherapyEvent
-import info.nightscout.database.entities.UserEntry.Action
-import info.nightscout.database.entities.UserEntry.Sources
-import info.nightscout.database.entities.ValueWithUnit
 import info.nightscout.database.impl.AppRepository
 import info.nightscout.database.impl.transactions.CgmSourceTransaction
 import info.nightscout.database.impl.transactions.InvalidateGlucoseValueTransaction
-import info.nightscout.database.transactions.TransactionGlucoseValue
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.logging.UserEntryLogger
-import info.nightscout.interfaces.plugin.PluginBase
-import info.nightscout.interfaces.plugin.PluginDescription
-import info.nightscout.interfaces.plugin.PluginType
-import info.nightscout.interfaces.source.BgSource
-import info.nightscout.interfaces.source.DexcomBoyda
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.extensions.safeGetInstalledPackages
-import info.nightscout.shared.interfaces.ProfileUtil
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.shared.utils.T
 import info.nightscout.source.activities.RequestDexcomPermissionActivity
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
@@ -51,7 +51,7 @@ class DexcomPlugin @Inject constructor(
     PluginDescription()
         .mainType(PluginType.BGSOURCE)
         .fragmentClass(BGSourceFragment::class.java.name)
-        .pluginIcon(info.nightscout.core.main.R.drawable.ic_dexcom_g6)
+        .pluginIcon(app.aaps.core.main.R.drawable.ic_dexcom_g6)
         .preferencesId(R.xml.pref_dexcom)
         .pluginName(R.string.dexcom_app_patched)
         .shortName(R.string.dexcom_short)

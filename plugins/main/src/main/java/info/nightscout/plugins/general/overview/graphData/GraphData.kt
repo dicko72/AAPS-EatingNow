@@ -3,23 +3,23 @@ package info.nightscout.plugins.general.overview.graphData
 import android.content.Context
 import android.graphics.DashPathEffect
 import android.graphics.Paint
+import app.aaps.core.main.graph.OverviewData
+import app.aaps.core.main.graph.data.BolusDataPoint
+import app.aaps.core.main.graph.data.EffectiveProfileSwitchDataPoint
+import app.aaps.core.main.graph.data.GlucoseValueDataPoint
+import app.aaps.core.main.graph.data.TimeAsXAxisLabelFormatter
+import app.aaps.core.interfaces.db.GlucoseUnit
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.profile.DefaultValueHelper
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.utils.Round
 import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
 import com.jjoe64.graphview.series.Series
 import dagger.android.HasAndroidInjector
-import info.nightscout.core.graph.OverviewData
-import info.nightscout.core.graph.data.BolusDataPoint
-import info.nightscout.core.graph.data.EffectiveProfileSwitchDataPoint
-import info.nightscout.core.graph.data.GlucoseValueDataPoint
-import info.nightscout.core.graph.data.TimeAsXAxisLabelFormatter
-import info.nightscout.core.ui.toast.ToastUtils
-import info.nightscout.interfaces.GlucoseUnit
-import info.nightscout.interfaces.profile.DefaultValueHelper
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.interfaces.utils.Round
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.shared.interfaces.ResourceHelper
+import app.aaps.core.ui.toast.ToastUtils
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.max
@@ -63,13 +63,13 @@ class GraphData(
 
     fun addInRangeArea(fromTime: Long, toTime: Long, lowLine: Double, highLine: Double) {
         val inRangeAreaDataPoints = arrayOf(
-            info.nightscout.core.graph.data.DoubleDataPoint(fromTime.toDouble(), lowLine, highLine),
-            info.nightscout.core.graph.data.DoubleDataPoint(toTime.toDouble(), lowLine, highLine)
+            app.aaps.core.main.graph.data.DoubleDataPoint(fromTime.toDouble(), lowLine, highLine),
+            app.aaps.core.main.graph.data.DoubleDataPoint(toTime.toDouble(), lowLine, highLine)
         )
-        addSeries(info.nightscout.core.graph.data.AreaGraphSeries(inRangeAreaDataPoints).also {
+        addSeries(app.aaps.core.main.graph.data.AreaGraphSeries(inRangeAreaDataPoints).also {
             it.color = 0
             it.isDrawBackground = true
-            it.backgroundColor = rh.gac(graph.context, info.nightscout.core.ui.R.attr.inRangeBackground)
+            it.backgroundColor = rh.gac(graph.context, app.aaps.core.ui.R.attr.inRangeBackground)
         })
     }
 
@@ -219,7 +219,7 @@ class GraphData(
                 paint.style = Paint.Style.STROKE
                 paint.strokeWidth = 2f
                 paint.pathEffect = DashPathEffect(floatArrayOf(10f, 20f), 0f)
-                paint.color = rh.gac(graph.context, info.nightscout.core.ui.R.attr.dotLineColor)
+                paint.color = rh.gac(graph.context, app.aaps.core.ui.R.attr.dotLineColor)
             })
         })
     }

@@ -1,6 +1,6 @@
 package info.nightscout.pump.common.sync
 
-import info.nightscout.interfaces.pump.defs.PumpType
+import app.aaps.core.interfaces.pump.defs.PumpType
 
 interface PumpSyncEntriesCreator {
 

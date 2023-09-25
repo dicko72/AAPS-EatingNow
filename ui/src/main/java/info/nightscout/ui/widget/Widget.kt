@@ -12,32 +12,32 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.view.View
 import android.widget.RemoteViews
+import app.aaps.core.interfaces.aps.Loop
+import app.aaps.core.interfaces.aps.VariableSensitivityResult
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.constraints.ConstraintsChecker
+import app.aaps.core.interfaces.db.GlucoseUnit
+import app.aaps.core.interfaces.extensions.toVisibility
+import app.aaps.core.interfaces.extensions.toVisibilityKeepSpace
+import app.aaps.core.interfaces.iob.GlucoseStatusProvider
+import app.aaps.core.interfaces.iob.IobCobCalculator
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.DecimalFormatter
+import app.aaps.core.interfaces.utils.TrendCalculator
+import app.aaps.core.main.extensions.directionToIcon
+import app.aaps.core.main.graph.OverviewData
+import app.aaps.core.main.iob.displayText
+import app.aaps.core.main.profile.ProfileSealed
+import app.aaps.database.entities.interfaces.end
 import dagger.android.HasAndroidInjector
-import info.nightscout.core.extensions.directionToIcon
-import info.nightscout.core.graph.OverviewData
-import info.nightscout.core.iob.displayText
-import info.nightscout.core.profile.ProfileSealed
-import info.nightscout.database.entities.interfaces.end
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.GlucoseUnit
-import info.nightscout.interfaces.aps.Loop
-import info.nightscout.interfaces.aps.VariableSensitivityResult
-import info.nightscout.interfaces.constraints.ConstraintsChecker
-import info.nightscout.interfaces.iob.GlucoseStatusProvider
-import info.nightscout.interfaces.iob.IobCobCalculator
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.interfaces.ui.UiInteraction
-import info.nightscout.interfaces.utils.DecimalFormatter
-import info.nightscout.interfaces.utils.TrendCalculator
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.extensions.toVisibility
-import info.nightscout.shared.extensions.toVisibilityKeepSpace
-import info.nightscout.shared.interfaces.ProfileUtil
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
 import info.nightscout.ui.R
 import java.util.Locale
 import javax.inject.Inject
@@ -132,12 +132,12 @@ class Widget : AppWidgetProvider() {
     private fun updateBg(views: RemoteViews) {
         views.setTextViewText(
             R.id.bg,
-            overviewData.lastBg(iobCobCalculator.ads)?.let { profileUtil.fromMgdlToStringInUnits(it.value) } ?: rh.gs(info.nightscout.core.ui.R.string.value_unavailable_short))
+            overviewData.lastBg(iobCobCalculator.ads)?.let { profileUtil.fromMgdlToStringInUnits(it.value) } ?: rh.gs(app.aaps.core.ui.R.string.value_unavailable_short))
         views.setTextColor(
             R.id.bg, when {
-                overviewData.isLow(iobCobCalculator.ads)  -> rh.gc(info.nightscout.core.ui.R.color.widget_low)
-                overviewData.isHigh(iobCobCalculator.ads) -> rh.gc(info.nightscout.core.ui.R.color.widget_high)
-                else                                      -> rh.gc(info.nightscout.core.ui.R.color.widget_inrange)
+                overviewData.isLow(iobCobCalculator.ads)  -> rh.gc(app.aaps.core.ui.R.color.widget_low)
+                overviewData.isHigh(iobCobCalculator.ads) -> rh.gc(app.aaps.core.ui.R.color.widget_high)
+                else                                      -> rh.gc(app.aaps.core.ui.R.color.widget_inrange)
             }
         )
         trendCalculator.getTrendArrow(iobCobCalculator.ads)?.let {
@@ -146,9 +146,9 @@ class Widget : AppWidgetProvider() {
         views.setViewVisibility(R.id.arrow, (trendCalculator.getTrendArrow(iobCobCalculator.ads) != null).toVisibilityKeepSpace())
         views.setInt(
             R.id.arrow, "setColorFilter", when {
-                overviewData.isLow(iobCobCalculator.ads)  -> rh.gc(info.nightscout.core.ui.R.color.widget_low)
-                overviewData.isHigh(iobCobCalculator.ads) -> rh.gc(info.nightscout.core.ui.R.color.widget_high)
-                else                                      -> rh.gc(info.nightscout.core.ui.R.color.widget_inrange)
+                overviewData.isLow(iobCobCalculator.ads)  -> rh.gc(app.aaps.core.ui.R.color.widget_low)
+                overviewData.isHigh(iobCobCalculator.ads) -> rh.gc(app.aaps.core.ui.R.color.widget_high)
+                else                                      -> rh.gc(app.aaps.core.ui.R.color.widget_inrange)
             }
         )
 
@@ -158,9 +158,9 @@ class Widget : AppWidgetProvider() {
             views.setTextViewText(R.id.avg_delta, profileUtil.fromMgdlToSignedStringInUnits(glucoseStatus.shortAvgDelta))
             views.setTextViewText(R.id.long_avg_delta, profileUtil.fromMgdlToSignedStringInUnits(glucoseStatus.longAvgDelta))
         } else {
-            views.setTextViewText(R.id.delta, rh.gs(info.nightscout.core.ui.R.string.value_unavailable_short))
-            views.setTextViewText(R.id.avg_delta, rh.gs(info.nightscout.core.ui.R.string.value_unavailable_short))
-            views.setTextViewText(R.id.long_avg_delta, rh.gs(info.nightscout.core.ui.R.string.value_unavailable_short))
+            views.setTextViewText(R.id.delta, rh.gs(app.aaps.core.ui.R.string.value_unavailable_short))
+            views.setTextViewText(R.id.avg_delta, rh.gs(app.aaps.core.ui.R.string.value_unavailable_short))
+            views.setTextViewText(R.id.long_avg_delta, rh.gs(app.aaps.core.ui.R.string.value_unavailable_short))
         }
 
         // strike through if BG is old
@@ -173,8 +173,8 @@ class Widget : AppWidgetProvider() {
 
     private fun updateTemporaryBasal(views: RemoteViews) {
         views.setTextViewText(R.id.base_basal, overviewData.temporaryBasalText(iobCobCalculator))
-        views.setTextColor(R.id.base_basal, iobCobCalculator.getTempBasalIncludingConvertedExtended(dateUtil.now())?.let { rh.gc(info.nightscout.core.ui.R.color.widget_basal) }
-            ?: rh.gc(info.nightscout.core.ui.R.color.white))
+        views.setTextColor(R.id.base_basal, iobCobCalculator.getTempBasalIncludingConvertedExtended(dateUtil.now())?.let { rh.gc(app.aaps.core.ui.R.color.widget_basal) }
+            ?: rh.gc(app.aaps.core.ui.R.color.white))
         views.setImageViewResource(R.id.base_basal_icon, overviewData.temporaryBasalIcon(iobCobCalculator))
     }
 
@@ -187,7 +187,7 @@ class Widget : AppWidgetProvider() {
     private fun updateIobCob(views: RemoteViews) {
         views.setTextViewText(R.id.iob, overviewData.iobText(iobCobCalculator))
         // cob
-        var cobText = overviewData.cobInfo(iobCobCalculator).displayText(rh, decimalFormatter) ?: rh.gs(info.nightscout.core.ui.R.string.value_unavailable_short)
+        var cobText = overviewData.cobInfo(iobCobCalculator).displayText(rh, decimalFormatter) ?: rh.gs(app.aaps.core.ui.R.string.value_unavailable_short)
 
         val constraintsProcessed = loop.lastRun?.constraintsProcessed
         val lastRun = loop.lastRun
@@ -195,7 +195,7 @@ class Widget : AppWidgetProvider() {
             if (constraintsProcessed.carbsReq > 0) {
                 //only display carbsreq when carbs have not been entered recently
                 if (overviewData.lastCarbsTime < lastRun.lastAPSRun) {
-                    cobText += " | " + constraintsProcessed.carbsReq + " " + rh.gs(info.nightscout.core.ui.R.string.required)
+                    cobText += " | " + constraintsProcessed.carbsReq + " " + rh.gs(app.aaps.core.ui.R.string.required)
                 }
             }
         }
@@ -209,7 +209,7 @@ class Widget : AppWidgetProvider() {
             // this is crashing, use background as text for now
             //views.setTextColor(R.id.temp_target, rh.gc(R.color.ribbonTextWarning))
             //views.setInt(R.id.temp_target, "setBackgroundColor", rh.gc(R.color.ribbonWarning))
-            views.setTextColor(R.id.temp_target, rh.gc(info.nightscout.core.ui.R.color.widget_ribbonWarning))
+            views.setTextColor(R.id.temp_target, rh.gc(app.aaps.core.ui.R.color.widget_ribbonWarning))
             views.setTextViewText(
                 R.id.temp_target,
                 profileUtil.toTargetRangeString(tempTarget.lowTarget, tempTarget.highTarget, GlucoseUnit.MGDL, units) + " " + dateUtil.untilString(tempTarget.end, rh)
@@ -225,12 +225,12 @@ class Widget : AppWidgetProvider() {
                     // this is crashing, use background as text for now
                     //views.setTextColor(R.id.temp_target, rh.gc(R.color.ribbonTextWarning))
                     //views.setInt(R.id.temp_target, "setBackgroundResource", rh.gc(R.color.tempTargetBackground))
-                    views.setTextColor(R.id.temp_target, rh.gc(info.nightscout.core.ui.R.color.widget_ribbonWarning))
+                    views.setTextColor(R.id.temp_target, rh.gc(app.aaps.core.ui.R.color.widget_ribbonWarning))
                 } else {
                     // this is crashing, use background as text for now
                     //views.setTextColor(R.id.temp_target, rh.gc(R.color.ribbonTextDefault))
                     //views.setInt(R.id.temp_target, "setBackgroundColor", rh.gc(R.color.ribbonDefault))
-                    views.setTextColor(R.id.temp_target, rh.gc(info.nightscout.core.ui.R.color.widget_ribbonTextDefault))
+                    views.setTextColor(R.id.temp_target, rh.gc(app.aaps.core.ui.R.color.widget_ribbonTextDefault))
                     views.setTextViewText(R.id.temp_target, profileUtil.toTargetRangeString(profile.getTargetLowMgdl(), profile.getTargetHighMgdl(), GlucoseUnit.MGDL, units))
                 }
             }
@@ -242,14 +242,14 @@ class Widget : AppWidgetProvider() {
             profileFunction.getProfile()?.let {
                 if (it is ProfileSealed.EPS) {
                     if (it.value.originalPercentage != 100 || it.value.originalTimeshift != 0L || it.value.originalDuration != 0L)
-                        rh.gc(info.nightscout.core.ui.R.color.widget_ribbonWarning)
-                    else rh.gc(info.nightscout.core.ui.R.color.widget_ribbonTextDefault)
+                        rh.gc(app.aaps.core.ui.R.color.widget_ribbonWarning)
+                    else rh.gc(app.aaps.core.ui.R.color.widget_ribbonTextDefault)
                 } else if (it is ProfileSealed.PS) {
-                    rh.gc(info.nightscout.core.ui.R.color.widget_ribbonTextDefault)
+                    rh.gc(app.aaps.core.ui.R.color.widget_ribbonTextDefault)
                 } else {
-                    rh.gc(info.nightscout.core.ui.R.color.widget_ribbonTextDefault)
+                    rh.gc(app.aaps.core.ui.R.color.widget_ribbonTextDefault)
                 }
-            } ?: rh.gc(info.nightscout.core.ui.R.color.widget_ribbonCritical)
+            } ?: rh.gc(app.aaps.core.ui.R.color.widget_ribbonCritical)
 
         views.setTextViewText(R.id.active_profile, profileFunction.getProfileNameWithRemainingTime())
         // this is crashing, use background as text for now
@@ -260,9 +260,9 @@ class Widget : AppWidgetProvider() {
 
     private fun updateSensitivity(views: RemoteViews) {
         if (constraintChecker.isAutosensModeEnabled().value())
-            views.setImageViewResource(R.id.sensitivity_icon, info.nightscout.core.main.R.drawable.ic_swap_vert_black_48dp_green)
+            views.setImageViewResource(R.id.sensitivity_icon, app.aaps.core.main.R.drawable.ic_swap_vert_black_48dp_green)
         else
-            views.setImageViewResource(R.id.sensitivity_icon, info.nightscout.core.main.R.drawable.ic_x_swap_vert)
+            views.setImageViewResource(R.id.sensitivity_icon, app.aaps.core.main.R.drawable.ic_x_swap_vert)
         views.setTextViewText(R.id.sensitivity, overviewData.lastAutosensData(iobCobCalculator)?.let { autosensData ->
             String.format(Locale.ENGLISH, "%.0f%%", autosensData.autosensResult.ratio * 100)
         } ?: "")

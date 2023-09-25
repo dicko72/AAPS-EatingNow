@@ -8,12 +8,12 @@ import android.os.Binder
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.notifications.NotificationHolder
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.sharedPreferences.SP
 import dagger.android.DaggerService
-import info.nightscout.interfaces.NotificationHolder
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
 import javax.inject.Inject
 import kotlin.math.ln
 import kotlin.math.pow
@@ -26,7 +26,7 @@ class AlarmSoundService : DaggerService() {
     @Inject lateinit var sp: SP
 
     private var player: MediaPlayer? = null
-    private var resourceId = info.nightscout.core.ui.R.raw.error
+    private var resourceId = app.aaps.core.ui.R.raw.error
 
     companion object {
 
@@ -73,7 +73,7 @@ class AlarmSoundService : DaggerService() {
 
         player?.let { if (it.isPlaying) it.stop() }
 
-        if (intent?.hasExtra(SOUND_ID) == true) resourceId = intent.getIntExtra(SOUND_ID, info.nightscout.core.ui.R.raw.error)
+        if (intent?.hasExtra(SOUND_ID) == true) resourceId = intent.getIntExtra(SOUND_ID, app.aaps.core.ui.R.raw.error)
         player = MediaPlayer()
         try {
             val afd = rh.openRawResourceFd(resourceId) ?: return START_NOT_STICKY
@@ -125,7 +125,8 @@ class AlarmSoundService : DaggerService() {
                 // Increase volume faster as time goes by
                 val delay = VOLUME_INCREASE_MIN_DELAY_MILLIS.coerceAtLeast(
                     VOLUME_INCREASE_BASE_DELAY_MILLIS -
-                    ((currentVolumeLevel - 1).toDouble().pow(VOLUME_INCREASE_DELAY_DECREMENT_EXPONENT) * 1000).toLong())
+                        ((currentVolumeLevel - 1).toDouble().pow(VOLUME_INCREASE_DELAY_DECREMENT_EXPONENT) * 1000).toLong()
+                )
                 aapsLogger.debug(LTag.CORE, "Next notification volume increment in {}ms", delay)
                 increaseVolumeHandler.postDelayed(this, delay)
             }

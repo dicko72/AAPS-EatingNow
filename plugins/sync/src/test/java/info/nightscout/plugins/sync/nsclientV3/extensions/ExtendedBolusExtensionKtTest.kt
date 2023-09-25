@@ -1,13 +1,14 @@
 package info.nightscout.plugins.sync.nsclientV3.extensions
 
-import info.nightscout.database.entities.ExtendedBolus
-import info.nightscout.database.entities.embedments.InterfaceIDs
-import info.nightscout.sdk.localmodel.treatment.NSExtendedBolus
-import info.nightscout.sdk.localmodel.treatment.NSTemporaryBasal
-import info.nightscout.sdk.mapper.convertToRemoteAndBack
-import info.nightscout.sharedtests.TestBaseWithProfile
-import org.junit.jupiter.api.Assertions
+import app.aaps.core.nssdk.localmodel.treatment.NSExtendedBolus
+import app.aaps.core.nssdk.localmodel.treatment.NSTemporaryBasal
+import app.aaps.core.nssdk.mapper.convertToRemoteAndBack
+import app.aaps.database.entities.ExtendedBolus
+import app.aaps.database.entities.embedments.InterfaceIDs
+import app.aaps.shared.tests.TestBaseWithProfile
+import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.test.assertIs
 
 @Suppress("SpellCheckingInspection")
 internal class ExtendedBolusExtensionKtTest : TestBaseWithProfile() {
@@ -29,8 +30,8 @@ internal class ExtendedBolusExtensionKtTest : TestBaseWithProfile() {
         )
 
         var extendedBolus2 = (extendedBolus.toNSExtendedBolus(validProfile).convertToRemoteAndBack() as NSExtendedBolus).toExtendedBolus()
-        Assertions.assertTrue(extendedBolus.contentEqualsTo(extendedBolus2))
-        Assertions.assertTrue(extendedBolus.interfaceIdsEqualsTo(extendedBolus2))
+        assertThat(extendedBolus.contentEqualsTo(extendedBolus2)).isTrue()
+        assertThat(extendedBolus.interfaceIdsEqualsTo(extendedBolus2)).isTrue()
 
         extendedBolus = ExtendedBolus(
             timestamp = 10000,
@@ -47,13 +48,13 @@ internal class ExtendedBolusExtensionKtTest : TestBaseWithProfile() {
         )
 
         val converted = extendedBolus.toNSExtendedBolus(validProfile)
-        Assertions.assertTrue(converted is NSTemporaryBasal)
-        Assertions.assertNotNull((converted as NSTemporaryBasal).extendedEmulated)
+        assertIs<NSTemporaryBasal>(converted)
+        assertThat(converted.extendedEmulated).isNotNull()
         val convertedBack = converted.convertToRemoteAndBack()
-        Assertions.assertTrue(convertedBack is NSExtendedBolus)
+        assertIs<NSExtendedBolus>(convertedBack)
 
         extendedBolus2 = (extendedBolus.toNSExtendedBolus(validProfile).convertToRemoteAndBack() as NSExtendedBolus).toExtendedBolus()
-        Assertions.assertTrue(extendedBolus.contentEqualsTo(extendedBolus2))
-        Assertions.assertTrue(extendedBolus.interfaceIdsEqualsTo(extendedBolus2))
+        assertThat(extendedBolus.contentEqualsTo(extendedBolus2)).isTrue()
+        assertThat(extendedBolus.interfaceIdsEqualsTo(extendedBolus2)).isTrue()
     }
 }

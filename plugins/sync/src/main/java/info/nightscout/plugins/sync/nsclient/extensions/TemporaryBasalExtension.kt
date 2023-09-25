@@ -1,13 +1,14 @@
 package info.nightscout.plugins.sync.nsclient.extensions
 
-import info.nightscout.core.extensions.convertedToAbsolute
-import info.nightscout.core.utils.JsonHelper
-import info.nightscout.database.entities.TemporaryBasal
-import info.nightscout.database.entities.TemporaryBasal.Type.Companion.fromString
-import info.nightscout.database.entities.embedments.InterfaceIDs
-import info.nightscout.interfaces.profile.Profile
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.shared.utils.T
+import app.aaps.core.interfaces.profile.Profile
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.main.extensions.convertedToAbsolute
+import app.aaps.core.utils.JsonHelper
+import app.aaps.database.entities.TemporaryBasal
+import app.aaps.database.entities.TemporaryBasal.Type.Companion.fromString
+import app.aaps.database.entities.TherapyEvent
+import app.aaps.database.entities.embedments.InterfaceIDs
 import org.json.JSONObject
 
 fun TemporaryBasal.toJson(isAdd: Boolean, profile: Profile?, dateUtil: DateUtil): JSONObject? =
@@ -15,7 +16,7 @@ fun TemporaryBasal.toJson(isAdd: Boolean, profile: Profile?, dateUtil: DateUtil)
         JSONObject()
             .put("created_at", dateUtil.toISOString(timestamp))
             .put("enteredBy", "openaps://" + "AndroidAPS")
-            .put("eventType", info.nightscout.database.entities.TherapyEvent.Type.TEMPORARY_BASAL.text)
+            .put("eventType", TherapyEvent.Type.TEMPORARY_BASAL.text)
             .put("isValid", isValid)
             .put("duration", T.msecs(duration).mins())
             .put("durationInMilliseconds", duration) // rounded duration leads to different basal IOB
@@ -33,14 +34,19 @@ fun TemporaryBasal.toJson(isAdd: Boolean, profile: Profile?, dateUtil: DateUtil)
     }
 
 fun TemporaryBasal.Companion.temporaryBasalFromJson(jsonObject: JSONObject): TemporaryBasal? {
-    val timestamp = JsonHelper.safeGetLongAllowNull(jsonObject, "mills", null) ?: return null
+    val timestamp =
+        JsonHelper.safeGetLongAllowNull(jsonObject, "mills", null)
+            ?: JsonHelper.safeGetLongAllowNull(jsonObject, "date", null)
+            ?: return null
     val percent = JsonHelper.safeGetDoubleAllowNull(jsonObject, "percent")
     val absolute = JsonHelper.safeGetDoubleAllowNull(jsonObject, "absolute")
     val duration = JsonHelper.safeGetLongAllowNull(jsonObject, "duration") ?: return null
     val durationInMilliseconds = JsonHelper.safeGetLongAllowNull(jsonObject, "durationInMilliseconds")
     val type = fromString(JsonHelper.safeGetString(jsonObject, "type"))
     val isValid = JsonHelper.safeGetBoolean(jsonObject, "isValid", true)
-    val id = JsonHelper.safeGetStringAllowNull(jsonObject, "_id", null) ?: return null
+    val id = JsonHelper.safeGetStringAllowNull(jsonObject, "identifier", null)
+        ?: JsonHelper.safeGetStringAllowNull(jsonObject, "_id", null)
+        ?: return null
     val pumpId = JsonHelper.safeGetLongAllowNull(jsonObject, "pumpId", null)
     val endPumpId = JsonHelper.safeGetLongAllowNull(jsonObject, "endId", null)
     val pumpType = InterfaceIDs.PumpType.fromString(JsonHelper.safeGetStringAllowNull(jsonObject, "pumpType", null))

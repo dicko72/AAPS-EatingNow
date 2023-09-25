@@ -1,10 +1,10 @@
 package info.nightscout.plugins.sync.nsclientV3.extensions
 
-import info.nightscout.database.entities.Carbs
-import info.nightscout.database.entities.embedments.InterfaceIDs
-import info.nightscout.sdk.localmodel.treatment.NSCarbs
-import info.nightscout.sdk.mapper.convertToRemoteAndBack
-import org.junit.jupiter.api.Assertions
+import app.aaps.core.nssdk.localmodel.treatment.NSCarbs
+import app.aaps.core.nssdk.mapper.convertToRemoteAndBack
+import app.aaps.database.entities.Carbs
+import app.aaps.database.entities.embedments.InterfaceIDs
+import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 
 @Suppress("SpellCheckingInspection")
@@ -27,8 +27,8 @@ internal class CarbsExtensionKtTest {
         )
 
         var carbs2 = (carbs.toNSCarbs().convertToRemoteAndBack() as NSCarbs).toCarbs()
-        Assertions.assertTrue(carbs.contentEqualsTo(carbs2))
-        Assertions.assertTrue(carbs.interfaceIdsEqualsTo(carbs2))
+        assertThat(carbs.contentEqualsTo(carbs2)).isTrue()
+        assertThat(carbs.interfaceIdsEqualsTo(carbs2)).isTrue()
 
         carbs = Carbs(
             timestamp = 10000,
@@ -45,7 +45,7 @@ internal class CarbsExtensionKtTest {
         )
 
         carbs2 = (carbs.toNSCarbs().convertToRemoteAndBack() as NSCarbs).toCarbs()
-        Assertions.assertTrue(carbs.contentEqualsTo(carbs2))
-        Assertions.assertTrue(carbs.interfaceIdsEqualsTo(carbs2))
+        assertThat(carbs.contentEqualsTo(carbs2)).isTrue()
+        assertThat(carbs.interfaceIdsEqualsTo(carbs2)).isTrue()
     }
 }

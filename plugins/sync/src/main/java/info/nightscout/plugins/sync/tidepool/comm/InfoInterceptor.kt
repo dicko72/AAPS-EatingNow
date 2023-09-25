@@ -1,7 +1,7 @@
 package info.nightscout.plugins.sync.tidepool.comm
 
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
 
 import okhttp3.Interceptor
 import okhttp3.Response

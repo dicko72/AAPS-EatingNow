@@ -1,7 +1,7 @@
 package info.nightscout.plugins.sync.nsclient.extensions
 
-import info.nightscout.core.utils.JsonHelper
-import info.nightscout.database.entities.Food
+import app.aaps.core.utils.JsonHelper
+import app.aaps.database.entities.Food
 import org.json.JSONObject
 
 fun Food.Companion.fromJson(jsonObject: JSONObject): Food? {
@@ -16,7 +16,9 @@ fun Food.Companion.fromJson(jsonObject: JSONObject): Food? {
         val energy = JsonHelper.safeGetIntAllowNull(jsonObject, "energy")
         val protein = JsonHelper.safeGetIntAllowNull(jsonObject, "protein")
         val fat = JsonHelper.safeGetIntAllowNull(jsonObject, "fat")
-        val id = JsonHelper.safeGetStringAllowNull(jsonObject, "_id", null) ?: return null
+        val id = JsonHelper.safeGetStringAllowNull(jsonObject, "identifier", null)
+            ?: JsonHelper.safeGetStringAllowNull(jsonObject, "_id", null)
+            ?: return null
         val isValid = JsonHelper.safeGetBoolean(jsonObject, "isValid", true)
 
         val food = Food(

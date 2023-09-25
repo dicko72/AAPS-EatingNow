@@ -1,3 +1,4 @@
+<!-- Modified for Eating Now -->
 <resources>
     <!---bolus color -->
     <attr name="bolusColor" format="reference|color" />

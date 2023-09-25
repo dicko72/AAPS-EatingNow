@@ -8,35 +8,34 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import app.aaps.core.interfaces.db.GlucoseUnit
+import app.aaps.core.interfaces.extensions.toVisibility
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.protection.ProtectionCheck
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventLocalProfileChanged
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.DecimalFormatter
+import app.aaps.core.interfaces.utils.HardLimits
+import app.aaps.core.interfaces.utils.SafeParse
+import app.aaps.core.main.profile.ProfileSealed
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.ui.dialogs.OKDialog
+import app.aaps.database.entities.UserEntry
+import app.aaps.database.entities.ValueWithUnit
 import com.google.android.material.tabs.TabLayout
 import dagger.android.support.DaggerFragment
-import info.nightscout.core.profile.ProfileSealed
-import info.nightscout.core.ui.dialogs.OKDialog
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.database.entities.UserEntry
-import info.nightscout.database.entities.ValueWithUnit
-import info.nightscout.interfaces.Constants
-import info.nightscout.interfaces.GlucoseUnit
-import info.nightscout.interfaces.logging.UserEntryLogger
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.interfaces.protection.ProtectionCheck
-import info.nightscout.interfaces.ui.UiInteraction
-import info.nightscout.interfaces.utils.DecimalFormatter
-import info.nightscout.interfaces.utils.HardLimits
 import info.nightscout.plugins.R
 import info.nightscout.plugins.databinding.ProfileFragmentBinding
 import info.nightscout.plugins.profile.ui.TimeListEdit
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventLocalProfileChanged
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.SafeParse
-import info.nightscout.shared.extensions.toVisibility
-import info.nightscout.shared.interfaces.ProfileUtil
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.utils.DateUtil
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import java.math.RoundingMode
@@ -68,7 +67,7 @@ class ProfileFragment : DaggerFragment() {
 
     private val save = Runnable {
         doEdit()
-        basalView?.updateLabel(rh.gs(info.nightscout.core.ui.R.string.basal_label) + ": " + sumLabel())
+        basalView?.updateLabel(rh.gs(app.aaps.core.ui.R.string.basal_label) + ": " + sumLabel())
         profilePlugin.getEditedProfile()?.let {
             binding.basalGraph.show(ProfileSealed.Pure(it))
             binding.icGraph.show(ProfileSealed.Pure(it))
@@ -91,7 +90,7 @@ class ProfileFragment : DaggerFragment() {
     private fun sumLabel(): String {
         val profile = profilePlugin.getEditedProfile()
         val sum = profile?.let { ProfileSealed.Pure(profile).baseBasalSum() } ?: 0.0
-        return " ∑" + decimalFormatter.to2Decimal(sum) + rh.gs(info.nightscout.core.ui.R.string.insulin_unit_shortname)
+        return " ∑" + decimalFormatter.to2Decimal(sum) + rh.gs(app.aaps.core.ui.R.string.insulin_unit_shortname)
     }
 
     private var _binding: ProfileFragmentBinding? = null
@@ -147,7 +146,7 @@ class ProfileFragment : DaggerFragment() {
             requireView(),
             R.id.ic_holder,
             "IC",
-            rh.gs(info.nightscout.core.ui.R.string.ic_long_label),
+            rh.gs(app.aaps.core.ui.R.string.ic_long_label),
             currentProfile.ic,
             null,
             doubleArrayOf(hardLimits.minIC(), hardLimits.maxIC()),
@@ -164,7 +163,7 @@ class ProfileFragment : DaggerFragment() {
                 requireView(),
                 R.id.basal_holder,
                 "BASAL",
-                rh.gs(info.nightscout.core.ui.R.string.basal_long_label) + ": " + sumLabel(),
+                rh.gs(app.aaps.core.ui.R.string.basal_long_label) + ": " + sumLabel(),
                 currentProfile.basal,
                 null,
                 doubleArrayOf(pumpDescription.basalMinimumRate, pumpDescription.basalMaximumRate),
@@ -182,7 +181,7 @@ class ProfileFragment : DaggerFragment() {
                 requireView(),
                 R.id.isf_holder,
                 "ISF",
-                rh.gs(info.nightscout.core.ui.R.string.isf_long_label),
+                rh.gs(app.aaps.core.ui.R.string.isf_long_label),
                 currentProfile.isf,
                 null,
                 isfRange,
@@ -198,7 +197,7 @@ class ProfileFragment : DaggerFragment() {
                 requireView(),
                 R.id.target_holder,
                 "TARGET",
-                rh.gs(info.nightscout.core.ui.R.string.target_long_label),
+                rh.gs(app.aaps.core.ui.R.string.target_long_label),
                 currentProfile.targetLow,
                 currentProfile.targetHigh,
                 HardLimits.VERY_HARD_LIMIT_MIN_BG,
@@ -212,9 +211,11 @@ class ProfileFragment : DaggerFragment() {
                 roundUp(profileUtil.fromMgdlToUnits(HardLimits.MIN_ISF, GlucoseUnit.MMOL)),
                 roundDown(profileUtil.fromMgdlToUnits(HardLimits.MAX_ISF, GlucoseUnit.MMOL))
             )
-            TimeListEdit(requireContext(), aapsLogger, dateUtil, requireView(), R.id.isf_holder, "ISF", rh.gs(info.nightscout.core.ui.R.string.isf_long_label), currentProfile.isf, null, isfRange, null, 0.1,
-                         DecimalFormat
-                ("0.0"), save)
+            TimeListEdit(
+                requireContext(), aapsLogger, dateUtil, requireView(), R.id.isf_holder, "ISF", rh.gs(app.aaps.core.ui.R.string.isf_long_label), currentProfile.isf, null, isfRange, null, 0.1,
+                DecimalFormat
+                    ("0.0"), save
+            )
             val range1 = doubleArrayOf(
                 roundUp(profileUtil.fromMgdlToUnits(HardLimits.VERY_HARD_LIMIT_MIN_BG[0], GlucoseUnit.MMOL)),
                 roundDown(profileUtil.fromMgdlToUnits(HardLimits.VERY_HARD_LIMIT_MIN_BG[1], GlucoseUnit.MMOL))
@@ -231,7 +232,7 @@ class ProfileFragment : DaggerFragment() {
                 requireView(),
                 R.id.target_holder,
                 "TARGET",
-                rh.gs(info.nightscout.core.ui.R.string.target_long_label),
+                rh.gs(app.aaps.core.ui.R.string.target_long_label),
                 currentProfile.targetLow,
                 currentProfile.targetHigh,
                 range1,
@@ -244,7 +245,7 @@ class ProfileFragment : DaggerFragment() {
 
         context?.let { context ->
             val profileList: ArrayList<CharSequence> = profilePlugin.profile?.getProfileList() ?: ArrayList()
-            binding.profileList.setAdapter(ArrayAdapter(context, info.nightscout.core.ui.R.layout.spinner_centered, profileList))
+            binding.profileList.setAdapter(ArrayAdapter(context, app.aaps.core.ui.R.layout.spinner_centered, profileList))
         } ?: return
 
         binding.profileList.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
@@ -316,7 +317,7 @@ class ProfileFragment : DaggerFragment() {
         // if (!pumpDescription.isTempBasalCapable) binding.basal.visibility = View.GONE
 
         @Suppress("SetTextI18n")
-        binding.units.text = rh.gs(R.string.units_colon) + " " + (if (currentProfile.mgdl) rh.gs(info.nightscout.core.ui.R.string.mgdl) else rh.gs(info.nightscout.core.ui.R.string.mmol))
+        binding.units.text = rh.gs(R.string.units_colon) + " " + (if (currentProfile.mgdl) rh.gs(app.aaps.core.ui.R.string.mgdl) else rh.gs(app.aaps.core.ui.R.string.mmol))
 
         binding.profileswitch.setOnClickListener {
             uiInteraction.runProfileSwitchDialog(childFragmentManager, profilePlugin.currentProfile()?.name)
@@ -384,7 +385,7 @@ class ProfileFragment : DaggerFragment() {
         val isValid = profilePlugin.isValidEditState(activity)
         val isEdited = profilePlugin.isEdited
         if (isValid) {
-            this.view?.setBackgroundColor(rh.gac(context, info.nightscout.core.ui.R.attr.okBackgroundColor))
+            this.view?.setBackgroundColor(rh.gac(context, app.aaps.core.ui.R.attr.okBackgroundColor))
             binding.profileList.isEnabled = true
 
             if (isEdited) {
@@ -396,7 +397,7 @@ class ProfileFragment : DaggerFragment() {
                 binding.save.visibility = View.GONE
             }
         } else {
-            this.view?.setBackgroundColor(rh.gac(context, info.nightscout.core.ui.R.attr.errorBackgroundColor))
+            this.view?.setBackgroundColor(rh.gac(context, app.aaps.core.ui.R.attr.errorBackgroundColor))
             binding.profileList.isEnabled = false
             binding.profileswitch.visibility = View.GONE
             binding.save.visibility = View.GONE //don't save an invalid profile

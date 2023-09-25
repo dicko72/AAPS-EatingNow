@@ -1,12 +1,13 @@
 package info.nightscout.plugins.general.overview.notifications
 
 import android.content.Intent
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventDismissNotification
 import dagger.android.DaggerIntentService
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventDismissNotification
 import javax.inject.Inject
 
 class DismissNotificationService : DaggerIntentService(DismissNotificationService::class.simpleName) {
+
     @Inject lateinit var rxBus: RxBus
 
     override fun onHandleIntent(intent: Intent?) {

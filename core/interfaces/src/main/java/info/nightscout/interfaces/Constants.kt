@@ -1,4 +1,5 @@
-package info.nightscout.interfaces
+// Modified for Eating Now
+package app.aaps.core.interfaces.configuration
 
 /**
  * Created by mike on 07.06.2016.

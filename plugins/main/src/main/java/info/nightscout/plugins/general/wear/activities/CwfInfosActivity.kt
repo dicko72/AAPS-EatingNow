@@ -6,29 +6,29 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import info.nightscout.core.ui.activities.TranslatedDaggerAppCompatActivity
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.interfaces.versionChecker.VersionCheckerUtils
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventWearUpdateGui
+import app.aaps.core.interfaces.rx.weardata.CUSTOM_VERSION
+import app.aaps.core.interfaces.rx.weardata.CwfMetadataKey
+import app.aaps.core.interfaces.rx.weardata.CwfMetadataMap
+import app.aaps.core.interfaces.rx.weardata.JsonKeyValues
+import app.aaps.core.interfaces.rx.weardata.JsonKeys
+import app.aaps.core.interfaces.rx.weardata.ResFileMap
+import app.aaps.core.interfaces.rx.weardata.ViewKeys
+import app.aaps.core.interfaces.rx.weardata.ZipWatchfaceFormat
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.versionChecker.VersionCheckerUtils
+import app.aaps.core.ui.activities.TranslatedDaggerAppCompatActivity
 import info.nightscout.plugins.R
 import info.nightscout.plugins.databinding.CwfInfosActivityBinding
 import info.nightscout.plugins.databinding.CwfInfosActivityPrefItemBinding
 import info.nightscout.plugins.databinding.CwfInfosActivityViewItemBinding
 import info.nightscout.plugins.general.wear.WearPlugin
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventWearUpdateGui
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.rx.weardata.CUSTOM_VERSION
-import info.nightscout.rx.weardata.ResFileMap
-import info.nightscout.rx.weardata.CwfMetadataKey
-import info.nightscout.rx.weardata.CwfMetadataMap
-import info.nightscout.rx.weardata.JsonKeyValues
-import info.nightscout.rx.weardata.JsonKeys
-import info.nightscout.rx.weardata.ViewKeys
-import info.nightscout.rx.weardata.ZipWatchfaceFormat
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import org.json.JSONObject
@@ -93,12 +93,12 @@ class CwfInfosActivity : TranslatedDaggerAppCompatActivity() {
             metadata[CwfMetadataKey.CWF_AUTHOR_VERSION]?.let { authorVersion ->
                 title = "${metadata[CwfMetadataKey.CWF_NAME]} ($authorVersion)"
             }
-            val fileName = metadata[CwfMetadataKey.CWF_FILENAME]?.let { "$it${ZipWatchfaceFormat.CWF_EXTENTION}"} ?:""
+            val fileName = metadata[CwfMetadataKey.CWF_FILENAME]?.let { "$it${ZipWatchfaceFormat.CWF_EXTENTION}" } ?: ""
             binding.filelistName.text = rh.gs(CwfMetadataKey.CWF_FILENAME.label, fileName)
             binding.author.text = rh.gs(CwfMetadataKey.CWF_AUTHOR.label, metadata[CwfMetadataKey.CWF_AUTHOR] ?: "")
             binding.createdAt.text = rh.gs(CwfMetadataKey.CWF_CREATED_AT.label, metadata[CwfMetadataKey.CWF_CREATED_AT] ?: "")
             binding.cwfVersion.text = rh.gs(CwfMetadataKey.CWF_VERSION.label, metadata[CwfMetadataKey.CWF_VERSION] ?: "")
-            val colorAttr = if (checkCustomVersion(metadata)) info.nightscout.core.ui.R.attr.metadataTextOkColor else info.nightscout.core.ui.R.attr.metadataTextWarningColor
+            val colorAttr = if (checkCustomVersion(metadata)) app.aaps.core.ui.R.attr.metadataTextOkColor else app.aaps.core.ui.R.attr.metadataTextWarningColor
             binding.cwfVersion.setTextColor(rh.gac(binding.cwfVersion.context, colorAttr))
             binding.cwfComment.text = rh.gs(CwfMetadataKey.CWF_COMMENT.label, metadata[CwfMetadataKey.CWF_COMMENT] ?: "")
             if (metadata.count { it.key.isPref } > 0) {

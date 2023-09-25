@@ -11,18 +11,18 @@ import android.widget.ScrollView
 import androidx.core.view.MenuCompat
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.sharedPreferences.SP
 import dagger.android.support.DaggerFragment
-import info.nightscout.core.utils.fabric.FabricPrivacy
 import info.nightscout.plugins.sync.R
 import info.nightscout.plugins.sync.databinding.TidepoolFragmentBinding
 import info.nightscout.plugins.sync.tidepool.comm.TidepoolUploader
 import info.nightscout.plugins.sync.tidepool.events.EventTidepoolDoUpload
 import info.nightscout.plugins.sync.tidepool.events.EventTidepoolResetData
 import info.nightscout.plugins.sync.tidepool.events.EventTidepoolUpdateGUI
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import javax.inject.Inject
@@ -60,7 +60,7 @@ class TidepoolFragment : DaggerFragment(), MenuProvider {
     }
 
     override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
-        menu.add(Menu.FIRST, ID_MENU_LOGIN, 0, rh.gs(info.nightscout.core.ui.R.string.login)).setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
+        menu.add(Menu.FIRST, ID_MENU_LOGIN, 0, rh.gs(app.aaps.core.ui.R.string.login)).setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
         menu.add(Menu.FIRST, ID_MENU_SEND_NOW, 0, rh.gs(R.string.upload_now)).setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
         menu.add(Menu.FIRST, ID_MENU_REMOVE_ALL, 0, rh.gs(R.string.remove_all)).setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
         menu.add(Menu.FIRST, ID_MENU_FULL_SYNC, 0, rh.gs(R.string.full_sync)).setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)

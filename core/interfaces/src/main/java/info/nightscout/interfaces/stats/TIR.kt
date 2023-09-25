@@ -1,9 +1,10 @@
-package info.nightscout.interfaces.stats
+// Modified for Eating Now
+package app.aaps.core.interfaces.stats
 
 import android.content.Context
 import android.widget.TableRow
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.utils.DateUtil
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.utils.DateUtil
 
 interface TIR {
 

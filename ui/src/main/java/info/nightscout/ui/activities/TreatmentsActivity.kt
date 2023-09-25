@@ -3,12 +3,12 @@ package info.nightscout.ui.activities
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.extensions.toVisibility
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.resources.ResourceHelper
 import com.google.android.material.tabs.TabLayout
-import info.nightscout.core.ui.activities.TranslatedDaggerAppCompatActivity
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.shared.extensions.toVisibility
-import info.nightscout.shared.interfaces.ResourceHelper
+import app.aaps.core.ui.activities.TranslatedDaggerAppCompatActivity
 import info.nightscout.ui.R
 import info.nightscout.ui.activities.fragments.TreatmentsBolusCarbsFragment
 import info.nightscout.ui.activities.fragments.TreatmentsCareportalFragment
@@ -53,7 +53,7 @@ class TreatmentsActivity : TranslatedDaggerAppCompatActivity() {
                     5    -> TreatmentsCareportalFragment::class.java
                     else -> TreatmentsUserEntryFragment::class.java
                 }
-                setFragment(fragment.newInstance())
+                setFragment(fragment.getDeclaredConstructor().newInstance())
                 supportActionBar?.title = tab.contentDescription
             }
 

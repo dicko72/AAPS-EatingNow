@@ -8,30 +8,30 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.configuration.Constants
+import app.aaps.core.interfaces.extensions.toVisibility
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.DefaultValueHelper
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.protection.ProtectionCheck
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.utils.HardLimits
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.main.profile.ProfileSealed
+import app.aaps.core.ui.dialogs.OKDialog
+import app.aaps.core.ui.toast.ToastUtils
+import app.aaps.core.utils.HtmlHelper
+import app.aaps.database.entities.TemporaryTarget
+import app.aaps.database.entities.UserEntry
+import app.aaps.database.entities.ValueWithUnit
 import com.google.common.base.Joiner
-import info.nightscout.core.profile.ProfileSealed
-import info.nightscout.core.ui.dialogs.OKDialog
-import info.nightscout.core.ui.toast.ToastUtils
-import info.nightscout.core.utils.HtmlHelper
-import info.nightscout.database.entities.TemporaryTarget
-import info.nightscout.database.entities.UserEntry
-import info.nightscout.database.entities.ValueWithUnit
 import info.nightscout.database.impl.AppRepository
 import info.nightscout.database.impl.transactions.InsertAndCancelCurrentTemporaryTargetTransaction
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.Constants
-import info.nightscout.interfaces.logging.UserEntryLogger
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.profile.DefaultValueHelper
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.interfaces.protection.ProtectionCheck
-import info.nightscout.interfaces.utils.HardLimits
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.extensions.toVisibility
-import info.nightscout.shared.interfaces.ProfileUtil
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.utils.T
 import info.nightscout.ui.R
 import info.nightscout.ui.databinding.DialogProfileswitchBinding
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -128,7 +128,7 @@ class ProfileSwitchDialog : DialogFragmentWithDate() {
                 dismiss()
                 return
             }
-            binding.profileList.setAdapter(ArrayAdapter(context, info.nightscout.core.ui.R.layout.spinner_centered, profileList))
+            binding.profileList.setAdapter(ArrayAdapter(context, app.aaps.core.ui.R.layout.spinner_centered, profileList))
             // set selected to actual profile
             if (profileName != null)
                 binding.profileList.setText(profileName, false)
@@ -171,32 +171,32 @@ class ProfileSwitchDialog : DialogFragmentWithDate() {
         val actions: LinkedList<String> = LinkedList()
         val duration = binding.duration.value.toInt()
         if (duration > 0L)
-            actions.add(rh.gs(info.nightscout.core.ui.R.string.duration) + ": " + rh.gs(info.nightscout.core.ui.R.string.format_mins, duration))
+            actions.add(rh.gs(app.aaps.core.ui.R.string.duration) + ": " + rh.gs(app.aaps.core.ui.R.string.format_mins, duration))
         val profileName = binding.profileList.text.toString()
-        actions.add(rh.gs(info.nightscout.core.ui.R.string.profile) + ": " + profileName)
+        actions.add(rh.gs(app.aaps.core.ui.R.string.profile) + ": " + profileName)
         val percent = binding.percentage.value.toInt()
         if (percent != 100)
-            actions.add(rh.gs(info.nightscout.core.ui.R.string.percent) + ": " + percent + "%")
+            actions.add(rh.gs(app.aaps.core.ui.R.string.percent) + ": " + percent + "%")
         val timeShift = binding.timeshift.value.toInt()
         if (timeShift != 0)
-            actions.add(rh.gs(R.string.timeshift_label) + ": " + rh.gs(info.nightscout.core.ui.R.string.format_hours, timeShift.toDouble()))
+            actions.add(rh.gs(R.string.timeshift_label) + ": " + rh.gs(app.aaps.core.ui.R.string.format_hours, timeShift.toDouble()))
         val notes = binding.notesLayout.notes.text.toString()
         if (notes.isNotEmpty())
-            actions.add(rh.gs(info.nightscout.core.ui.R.string.notes_label) + ": " + notes)
+            actions.add(rh.gs(app.aaps.core.ui.R.string.notes_label) + ": " + notes)
         if (eventTimeChanged)
-            actions.add(rh.gs(info.nightscout.core.ui.R.string.time) + ": " + dateUtil.dateAndTimeString(eventTime))
+            actions.add(rh.gs(app.aaps.core.ui.R.string.time) + ": " + dateUtil.dateAndTimeString(eventTime))
 
         val isTT = binding.duration.value > 0 && binding.percentage.value < 100 && binding.tt.isChecked
         val target = defaultValueHelper.determineActivityTT()
         val units = profileFunction.getUnits()
         if (isTT)
-            actions.add(rh.gs(info.nightscout.core.ui.R.string.temporary_target) + ": " + rh.gs(info.nightscout.core.ui.R.string.activity))
+            actions.add(rh.gs(app.aaps.core.ui.R.string.temporary_target) + ": " + rh.gs(app.aaps.core.ui.R.string.activity))
 
         activity?.let { activity ->
             val ps = profileFunction.buildProfileSwitch(profileStore, profileName, duration, percent, timeShift, eventTime) ?: return@let
-            val validity = ProfileSealed.PS(ps).isValid(rh.gs(info.nightscout.core.ui.R.string.careportal_profileswitch), activePlugin.activePump, config, rh, rxBus, hardLimits, false)
+            val validity = ProfileSealed.PS(ps).isValid(rh.gs(app.aaps.core.ui.R.string.careportal_profileswitch), activePlugin.activePump, config, rh, rxBus, hardLimits, false)
             if (validity.isValid)
-                OKDialog.showConfirmation(activity, rh.gs(info.nightscout.core.ui.R.string.careportal_profileswitch), HtmlHelper.fromHtml(Joiner.on("<br/>").join(actions)), {
+                OKDialog.showConfirmation(activity, rh.gs(app.aaps.core.ui.R.string.careportal_profileswitch), HtmlHelper.fromHtml(Joiner.on("<br/>").join(actions)), {
                     if (profileFunction.createProfileSwitch(
                             profileStore,
                             profileName = profileName,
@@ -241,7 +241,7 @@ class ProfileSwitchDialog : DialogFragmentWithDate() {
             else {
                 OKDialog.show(
                     activity,
-                    rh.gs(info.nightscout.core.ui.R.string.careportal_profileswitch),
+                    rh.gs(app.aaps.core.ui.R.string.careportal_profileswitch),
                     HtmlHelper.fromHtml(Joiner.on("<br/>").join(validity.reasons))
                 )
                 return false

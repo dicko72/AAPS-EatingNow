@@ -13,32 +13,32 @@ import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import app.aaps.core.interfaces.extensions.toVisibility
+import app.aaps.core.interfaces.extensions.toVisibilityKeepSpace
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventNewBG
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.T
+import app.aaps.core.main.extensions.directionToIcon
+import app.aaps.core.main.utils.ActionModeHelper
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.ui.dialogs.OKDialog
+import app.aaps.database.entities.GlucoseValue
+import app.aaps.database.entities.UserEntry.Action
+import app.aaps.database.entities.UserEntry.Sources
+import app.aaps.database.entities.ValueWithUnit
 import dagger.android.support.DaggerFragment
-import info.nightscout.core.extensions.directionToIcon
-import info.nightscout.core.ui.dialogs.OKDialog
-import info.nightscout.core.utils.ActionModeHelper
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.database.entities.GlucoseValue
-import info.nightscout.database.entities.UserEntry.Action
-import info.nightscout.database.entities.UserEntry.Sources
-import info.nightscout.database.entities.ValueWithUnit
 import info.nightscout.database.impl.AppRepository
 import info.nightscout.database.impl.transactions.InvalidateGlucoseValueTransaction
-import info.nightscout.interfaces.logging.UserEntryLogger
-import info.nightscout.interfaces.plugin.ActivePlugin
-import info.nightscout.interfaces.plugin.PluginBase
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventNewBG
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.extensions.toVisibility
-import info.nightscout.shared.extensions.toVisibilityKeepSpace
-import info.nightscout.shared.interfaces.ProfileUtil
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.shared.utils.T
 import info.nightscout.source.databinding.SourceFragmentBinding
 import info.nightscout.source.databinding.SourceItemBinding
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -149,7 +149,7 @@ class BGSourceFragment : DaggerFragment(), MenuProvider {
                 val previous = glucoseValues[position - 1]
                 val diff = previous.timestamp - glucoseValue.timestamp
                 if (diff < T.secs(20).msecs())
-                    holder.binding.root.setBackgroundColor(rh.gac(context, info.nightscout.core.ui.R.attr.bgsourceError))
+                    holder.binding.root.setBackgroundColor(rh.gac(context, app.aaps.core.ui.R.attr.bgsourceError))
             }
 
             holder.binding.root.setOnLongClickListener {
@@ -186,12 +186,12 @@ class BGSourceFragment : DaggerFragment(), MenuProvider {
             val glucoseValue = selectedItems.valueAt(0)
             return dateUtil.dateAndTimeString(glucoseValue.timestamp) + "\n" + profileUtil.fromMgdlToUnits(glucoseValue.value)
         }
-        return rh.gs(info.nightscout.core.ui.R.string.confirm_remove_multiple_items, selectedItems.size())
+        return rh.gs(app.aaps.core.ui.R.string.confirm_remove_multiple_items, selectedItems.size())
     }
 
     private fun removeSelected(selectedItems: SparseArray<GlucoseValue>) {
         activity?.let { activity ->
-            OKDialog.showConfirmation(activity, rh.gs(info.nightscout.core.ui.R.string.removerecord), getConfirmationText(selectedItems), Runnable {
+            OKDialog.showConfirmation(activity, rh.gs(app.aaps.core.ui.R.string.removerecord), getConfirmationText(selectedItems), Runnable {
                 selectedItems.forEach { _, glucoseValue ->
                     val source = when ((activePlugin.activeBgSource as PluginBase).pluginDescription.pluginName) {
                         R.string.dexcom_app_patched -> Sources.Dexcom

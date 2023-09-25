@@ -2,15 +2,15 @@ package info.nightscout.plugins.iob.iobCobCalculator.data
 
 import androidx.collection.LongSparseArray
 import androidx.collection.size
-import info.nightscout.annotations.OpenForTesting
-import info.nightscout.database.entities.GlucoseValue
-import info.nightscout.interfaces.aps.AutosensData
-import info.nightscout.interfaces.aps.AutosensDataStore
-import info.nightscout.interfaces.iob.InMemoryGlucoseValue
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.shared.utils.T
+import app.aaps.annotations.OpenForTesting
+import app.aaps.core.interfaces.aps.AutosensData
+import app.aaps.core.interfaces.aps.AutosensDataStore
+import app.aaps.core.interfaces.iob.InMemoryGlucoseValue
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.T
+import app.aaps.database.entities.GlucoseValue
 import kotlin.math.abs
 import kotlin.math.roundToLong
 

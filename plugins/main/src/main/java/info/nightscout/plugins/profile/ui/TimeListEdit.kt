@@ -12,11 +12,11 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.widget.TextViewCompat
-import info.nightscout.core.ui.elements.NumberPicker
-import info.nightscout.core.ui.elements.SpinnerHelper
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.shared.SafeParse.stringToDouble
-import info.nightscout.shared.utils.DateUtil
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.SafeParse.stringToDouble
+import app.aaps.core.ui.elements.NumberPicker
+import app.aaps.core.ui.elements.SpinnerHelper
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -93,7 +93,7 @@ class TimeListEdit(
         val factor = layout.context.resources.displayMetrics.density
         ImageView(context).also {
             this.finalAdd = it
-            it.setImageResource(info.nightscout.core.main.R.drawable.ic_add)
+            it.setImageResource(app.aaps.core.main.R.drawable.ic_add)
             it.contentDescription = layout.context.resources.getString(info.nightscout.plugins.R.string.a11y_add_new_to_list)
             layout.addView(it)
             it.layoutParams = LinearLayout.LayoutParams((35.0 * factor).toInt(), (35 * factor).toInt()).also { llp ->
@@ -257,7 +257,7 @@ class TimeListEdit(
         }
         val adapter = SpinnerAdapter(
             context,
-            info.nightscout.core.ui.R.layout.spinner_centered, timeList, timeListValues
+            app.aaps.core.ui.R.layout.spinner_centered, timeList, timeListValues
         )
         spinner.adapter = adapter
         spinner.setSelection(posInList, false)

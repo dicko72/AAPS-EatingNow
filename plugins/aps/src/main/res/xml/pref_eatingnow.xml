@@ -7,7 +7,7 @@
         android:title="Eating Now Preferences"
         app:initialExpandedChildrenCount="0">
 
-        <info.nightscout.plugins.aps.loop.LoopVariantPreference
+        <app.aaps.plugins.aps.loop.LoopVariantPreference
             android:title="@string/en_variant_title"
             android:defaultValue="stable"
             android:selectable="true"
@@ -19,7 +19,7 @@
         android:title="AAPS Settings"
         app:initialExpandedChildrenCount="0">
 
-        <info.nightscout.core.validators.ValidatingEditTextPreference
+        <app.aaps.core.validators.ValidatingEditTextPreference
             android:defaultValue="3"
             android:inputType="numberDecimal"
             android:key="@string/key_treatmentssafety_maxbolus"
@@ -28,7 +28,7 @@
             validate:floatminNumber="0.1"
             validate:testType="floatNumericRange" />
 
-        <info.nightscout.core.validators.ValidatingEditTextPreference
+        <app.aaps.core.validators.ValidatingEditTextPreference
             android:defaultValue="1"
             android:dialogMessage="@string/openapsma_max_basal_summary"
             android:inputType="numberDecimal"
@@ -38,7 +38,7 @@
             validate:floatminNumber="0.1"
             validate:testType="floatNumericRange" />
 
-        <info.nightscout.core.validators.ValidatingEditTextPreference
+        <app.aaps.core.validators.ValidatingEditTextPreference
             android:defaultValue="3"
             android:dialogMessage="@string/openapssmb_max_iob_summary"
             android:inputType="numberDecimal"
@@ -54,7 +54,7 @@
             android:summary="Restricted to maximum of 1 with dynamic ISF"
             android:title="@string/openapsama_use_autosens" />
 
-        <info.nightscout.core.validators.ValidatingEditTextPreference
+        <app.aaps.core.validators.ValidatingEditTextPreference
             android:defaultValue="1.2"
             android:dialogMessage="@string/openapsama_autosens_max_summary"
             android:digits="0123456789.,"
@@ -68,7 +68,7 @@
             validate:floatminNumber="0.5"
             validate:testType="floatNumericRange" />
 
-        <info.nightscout.core.validators.ValidatingEditTextPreference
+        <app.aaps.core.validators.ValidatingEditTextPreference
             android:defaultValue="0.7"
             android:dialogMessage="@string/openapsama_autosens_min_summary"
             android:inputType="numberDecimal"
@@ -122,7 +122,7 @@
             android:summary="@string/enable_smb_after_carbs_summary"
             android:title="@string/enable_smb_after_carbs" />
 
-        <info.nightscout.core.validators.ValidatingEditTextPreference
+        <app.aaps.core.validators.ValidatingEditTextPreference
             android:defaultValue="3"
             android:digits="0123456789"
             android:inputType="number"
@@ -135,7 +135,7 @@
             validate:minNumber="1"
             validate:testType="numericRange" />
 
-        <info.nightscout.core.validators.ValidatingEditTextPreference
+        <app.aaps.core.validators.ValidatingEditTextPreference
             android:defaultValue="30"
             android:digits="0123456789"
             android:entries="@array/smbMaxMinutes"
@@ -147,7 +147,7 @@
             validate:minNumber="15"
             validate:testType="numericRange" />
 
-        <info.nightscout.core.validators.ValidatingEditTextPreference
+        <app.aaps.core.validators.ValidatingEditTextPreference
             android:defaultValue="30"
             android:dialogMessage="@string/uam_smb_max_minutes"
             android:digits="0123456789"
@@ -197,7 +197,7 @@
             android:title="Low temptarget lowers sensitivity" />
         <!--            android:title="@string/low_temptarget_lowers_sensitivity_title" />-->
 
-        <info.nightscout.core.validators.ValidatingEditTextPreference
+        <app.aaps.core.validators.ValidatingEditTextPreference
             android:defaultValue="1"
             android:dialogMessage="@string/carbs_req_threshold_summary"
             android:digits="0123456789"
@@ -224,7 +224,7 @@
             android:summary="@string/always_use_short_avg_summary"
             android:title="@string/always_use_short_avg" />
 
-        <info.nightscout.core.validators.ValidatingEditTextPreference
+        <app.aaps.core.validators.ValidatingEditTextPreference
             android:defaultValue="3"
             android:dialogMessage="@string/openapsama_max_daily_safety_multiplier_summary"
             android:digits="0123456789.,"
@@ -237,7 +237,7 @@
             validate:minNumber="1"
             validate:testType="numericRange" />
 
-        <info.nightscout.core.validators.ValidatingEditTextPreference
+        <app.aaps.core.validators.ValidatingEditTextPreference
             android:defaultValue="4"
             android:dialogMessage="@string/openapsama_current_basal_safety_multiplier_summary"
             android:digits="0123456789.,"
@@ -261,7 +261,7 @@
         <Preference android:summary="Eating Now operates within the Start and End time specified.\nLarger boluses from the Eating Now Window are allowed within this time range.">
         </Preference>
 
-        <info.nightscout.core.validators.ValidatingEditTextPreference
+        <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="9"
                 android:dialogMessage="Enter Eating Now start time in 24h e.g. 9AM is 9"
                 android:inputType="number"
@@ -271,7 +271,7 @@
                 validate:minNumber="0"
                 validate:testType="numericRange" />
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="17"
                 android:dialogMessage="Enter Eating Now end time in 24h e.g. 17 is 5PM. Finish time of the next day is fully supported."
                 android:inputType="number"
@@ -290,7 +290,7 @@
             <Preference android:summary="SMB's can be restricted inside and outside of the Eating Now time range.">
             </Preference>
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:title="Daytime SMB Restriction"
@@ -300,7 +300,7 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange" />
 
-             <info.nightscout.core.validators.ValidatingEditTextPreference
+             <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:title="Overnight SMB Restriction"
@@ -310,7 +310,7 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange" />
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:dialogMessage="Max IOB for EN. Once reached the maxBolus will fallback to either AAPS maxBolus or TBR."
                 android:inputType="numberDecimal"
@@ -335,7 +335,7 @@
 
             <Preference android:summary="The EN Window becomes active when there is a manual bolus,carb entry or when IOB above trigger value, only after the Start Time setting."></Preference>
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_enwindowiob"
@@ -345,7 +345,7 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_enwminbolus"
@@ -375,7 +375,7 @@
 
             <Preference android:summary="The first manual bolus or carb entry is considered breakfast, or the first meal of the day.\nThe time of the first meal of the day may vary. ISF and CR scaling can be applied to a single ISF/CR profile entry allowing flexibility without profile shifts."></Preference>
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:digits="0123456789"
                 android:inputType="number"
@@ -386,7 +386,7 @@
                 validate:minNumber="0"
                 validate:testType="numericRange" />
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="100"
                 android:inputType="number"
                 android:title="Breakfast ISF/CR Percentage"
@@ -396,7 +396,7 @@
                 validate:minNumber="75"
                 validate:testType="numericRange" />
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_cobboost_maxbolus_breakfast"
@@ -406,7 +406,7 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_uam_maxbolus_breakfast"
@@ -416,7 +416,7 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:dialogMessage="Max Units within Breakfast ENW (boluses only). Once reached the maxBolus will fallback to AAPS maxBolus. Will continue until ENW is inactive, max 4h. 0 will disable the function."
                 android:inputType="numberDecimal"
@@ -428,7 +428,7 @@
 
             <Preference android:summary="An ENW duration, larger COB and UAM maxBolus may also be defined within the EN Window for subsequent meals."></Preference>
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:digits="0123456789"
                 android:inputType="number"
@@ -439,7 +439,7 @@
                 validate:minNumber="0"
                 validate:testType="numericRange" />
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="100"
                 android:inputType="number"
                 android:title="ENW ISF/CR Percentage"
@@ -449,7 +449,7 @@
                 validate:minNumber="75"
                 validate:testType="numericRange" />
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_uamboost_maxbolus"
@@ -459,7 +459,7 @@
                 validate:floatminNumber="-1"
                 validate:testType="floatNumericRange"/>
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_cobboost_maxbolus"
@@ -469,7 +469,7 @@
                 validate:floatminNumber="-1"
                 validate:testType="floatNumericRange"/>
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:dialogMessage="Max Units within ENW after breakfast (boluses only). Once reached the maxBolus will fallback to AAPS maxBolus. Will continue until ENW is inactive, max 4h. 0 will disable the function."
                 android:inputType="numberDecimal"
@@ -479,7 +479,7 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange" />
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_noenw_maxbolus"
@@ -489,7 +489,7 @@
                 validate:floatminNumber="-1"
                 validate:testType="floatNumericRange"/>
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_bgplus_maxbolus"
@@ -508,7 +508,7 @@
 
             <Preference android:summary="UAM+ is similar to the Boost plugin. UAM+ PreBolus can boost the BG to trigger an initial bolus for UAM. UAM+ can also be used outside the ENW to provide larger UAM boluses."></Preference>
 
-<!--            <info.nightscout.core.validators.ValidatingEditTextPreference-->
+<!--            <app.aaps.core.validators.ValidatingEditTextPreference-->
 <!--                android:defaultValue="0"-->
 <!--                android:inputType="numberDecimal"-->
 <!--                android:title="UAM+ Breakfast PreBolus Boost"-->
@@ -518,7 +518,7 @@
 <!--                validate:floatminNumber="0"-->
 <!--                validate:testType="floatNumericRange" />-->
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_uambgboost_maxbolus_bkfast"
@@ -528,7 +528,7 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_uamplus_maxbolus_bkfast"
@@ -538,7 +538,7 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_uambgboost_maxbolus"
@@ -548,7 +548,7 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_uamplus_maxbolus"
@@ -583,7 +583,7 @@
                 android:title="Use dynamic ISF"
                 android:summary="As BG increases ISF will become stronger when enabled." />
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_isfbgscaler"
@@ -599,7 +599,7 @@
                 android:title="Use TDD for ISF"
                 android:summary="Use TDD as the basis for calculating the current ISF. This will override the profile ISF." />
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="100"
                 android:inputType="numberDecimal"
                 android:key="@string/key_sens_tdd_scale"
@@ -609,7 +609,7 @@
                 validate:floatminNumber="5"
                 validate:testType="floatNumericRange"/>
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="100"
                 android:inputType="number"
                 android:title="MaxISF %"
@@ -625,7 +625,7 @@
                 android:title="Use TDD based SensitivityRatio"
                 android:summary="Use recent TDD history to calculate current SensitivityRatio. Used for basal only. Min/Max Autosens values will be respected."/>
 
-            <info.nightscout.core.validators.ValidatingEditTextPreference
+            <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
                 android:inputType="number"
                 android:title="TIRS % resistance per hour"

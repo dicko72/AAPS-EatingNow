@@ -1,4 +1,4 @@
-package info.nightscout.plugins.aps.loop
+package app.aaps.plugins.aps.loop
 
 import android.content.Context
 import android.util.AttributeSet

@@ -3,21 +3,21 @@ package info.nightscout.workflow
 import android.content.Context
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import app.aaps.core.interfaces.aps.Loop
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.main.events.EventIobCalculationProgress
+import app.aaps.core.main.extensions.target
+import app.aaps.core.main.graph.OverviewData
+import app.aaps.core.main.utils.worker.LoggingWorker
+import app.aaps.core.main.workflow.CalculationWorkflow
+import app.aaps.core.utils.receivers.DataWorkerStorage
+import app.aaps.database.ValueWrapper
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
-import info.nightscout.core.events.EventIobCalculationProgress
-import info.nightscout.core.extensions.target
-import info.nightscout.core.graph.OverviewData
-import info.nightscout.core.utils.receivers.DataWorkerStorage
-import info.nightscout.core.utils.worker.LoggingWorker
-import info.nightscout.core.workflow.CalculationWorkflow
-import info.nightscout.database.ValueWrapper
 import info.nightscout.database.impl.AppRepository
-import info.nightscout.interfaces.aps.Loop
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.shared.interfaces.ProfileUtil
-import info.nightscout.shared.interfaces.ResourceHelper
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 import kotlin.math.max
@@ -79,7 +79,7 @@ class PrepareTemporaryTargetDataWorker(
         // create series
         data.overviewData.temporaryTargetSeries = LineGraphSeries(Array(targetsSeriesArray.size) { i -> targetsSeriesArray[i] }).also {
             it.isDrawBackground = false
-            it.color = rh.gac(ctx, info.nightscout.core.ui.R.attr.tempTargetBackgroundColor )
+            it.color = rh.gac(ctx, app.aaps.core.ui.R.attr.tempTargetBackgroundColor)
             it.thickness = 2
         }
         rxBus.send(EventIobCalculationProgress(CalculationWorkflow.ProgressData.PREPARE_TEMPORARY_TARGET_DATA, 100, null))

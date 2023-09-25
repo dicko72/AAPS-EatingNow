@@ -6,24 +6,24 @@ import android.os.HandlerThread
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import app.aaps.core.main.extensions.toStringFull
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.interfaces.iob.IobCobCalculator
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.pump.defs.DoseStepSize
+import app.aaps.core.interfaces.pump.defs.PumpTempBasalType
+import app.aaps.core.interfaces.pump.defs.PumpType
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventExtendedBolusChange
+import app.aaps.core.interfaces.rx.events.EventTempBasalChange
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.DecimalFormatter
+import app.aaps.core.interfaces.utils.T
 import dagger.android.support.DaggerFragment
-import info.nightscout.core.extensions.toStringFull
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.interfaces.iob.IobCobCalculator
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.interfaces.pump.defs.DoseStepSize
-import info.nightscout.interfaces.pump.defs.PumpTempBasalType
-import info.nightscout.interfaces.pump.defs.PumpType
-import info.nightscout.interfaces.utils.DecimalFormatter
 import info.nightscout.pump.virtual.databinding.VirtualPumpFragmentBinding
 import info.nightscout.pump.virtual.events.EventVirtualPumpUpdateGui
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventExtendedBolusChange
-import info.nightscout.rx.events.EventTempBasalChange
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.utils.DateUtil
-import info.nightscout.shared.utils.T
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import javax.inject.Inject
@@ -94,13 +94,13 @@ class VirtualPumpFragment : DaggerFragment() {
     private fun updateGui() {
         if (_binding == null) return
         val profile = profileFunction.getProfile() ?: return
-        binding.baseBasalRate.text = rh.gs(info.nightscout.core.ui.R.string.pump_base_basal_rate, virtualPumpPlugin.baseBasalRate)
+        binding.baseBasalRate.text = rh.gs(app.aaps.core.ui.R.string.pump_base_basal_rate, virtualPumpPlugin.baseBasalRate)
         binding.tempbasal.text = iobCobCalculator.getTempBasal(dateUtil.now())?.toStringFull(profile, dateUtil, decimalFormatter)
             ?: ""
         binding.extendedbolus.text = iobCobCalculator.getExtendedBolus(dateUtil.now())?.toStringFull(dateUtil, decimalFormatter)
             ?: ""
-        binding.battery.text = rh.gs(info.nightscout.core.ui.R.string.format_percent, virtualPumpPlugin.batteryPercent)
-        binding.reservoir.text = rh.gs(info.nightscout.core.ui.R.string.format_insulin_units, virtualPumpPlugin.reservoirInUnits.toDouble())
+        binding.battery.text = rh.gs(app.aaps.core.ui.R.string.format_percent, virtualPumpPlugin.batteryPercent)
+        binding.reservoir.text = rh.gs(app.aaps.core.ui.R.string.format_insulin_units, virtualPumpPlugin.reservoirInUnits.toDouble())
 
         virtualPumpPlugin.refreshConfiguration()
         val pumpType = virtualPumpPlugin.pumpType

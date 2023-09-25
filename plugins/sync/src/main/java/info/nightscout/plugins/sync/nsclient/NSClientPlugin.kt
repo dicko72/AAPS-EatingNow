@@ -8,21 +8,33 @@ import android.os.IBinder
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
 import androidx.preference.SwitchPreference
+import app.aaps.core.main.extensions.toJson
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.configuration.Constants
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.nsclient.NSAlarm
+import app.aaps.core.interfaces.nsclient.NSSettingsStatus
+import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.plugin.PluginDescription
+import app.aaps.core.interfaces.plugin.PluginType
+import app.aaps.core.interfaces.profile.Profile
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventAppExit
+import app.aaps.core.interfaces.rx.events.EventNSClientNewLog
+import app.aaps.core.interfaces.rx.events.EventPreferenceChange
+import app.aaps.core.interfaces.rx.events.EventSWSyncStatus
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.sync.DataSyncSelector
+import app.aaps.core.interfaces.sync.NsClient
+import app.aaps.core.interfaces.sync.Sync
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.DecimalFormatter
 import dagger.android.HasAndroidInjector
-import info.nightscout.core.extensions.toJson
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.interfaces.Config
-import info.nightscout.interfaces.Constants
-import info.nightscout.interfaces.nsclient.NSAlarm
-import info.nightscout.interfaces.nsclient.NSSettingsStatus
-import info.nightscout.interfaces.plugin.PluginBase
-import info.nightscout.interfaces.plugin.PluginDescription
-import info.nightscout.interfaces.plugin.PluginType
-import info.nightscout.interfaces.profile.Profile
-import info.nightscout.interfaces.sync.DataSyncSelector
-import info.nightscout.interfaces.sync.NsClient
-import info.nightscout.interfaces.sync.Sync
-import info.nightscout.interfaces.utils.DecimalFormatter
 import info.nightscout.plugins.sync.R
 import info.nightscout.plugins.sync.nsShared.NSClientFragment
 import info.nightscout.plugins.sync.nsShared.events.EventNSClientStatus
@@ -31,18 +43,6 @@ import info.nightscout.plugins.sync.nsShared.events.EventNSClientUpdateGuiStatus
 import info.nightscout.plugins.sync.nsclient.data.AlarmAck
 import info.nightscout.plugins.sync.nsclient.extensions.toJson
 import info.nightscout.plugins.sync.nsclient.services.NSClientService
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventAppExit
-import info.nightscout.rx.events.EventNSClientNewLog
-import info.nightscout.rx.events.EventPreferenceChange
-import info.nightscout.rx.events.EventSWSyncStatus
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.interfaces.ProfileUtil
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import javax.inject.Inject
@@ -69,7 +69,7 @@ class NSClientPlugin @Inject constructor(
     PluginDescription()
         .mainType(PluginType.SYNC)
         .fragmentClass(NSClientFragment::class.java.name)
-        .pluginIcon(info.nightscout.core.ui.R.drawable.ic_nightscout_syncs)
+        .pluginIcon(app.aaps.core.ui.R.drawable.ic_nightscout_syncs)
         .pluginName(R.string.ns_client)
         .shortName(R.string.ns_client_short_name)
         .preferencesId(R.xml.pref_ns_client)

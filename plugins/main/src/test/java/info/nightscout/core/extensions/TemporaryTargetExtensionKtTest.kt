@@ -1,9 +1,12 @@
 package info.nightscout.core.extensions
 
-import info.nightscout.database.entities.TemporaryTarget
-import info.nightscout.interfaces.GlucoseUnit
-import info.nightscout.sharedtests.TestBaseWithProfile
-import org.junit.jupiter.api.Assertions
+import app.aaps.core.interfaces.db.GlucoseUnit
+import app.aaps.core.main.extensions.highValueToUnitsToString
+import app.aaps.core.main.extensions.lowValueToUnitsToString
+import app.aaps.core.main.extensions.target
+import app.aaps.database.entities.TemporaryTarget
+import app.aaps.shared.tests.TestBaseWithProfile
+import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 
 class TemporaryTargetExtensionKtTest : TestBaseWithProfile() {
@@ -22,18 +25,21 @@ class TemporaryTargetExtensionKtTest : TestBaseWithProfile() {
         lowTarget = 110.0,
         duration = 1800000
     )
+
     @Test
     fun lowValueToUnitsToString() {
-        Assertions.assertEquals("110", temporaryTarget.lowValueToUnitsToString(GlucoseUnit.MGDL, decimalFormatter))
-        Assertions.assertEquals("6.1", temporaryTarget.lowValueToUnitsToString(GlucoseUnit.MMOL, decimalFormatter))
+        assertThat(temporaryTarget.lowValueToUnitsToString(GlucoseUnit.MGDL, decimalFormatter)).isEqualTo("110")
+        assertThat(temporaryTarget.lowValueToUnitsToString(GlucoseUnit.MMOL, decimalFormatter)).isEqualTo("6.1")
     }
+
     @Test
     fun highValueToUnitsToString() {
-        Assertions.assertEquals("120", temporaryTarget.highValueToUnitsToString(GlucoseUnit.MGDL, decimalFormatter))
-        Assertions.assertEquals("6.7", temporaryTarget.highValueToUnitsToString(GlucoseUnit.MMOL, decimalFormatter))
+        assertThat(temporaryTarget.highValueToUnitsToString(GlucoseUnit.MGDL, decimalFormatter)).isEqualTo("120")
+        assertThat(temporaryTarget.highValueToUnitsToString(GlucoseUnit.MMOL, decimalFormatter)).isEqualTo("6.7")
     }
+
     @Test
     fun target() {
-        Assertions.assertEquals(115.0, temporaryTarget.target())
+        assertThat(temporaryTarget.target()).isEqualTo(115.0)
     }
 }

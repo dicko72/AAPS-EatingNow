@@ -1,16 +1,16 @@
-package info.nightscout.plugins.aps.di
+// Modified for Eating Now
+package app.aaps.plugins.aps.di
 
+import app.aaps.core.interfaces.aps.Loop
+import app.aaps.core.interfaces.autotune.Autotune
+import app.aaps.plugins.aps.APSResultObject
+import app.aaps.plugins.aps.OpenAPSFragment
+import app.aaps.plugins.aps.autotune.AutotunePlugin
+import app.aaps.plugins.aps.loop.LoopPlugin
 import dagger.Binds
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
-import info.nightscout.interfaces.aps.APSResult
-import info.nightscout.interfaces.aps.Loop
-import info.nightscout.interfaces.autotune.Autotune
-import info.nightscout.plugins.aps.APSResultObject
-import info.nightscout.plugins.aps.OpenAPSFragment
-import info.nightscout.plugins.aps.loop.LoopPlugin
-import info.nightscout.plugins.aps.loop.LoopVariantPreference
-import info.nightscout.plugins.general.autotune.AutotunePlugin
+import app.aaps.plugins.aps.loop.LoopVariantPreference
 
 @Module(
     includes = [

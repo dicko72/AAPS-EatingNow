@@ -1,19 +1,19 @@
 package info.nightscout.plugins.general.overview.notifications
 
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.notifications.Notification
+import app.aaps.core.interfaces.nsclient.NSAlarm
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.utils.T
 import dagger.android.HasAndroidInjector
-import info.nightscout.interfaces.notifications.Notification
-import info.nightscout.interfaces.nsclient.NSAlarm
-import info.nightscout.interfaces.plugin.ActivePlugin
 import info.nightscout.plugins.R
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.T
 import javax.inject.Inject
 
 @Suppress("SpellCheckingInspection")
-class NotificationWithAction constructor(
+class NotificationWithAction(
     injector: HasAndroidInjector
 ) : Notification() {
 
@@ -47,7 +47,7 @@ class NotificationWithAction constructor(
                 id = NS_ALARM
                 level = NORMAL
                 text = nsAlarm.title()
-                soundId = info.nightscout.core.ui.R.raw.alarm
+                soundId = app.aaps.core.ui.R.raw.alarm
             }
 
             2 -> {
@@ -57,7 +57,7 @@ class NotificationWithAction constructor(
                 soundId = R.raw.urgentalarm
             }
         }
-        buttonText = info.nightscout.core.ui.R.string.snooze
+        buttonText = app.aaps.core.ui.R.string.snooze
         action = Runnable {
             activePlugin.activeNsClient?.handleClearAlarm(nsAlarm, 60 * 60 * 1000L)
             // Adding current time to snooze if we got staleData

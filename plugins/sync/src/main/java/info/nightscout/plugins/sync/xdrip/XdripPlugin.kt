@@ -10,48 +10,48 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import app.aaps.core.interfaces.aps.Loop
+import app.aaps.core.interfaces.configuration.Constants
+import app.aaps.core.interfaces.db.GlucoseUnit
+import app.aaps.core.interfaces.iob.IobCobCalculator
+import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.plugin.PluginDescription
+import app.aaps.core.interfaces.plugin.PluginType
+import app.aaps.core.interfaces.profile.Profile
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.receivers.Intents
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
+import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventAppExit
+import app.aaps.core.interfaces.rx.events.EventAppInitialized
+import app.aaps.core.interfaces.rx.events.EventAutosensCalculationFinished
+import app.aaps.core.interfaces.rx.events.EventNewBG
+import app.aaps.core.interfaces.rx.events.EventNewHistoryData
+import app.aaps.core.interfaces.rx.events.EventXdripNewLog
+import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.sync.DataSyncSelector
+import app.aaps.core.interfaces.sync.Sync
+import app.aaps.core.interfaces.sync.XDripBroadcast
+import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.DecimalFormatter
+import app.aaps.core.main.extensions.toStringShort
+import app.aaps.core.main.iob.generateCOBString
+import app.aaps.core.main.iob.round
+import app.aaps.core.main.utils.fabric.FabricPrivacy
+import app.aaps.core.ui.toast.ToastUtils
+import app.aaps.core.utils.HtmlHelper
+import app.aaps.shared.impl.extensions.safeQueryBroadcastReceivers
 import dagger.android.HasAndroidInjector
-import info.nightscout.core.extensions.toStringShort
-import info.nightscout.core.iob.generateCOBString
-import info.nightscout.core.iob.round
-import info.nightscout.core.ui.toast.ToastUtils
-import info.nightscout.core.utils.HtmlHelper
-import info.nightscout.core.utils.fabric.FabricPrivacy
-import info.nightscout.interfaces.Constants
-import info.nightscout.interfaces.GlucoseUnit
-import info.nightscout.interfaces.XDripBroadcast
-import info.nightscout.interfaces.aps.Loop
-import info.nightscout.interfaces.iob.IobCobCalculator
-import info.nightscout.interfaces.plugin.PluginBase
-import info.nightscout.interfaces.plugin.PluginDescription
-import info.nightscout.interfaces.plugin.PluginType
-import info.nightscout.interfaces.profile.Profile
-import info.nightscout.interfaces.profile.ProfileFunction
-import info.nightscout.interfaces.receivers.Intents
-import info.nightscout.interfaces.sync.DataSyncSelector
-import info.nightscout.interfaces.sync.Sync
-import info.nightscout.interfaces.ui.UiInteraction
-import info.nightscout.interfaces.utils.DecimalFormatter
 import info.nightscout.plugins.sync.R
 import info.nightscout.plugins.sync.nsclient.extensions.toJson
 import info.nightscout.plugins.sync.xdrip.events.EventXdripUpdateGUI
 import info.nightscout.plugins.sync.xdrip.extensions.toXdripJson
 import info.nightscout.plugins.sync.xdrip.workers.XdripDataSyncWorker
-import info.nightscout.rx.AapsSchedulers
-import info.nightscout.rx.bus.RxBus
-import info.nightscout.rx.events.EventAppExit
-import info.nightscout.rx.events.EventAppInitialized
-import info.nightscout.rx.events.EventAutosensCalculationFinished
-import info.nightscout.rx.events.EventNewBG
-import info.nightscout.rx.events.EventNewHistoryData
-import info.nightscout.rx.events.EventXdripNewLog
-import info.nightscout.rx.logging.AAPSLogger
-import info.nightscout.rx.logging.LTag
-import info.nightscout.shared.extensions.safeQueryBroadcastReceivers
-import info.nightscout.shared.interfaces.ProfileUtil
-import info.nightscout.shared.interfaces.ResourceHelper
-import info.nightscout.shared.sharedPreferences.SP
-import info.nightscout.shared.utils.DateUtil
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import kotlinx.coroutines.CoroutineScope
@@ -86,7 +86,7 @@ class XdripPlugin @Inject constructor(
     PluginDescription()
         .mainType(PluginType.SYNC)
         .fragmentClass(XdripFragment::class.java.name)
-        .pluginIcon((info.nightscout.core.main.R.drawable.ic_blooddrop_48))
+        .pluginIcon((app.aaps.core.main.R.drawable.ic_blooddrop_48))
         .pluginName(R.string.xdrip)
         .shortName(R.string.xdrip_shortname)
         .preferencesId(R.xml.pref_xdrip)
@@ -174,7 +174,7 @@ class XdripPlugin @Inject constructor(
             }
             return HtmlHelper.fromHtml(newTextLog.toString())
         } catch (e: OutOfMemoryError) {
-            uiInteraction.showToastAndNotification(context, "Out of memory!\nStop using this phone !!!", info.nightscout.core.ui.R.raw.error)
+            uiInteraction.showToastAndNotification(context, "Out of memory!\nStop using this phone !!!", app.aaps.core.ui.R.raw.error)
         }
         return HtmlHelper.fromHtml("")
     }
@@ -245,7 +245,7 @@ class XdripPlugin @Inject constructor(
         //IOB
         val bolusIob = iobCobCalculator.calculateIobFromBolus().round()
         val basalIob = iobCobCalculator.calculateIobFromTempBasalsIncludingConvertedExtended().round()
-        status.append(decimalFormatter.to2Decimal(bolusIob.iob + basalIob.basaliob)).append(rh.gs(info.nightscout.core.ui.R.string.insulin_unit_shortname))
+        status.append(decimalFormatter.to2Decimal(bolusIob.iob + basalIob.basaliob)).append(rh.gs(app.aaps.core.ui.R.string.insulin_unit_shortname))
         if (sp.getBoolean(R.string.key_xdrip_status_detailed_iob, true))
             status.append("(")
                 .append(decimalFormatter.to2Decimal(bolusIob.iob))
