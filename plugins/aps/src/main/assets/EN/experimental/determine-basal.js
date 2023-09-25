@@ -1239,7 +1239,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (UAMBGPreBolus) sens_predType = "PB";
 
     // BG+ outside of UAM prediction
-    if (profile.EN_BGPlus_maxBolus != 0 && !ENPBActive && ENWMinsAgo > 90 && TIR_sens_limited > 1 && sens_predType == "NA" ) sens_predType = "BG+";
+    if (profile.EN_BGPlus_maxBolus != 0 && !ENPBActive && ENWMinsAgo > 90 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < bg ) sens_predType = "BG+";
 
     // TBR for tt that isn't EN at normal target
     if (profile.temptargetSet && !ENTTActive && target_bg == normalTarget) sens_predType = "TBR";
@@ -1296,8 +1296,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // When resistant and with EN active and no mealscaling check as safety allow the resistant ISF to be used for insulinReq_sens providing a stronger ISF prediction
                 // if (TIR_sens_limited > 1 && ENactive && MealScaler == 1) insulinReq_sens_normalTarget = sens_normalTarget;
             } else {
-                // No change so check for BG+ condition
-                if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1) sens_predType = "BG+";
+                sens_predType = "UAM"; // pass onto UAM block
+                // Check for BG+ condition
+                if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < bg) sens_predType = "BG+";
             }
         }
 
