@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.implementation.utils
 
 import app.aaps.core.interfaces.resources.ResourceHelper
@@ -183,7 +184,8 @@ class TranslatorImpl @Inject internal constructor(
         TemporaryTarget.Reason.ACTIVITY     -> rh.gs(app.aaps.core.ui.R.string.activity)
         TemporaryTarget.Reason.AUTOMATION   -> rh.gs(app.aaps.core.ui.R.string.automation)
         TemporaryTarget.Reason.WEAR         -> rh.gs(app.aaps.core.ui.R.string.wear)
-
+        TemporaryTarget.Reason.EATING_NOW  -> rh.gs(app.aaps.core.ui.R.string.eatingnow)
+        TemporaryTarget.Reason.EATING_NOW_PB  -> rh.gs(app.aaps.core.ui.R.string.eatingnow_prebolus)
         else                                -> rh.gs(app.aaps.core.ui.R.string.unknown)
     }
 

@@ -2,8 +2,8 @@ package app.aaps.plugins.automation.triggers
 
 import app.aaps.plugins.automation.R
 import app.aaps.plugins.automation.elements.Comparator
+import app.aaps.plugins.main.iob.iobCobCalculator.data.AutosensDataObject
 import com.google.common.truth.Truth.assertThat
-import info.nightscout.plugins.iob.iobCobCalculator.data.AutosensDataObject
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -14,8 +14,8 @@ import org.mockito.Mockito.`when`
 class TriggerAutosensValueTest : TriggerTestBase() {
 
     @Test fun shouldRunTest() {
-        `when`(sp.getDouble(Mockito.eq(info.nightscout.core.utils.R.string.key_openapsama_autosens_max), ArgumentMatchers.anyDouble())).thenReturn(1.2)
-        `when`(sp.getDouble(Mockito.eq(info.nightscout.core.utils.R.string.key_openapsama_autosens_min), ArgumentMatchers.anyDouble())).thenReturn(0.7)
+        `when`(sp.getDouble(Mockito.eq(app.aaps.core.utils.R.string.key_openapsama_autosens_max), ArgumentMatchers.anyDouble())).thenReturn(1.2)
+        `when`(sp.getDouble(Mockito.eq(app.aaps.core.utils.R.string.key_openapsama_autosens_min), ArgumentMatchers.anyDouble())).thenReturn(0.7)
         `when`(autosensDataStore.getLastAutosensData(anyObject(), anyObject(), anyObject())).thenReturn(generateAutosensData())
         var t = TriggerAutosensValue(injector)
         t.autosens.value = 110.0

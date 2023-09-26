@@ -36,10 +36,10 @@ import app.aaps.core.main.iob.round
 import app.aaps.database.ValueWrapper
 import app.aaps.database.entities.GlucoseValue
 import app.aaps.database.entities.TemporaryTarget
+import app.aaps.database.impl.AppRepository
 import com.jjoe64.graphview.series.BarGraphSeries
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
-import info.nightscout.database.impl.AppRepository
 import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -108,7 +108,7 @@ class OverviewDataImpl @Inject constructor(
     }
 
     override fun initRange() {
-        rangeToDisplay = sp.getInt(info.nightscout.core.utils.R.string.key_rangetodisplay, 6)
+        rangeToDisplay = sp.getInt(app.aaps.core.utils.R.string.key_rangetodisplay, 6)
 
         val calendar = Calendar.getInstance().also {
             it.timeInMillis = System.currentTimeMillis()

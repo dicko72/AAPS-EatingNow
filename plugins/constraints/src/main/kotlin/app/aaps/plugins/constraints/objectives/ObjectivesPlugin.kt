@@ -18,8 +18,7 @@ import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.plugin.PluginType
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.sharedPreferences.SP
-import dagger.android.HasAndroidInjector
-import info.nightscout.plugins.constraints.R
+import app.aaps.plugins.constraints.R
 import app.aaps.plugins.constraints.objectives.objectives.Objective
 import app.aaps.plugins.constraints.objectives.objectives.Objective0
 import app.aaps.plugins.constraints.objectives.objectives.Objective1
@@ -32,6 +31,7 @@ import app.aaps.plugins.constraints.objectives.objectives.Objective5
 import app.aaps.plugins.constraints.objectives.objectives.Objective6
 import app.aaps.plugins.constraints.objectives.objectives.Objective7
 import app.aaps.plugins.constraints.objectives.objectives.Objective9
+import dagger.android.HasAndroidInjector
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -87,16 +87,16 @@ class ObjectivesPlugin @Inject constructor(
             objective.startedOn = 0
             objective.accomplishedOn = 0
         }
-        sp.putBoolean(info.nightscout.core.utils.R.string.key_objectives_bg_is_available_in_ns, false)
-        sp.putBoolean(info.nightscout.core.utils.R.string.key_objectives_pump_status_is_available_in_ns, false)
-        sp.putInt(info.nightscout.core.utils.R.string.key_ObjectivesmanualEnacts, 0)
-        sp.putBoolean(info.nightscout.core.utils.R.string.key_objectiveuseprofileswitch, false)
-        sp.putBoolean(info.nightscout.core.utils.R.string.key_objectiveusedisconnect, false)
-        sp.putBoolean(info.nightscout.core.utils.R.string.key_objectiveusereconnect, false)
-        sp.putBoolean(info.nightscout.core.utils.R.string.key_objectiveusetemptarget, false)
-        sp.putBoolean(info.nightscout.core.utils.R.string.key_objectiveuseactions, false)
-        sp.putBoolean(info.nightscout.core.utils.R.string.key_objectiveuseloop, false)
-        sp.putBoolean(info.nightscout.core.utils.R.string.key_objectiveusescale, false)
+        sp.putBoolean(app.aaps.core.utils.R.string.key_objectives_bg_is_available_in_ns, false)
+        sp.putBoolean(app.aaps.core.utils.R.string.key_objectives_pump_status_is_available_in_ns, false)
+        sp.putInt(app.aaps.core.utils.R.string.key_ObjectivesmanualEnacts, 0)
+        sp.putBoolean(app.aaps.core.utils.R.string.key_objectiveuseprofileswitch, false)
+        sp.putBoolean(app.aaps.core.utils.R.string.key_objectiveusedisconnect, false)
+        sp.putBoolean(app.aaps.core.utils.R.string.key_objectiveusereconnect, false)
+        sp.putBoolean(app.aaps.core.utils.R.string.key_objectiveusetemptarget, false)
+        sp.putBoolean(app.aaps.core.utils.R.string.key_objectiveuseactions, false)
+        sp.putBoolean(app.aaps.core.utils.R.string.key_objectiveuseloop, false)
+        sp.putBoolean(app.aaps.core.utils.R.string.key_objectiveusescale, false)
     }
 
     fun allPriorAccomplished(position: Int): Boolean {

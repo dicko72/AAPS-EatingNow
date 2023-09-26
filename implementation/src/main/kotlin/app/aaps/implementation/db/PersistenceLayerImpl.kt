@@ -10,14 +10,15 @@ import app.aaps.database.entities.Bolus
 import app.aaps.database.entities.BolusCalculatorResult
 import app.aaps.database.entities.Carbs
 import app.aaps.database.entities.EffectiveProfileSwitch
+import app.aaps.database.entities.GlucoseValue
 import app.aaps.database.entities.TemporaryTarget
 import app.aaps.database.entities.UserEntry
+import app.aaps.database.impl.AppRepository
+import app.aaps.database.impl.transactions.InsertOrUpdateBolusCalculatorResultTransaction
+import app.aaps.database.impl.transactions.InsertOrUpdateBolusTransaction
+import app.aaps.database.impl.transactions.InsertOrUpdateCarbsTransaction
 import dagger.Reusable
 import dagger.android.HasAndroidInjector
-import info.nightscout.database.impl.AppRepository
-import info.nightscout.database.impl.transactions.InsertOrUpdateBolusCalculatorResultTransaction
-import info.nightscout.database.impl.transactions.InsertOrUpdateBolusTransaction
-import info.nightscout.database.impl.transactions.InsertOrUpdateCarbsTransaction
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
@@ -48,6 +49,8 @@ class PersistenceLayerImpl @Inject constructor(
                 { aapsLogger.error(LTag.DATABASE, "Error while saving bolus", it) }
             )
     }
+
+    override fun getLastGlucoseValue(): Single<ValueWrapper<GlucoseValue>> = repository.getLastGlucoseValueWrapped()
 
     override fun insertOrUpdateCarbs(carbs: Carbs, callback: Callback?, injector: HasAndroidInjector?) {
         disposable += repository.runTransactionForResult(InsertOrUpdateCarbsTransaction(carbs))

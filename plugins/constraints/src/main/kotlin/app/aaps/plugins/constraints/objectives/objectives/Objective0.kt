@@ -8,8 +8,8 @@ import app.aaps.core.interfaces.plugin.PluginBase
 import app.aaps.core.interfaces.pump.VirtualPump
 import app.aaps.core.interfaces.sync.Tidepool
 import app.aaps.database.ValueWrapper
+import app.aaps.plugins.constraints.R
 import dagger.android.HasAndroidInjector
-import info.nightscout.plugins.constraints.R
 import javax.inject.Inject
 
 class Objective0(injector: HasAndroidInjector) : Objective(injector, "config", R.string.objectives_0_objective, R.string.objectives_0_gate) {
@@ -24,7 +24,7 @@ class Objective0(injector: HasAndroidInjector) : Objective(injector, "config", R
     init {
         tasks.add(object : Task(this, R.string.objectives_bgavailableinns) {
             override fun isCompleted(): Boolean {
-                return sp.getBoolean(info.nightscout.core.utils.R.string.key_objectives_bg_is_available_in_ns, false) || tidepoolPlugin?.hasWritePermission == true
+                return sp.getBoolean(app.aaps.core.utils.R.string.key_objectives_bg_is_available_in_ns, false) || tidepoolPlugin?.hasWritePermission == true
             }
         })
         tasks.add(object : Task(this, R.string.synchaswritepermission) {
@@ -34,7 +34,7 @@ class Objective0(injector: HasAndroidInjector) : Objective(injector, "config", R
         })
         tasks.add(object : Task(this, app.aaps.core.ui.R.string.virtualpump_uploadstatus_title) {
             override fun isCompleted(): Boolean {
-                return sp.getBoolean(info.nightscout.core.utils.R.string.key_virtual_pump_upload_status, false) || tidepoolPlugin?.hasWritePermission == true
+                return sp.getBoolean(app.aaps.core.utils.R.string.key_virtual_pump_upload_status, false) || tidepoolPlugin?.hasWritePermission == true
             }
 
             override fun shouldBeIgnored(): Boolean {
@@ -44,7 +44,7 @@ class Objective0(injector: HasAndroidInjector) : Objective(injector, "config", R
         tasks.add(
             object : Task(this, R.string.objectives_pumpstatusavailableinns) {
                 override fun isCompleted(): Boolean {
-                    return sp.getBoolean(info.nightscout.core.utils.R.string.key_objectives_pump_status_is_available_in_ns, false) || tidepoolPlugin?.hasWritePermission == true
+                    return sp.getBoolean(app.aaps.core.utils.R.string.key_objectives_pump_status_is_available_in_ns, false) || tidepoolPlugin?.hasWritePermission == true
                 }
             }.learned(Learned(R.string.objectives_0_learned))
         )

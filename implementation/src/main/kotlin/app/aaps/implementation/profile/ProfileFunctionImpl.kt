@@ -17,13 +17,13 @@ import app.aaps.core.interfaces.sharedPreferences.SP
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.HardLimits
 import app.aaps.core.interfaces.utils.T
+import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.main.extensions.fromConstant
 import app.aaps.core.main.profile.ProfileSealed
-import app.aaps.core.main.utils.fabric.FabricPrivacy
 import app.aaps.database.ValueWrapper
 import app.aaps.database.entities.ProfileSwitch
-import info.nightscout.database.impl.AppRepository
-import info.nightscout.database.impl.transactions.InsertOrUpdateProfileSwitch
+import app.aaps.database.impl.AppRepository
+import app.aaps.database.impl.transactions.InsertOrUpdateProfileSwitch
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import java.util.concurrent.ConcurrentHashMap
@@ -142,7 +142,7 @@ class ProfileFunctionImpl @Inject constructor(
     }
 
     override fun getUnits(): GlucoseUnit =
-        if (sp.getString(info.nightscout.core.utils.R.string.key_units, GlucoseUnit.MGDL.asText) == GlucoseUnit.MGDL.asText) GlucoseUnit.MGDL
+        if (sp.getString(app.aaps.core.utils.R.string.key_units, GlucoseUnit.MGDL.asText) == GlucoseUnit.MGDL.asText) GlucoseUnit.MGDL
         else GlucoseUnit.MMOL
 
     override fun buildProfileSwitch(profileStore: ProfileStore, profileName: String, durationInMinutes: Int, percentage: Int, timeShiftInHours: Int, timestamp: Long): ProfileSwitch? {

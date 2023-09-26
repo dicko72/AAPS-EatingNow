@@ -12,8 +12,8 @@ import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.T
 import app.aaps.core.interfaces.versionChecker.VersionCheckerUtils
+import app.aaps.plugins.constraints.R
 import dagger.Lazy
-import info.nightscout.plugins.constraints.R
 import java.io.IOException
 import java.net.URL
 import java.util.concurrent.TimeUnit
@@ -55,11 +55,11 @@ class VersionCheckerUtilsImpl @Inject constructor(
                     compareWithCurrentVersion(version, config.get().VERSION_NAME)
 
                     // App expiration
-                    var endDate = sp.getLong(rh.gs(info.nightscout.core.utils.R.string.key_app_expiration) + "_" + config.get().VERSION_NAME, 0)
+                    var endDate = sp.getLong(rh.gs(app.aaps.core.utils.R.string.key_app_expiration) + "_" + config.get().VERSION_NAME, 0)
                     AllowedVersions().findByVersion(definition, config.get().VERSION_NAME)?.let { expirationJson ->
                         AllowedVersions().endDateToMilliseconds(expirationJson.getString("endDate"))?.let { ed ->
                             endDate = ed + T.days(1).msecs()
-                            sp.putLong(rh.gs(info.nightscout.core.utils.R.string.key_app_expiration) + "_" + config.get().VERSION_NAME, endDate)
+                            sp.putLong(rh.gs(app.aaps.core.utils.R.string.key_app_expiration) + "_" + config.get().VERSION_NAME, endDate)
                         }
                     }
                     if (endDate != 0L) onExpireDateDetected(config.get().VERSION_NAME, dateUtil.dateString(endDate))

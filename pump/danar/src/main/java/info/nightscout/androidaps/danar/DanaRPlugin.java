@@ -12,8 +12,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import app.aaps.annotations.OpenForTesting;
-import app.aaps.core.main.constraints.ConstraintObject;
-import app.aaps.core.main.utils.fabric.FabricPrivacy;
 import app.aaps.core.interfaces.constraints.ConstraintsChecker;
 import app.aaps.core.interfaces.logging.AAPSLogger;
 import app.aaps.core.interfaces.logging.LTag;
@@ -35,6 +33,8 @@ import app.aaps.core.interfaces.ui.UiInteraction;
 import app.aaps.core.interfaces.utils.DateUtil;
 import app.aaps.core.interfaces.utils.DecimalFormatter;
 import app.aaps.core.interfaces.utils.Round;
+import app.aaps.core.interfaces.utils.fabric.FabricPrivacy;
+import app.aaps.core.main.constraints.ConstraintObject;
 import dagger.android.HasAndroidInjector;
 import info.nightscout.androidaps.danar.services.DanaRExecutionService;
 import info.nightscout.pump.dana.DanaPump;
@@ -87,7 +87,7 @@ public class DanaRPlugin extends AbstractDanaRPlugin {
         this.rh = rh;
         this.fabricPrivacy = fabricPrivacy;
 
-        useExtendedBoluses = sp.getBoolean(info.nightscout.core.utils.R.string.key_danar_useextended, false);
+        useExtendedBoluses = sp.getBoolean(app.aaps.core.utils.R.string.key_danar_useextended, false);
         pumpDescription.fillFor(PumpType.DANA_R);
     }
 
@@ -101,7 +101,7 @@ public class DanaRPlugin extends AbstractDanaRPlugin {
                 .subscribe(event -> {
                     if (isEnabled()) {
                         boolean previousValue = useExtendedBoluses;
-                        useExtendedBoluses = sp.getBoolean(info.nightscout.core.utils.R.string.key_danar_useextended, false);
+                        useExtendedBoluses = sp.getBoolean(app.aaps.core.utils.R.string.key_danar_useextended, false);
 
                         if (useExtendedBoluses != previousValue && pumpSync.expectedPumpState().getExtendedBolus() != null) {
                             sExecutionService.extendedBolusStop();
