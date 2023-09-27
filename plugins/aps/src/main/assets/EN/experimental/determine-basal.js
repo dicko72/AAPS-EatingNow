@@ -1894,10 +1894,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (microBolus && TIR_sens_limited >= 1) {
             // when resistant allow a extra basal rate portion of IOB
             //var insulinReqTIRS = Math.max( (TIR_sens_limited > 1 ? (basal + iob_data.iob) * (TIR_sens_limited-1) : 0) ,0);
-            rT.reason += "** DEBUG: " + "rate:" + round_basal(rate, profile);
+            //rT.reason += "** DEBUG: " + "rate:" + round_basal(rate, profile);
             rate = Math.max(basal + (insulinReq * 2 - microBolus), 0); //remaining insulinReq over 60 minutes * 2 = 30 minutes
             rate = round_basal(rate, profile);
-            rT.reason += "=" + round_basal(rate, profile) + "** ";
+            //rT.reason += "=" + round_basal(rate, profile) + "** ";
         }
 
         if (rate > maxSafeBasal) {
