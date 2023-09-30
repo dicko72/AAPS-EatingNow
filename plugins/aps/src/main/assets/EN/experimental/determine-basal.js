@@ -1254,7 +1254,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             minGuardBG = Math.max(minGuardBG,threshold);
             eventualBG = Math.max(bg,eventualBG,target_bg); // bg + delta * 3
             eBGweight = 1; // 100% eBGw as unrestricted insulin delivery is required
-            // AllowZT = true; // allow ZT
+            AllowZT = false; // no ZT allowed
         }
 
 
@@ -1563,7 +1563,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     durationReq = Math.min(120, Math.max(0, durationReq));
                 }
                 //console.error(durationReq);
-                if (durationReq > 0 && AllowZT) {
+                // No ZT allowed by EN
+                if (!AllowZT) durationReq = 0;
+                if (durationReq > 0) {
                     rT.reason += ", setting " + durationReq + "m zero temp. ";
                     return tempBasalFunctions.setTempBasal(rate, durationReq, profile, rT, currenttemp);
                 }
@@ -1798,8 +1800,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             worstCaseInsulinReq = (smbTarget - (naive_eventualBG + minIOBPredBG) / 2) / sens;
             durationReq = round(60 * worstCaseInsulinReq / profile.current_basal);
 
-            // BG+ no ZT experiment
-            if (sens_predType == "BG+") durationReq = 0;
+            // No ZT allowed by EN
+            if (!AllowZT) durationReq = 0;
 
             // TBR only when below respective SMBbgOffsets with no low TT / no COB
             if (ENSleepModeNoSMB || ENDayModeNoSMB) {
@@ -1832,7 +1834,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             }
             */
 
-            if (durationReq > 0 && AllowZT) {
+            if (durationReq > 0) {
                 rT.reason += "; setting " + durationReq + "m low temp of " + smbLowTempReq + "U/h";
             }
             rT.reason += ". ";
@@ -1868,7 +1870,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //rT.reason += ". ";
 
             // if no zero temp is required, don't return yet; allow later code to set a high temp
-            if (durationReq > 0 && AllowZT) {
+            if (durationReq > 0) {
                 rT.rate = smbLowTempReq;
                 rT.duration = durationReq;
                 return rT;
