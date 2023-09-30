@@ -1699,20 +1699,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             var ENMaxSMB = maxBolus; // inherit AAPS maxBolus
             var maxBolusOrig = maxBolus;
             var ENinsulinReqPct = 0.75; // EN insulinReqPct is 75%
-            var ENWinsulinReqPct = 0.85; // ENW insulinReqPct is 85%
+            var ENWinsulinReqPct = (ENWMinsAgo <= 30 ? 1 : 0.85); // ENW insulinReqPct is 100% for the first 30 mins then 85%
 
 
-            // ============== INSULINREQPCT RESTRICTIONS ==============
-            // EN gets 75%
+            // ============== INSULINREQPCT CHANGES ==============
             if (ENactive) insulinReqPct = ENinsulinReqPct;
-            // ENW gets 85%
             if (ENWindowOK) insulinReqPct = ENWinsulinReqPct;
-            // SAFETY: Restrict insulinReq when not ENW to lower dynamic insulinReq unless high
-//            if (!ENWindowOK && TIR_sens_limited ==1) {
-//                insulinReqPct = Math.max(insulinReqOrig/insulinReq,maxBolusOrig/insulinReq); // minimum SMB is maxBolusOrig
-//                insulinReqPct = Math.max(insulinReqPct,0); // minimum 0% when original insulinReq is much lower
-//                insulinReqPct = Math.min(insulinReqPct,1); // maximum 100% when original insulinReq is much higher
-//            }
 
             // PreBolus period gets 100% insulinReqPct
             insulinReqPct = (UAMBGPreBolus ? 1 : insulinReqPct);
