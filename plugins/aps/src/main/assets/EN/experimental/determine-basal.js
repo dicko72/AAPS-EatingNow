@@ -1273,7 +1273,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     eventualBG_base = (bg < ISFbgMax ? Math.max(bg,eventualBG) : eventualBG);
                     eventualBG = Math.max(eventualBG, eventualBG_base + (UAMDeltaX * delta));
                     eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
-                    AllowZT = (ENWMinsAgo < 45 ? false : true); // allow ZT
+                    //AllowZT = (ENWMinsAgo < 45 ? false : true); // allow ZT
                 }
                 minPredBG = Math.max(minPredBG,threshold); // bypass LGS for ENW
                 minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS for ENW
