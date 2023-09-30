@@ -1270,7 +1270,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     UAMDeltaX = maxUAMDeltaX - ((maxUAMDeltaX - minUAMDeltaX) / (maxUAMDeltaXbg - target_bg)) * (bg - target_bg);
                     UAMDeltaX = Math.min(maxUAMDeltaX,UAMDeltaX); // largest is maxUAMDeltaX
                     UAMDeltaX = Math.max(minUAMDeltaX,UAMDeltaX); // smallest is minUAMDeltaX
-                    eventualBG_base = (bg < ISFbgMax ? Math.max(bg,eventualBG) : eventualBG);
+                    eventualBG_base = (bg < ISFbgMax || delta <= 18 ? Math.max(bg,eventualBG) : eventualBG);
                     eventualBG = Math.max(eventualBG, eventualBG_base + (UAMDeltaX * delta));
                     eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
                     //AllowZT = (ENWMinsAgo < 45 ? false : true); // allow ZT
