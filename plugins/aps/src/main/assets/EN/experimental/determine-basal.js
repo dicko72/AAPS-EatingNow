@@ -1205,7 +1205,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // minPredBG and eventualBG based dosing - insulinReq_bg
     // insulinReq_sens is calculated using a percentage of eventualBG (eBGweight) with the rest as minPredBG, to reduce the risk of overdosing.
     var insulinReq_bg_orig = Math.min(minPredBG, eventualBG), insulinReq_bg = insulinReq_bg_orig, sens_predType = "NA", eBGweight_orig = (minPredBG < eventualBG ? 0 : 1), minBG = minPredBG, eBGweight = eBGweight_orig,  AllowZT = true;
-    var minPredBG_orig = minPredBG, eventualBG_orig = eventualBG, eventualBG_base = eventualBG, lastUAMpredBG_orig = lastUAMpredBG;
+    var minPredBG_orig = minPredBG, eventualBG_orig = eventualBG, lastUAMpredBG_orig = lastUAMpredBG;
 
     var insulinReq_sens = sens_normalTarget, insulinReq_sens_normalTarget = sens_normalTarget_orig;
 
@@ -1263,15 +1263,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             var UAMDeltaX = 0;
             if (ENWindowOK) {
                 // for lower eventualBg predictions increase eventualBG with UAMDeltaX using current bg as the basis when early on in ENW or less than 80 of ENWBolusIOBMax has been given
-                if (ENWMinsAgo < 45 || (ENWBolusIOBMax > 0 && (meal_data.ENWBolusIOB / ENWBolusIOBMax) < 0.80) && eventualBG < 270) {
+                if (ENWMinsAgo < 30 || (ENWBolusIOBMax > 0 && (meal_data.ENWBolusIOB / ENWBolusIOBMax) < 0.65) && eventualBG < 270) {
                     // Define the range for UAMDeltaX
                     var minUAMDeltaX = 5, maxUAMDeltaX = 15, maxUAMDeltaXbg = 150;
                     // Calculate the scaled UAMDeltaX based on the bg value
                     UAMDeltaX = maxUAMDeltaX - ((maxUAMDeltaX - minUAMDeltaX) / (maxUAMDeltaXbg - target_bg)) * (bg - target_bg);
                     UAMDeltaX = Math.min(maxUAMDeltaX,UAMDeltaX); // largest is maxUAMDeltaX
                     UAMDeltaX = Math.max(minUAMDeltaX,UAMDeltaX); // smallest is minUAMDeltaX
-                    eventualBG_base = (bg < ISFbgMax || delta <= 18 ? Math.max(bg,eventualBG) : eventualBG);
-                    eventualBG = Math.max(eventualBG, eventualBG_base + (UAMDeltaX * delta));
+                    eventualBG = Math.max(eventualBG, bg + Math.min(UAMDeltaX * delta,50)); //eBG max increase ~3mmol
                     eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
                     //AllowZT = (ENWMinsAgo < 45 ? false : true); // allow ZT
                 }
