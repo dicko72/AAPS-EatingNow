@@ -1611,11 +1611,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // eventual BG is at/above target
     // if iob is over max, just cancel any temps
     if (eventualBG >= max_bg) {
-        rT.reason += "Eventual BG " + convert_bg(eventualBG_base, profile);
-        if (eventualBG > eventualBG_base) {
-            rT.reason += "+" + convert_bg(eventualBG - eventualBG_base, profile) + " = " + convert_bg(eventualBG, profile) + "(" + convert_bg(eventualBG_orig, profile) +")";
+        rT.reason += "Eventual BG " + convert_bg(eventualBG, profile);
+        if (eventualBG > eventualBG_orig) {
+            rT.reason += "+" + convert_bg(eventualBG - eventualBG_orig, profile) + " = " + convert_bg(eventualBG, profile) + "(" + convert_bg(eventualBG_orig, profile) +")";
         } else if (eventualBG < eventualBG_orig) {
-            rT.reason += "-" + convert_bg(eventualBG_base - eventualBG, profile) + " = " + convert_bg(eventualBG, profile) + "(" + convert_bg(eventualBG_orig, profile) +")";
+            rT.reason += "-" + convert_bg(eventualBG_orig - eventualBG, profile) + " = " + convert_bg(eventualBG, profile) + "(" + convert_bg(eventualBG_orig, profile) +")";
         }
 
         rT.reason += " &gt;= " + convert_bg(max_bg, profile) + ", ";
