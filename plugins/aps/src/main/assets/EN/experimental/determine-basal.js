@@ -1261,19 +1261,18 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // UAM+ for slower delta but any acceleration, earlier detection for larger SMB's, bypass LGS
         if (sens_predType == "UAM+") {
             var UAMDeltaX = 0;
-            if (ENWindowOK) {
-                // for lower eventualBg predictions increase eventualBG with UAMDeltaX using current bg as the basis when early on in ENW or less than 80 of ENWBolusIOBMax has been given
-                if (ENWMinsAgo < 30 || (ENWBolusIOBMax > 0 && (meal_data.ENWBolusIOB / ENWBolusIOBMax) < 0.80) && eventualBG < 270) {
-                    // Define the range for UAMDeltaX
-                    var minUAMDeltaX = 5, maxUAMDeltaX = 15, maxUAMDeltaXbg = 150;
-                    // Calculate the scaled UAMDeltaX based on the bg value
-                    UAMDeltaX = maxUAMDeltaX - ((maxUAMDeltaX - minUAMDeltaX) / (maxUAMDeltaXbg - target_bg)) * (bg - target_bg);
-                    UAMDeltaX = Math.min(maxUAMDeltaX,UAMDeltaX); // largest is maxUAMDeltaX
-                    UAMDeltaX = Math.max(minUAMDeltaX,UAMDeltaX); // smallest is minUAMDeltaX
-                    eventualBG = Math.max(eventualBG, bg + Math.min(UAMDeltaX * delta,50)); //eBG max increase ~3mmol
-                    eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
-                    //AllowZT = (ENWMinsAgo < 45 ? false : true); // allow ZT
-                }
+            //if (ENWindowOK) {
+            // for lower eventualBg predictions increase eventualBG with UAMDeltaX using current bg as the basis when early on in ENW or less than 80 of ENWBolusIOBMax has been given
+            if (ENWindowOK && ENWMinsAgo < 30 || (ENWBolusIOBMax > 0 && (meal_data.ENWBolusIOB / ENWBolusIOBMax) < 0.80) && eventualBG < 270) {
+                // Define the range for UAMDeltaX
+                var minUAMDeltaX = 5, maxUAMDeltaX = 15, maxUAMDeltaXbg = 150;
+                // Calculate the scaled UAMDeltaX based on the bg value
+                UAMDeltaX = maxUAMDeltaX - ((maxUAMDeltaX - minUAMDeltaX) / (maxUAMDeltaXbg - target_bg)) * (bg - target_bg);
+                UAMDeltaX = Math.min(maxUAMDeltaX,UAMDeltaX); // largest is maxUAMDeltaX
+                UAMDeltaX = Math.max(minUAMDeltaX,UAMDeltaX); // smallest is minUAMDeltaX
+                eventualBG = Math.max(eventualBG, bg + Math.min(UAMDeltaX * delta,50)); //eBG max increase ~3mmol
+                eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
+                //AllowZT = (ENWMinsAgo < 45 ? false : true); // allow ZT
                 minPredBG = Math.max(minPredBG,threshold); // bypass LGS for ENW
                 minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS for ENW
                 minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
@@ -1281,7 +1280,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             } else if (delta > 6) { // UAM+ safety needs slightly higher delta when no ENW
                 // when favouring minPredBG allow more of eventualBG
                 eBGweight = (eBGweight == 0 ? 0.5 : eBGweight);
-
             } else {
                 sens_predType = "UAM"; // pass onto UAM block
                 // Check for BG+ condition
