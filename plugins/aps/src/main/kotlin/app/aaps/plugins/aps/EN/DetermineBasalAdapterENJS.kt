@@ -350,8 +350,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.mealData.put("mealCOB", mealData.mealCOB)
         this.mealData.put("slopeFromMaxDeviation", mealData.slopeFromMaxDeviation)
         this.mealData.put("slopeFromMinDeviation", mealData.slopeFromMinDeviation)
-        this.mealData.put("lastBolusTime", mealData.lastBolusTime)
-        this.mealData.put("lastBolusUnits", repository.getLastBolusRecord()?.amount ?: 0L) // EatingNow
+        // this.mealData.put("lastBolusTime", mealData.lastBolusTime)
+        // this.mealData.put("lastBolusUnits", repository.getLastBolusRecord()?.amount ?: 0L) // EatingNow
         this.mealData.put("lastCarbTime", mealData.lastCarbTime)
 
         // set the EN start time based on prefs

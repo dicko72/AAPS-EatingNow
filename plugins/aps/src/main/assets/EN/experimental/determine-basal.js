@@ -258,7 +258,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (now >= ENStartTime && now < ENEndTime && profile.ENautostart) ENtimeOK = true;
     var lastNormalCarbAge = round((new Date(systemTime).getTime() - meal_data.lastENCarbTime) / 60000);
     // minutes since last bolus
-    var lastBolusAge = (new Date(systemTime).getTime() - meal_data.lastBolusTime) / 60000;
+//    var lastBolusAge = (new Date(systemTime).getTime() - meal_data.lastBolusTime) / 60000;
 
 
     enlog += "nowhrs: " + nowhrs + ", now: " + now + "\n";
@@ -1311,7 +1311,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             minGuardBG = threshold; // required to allow SMB consistently
             minBG = target_bg;
             eventualBG = bg;
-            eBGweight = 0.25;
+            eBGweight = Math.max(0.25, 1-TIR_sens_limited); // increase eBGw as resistance builds
             insulinReq_sens_normalTarget = sens_normalTarget; // use the SR adjusted sens_normalTarget
         }
 
