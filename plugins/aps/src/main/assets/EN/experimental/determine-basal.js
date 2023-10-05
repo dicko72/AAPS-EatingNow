@@ -1264,11 +1264,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //if (ENWindowOK) {
             // for lower eventualBg predictions increase eventualBG with UAMDeltaX using current bg as the basis when early on in ENW or less than 80 of ENWBolusIOBMax has been given
             //if (ENWindowOK && ENWMinsAgo < 30 || (ENWBolusIOBMax > 0 && (meal_data.ENWBolusIOB / ENWBolusIOBMax) < 0.80) && eventualBG < 270) {
-            if (ENWindowOK && ENWMinsAgo < 90) {
+            if (ENWindowOK && ENWMinsAgo < 60) {
                 // Define the range for UAMDeltaX
-                var minUAMDeltaX = 5, maxUAMDeltaX = 15, maxUAMDeltaXbg = 150;
-                // Calculate the scaled UAMDeltaX based on the bg value
-                UAMDeltaX = maxUAMDeltaX - ((maxUAMDeltaX - minUAMDeltaX) / (maxUAMDeltaXbg - target_bg)) * (bg - target_bg);
+                var minUAMDeltaX = 5, maxUAMDeltaX = 15;
+                // Calculate the scaled UAMDeltaX based on the ENW
+                //UAMDeltaX = maxUAMDeltaX - ((maxUAMDeltaX - minUAMDeltaX) / (maxUAMDeltaXbg - target_bg)) * (bg - target_bg);
+                // 60 is ENW Max duration, 0 is when in ENW the UAMDeltaX will start scaling down
+                UAMDeltaX = maxUAMDeltaX - ((maxUAMDeltaX - minUAMDeltaX) / (60 - 0)) * (ENWMinsAgo - 0);
                 UAMDeltaX = Math.min(maxUAMDeltaX,UAMDeltaX); // largest is maxUAMDeltaX
                 UAMDeltaX = Math.max(minUAMDeltaX,UAMDeltaX); // smallest is minUAMDeltaX
                 eventualBG = Math.max(eventualBG, bg + Math.min(UAMDeltaX * delta,50)); //eBG max increase ~3mmol
