@@ -459,7 +459,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var TIRB0 = 0, TIRB1 = 0, TIRB2 = 0, TIRH_percent = profile.resistancePerHr / 100, TIR_sens = 0, TIR_sens_limited = 0;
 
     // TIRB2 - The TIR for the higher band above 150/8.3
-    if (TIRH_percent && !ENWindowOK && ENWMinsAgo > 90) {
+    if (TIRH_percent && !ENWindowOK && ENWMinsAgo > 90 && !HighTempTargetSet) {
         if (meal_data.TIRW1H > 25) TIRB2 = Math.max(meal_data.TIRW1H,meal_data.TIRTW1H) / 100;
         if (meal_data.TIRW2H > 0 && TIRB2 == 1) TIRB2 += meal_data.TIRW2H / 100;
         if (meal_data.TIRW3H > 0 && TIRB2 == 2) TIRB2 += meal_data.TIRW3H / 100;
@@ -469,7 +469,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     TIRB2 = (bg >= normalTarget + 50 && delta >-4 && glucose_status.long_avgdelta > -4 && Math.min(DeltaPctS,DeltaPctL) > 0 ? 1 + (TIRB2 * TIRH_percent) : 1); // SAFETY: when bg not falling too much or delta not slowing
 
     // TIRB1 - The TIR for the lower band just above normalTarget (+18/1.0)
-    if (TIRH_percent && !ENWindowOK && ENWMinsAgo > 90) {
+    if (TIRH_percent && !ENWindowOK && ENWMinsAgo > 90 && !HighTempTargetSet) {
         if (meal_data.TIRTW1H > 25) TIRB1 = meal_data.TIRTW1H / 100;
         if (meal_data.TIRTW2H > 0 && TIRB1 ==1) TIRB1 += meal_data.TIRTW2H / 100;
         if (meal_data.TIRTW3H > 0 && TIRB1 ==2) TIRB1 += meal_data.TIRTW3H / 100;
