@@ -1311,7 +1311,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             minGuardBG = threshold; // required to allow SMB consistently
             minBG = target_bg;
             eventualBG = bg;
-            eBGweight = Math.max(0.25, 1-TIR_sens_limited); // increase eBGw as resistance builds
+            eBGweight = Math.max(0.25, TIR_sens_limited-1); // increase eBGw as resistance builds
             insulinReq_sens_normalTarget = sens_normalTarget; // use the SR adjusted sens_normalTarget
         }
 
