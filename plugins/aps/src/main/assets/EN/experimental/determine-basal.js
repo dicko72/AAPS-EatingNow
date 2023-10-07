@@ -1284,6 +1284,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
                 eBGweight = 1; // 100% eBGw in ENW
             } else if (delta > 6) { // UAM+ safety needs slightly higher delta when no ENW
+                minPredBG = Math.max(minPredBG,threshold); // bypass LGS for ENW
+                minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS for ENW
+                minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
                 // when favouring minPredBG allow more of eventualBG
                 eBGweight = (eBGweight == 0 ? 0.5 : eBGweight);
             } else {
@@ -1319,6 +1322,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             eventualBG = bg;
             eBGweight = Math.max(0.25, TIR_sens_limited-1); // increase eBGw as resistance builds
             insulinReq_sens_normalTarget = sens_normalTarget; // use the SR adjusted sens_normalTarget
+            AllowZT = false;
         }
 
         // TBR only
