@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.plugins.automation
 
 import android.content.Context
@@ -38,6 +39,7 @@ import app.aaps.plugins.automation.actions.ActionProfileSwitchPercent
 import app.aaps.plugins.automation.actions.ActionRunAutotune
 import app.aaps.plugins.automation.actions.ActionSendSMS
 import app.aaps.plugins.automation.actions.ActionStartTempTarget
+import app.aaps.plugins.automation.actions.ActionStartENTempTarget
 import app.aaps.plugins.automation.actions.ActionStopProcessing
 import app.aaps.plugins.automation.actions.ActionStopTempTarget
 import app.aaps.plugins.automation.elements.Comparator
@@ -385,7 +387,8 @@ class AutomationPlugin @Inject constructor(
             ActionProfileSwitchPercent(injector),
             ActionProfileSwitch(injector),
             ActionRunAutotune(injector),
-            ActionSendSMS(injector)
+            ActionSendSMS(injector),
+            ActionStartENTempTarget(injector)
         )
     }
 
