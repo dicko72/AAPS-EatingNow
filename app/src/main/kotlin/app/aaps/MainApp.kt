@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps
 
 import android.bluetooth.BluetoothDevice
@@ -126,7 +127,7 @@ class MainApp : DaggerApplication() {
                 {
                     // check if identification is set
                     if (config.isDev() && sp.getStringOrNull(app.aaps.core.utils.R.string.key_email_for_crash_report, null).isNullOrBlank())
-                        notificationStore.add(Notification(Notification.IDENTIFICATION_NOT_SET, rh.get().gs(R.string.identification_not_set), Notification.INFO))
+                    // notificationStore.add(Notification(Notification.IDENTIFICATION_NOT_SET, rh.get().gs(R.string.identification_not_set), Notification.INFO))
                     // log version
                     disposable += repository.runTransaction(VersionChangeTransaction(config.VERSION_NAME, BuildConfig.VERSION_CODE, gitRemote, commitHash)).subscribe()
                     // log app start

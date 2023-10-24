@@ -1,5 +1,7 @@
+// Modified for Eating Now
 package app.aaps.plugins.main.general.overview
 
+import app.aaps.database.entities.TemporaryTarget //EN
 import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.content.ActivityNotFoundException
@@ -227,6 +229,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
         binding.buttonsLayout.cgmButton.setOnClickListener(this)
         binding.buttonsLayout.insulinButton.setOnClickListener(this)
         binding.buttonsLayout.carbsButton.setOnClickListener(this)
+        binding.buttonsLayout.enButton.setOnClickListener(this)
         binding.buttonsLayout.quickWizardButton.setOnClickListener(this)
         binding.buttonsLayout.quickWizardButton.setOnLongClickListener(this)
         binding.infoLayout.apsMode.setOnClickListener(this)
@@ -387,6 +390,12 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                     activity,
                     ProtectionCheck.Protection.BOLUS,
                     UIRunnable { if (isAdded) uiInteraction.runCarbsDialog(childFragmentManager) })
+
+                R.id.en_button        -> protectionCheck.queryProtection(
+                    activity,
+                    ProtectionCheck.Protection.BOLUS,
+                    UIRunnable { uiInteraction.runENTempTargetDialog(childFragmentManager) })
+                    // UIRunnable { ENTempTargetDialog().show(childFragmentManager, "Overview") })
 
                 R.id.temp_target         -> protectionCheck.queryProtection(
                     activity,
@@ -577,6 +586,8 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                 && sp.getBoolean(R.string.key_show_wizard_button, true)).toVisibility()
             binding.buttonsLayout.insulinButton.visibility = (!loop.isDisconnected && pump.isInitialized() && !pump.isSuspended() && profile != null
                 && sp.getBoolean(R.string.key_show_insulin_button, true)).toVisibility()
+            binding.buttonsLayout.enButton.visibility = (!loop.isDisconnected && pump.isInitialized() && !pump.isSuspended() && profile != null
+                && sp.getBoolean(R.string.key_eatingnow_showbutton, false)).toVisibility()
 
             // **** Calibration & CGM buttons ****
             val xDripIsBgSource = xDripSource.isEnabled()
@@ -948,6 +959,9 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
     fun updateTemporaryTarget() {
         val units = profileFunction.getUnits()
         val tempTarget = overviewData.temporaryTarget
+        var ENTTtext = ""
+        if (tempTarget?.reason == TemporaryTarget.Reason.EATING_NOW) ENTTtext = "EATING NOW "
+        if (tempTarget?.reason == TemporaryTarget.Reason.EATING_NOW_PB) ENTTtext = "EATING NOW PB "
         runOnUiThread {
             _binding ?: return@runOnUiThread
             if (tempTarget != null) {
@@ -955,7 +969,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                     binding.tempTarget,
                     app.aaps.core.ui.R.attr.ribbonTextWarningColor,
                     app.aaps.core.ui.R.attr.ribbonWarningColor,
-                    profileUtil.toTargetRangeString(tempTarget.lowTarget, tempTarget.highTarget, GlucoseUnit.MGDL, units) + " " + dateUtil.untilString(tempTarget.end, rh)
+                    ENTTtext + profileUtil.toTargetRangeString(tempTarget.lowTarget, tempTarget.highTarget, GlucoseUnit.MGDL, units) + " " + dateUtil.untilString(tempTarget.end, rh)
                 )
             } else {
                 // If the target is not the same as set in the profile then oref has overridden it

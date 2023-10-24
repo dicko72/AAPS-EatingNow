@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modified for Eating Now -->
 <resources>
     <string name="key_location" translatable="false">location</string>
 
@@ -120,5 +121,6 @@
     <string name="time_to_eat">Time to eat!\nRun Bolus wizard and do calculation again.</string>
     <string name="time_to_bolus">Time to bolus!\nRun Bolus wizard and do calculation again.</string>
     <string name="error_setting_reminder">Error while setting future alarm</string>
+    <string name="startentemptarget">Start EN temp target</string>
 
 </resources>

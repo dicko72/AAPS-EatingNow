@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.implementations
 
 import android.os.Build
@@ -47,9 +48,10 @@ class ConfigImpl @Inject constructor(
 
         engineeringMode = engineeringModeSemaphore.exists() && engineeringModeSemaphore.isFile
         unfinishedMode = unfinishedModeSemaphore.exists() && unfinishedModeSemaphore.isFile
-        devBranch = VERSION.contains("-") || VERSION.matches(Regex(".*[a-zA-Z]+.*"))
-        if (VERSION.contains("-beta") || VERSION.contains("-rc"))
+        devBranch = BuildConfig.VERSION.contains("-") || BuildConfig.VERSION.matches(Regex(".*[a-zA-Z]+.*"))
+        if (BuildConfig.VERSION.contains("-beta") || BuildConfig.VERSION.contains("-rc"))
             devBranch = false
+        engineeringMode = true // This is just easier :)
     }
 
     override fun isEngineeringModeOrRelease(): Boolean =

@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.implementation.profile
 
 import app.aaps.annotations.OpenForTesting
@@ -61,6 +62,11 @@ class DefaultValueHelperImpl @Inject constructor(
     override fun determineEatingSoonTTDuration(): Int {
         val value = sp.getInt(app.aaps.core.utils.R.string.key_eatingsoon_duration, Constants.defaultEatingSoonTTDuration)
         return if (value > 0) value else Constants.defaultEatingSoonTTDuration
+    }
+
+    override fun determineEatingNowTTDuration(): Int {
+        val value = sp.getInt(app.aaps.core.utils.R.string.key_eatingnow_duration, Constants.defaultEatingNowTTDuration)
+        return if (value > 0) value else Constants.defaultEatingNowTTDuration
     }
 
     /**
