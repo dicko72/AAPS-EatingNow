@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.core.interfaces.ui
 
 import android.content.Context
@@ -45,6 +46,7 @@ interface UiInteraction {
     fun runCalibrationDialog(fragmentManager: FragmentManager)
     fun runCarbsDialog(fragmentManager: FragmentManager)
     fun runTempTargetDialog(fragmentManager: FragmentManager)
+    fun runENTempTargetDialog(fragmentManager: FragmentManager)
     fun runExtendedBolusDialog(fragmentManager: FragmentManager)
     fun runFillDialog(fragmentManager: FragmentManager)
     fun runBolusProgressDialog(fragmentManager: FragmentManager, insulin: Double, id: Long)

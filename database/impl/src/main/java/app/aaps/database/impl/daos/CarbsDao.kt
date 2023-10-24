@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.database.impl.daos
 
 import androidx.room.Dao
@@ -45,6 +46,10 @@ internal interface CarbsDao : TraceableDao<Carbs> {
 
     @Query("SELECT * FROM $TABLE_CARBS WHERE likely(isValid = 1) AND unlikely((timestamp + duration) >= :timestamp) AND likely(referenceId IS NULL) ORDER BY id DESC")
     fun getCarbsFromTimeExpandable(timestamp: Long): Single<List<Carbs>>
+
+    // Eating Now carbs within ENW
+    @Query("SELECT * FROM $TABLE_CARBS WHERE isValid = 1 AND timestamp >= :from AND timestamp <= :to AND amount > :minCOB AND referenceId IS NULL ORDER BY id DESC")
+    fun getCarbsFromTimeToTime(from: Long, to: Long, minCOB: Int): Single<List<Carbs>>
 
     @Query("SELECT * FROM $TABLE_CARBS WHERE likely(isValid = 1) AND unlikely((timestamp + duration) > :from) AND unlikely(timestamp <= :to) AND likely(referenceId IS NULL) ORDER BY id DESC")
     fun getCarbsFromTimeToTimeExpandable(from: Long, to: Long): Single<List<Carbs>>

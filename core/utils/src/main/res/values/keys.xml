@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modified for Eating Now -->
 <resources>
     <!--    Keys-->
     <string name="key_units" translatable="false">units</string>
@@ -156,4 +157,9 @@
     <string name="key_use_autosens" translatable="false">openapsama_useautosens</string>
     <string name="key_used_autosens_on_main_phone" translatable="false">used_autosens_on_main_phone</string>
 
+    <!-- Eating Now-->
+    <string name="eatingnow">Eating Now</string>
+    <!--    <string name="key_eatingnow_duration" translatable="false">eatingnow_duration</string>-->
+    <string name="key_eatingnow_duration" translatable="false">key_eatingnow_enwindowminutes</string>
+    <string name="key_en_variant" translatable="false">en_variant</string>
 </resources>

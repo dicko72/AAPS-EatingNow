@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modified for Eating Now -->
 <resources>
     <!--    General-->
     <string name="refresh">Refresh</string>
@@ -656,5 +657,9 @@
     <!--    DecimalFormatterImpl -->
     <string name="format_insulin_units1">%1$.1f U</string>
     <string name="format_insulin_units">%1$.2f U</string>
+    <!--    Eating Now TT -->
+    <string name="eatingnow">Eating Now</string>
+    <string name="eatingnow_prebolus">Eating Now PB</string>
+<!--    <string name="key_eatingnow_duration" translatable="false">eatingnow_duration</string>-->
 
 </resources>

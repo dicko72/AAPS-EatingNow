@@ -1,5 +1,7 @@
+// Modified for Eating Now
 package app.aaps.di
 
+import app.aaps.plugins.aps.EN.ENPlugin
 import app.aaps.core.interfaces.plugin.PluginBase
 import app.aaps.plugins.aps.autotune.AutotunePlugin
 import app.aaps.plugins.aps.loop.LoopPlugin
@@ -249,6 +251,12 @@ abstract class PluginsListModule {
     @IntoMap
     @IntKey(222)
     abstract fun bindOpenAPSSMBAutoISFPlugin(plugin: OpenAPSSMBDynamicISFPlugin): PluginBase
+
+    @Binds
+    @APS
+    @IntoMap
+    @IntKey(235)
+    abstract fun bindENPlugin(plugin: ENPlugin): PluginBase
 
     @Binds
     @AllConfigs

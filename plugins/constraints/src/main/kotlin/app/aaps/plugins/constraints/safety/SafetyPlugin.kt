@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.plugins.constraints.safety
 
 import app.aaps.core.interfaces.aps.ApsMode
@@ -92,7 +93,7 @@ class SafetyPlugin @Inject constructor(
 
     override fun isAdvancedFilteringEnabled(value: Constraint<Boolean>): Constraint<Boolean> {
         val bgSource = activePlugin.activeBgSource
-        if (!bgSource.advancedFilteringSupported()) value.set(false, rh.gs(R.string.smbalwaysdisabled), this)
+        if (!bgSource.advancedFilteringSupported()) value.set(true, "SMB support for all BG sources", this)
         return value
     }
 

@@ -1,5 +1,7 @@
+// Modified for Eating Now
 package app.aaps.plugins.aps.openAPSSMBDynamicISF
 
+import app.aaps.plugins.aps.loop.LoopVariantPreference
 import app.aaps.core.interfaces.aps.DetermineBasalAdapter
 import app.aaps.core.interfaces.aps.SMBDefaults
 import app.aaps.core.interfaces.db.GlucoseUnit
@@ -102,7 +104,7 @@ class DetermineBasalAdapterSMBDynamicISFJS internal constructor(private val scri
             rhino.evaluateString(scope, "require = function() {return round_basal;};", "JavaScript", 0, null)
 
             //generate functions "determine_basal" and "setTempBasal"
-            rhino.evaluateString(scope, readFile("OpenAPSSMBDynamicISF/determine-basal.js"), "JavaScript", 0, null)
+            rhino.evaluateString(scope, readFile(LoopVariantPreference.getVariantFileName(sp, "OpenAPSSMBDynamicISF")), "JavaScript", 0, null)
             rhino.evaluateString(scope, readFile("OpenAPSSMB/basal-set-temp.js"), "setTempBasal.js", 0, null)
             val determineBasalObj = scope["determine_basal", scope]
             val setTempBasalFunctionsObj = scope["tempBasalFunctions", scope]

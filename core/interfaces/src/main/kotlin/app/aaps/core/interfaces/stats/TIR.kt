@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.core.interfaces.stats
 
 import android.content.Context
@@ -19,6 +20,10 @@ interface TIR {
     fun below()
     fun inRange()
     fun above()
+
+    fun belowPct(): Double
+    fun inRangePct(): Double
+    fun abovePct(): Double
 
     fun toTableRow(context: Context, rh: ResourceHelper, dateUtil: DateUtil): TableRow
     fun toTableRow(context: Context, rh: ResourceHelper, days: Int): TableRow
