@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.plugins.automation.di
 
 import app.aaps.core.interfaces.automation.Automation
@@ -18,6 +19,7 @@ import app.aaps.plugins.automation.actions.ActionProfileSwitchPercent
 import app.aaps.plugins.automation.actions.ActionRunAutotune
 import app.aaps.plugins.automation.actions.ActionSendSMS
 import app.aaps.plugins.automation.actions.ActionStartTempTarget
+import app.aaps.plugins.automation.actions.ActionStartENTempTarget
 import app.aaps.plugins.automation.actions.ActionStopProcessing
 import app.aaps.plugins.automation.actions.ActionStopTempTarget
 import app.aaps.plugins.automation.dialogs.ChooseActionDialog
@@ -103,6 +105,7 @@ abstract class AutomationModule {
     @ContributesAndroidInjector abstract fun actionRunAutotuneInjector(): ActionRunAutotune
     @ContributesAndroidInjector abstract fun actionSendSMSInjector(): ActionSendSMS
     @ContributesAndroidInjector abstract fun actionStartTempTargetInjector(): ActionStartTempTarget
+    @ContributesAndroidInjector abstract fun actionStartENTempTargetInjector(): ActionStartENTempTarget
     @ContributesAndroidInjector abstract fun actionStopTempTargetInjector(): ActionStopTempTarget
     @ContributesAndroidInjector abstract fun actionDummyInjector(): ActionDummy
     @ContributesAndroidInjector abstract fun contributesLocationService(): LocationService
