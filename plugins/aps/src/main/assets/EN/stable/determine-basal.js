@@ -392,8 +392,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // breakfast/first meal related vars
     var ENBkfstWindow = (profile.ENBkfstWindow == 0 ? profile.ENWindow : profile.ENBkfstWindow); // if breakfast window not set use ENW
-    var firstMealWindowFinish = (meal_data.ENStartedTime + (ENBkfstWindow * 60000));
-    var firstMealWindow = nowUTC <= firstMealWindowFinish;
+    //var firstMealWindowFinish = (meal_data.ENStartedTime + (ENBkfstWindow * 60000));
+    //var firstMealWindow = nowUTC <= firstMealWindowFinish;
+    var firstMealWindow = meal_data.ENStartedTime == meal_data.ENWStartTime;
 
     // set the ENW duration depending on meal type
     var ENWindowDuration = (firstMealWindow ? ENBkfstWindow : profile.ENWindow);
@@ -408,7 +409,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // ENWindowOK is when there is a recent COB entry or manual bolus
     ENWindowOK = (ENactive && ENWStartedAgo < ENWindowDuration || ENWTriggerOK);
 
-    var ENWBolusIOBMax = (firstMealWindowFinish > meal_data.ENWStartTime ? profile.ENW_breakfast_max_tdd : profile.ENW_max_tdd); // when EN started + breakfast window time is greater than the latest ENWstartTime there has been no other ENW so still firstmeal only
+    var ENWBolusIOBMax = (firstMealWindow ? profile.ENW_breakfast_max_tdd : profile.ENW_max_tdd); // when EN started + breakfast window time is greater than the latest ENWstartTime there has been no other ENW so still firstmeal only
     ENWBolusIOBMax = (ENWindowOK && ENWStartedAgo <= ENWindowDuration ? ENWBolusIOBMax : 0); // reset to 0 if not within ENW
 
     // stronger CR and ISF can be used when firstmeal is within 2h window
