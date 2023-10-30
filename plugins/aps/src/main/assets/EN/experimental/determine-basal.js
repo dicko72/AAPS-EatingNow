@@ -1349,13 +1349,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq_bg = (TIR_sens_limited > 1 && insulinReq_bg < insulinReq_bg_orig ? insulinReq_bg_orig : insulinReq_bg);
 
         // insulinReq_sens determines the ISF used for final insulinReq calc
-        insulinReq_sens = (profile.useDynISF && (ENWindowOK || insulinReq_sens_normalTarget != sens_normalTarget_orig) ? dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val) : sens_normalTarget); // dynISF?
+        insulinReq_sens = (profile.useDynISF ? dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val) : sens_normalTarget); // dynISF?
 
         // use the strongest ISF when ENW active
-        insulinReq_sens = (!firstMealWindow && !COB && ENWStartedAgo <= ENWindowDuration ? Math.min(insulinReq_sens, sens) : insulinReq_sens);
+        // insulinReq_sens = (!firstMealWindow && !COB && ENWStartedAgo <= ENWindowDuration ? Math.min(insulinReq_sens, sens) : insulinReq_sens);
 
         // SAFETY: eventualBG has been adjusted based on SR, for UAM+ use original ISF when outside of ENW
-        if (sens_predType == "UAM+" && !ENWindowOK) insulinReq_sens = sens_normalTarget_orig;
+        //if (sens_predType == "UAM+" && !ENWindowOK) insulinReq_sens = sens_normalTarget_orig;
     }
 
     insulinReq_sens = round(insulinReq_sens, 1);
