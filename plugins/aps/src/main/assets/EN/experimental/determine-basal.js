@@ -1323,7 +1323,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             minBG = bg;
             eventualBG = target_bg;
             //eBGweight = TIR_sens_limited-1; // increase eBGw as resistance builds
-            eBGweight = 1; // increase eBGw as resistance builds
+            eBGweight = round(TIR_sens_limited/profile.autosens_max,2); // increase eBGw as resistance builds
             insulinReq_sens_normalTarget = sens_normalTarget; // use the SR adjusted sens_normalTarget
             //AllowZT = false;
         }
