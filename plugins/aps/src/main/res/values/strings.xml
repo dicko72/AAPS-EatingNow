@@ -193,6 +193,7 @@
     <string name="key_eatingnow_maxisfpct">key_eatingnow_maxisfpct</string>
     <string name="key_eatingnow_timestart">key_eatingnow_timestart</string>
     <string name="key_eatingnow_timeend">key_eatingnow_timeend</string>
+    <string name="key_eatingnow_bkfstcutoff">key_eatingnow_bkfstcutoff</string>
     <string name="key_openapsama_TDD" translatable="false">7 day average Total Daily Dose</string>
     <string name="key_use_3pm_basal" translatable="false">key_use_3pm_basal</string>
     <string name="key_use_sens_tdd" translatable="false">key_use_sens_tdd</string>

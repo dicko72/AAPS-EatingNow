@@ -241,6 +241,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // calculate the epoch time for EN start and end applying an offset when end time is lower than start time
     var ENStartOffset = (profile.EatingNowTimeEnd < profile.EatingNowTimeStart && nowhrs < profile.EatingNowTimeEnd ? 86400000 : 0), ENEndOffset = (profile.EatingNowTimeEnd < profile.EatingNowTimeStart && nowhrs > profile.EatingNowTimeStart ? 86400000 : 0);
     var ENStartTime = new Date().setHours(profile.EatingNowTimeStart, 0, 0, 0) - ENStartOffset, ENEndTime = new Date().setHours(profile.EatingNowTimeEnd, 0, 0, 0) + ENEndOffset;
+    var EN_BkfstCutOff = (profile.EN_BkfstCutOff == 0 ? ENEndTime : profile.EN_BkfstCutOff);
     // var COB = meal_data.mealCOB;
     var ENTTActive = meal_data.activeENTempTargetDuration > 0;
     var ENPBActive = (typeof meal_data.activeENPB == 'undefined' ? false : meal_data.activeENPB);
@@ -394,7 +395,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var ENBkfstWindow = (profile.ENBkfstWindow == 0 ? profile.ENWindow : profile.ENBkfstWindow); // if breakfast window not set use ENW
     //var firstMealWindowFinish = (meal_data.ENStartedTime + (ENBkfstWindow * 60000));
     //var firstMealWindow = nowUTC <= firstMealWindowFinish;
-    var firstMealWindow = meal_data.ENStartedTime == meal_data.ENWStartTime;
+    var firstMealWindow = meal_data.ENStartedTime == meal_data.ENWStartTime && nowhrs < EN_BkfstCutOff;
 
     // set the ENW duration depending on meal type
     var ENWindowDuration = (firstMealWindow ? ENBkfstWindow : profile.ENWindow);

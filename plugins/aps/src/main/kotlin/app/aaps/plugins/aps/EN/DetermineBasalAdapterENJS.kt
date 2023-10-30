@@ -273,6 +273,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         // patches ==== START
         this.profile.put("EatingNowTimeStart", sp.getInt(R.string.key_eatingnow_timestart, 9))
         this.profile.put("EatingNowTimeEnd", sp.getInt(R.string.key_eatingnow_timeend, 17))
+        this.profile.put("EN_BkfstCutOff", sp.getInt(R.string.key_eatingnow_bkfstcutoff, 0))
         val normalTargetBG = profile.getTargetMgdl().roundToInt()
         this.profile.put("normal_target_bg", normalTargetBG)
         this.profile.put("EN_max_iob", sp.getDouble(R.string.key_en_max_iob, 0.0))
