@@ -1298,7 +1298,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 //if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < bg) sens_predType = "BG+";
                 if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < bg ) sens_predType = "BG+";
             }
-            var endebug = "UAMDeltaX:" + round(UAMDeltaX,2)+"="+convert_bg(Math.min(UAMDeltaX * delta,UAMDeltaXmax),profile);
+//            var endebug = "UAMDeltaX:" + round(UAMDeltaX,2)+"="+convert_bg(Math.min(UAMDeltaX * delta,UAMDeltaXmax),profile);
         }
 
         // UAM predictions, no COB or GhostCOB
@@ -1396,7 +1396,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (meal_data.ENWBolusIOB || ENWindowOK) rT.reason += ", ENW-IOB:" + round(meal_data.ENWBolusIOB,2) + (ENWBolusIOBMax > 0 ? "/" + ENWBolusIOBMax : "");
 
     // other EN stuff
-    rT.reason += ", eBGw: " + (sens_predType != "NA" ? sens_predType + " " : "") + convert_bg(insulinReq_bg, profile) + " " + round(eBGweight * 100) + "%";
+    rT.reason += ", eBGw: " + sens_predType + " " + convert_bg(insulinReq_bg_orig, profile);
+    rT.reason += (insulinReq_bg != insulinReq_bg_orig ? "=" + convert_bg(insulinReq_bg,profile) : "") + " " + round(eBGweight * 100) + "%";
     rT.reason += ", TDD:" + round(TDD, 2) + " " + (profile.sens_TDD_scale != 100 ? profile.sens_TDD_scale + "% " : "") + "(" + convert_bg(sens_TDD, profile) + ")";
     if (profile.use_sens_LCTDD) rT.reason += ", LCTDD:" + round(meal_data.TDDLastCannula,2) + " " + (profile.sens_TDD_scale != 100 ? profile.sens_TDD_scale + "% " : "") + "(" + convert_bg(sens_LCTDD, profile) + ")";
     rT.reason += ", TDD7:" + round(meal_data.TDDAvg7d,2);
@@ -1626,13 +1627,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // eventual BG is at/above target
     // if iob is over max, just cancel any temps
     if (eventualBG >= max_bg) {
-        rT.reason += "Eventual BG " + convert_bg(eventualBG_orig, profile);
-        if (eventualBG > eventualBG_orig) {
-            rT.reason += "+" + convert_bg(eventualBG - eventualBG_orig, profile) + " = " + convert_bg(eventualBG, profile);
-        } else if (eventualBG < eventualBG_orig) {
-            rT.reason += "-" + convert_bg(eventualBG_orig - eventualBG, profile) + " = " + convert_bg(eventualBG, profile);
-        }
-
+        rT.reason += "Eventual BG " + convert_bg(eventualBG_orig, profile) + (eventualBG !=eventualBG_orig ? "=" + convert_bg(eventualBG, profile) : "");
         rT.reason += " &gt;= " + convert_bg(max_bg, profile) + ", ";
     }
 
