@@ -1713,7 +1713,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             var ENMaxSMB = maxBolus; // inherit AAPS maxBolus
             var maxBolusOrig = maxBolus;
             var ENinsulinReqPct = 0.75; // EN insulinReqPct is 75%
-            var ENWinsulinReqPct = (ENWStartedAgo <= 30 ? 1 : 0.85); // ENW insulinReqPct is 100% for the first 30 mins then 85%
+            var ENWinsulinReqPct = (ENWStartedAgo <= ENWindowDuration / 3 ? 1 : 0.85); // ENW insulinReqPct is 100% for the first 30 mins then 85%
 
 
             // ============== INSULINREQPCT CHANGES ==============
