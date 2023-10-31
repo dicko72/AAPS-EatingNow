@@ -492,7 +492,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (meal_data.TIRTW4L > 0 && TIRB0 == 3) TIRB0 += meal_data.TIRTW4L / 100;
     }
     // dont use TIRB0 when above low band
-    TIRB0 = (bg < normalTarget ? 1 - (TIRB0 * TIRH_percent) : 1);
+    //TIRB0 = (bg < normalTarget ? 1 - (TIRB0 * TIRH_percent) : 1);
+    // use TIRB0 even above target when there is data
+    TIRB0 = 1 - (TIRB0 * TIRH_percent);
 
     // if we have low TIR data use it, else use max resistance data of B2 and B1
     TIR_sens = (TIRB0 < 1 ? TIRB0 : Math.max(TIRB2,TIRB1) );
