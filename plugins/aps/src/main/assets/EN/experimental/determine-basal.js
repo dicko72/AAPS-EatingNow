@@ -472,7 +472,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
     //TIRB2 = (bg >= normalTarget + 50 && (delta >= -4 && delta <= 4) && glucose_status.long_avgdelta >= -4 && Math.min(DeltaPctS,DeltaPctL) > 0 ? 1 + (TIRB2 * TIRH_percent) : 1); // SAFETY: only within delta range
     //TIRB2 = (bg >= normalTarget + 50 && delta >-4 && glucose_status.long_avgdelta > -4 && Math.min(DeltaPctS,DeltaPctL) > 1 ? 1 + (TIRB2 * TIRH_percent) : 1); // SAFETY: when bg not falling too much or delta not slowing
-    TIRB2 = (bg >= normalTarget + 50 && delta >-4 && Math.min(DeltaPctS,DeltaPctL) > 1 ? 1 + (TIRB2 * TIRH_percent) : 1); // SAFETY: when bg not falling too much or delta not slowing
+    TIRB2 = (bg >= normalTarget + 50 && delta >-4 && Math.min(DeltaPctS,DeltaPctL) > 0 ? 1 + (TIRB2 * TIRH_percent) : 1); // SAFETY: when bg not falling too much or delta not slowing
 
     // TIRB1 - The TIR for the lower band just above normalTarget (+18/1.0)
     if (TIRH_percent && !ENWindowOK && ENWEndedAgo > 60 && !HighTempTargetSet) {
@@ -1321,8 +1321,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // BG+ bg is stuck with resistance or UAM+ activated with minGuardBG
         if (sens_predType == "BG+") {
             minGuardBG = threshold; // required to allow SMB consistently
-            minBG = bg;
-            eventualBG = target_bg;
+            minBG = target_bg;
+            eventualBG = bg;
             //eBGweight = TIR_sens_limited-1; // increase eBGw as resistance builds
             eBGweight = round(TIR_sens_limited/profile.autosens_max,2); // increase eBGw as resistance builds
             insulinReq_sens_normalTarget = sens_normalTarget; // use the SR adjusted sens_normalTarget
