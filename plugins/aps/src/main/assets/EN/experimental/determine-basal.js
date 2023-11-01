@@ -398,7 +398,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var firstMealWindow = meal_data.ENStartedTime == meal_data.ENWStartTime && nowhrs < EN_BkfstCutOff;
 
     // set the ENW duration depending on meal type
-    var ENWindowDuration = (firstMealWindow ? ENBkfstWindow : profile.ENWindow);
+    var ENWDuration_profile = (firstMealWindow ? ENBkfstWindow : profile.ENWindow);
+    var ENWindowDuration = ENWDuration_profile;
     // when the TT was the last trigger for ENW use the duration of the last EN TT
     ENWindowDuration = (meal_data.lastENTempTargetTime == meal_data.ENWStartTime ? meal_data.lastENTempTargetDuration : ENWindowDuration);
 
@@ -1239,6 +1240,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // if UAMBGPreBolusUnits is more than AAPS max IOB then consider the setting to be minutes
     if (UAMBGPreBolusUnits > max_iob) UAMBGPreBolusUnits = profile.current_basal * UAMBGPreBolusUnits / 60;
     if (profile.percent < 100) UAMBGPreBolusUnits *= profile.percent/100; // profile switch percentage applied when sensitive
+    // when TT duration is less than the ENW duration at this time do a % of prebolus
+    if (meal_data.activeENTempTargetDuration < ENWDuration_profile) UAMBGPreBolusUnits *= meal_data.activeENTempTargetDuration/ENWDuration_profile;
 
     // start with the prebolus in prefs as the minimum starting bolus amount for ENWBolusIOB then use the maxbolus for UAM+ as the increment
     var UAMBGPreBolus = (UAMBGPreBolusUnits > 0 && ENTTActive && ENPBActive && ENWStartedAgo < PBW && meal_data.ENWBolusIOB < UAMBGPreBolusUnits);
@@ -1864,7 +1867,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     rT.units = microBolus;
                     rT.reason += (!ENactive || !ENtimeOK || maxBolus == maxBolusOrig ? "No EN SMB: " : "");
                     rT.reason += (sens_predType == "PB" ? "Pre-bolusing " : "Microbolusing ") + microBolus;
-                    rT.reason += "/" + (sens_predType == "PB" ? UAMBGPreBolusUnits : maxBolus) + "U.";
+                    rT.reason += "/" + (sens_predType == "PB" ? round(UAMBGPreBolusUnits,2) : maxBolus) + "U.";
 
 //                    insulinReq = insulinReq - microBolus;
 //                    // rate required to deliver remaining insulinReq over 20m:
