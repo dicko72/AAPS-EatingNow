@@ -84,7 +84,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
 
         binding.duration.setParams(
             savedInstanceState?.getDouble("duration")
-            ?: 0.0, 0.0, Constants.MAX_ENTT_DURATION, 10.0, DecimalFormat("0"), false, binding.okcancel.ok)
+            ?: 0.0, 0.0, Constants.MAX_ENTT_DURATION, 1.0, DecimalFormat("0"), false, binding.okcancel.ok)
 
         if (profileFunction.getUnits() == GlucoseUnit.MMOL)
             binding.temptarget.setParams(
