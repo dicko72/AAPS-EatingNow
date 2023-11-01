@@ -2,22 +2,6 @@
 package app.aaps.plugins.aps.EN
 
 // Eating now
-import app.aaps.core.main.profile.ProfileSealed
-import app.aaps.database.impl.AppRepository
-import app.aaps.database.ValueWrapper
-import app.aaps.database.entities.Bolus
-import app.aaps.database.entities.TherapyEvent
-import kotlin.math.roundToInt
-import app.aaps.core.interfaces.stats.TddCalculator
-import app.aaps.core.interfaces.stats.TirCalculator
-import app.aaps.core.interfaces.utils.MidnightTime
-import app.aaps.core.main.extensions.convertedToAbsolute
-import app.aaps.core.main.extensions.getPassedDurationToTimeInMinutes
-import app.aaps.core.main.extensions.plannedRemainingMinutes
-import app.aaps.database.entities.TemporaryTarget
-import app.aaps.plugins.aps.openAPSSMB.DetermineBasalResultSMB
-import app.aaps.plugins.aps.loop.LoopVariantPreference
-import app.aaps.core.interfaces.profile.ProfileUtil
 
 import app.aaps.core.interfaces.aps.DetermineBasalAdapter
 import app.aaps.core.interfaces.aps.SMBDefaults
@@ -32,14 +16,26 @@ import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.sharedPreferences.SP
+import app.aaps.core.interfaces.stats.TddCalculator
+import app.aaps.core.interfaces.stats.TirCalculator
+import app.aaps.core.interfaces.utils.MidnightTime
 import app.aaps.core.interfaces.utils.SafeParse
 import app.aaps.core.main.extensions.convertedToAbsolute
 import app.aaps.core.main.extensions.getPassedDurationToTimeInMinutes
 import app.aaps.core.main.extensions.plannedRemainingMinutes
+import app.aaps.core.main.profile.ProfileSealed
+import app.aaps.database.ValueWrapper
+import app.aaps.database.entities.Bolus
+import app.aaps.database.entities.TemporaryTarget
+import app.aaps.database.entities.TherapyEvent
+import app.aaps.database.impl.AppRepository
 import app.aaps.plugins.aps.APSResultObject
 import app.aaps.plugins.aps.R
 import app.aaps.plugins.aps.logger.LoggerCallback
+import app.aaps.plugins.aps.loop.LoopVariantPreference
+import app.aaps.plugins.aps.openAPSSMB.DetermineBasalResultSMB
 import app.aaps.plugins.aps.utils.ScriptReader
 import dagger.android.HasAndroidInjector
 import org.json.JSONArray
@@ -57,6 +53,7 @@ import java.io.IOException
 import java.lang.reflect.InvocationTargetException
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 class DetermineBasalAdapterENJS internal constructor(private val scriptReader: ScriptReader, private val injector: HasAndroidInjector) : DetermineBasalAdapter {
 
@@ -269,11 +266,13 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         //this.profile.put("use_autosens", true)
         this.profile.put("autosens_min", SafeParse.stringToDouble(sp.getString(app.aaps.core.utils.R.string.key_openapsama_autosens_min, "0.8")))
         this.profile.put("autosens_max", SafeParse.stringToDouble(sp.getString(app.aaps.core.utils.R.string.key_openapsama_autosens_max, "1.2")))
+
 //**********************************************************************************************************************************************
-        // patches ==== START
+        // Eating Now
         this.profile.put("EatingNowTimeStart", sp.getInt(R.string.key_eatingnow_timestart, 9))
-        this.profile.put("EatingNowTimeEnd", sp.getInt(R.string.key_eatingnow_timeend, 17))
-        this.profile.put("EN_BkfstCutOff", sp.getInt(R.string.key_eatingnow_bkfstcutoff, 0))
+        val EatingNowTimeEnd = sp.getInt(R.string.key_eatingnow_timeend, 17)
+        this.profile.put("EatingNowTimeEnd", EatingNowTimeEnd)
+
         val normalTargetBG = profile.getTargetMgdl().roundToInt()
         this.profile.put("normal_target_bg", normalTargetBG)
         this.profile.put("EN_max_iob", sp.getDouble(R.string.key_en_max_iob, 0.0))
@@ -282,42 +281,12 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("enableGhostCOBAlways", sp.getBoolean(R.string.key_use_ghostcob_always, false))
         val minCOB = sp.getInt(R.string.key_mincob, 0)
         this.profile.put("minCOB", minCOB)
-
-
         this.profile.put("allowENWovernight", sp.getBoolean(R.string.key_use_enw_overnight, false))
-        //this.profile.put("COBWindow", sp.getInt(R.string.key_eatingnow_cobboostminutes, 0))
-
-        // Within the EN Window ********************************************************************************
-        this.profile.put("ENWindow", sp.getInt(R.string.key_eatingnow_enwindowminutes, 0))
-        this.profile.put("ENWPct", sp.getInt(R.string.key_eatingnow_pct, 100))
         this.profile.put("ENWIOBTrigger", sp.getDouble(R.string.key_enwindowiob, 0.0))
         val enwMinBolus = sp.getDouble(R.string.key_enwminbolus, 0.0)
         this.profile.put("ENWMinBolus", enwMinBolus)
         this.profile.put("ENautostart", sp.getBoolean(R.string.key_enautostart, false))
-
-        // Breakfast / first meal
-        this.profile.put("ENBkfstWindow", sp.getInt(R.string.key_enbkfstwindowminutes, 0))
-        this.profile.put("BreakfastPct", sp.getInt(R.string.key_eatingnow_breakfastpct, 100))
-        this.profile.put("EN_COB_maxBolus_breakfast", sp.getDouble(R.string.key_eatingnow_cobboost_maxbolus_breakfast, 0.0))
-        this.profile.put("EN_UAM_maxBolus_breakfast", sp.getDouble(R.string.key_eatingnow_uam_maxbolus_breakfast, 0.0))
-        // other meals
-        this.profile.put("EN_COB_maxBolus", sp.getDouble(R.string.key_eatingnow_cobboost_maxbolus, 0.0))
-        this.profile.put("EN_UAM_maxBolus", sp.getDouble(R.string.key_eatingnow_uamboost_maxbolus, 0.0))
-        // this.profile.put("UAMbgBoost_bkfast", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_uambgboost_bkfast, 0.0),profileFunction.getUnits()))
-        this.profile.put("EN_UAMPlus_PreBolus_bkfast", sp.getDouble(R.string.key_eatingnow_uambgboost_maxbolus_bkfast, 0.0))
-        // this.profile.put("UAMbgBoost", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_uambgboost, 0.0),profileFunction.getUnits()))
-        this.profile.put("EN_UAMPlus_PreBolus", sp.getDouble(R.string.key_eatingnow_uambgboost_maxbolus, 0.0))
-        this.profile.put("EN_UAMPlusSMB_NoENW", sp.getBoolean(R.string.key_use_uamplus_noenw, false))
-        this.profile.put("EN_UAMPlusTBR_NoENW", sp.getBoolean(R.string.key_use_uamplustbr_noenw, false))
-
-        this.profile.put("EN_UAMPlus_maxBolus_bkfst", sp.getDouble(R.string.key_eatingnow_uamplus_maxbolus_bkfast, 0.0))
-        this.profile.put("EN_UAMPlus_maxBolus", sp.getDouble(R.string.key_eatingnow_uamplus_maxbolus, 0.0))
-        this.profile.put("EN_NoENW_maxBolus", sp.getDouble(R.string.key_eatingnow_noenw_maxbolus, 0.0))
-        this.profile.put("EN_BGPlus_maxBolus", sp.getDouble(R.string.key_eatingnow_bgplus_maxbolus, 0.0))
-
-        // this.profile.put("SMBbgOffset", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset, 0.0),profileFunction.getUnits()))
         this.profile.put("SMBbgOffset",profileUtil.convertToMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset, 0.0), profileFunction.getUnits()))
-        // this.profile.put("SMBbgOffset_day", Profile.toMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset_day, 0.0),profileFunction.getUnits()))
         this.profile.put("SMBbgOffset_day",profileUtil.convertToMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset_day, 0.0), profileFunction.getUnits()))
         this.profile.put("ISFbgscaler", sp.getDouble(R.string.key_eatingnow_isfbgscaler, 0.0))
         this.profile.put("MaxISFpct", sp.getInt(R.string.key_eatingnow_maxisfpct, 0))
@@ -326,8 +295,14 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("insulinType", activePlugin.activeInsulin.friendlyName)
         this.profile.put("insulinPeak", activePlugin.activeInsulin.insulinConfiguration.peak/60000)
         this.profile.put("percent", if (profile is ProfileSealed.EPS) profile.value.originalPercentage else 100)
-        // patches ==== END
+
+        this.profile.put("EN_UAMPlusSMB_NoENW", sp.getBoolean(R.string.key_use_uamplus_noenw, false))
+        this.profile.put("EN_UAMPlusTBR_NoENW", sp.getBoolean(R.string.key_use_uamplustbr_noenw, false))
+
+        this.profile.put("EN_NoENW_maxBolus", sp.getDouble(R.string.key_eatingnow_noenw_maxbolus, 0.0))
+        this.profile.put("EN_BGPlus_maxBolus", sp.getDouble(R.string.key_eatingnow_bgplus_maxbolus, 0.0))
 //**********************************************************************************************************************************************
+
         if (profileFunction.getUnits() == GlucoseUnit.MMOL) {
             this.profile.put("out_units", "mmol/L")
         }
@@ -422,13 +397,41 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         // get the TDD since ENW Start
         this.mealData.put("ENWStartTime", ENWStartTime)
-        // this.mealData.put("ENWBolusIOB", if (now <= ENWStartTime+(4*3600000)) tddCalculator.calculateDaily(ENWStartTime, now)?.bolusAmount else 0)
-
         var ENWBolusIOB = if (now < ENWStartTime+(4*3600000)) tddCalculator.calculate(ENWStartTime, now, allowMissingData = true)?.totalAmount else 0
         if (ENWBolusIOB == null) ENWBolusIOB = 0
         this.mealData.put("ENWBolusIOB", ENWBolusIOB)
-        this.profile.put("ENW_breakfast_max_tdd", sp.getDouble(R.string.key_enw_breakfast_max_tdd, 0.0))
-        this.profile.put("ENW_max_tdd", sp.getDouble(R.string.key_enw_max_tdd, 0.0))
+
+        // calculate the time that breakfast should be finished or ignored
+        var EN_BkfstCutOffhr = sp.getInt(R.string.key_eatingnow_bkfstcutoff, 0) // cutoff pref
+        if (EN_BkfstCutOffhr == 0) EN_BkfstCutOffhr = EatingNowTimeEnd
+        val EN_BkfstCutOffTime = 3600000 * EN_BkfstCutOffhr + MidnightTime.calc(now)
+
+
+        // determine if the current ENW is the first meal of the day
+        val firstMealWindow = (ENStartedTime == ENWStartTime && now < EN_BkfstCutOffTime)
+        this.mealData.put("firstMealWindow", firstMealWindow)
+        sp.putBoolean("ENdb_firstMealWindow", ENWStartTime == 0L && now < EN_BkfstCutOffTime) // has EN started? used for TT dialog only
+
+        // use the settings based on the first meal validation
+        if (firstMealWindow) {
+            // Breakfast profile
+            this.profile.put("ENWDuration", sp.getInt(R.string.key_enbkfstwindowminutes, 0)) // ENBkfstWindow
+            this.profile.put("MealPct", sp.getInt(R.string.key_eatingnow_breakfastpct, 100)) // meal scaling - BreakfastPct
+            this.profile.put("ENW_maxBolus_COB", sp.getDouble(R.string.key_eatingnow_cobboost_maxbolus_breakfast, 0.0)) // EN_COB_maxBolus_breakfast
+            this.profile.put("ENW_maxBolus_UAM", sp.getDouble(R.string.key_eatingnow_uam_maxbolus_breakfast, 0.0)) // EN_UAM_maxBolus_breakfast
+            this.profile.put("ENW_maxPreBolus", sp.getDouble(R.string.key_eatingnow_uambgboost_maxbolus_bkfast, 0.0)) // EN_UAMPlus_PreBolus_bkfast
+            this.profile.put("ENW_maxBolus_UAM_plus", sp.getDouble(R.string.key_eatingnow_uamplus_maxbolus_bkfast, 0.0)) //EN_UAMPlus_maxBolus_bkfst
+            this.profile.put("ENW_maxIOB", sp.getDouble(R.string.key_enw_breakfast_max_tdd, 0.0)) // ENW_breakfast_max_tdd
+        } else {
+            // Subsequent meals profile
+            this.profile.put("ENWDuration", sp.getInt(R.string.key_eatingnow_enwindowminutes, 0)) // ENWindow
+            this.profile.put("MealPct", sp.getInt(R.string.key_eatingnow_pct, 100)) // meal scaling - ENWPct
+            this.profile.put("ENW_maxBolus_COB", sp.getDouble(R.string.key_eatingnow_cobboost_maxbolus, 0.0)) //EN_COB_maxBolus
+            this.profile.put("ENW_maxBolus_UAM", sp.getDouble(R.string.key_eatingnow_uamboost_maxbolus, 0.0)) //EN_UAM_maxBolus
+            this.profile.put("ENW_maxPreBolus", sp.getDouble(R.string.key_eatingnow_uambgboost_maxbolus, 0.0)) //EN_UAMPlus_PreBolus
+            this.profile.put("ENW_maxBolus_UAM_plus", sp.getDouble(R.string.key_eatingnow_uamplus_maxbolus, 0.0)) //EN_UAMPlus_maxBolus
+            this.profile.put("ENW_maxIOB", sp.getDouble(R.string.key_enw_max_tdd, 0.0)) //ENW_max_tdd
+        }
 
         // 3PM is used as a low basal point at which the rest of the day leverages for ISF variance when using one ISF in the profile
         this.profile.put("enableBasalAt3PM", sp.getBoolean(R.string.key_use_3pm_basal, false))

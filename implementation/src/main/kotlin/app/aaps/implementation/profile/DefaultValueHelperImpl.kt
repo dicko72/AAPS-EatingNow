@@ -65,8 +65,13 @@ class DefaultValueHelperImpl @Inject constructor(
     }
 
     override fun determineEatingNowTTDuration(): Int {
-        val value = sp.getInt(app.aaps.core.utils.R.string.key_eatingnow_duration, Constants.defaultEatingNowTTDuration)
-        return if (value > 0) value else Constants.defaultEatingNowTTDuration
+        return if (sp.getBoolean("ENdb_firstMealWindow", false)) {
+            val value = sp.getInt(app.aaps.core.utils.R.string.key_enbkfstwindowminutes, Constants.defaultEatingNowTTDuration)
+            if (value > 0) value else Constants.defaultEatingNowTTDuration
+        } else {
+            val value = sp.getInt(app.aaps.core.utils.R.string.key_eatingnow_enwindowminutes, Constants.defaultEatingNowTTDuration)
+            if (value > 0) value else Constants.defaultEatingNowTTDuration
+        }
     }
 
     /**

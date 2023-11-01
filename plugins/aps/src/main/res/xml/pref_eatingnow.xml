@@ -283,7 +283,7 @@
 
             <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="0"
-                android:dialogMessage="Meals after this time will not be considered as the first meal. Enter a time in 24h e.g. 13 is 1PM."
+                android:dialogMessage="Meals after this time will not be considered as the first meal. Enter a time in 24h e.g. 13 is 1PM. 0 will disable the option."
                 android:inputType="number"
                 android:key="@string/key_eatingnow_bkfstcutoff"
                 android:title="Breakfast Cut-Off Time"
