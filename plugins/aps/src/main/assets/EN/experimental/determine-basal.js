@@ -1275,7 +1275,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             minGuardBG = Math.max(minGuardBG,threshold);
             eventualBG = Math.max(bg,eventualBG,target_bg); // bg + delta * 3
             eBGweight = 1; // 100% eBGw as unrestricted insulin delivery is required
-            AllowZT = false; // no ZT allowed
+//            AllowZT = false; // no ZT allowed
         }
 
 
@@ -1786,8 +1786,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (ENMaxSMB > max_iob) ENMaxSMB = profile.current_basal * ENMaxSMB / 60;
             var roundSMBTo = 1 / profile.bolus_increment;
 
-            // when insulinReq is greater than 3 x maxBolus allow TBR
-            AllowZT = (ENactive && insulinReq < ENMaxSMB *3);
+            // when insulinReq is greater than 3 x maxBolus or PB dont allow ZT
+            AllowZT = (ENactive && insulinReq < ENMaxSMB *3 || sens_predType == "PB");
+
 
             // ============== TIME BASED RESTRICTIONS ==============
             if (ENtimeOK) {
