@@ -1787,10 +1787,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (ENMaxSMB > max_iob) ENMaxSMB = profile.current_basal * ENMaxSMB / 60;
             var roundSMBTo = 1 / profile.bolus_increment;
 
-            // when insulinReq is greater than 3 x maxBolus or PB dont allow ZT
-            AllowZT = (ENactive && insulinReq < ENMaxSMB *3 || UAMBGPreBolusUnitsLeft > 0);
-
-
             // ============== TIME BASED RESTRICTIONS ==============
             if (ENtimeOK) {
                 // increase maxbolus if we are within the hours specified
@@ -1827,6 +1823,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             worstCaseInsulinReq = (smbTarget - (naive_eventualBG + minIOBPredBG) / 2) / sens;
             durationReq = round(60 * worstCaseInsulinReq / profile.current_basal);
 
+
+            // when insulinReq is greater than 3 x maxBolus or PB dont allow ZT, unless BG+
+            AllowZT = (ENactive && insulinReq < microBolus *3 && sens_predType != "BG+" || UAMBGPreBolusUnitsLeft > 0);
             // No ZT allowed by EN
             if (!AllowZT) durationReq = 0;
 
