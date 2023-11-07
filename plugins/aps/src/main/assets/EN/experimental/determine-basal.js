@@ -1253,10 +1253,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // start with the prebolus in prefs as the minimum starting bolus amount for ENWBolusIOB then use the maxbolus for UAM+ as the increment
     var UAMBGPreBolus = (UAMBGPreBolusUnits > 0 && ENTTActive && ENPBActive && ENWStartedAgo < PBW && meal_data.ENWBolusIOB < UAMBGPreBolusUnits);
+    var UAMBGPreBolusUnitsLeft = (UAMBGPreBolus ? UAMBGPreBolusUnits - meal_data.ENWBolusIOB : 0);
     //var UAMBGPreBolusAuto = (UAMBGPreBolusUnits > 0 && ENTTActive && !ENPBActive && meal_data.ENWBolusIOB < UAMBGPreBolusUnits);
 
-    // Pre-bolus condition matches set PB type
-    if (UAMBGPreBolus) sens_predType = "PB";
+    // Pre-bolus condition matches set PB type when not accelerating
+    if (UAMBGPreBolus && sens_predType != "UAM+") sens_predType = "PB";
 
     // BG+ outside of UAM prediction
     //if (profile.EN_BGPlus_maxBolus != 0 && !ENPBActive && ENWStartedAgo > 90 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < bg ) sens_predType = "BG+";
@@ -1670,8 +1671,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // use eBGweight for insulinReq
         insulinReq = (insulinReq_bg - target_bg) / insulinReq_sens;
 
-        // override insulinReq for initial pre-bolus (PB)
-        if (sens_predType =="PB") insulinReq = UAMBGPreBolusUnits - meal_data.ENWBolusIOB;
+        // override insulinReq for initial pre-bolus (PB) if there are more units left
+        insulinReq = (UAMBGPreBolusUnitsLeft > 0 ? Math.max(insulinReq,UAMBGPreBolusUnitsLeft) : insulinReq);
 
         // if that would put us over max_iob, then reduce accordingly
         if (insulinReq > max_iob - iob_data.iob) {
@@ -1744,12 +1745,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // when eating firstmeal set a larger SMB
 //                if (firstMealWindow) ENMaxSMB = (COB ? profile.EN_COB_maxBolus_breakfast : profile.EN_UAM_maxBolus_breakfast);
 
-                // when prebolusing
-                if (sens_predType == "PB" && UAMBGPreBolusUnits > 0) ENMaxSMB = UAMBGPreBolusUnits - meal_data.ENWBolusIOB;
+                // when prebolusing allow as much as safety_maxbolus will allow
+                if (sens_predType == "PB") ENMaxSMB = UAMBGPreBolusUnitsLeft;
 
-                // UAM+ uses different SMB when configured
+                // UAM+ uses different SMB when configured, it can give prebolus is the condition is correct
 //                if (sens_predType == "UAM+") ENMaxSMB = (firstMealWindow ? profile.EN_UAMPlus_maxBolus_bkfst : profile.EN_UAMPlus_maxBolus);
-                if (sens_predType == "UAM+") ENMaxSMB = profile.ENW_maxBolus_UAM_plus;
+                if (sens_predType == "UAM+") ENMaxSMB = Math.max(profile.ENW_maxBolus_UAM_plus, UAMBGPreBolusUnitsLeft);
 
                 // when auto prebolusing Increase ENMaxSMB to cover remaining UAMBGPreBolusUnits
                 //if (UAMBGPreBolusAuto) ENMaxSMB = Math.max(ENMaxSMB, UAMBGPreBolusUnits - meal_data.ENWBolusIOB);
@@ -1787,7 +1788,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             var roundSMBTo = 1 / profile.bolus_increment;
 
             // when insulinReq is greater than 3 x maxBolus or PB dont allow ZT
-            AllowZT = (ENactive && insulinReq < ENMaxSMB *3 || sens_predType == "PB");
+            AllowZT = (ENactive && insulinReq < ENMaxSMB *3 || UAMBGPreBolusUnitsLeft > 0);
 
 
             // ============== TIME BASED RESTRICTIONS ==============
@@ -1883,8 +1884,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (microBolus > 0) {
                     rT.units = microBolus;
                     rT.reason += (!ENactive || !ENtimeOK || maxBolus == maxBolusOrig ? "No EN SMB: " : "");
-                    rT.reason += (sens_predType == "PB" ? "Pre-bolusing " : "Microbolusing ") + microBolus;
-                    rT.reason += "/" + (sens_predType == "PB" ? round(UAMBGPreBolusUnits,2) : maxBolus) + "U.";
+                    rT.reason += (UAMBGPreBolusUnitsLeft > 0 ? "Pre-bolusing " : "Microbolusing ") + microBolus;
+                    rT.reason += "/" + (UAMBGPreBolusUnitsLeft > 0 ? round(UAMBGPreBolusUnits,2) : maxBolus) + "U.";
 
 //                    insulinReq = insulinReq - microBolus;
 //                    // rate required to deliver remaining insulinReq over 20m:
