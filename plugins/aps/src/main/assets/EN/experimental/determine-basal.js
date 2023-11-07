@@ -1787,8 +1787,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (ENMaxSMB > max_iob) ENMaxSMB = profile.current_basal * ENMaxSMB / 60;
             var roundSMBTo = 1 / profile.bolus_increment;
 
-            // when insulinReq is greater than 3 x maxBolus or PB dont allow ZT
-            AllowZT = (ENactive && insulinReq < ENMaxSMB *3 || UAMBGPreBolusUnitsLeft > 0);
+            // when insulinReq is greater than 3 x maxBolus or PB dont allow ZT, unless BG+
+            AllowZT = (ENactive && insulinReq < ENMaxSMB *3 && sens_predType != "BG+" || UAMBGPreBolusUnitsLeft > 0);
 
 
             // ============== TIME BASED RESTRICTIONS ==============
