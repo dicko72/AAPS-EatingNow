@@ -1285,7 +1285,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //if (ENWindowOK) {
             // for lower eventualBg predictions increase eventualBG with UAMDeltaX using current bg as the basis when early on in ENW or less than 80 of ENWBolusIOBMax has been given
             //if (ENWindowOK && ENWStartedAgo < 30 || (ENWBolusIOBMax > 0 && (meal_data.ENWBolusIOB / ENWBolusIOBMax) < 0.80) && eventualBG < 270) {
-            if (ENWindowOK && ENWStartedAgo < 90) {
+            if (ENWindowOK && ENWStartedAgo < ENWindowDuration) {
                 // Define the range for UAMDeltaX
                 var UAMDeltaXforecast = Math.min(ENWindowDuration,120);
                 var UAMDeltaXboost = (ENPBActive ? 1 : 1.5);
