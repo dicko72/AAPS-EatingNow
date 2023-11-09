@@ -1305,6 +1305,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 minPredBG = Math.max(minPredBG,threshold); // bypass LGS for ENW
                 minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS for ENW
                 minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
+                eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
                 // when favouring minPredBG allow more of eventualBG
                 eBGweight = (eBGweight == 0 ? 0.5 : eBGweight);
             } else {
