@@ -258,8 +258,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (now >= ENStartTime && now < ENEndTime && (meal_data.ENStartedTime >= ENStartTime)) ENtimeOK = true;
     if (now >= ENStartTime && now < ENEndTime && profile.ENautostart) ENtimeOK = true;
     var lastNormalCarbAge = round((new Date(systemTime).getTime() - meal_data.lastENCarbTime) / 60000);
-    // minutes since last bolus
-//    var lastBolusAge = (new Date(systemTime).getTime() - meal_data.lastBolusTime) / 60000;
+    var lastBolusAge = (new Date(systemTime).getTime() - meal_data.lastBolusTime) / 60000; // minutes since last bolus for BG+
 
 
     enlog += "nowhrs: " + nowhrs + ", now: " + now + "\n";
@@ -1261,7 +1260,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // BG+ outside of UAM prediction
     //if (profile.EN_BGPlus_maxBolus != 0 && !ENPBActive && ENWStartedAgo > 90 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < bg ) sens_predType = "BG+";
-    if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < bg && ENWEndedAgo > 60) sens_predType = "BG+";
+    if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < bg && ENWEndedAgo > 60 && lastBolusAge >= 15) sens_predType = "BG+";
 
     // TBR for tt that isn't EN at normal target
     if (profile.temptargetSet && !ENTTActive && target_bg == normalTarget) sens_predType = "TBR";
@@ -1312,7 +1311,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 sens_predType = "UAM"; // pass onto UAM block
                 // Check for BG+ condition
                 //if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < bg) sens_predType = "BG+";
-                if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < bg && ENWEndedAgo > 60 ) sens_predType = "BG+";
+                if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < bg && ENWEndedAgo > 60 && lastBolusAge >= 15) sens_predType = "BG+";
             }
         }
 
