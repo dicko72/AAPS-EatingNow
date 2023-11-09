@@ -1247,7 +1247,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // when TT duration is less than the ENW duration at this time do a % of prebolus and ENWBolusIOBMax
     if (meal_data.activeENTempTargetDuration < profile.ENWDuration) {
         UAMBGPreBolusUnits *= meal_data.activeENTempTargetDuration/profile.ENWDuration;
-        ENWBolusIOBMax *= meal_data.activeENTempTargetDuration/profile.ENWDuration;
+//        ENWBolusIOBMax *= meal_data.activeENTempTargetDuration/profile.ENWDuration;
     }
 
     // start with the prebolus in prefs as the minimum starting bolus amount for ENWBolusIOB then use the maxbolus for UAM+ as the increment
