@@ -1365,8 +1365,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // sometimes the weighting can provide a lower eBG, if so use the original
         insulinReq_bg = (TIR_sens_limited > 1 && insulinReq_bg < insulinReq_bg_orig ? insulinReq_bg_orig : insulinReq_bg);
 
-        // insulinReq_sens determines the ISF used for final insulinReq calc
-        insulinReq_sens = (profile.useDynISF ? dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val) : sens_normalTarget); // dynISF?
+        // insulinReq_sens determines the ISF used for final insulinReq calc, only use when ENactive mostly for overnight and High TT
+        insulinReq_sens = (profile.useDynISF && ENactive ? dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val) : sens); // dynISF?
 
         // use the strongest ISF when ENW active
         // insulinReq_sens = (!firstMealWindow && !COB && ENWStartedAgo <= ENWindowDuration ? Math.min(insulinReq_sens, sens) : insulinReq_sens);
