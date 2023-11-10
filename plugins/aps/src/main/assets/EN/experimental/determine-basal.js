@@ -1307,17 +1307,18 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
                 // when favouring minPredBG allow more of eventualBG
                 eBGweight = (eBGweight == 0 ? 0.5 : eBGweight);
-            } else {
-                sens_predType = "UAM"; // pass onto UAM block
+            } else { // low delta but accelerating no LGS bypass
+                // when favouring minPredBG allow more of eventualBG
+                eBGweight = (eBGweight == 0 ? 0.5 : eBGweight);
+                // sens_predType = "UAM"; // pass onto UAM block
                 // Check for BG+ condition
-                //if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < bg) sens_predType = "BG+";
                 if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < bg && ENWEndedAgo > 60 && lastBolusAge >= 15) sens_predType = "BG+";
             }
         }
 
         // UAM predictions, no COB or GhostCOB
         if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
-           eBGweight = (ENWindowOK ? 0.50 : eBGweight); // allow more eBG within ENW
+           eBGweight = (ENWindowOK ? 0.50 : eBGweight); // allow more eBG within ENW or UAM+ inherited eBGw
 
             // SAFETY: UAM fast delta with higher bg lowers eBGw
             eBGweight = (bg > ISFbgMax && delta >= 15 && ENWBolusIOBMax == 0 ? 0.30 : eBGweight);
