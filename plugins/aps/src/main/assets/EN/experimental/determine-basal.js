@@ -1353,10 +1353,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // IOB prediction - TESTING when lower than target for some time prevent additional insulin
         if (sens_predType == "IOB") {
-            // When sensitive and below target with low IOB dont trust IOBpredBG and override eventualBG
+            // When sensitive and below target with low IOB dont trust predictions and override eventualBG
             eventualBG = Math.min(eventualBG,bg);
             insulinReq_sens_normalTarget = sens_normalTarget; // use the SR adjusted sens_normalTarget
-            eBGweight = 1; // trust the new eventualBG
+            eBGweight = 0.5; // use eBG between bg and minPredBG
         }
 
         // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
