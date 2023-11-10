@@ -1317,15 +1317,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // UAM predictions, no COB or GhostCOB
         if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
-            // positive or negative delta with acceleration and default
-            //eBGweight = (DeltaPctS > 1.0 || eventualBG > bg ? 0.50 : eBGweight);
-            eBGweight = (ENWindowOK ? 0.50 : eBGweight);
+           eBGweight = (ENWindowOK ? 0.50 : eBGweight); // allow more eBG within ENW
 
             // SAFETY: UAM fast delta with higher bg lowers eBGw
             eBGweight = (bg > ISFbgMax && delta >= 15 && ENWBolusIOBMax == 0 ? 0.30 : eBGweight);
 
             insulinReq_sens_normalTarget = (TIR_sens_limited > 1 && !ENWindowOK ? sens_normalTarget : insulinReq_sens_normalTarget) ; // use the SR adjusted sens_normalTarget when no ENW and resistant
-
         }
 
         // COB predictions or UAM with COB
@@ -1424,7 +1421,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (profile.use_sens_LCTDD) rT.reason += ", LCTDD:" + round(meal_data.TDDLastCannula,2) + " " + (profile.sens_TDD_scale != 100 ? profile.sens_TDD_scale + "% " : "") + "(" + convert_bg(sens_LCTDD, profile) + ")";
     rT.reason += ", TDD7:" + round(meal_data.TDDAvg7d,2);
     if (profile.use_autosens) rT.reason += ", AS: " + round(autosens_data.ratio, 2);
-    if (TIR_sens_limited != 1) rT.reason += ", ISF@" + round(TIRH_percent*100) + "%hr: " + round(TIR_sens*100) + (round(TIR_sens_limited*100) != round(TIR_sens*100) ? "=" + round(TIR_sens_limited*100) : "");
+    if (TIRH_percent > 0) rT.reason += ", ISF@" + round(TIRH_percent*100) + "%hr: " + round(TIR_sens*100) + (round(TIR_sens_limited*100) != round(TIR_sens*100) ? "=" + round(TIR_sens_limited*100) : "");
     if (profile.enableSRTDD) rT.reason += ", Basal%: " + round(SR_TDD*100) + (round(sensitivityRatio*100) != round(SR_TDD*100) ? "=" + round(sensitivityRatio*100) : "");
     rT.reason += ", LGS: " + convert_bg(threshold, profile);
     rT.reason += ", LRT: " + round(60 * minAgo);
