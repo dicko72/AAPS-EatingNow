@@ -205,6 +205,7 @@
     <string name="en_variant_title">EN Variant</string>
     <string name="key_en_max_iob" translatable="false">key_en_max_iob</string>
     <string name="key_en_max_iob_allow_smb" translatable="false">key_en_max_iob_allow_smb</string>
+    <string name="key_scale_isf_profile_switch" translatable="false">key_scale_isf_profile_switch</string>
     <string name="openapsama_autosens_min_summary">Default value: 0.7\nThe other side of the autosens safety limits, putting a cap on how low autosens can adjust basals, and how high it can adjust ISF and BG targets.</string>
     <string name="openapsama_autosens_max_summary">Default value: 1.2\nThis is a multiplier cap for autosens (and soon autotune) to set a 20%% max limit on how high the autosens ratio can be, which in turn determines how high autosens can adjust basals, how low it can adjust ISF, and how low it can set the BG target.</string>
     <string name="openapsama_autosens_max">Max autosens ratio</string>

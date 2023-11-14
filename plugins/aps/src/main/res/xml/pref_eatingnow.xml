@@ -338,6 +338,12 @@
             android:title="Allow SMB when EN Max IOB exceeded"
             android:summary="Disable for TBR." />
 
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="key_scale_isf_profile_switch"
+            android:title="Scale ISF when using profile switch"
+            android:summary="Enabled is the default behaviour." />
+
         </PreferenceCategory>
 
         <PreferenceCategory
