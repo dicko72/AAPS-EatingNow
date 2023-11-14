@@ -428,6 +428,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         MealScaler = round(profile.MealPct/100,2);
         carb_ratio = round(profile.carb_ratio_midnight / MealScaler, 1);
         sens = round(profile.sens_midnight / MealScaler, 1);
+        sens *= profile.percent/100;  // dont adjust ISF when using a profile switch
     }
 
 
@@ -589,6 +590,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // adjust basal
         basal = profile.current_basal * sensitivityRatio;
     }
+
+    sens_normalTarget *= profile.percent/100; // dont adjust ISF when using a profile switch
 
     // apply TIRS to ISF only when delta is slight or bg higher
     if (TIR_sens_limited !=1 && TIR_sens !=1) {
