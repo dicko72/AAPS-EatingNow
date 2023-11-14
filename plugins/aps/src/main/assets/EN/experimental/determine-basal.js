@@ -1377,6 +1377,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // SAFETY: eventualBG has been adjusted based on SR, for UAM+ use original ISF when outside of ENW
         //if (sens_predType == "UAM+" && !ENWindowOK) insulinReq_sens = sens_normalTarget_orig;
+
+        // SAFETY: UAM+ when resistant use current BG ISF as prediction can be too much
+        if (sens_predType == "UAM+" && TIR_sens_limited > 1) insulinReq_sens = sens;
     }
 
     insulinReq_sens = round(insulinReq_sens, 1);
