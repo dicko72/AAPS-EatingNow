@@ -1264,7 +1264,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // BG+ outside of UAM prediction
     //if (profile.EN_BGPlus_maxBolus != 0 && !ENPBActive && ENWStartedAgo > 90 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < bg ) sens_predType = "BG+";
-    if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < bg && ENWEndedAgo > 60 && lastBolusAge >= 15) sens_predType = "BG+";
+    //if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < bg && ENWEndedAgo > 60 && lastBolusAge >= 15) sens_predType = "BG+";
+    if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < bg) sens_predType = "BG+";
 
     // TBR for tt that isn't EN at normal target
     if (profile.temptargetSet && !ENTTActive && target_bg == normalTarget) sens_predType = "TBR";
@@ -1316,7 +1317,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 eBGweight = (eBGweight == 0 ? 0.5 : eBGweight);
                 // sens_predType = "UAM"; // pass onto UAM block
                 // Check for BG+ condition
-                if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < bg && ENWEndedAgo > 60 && lastBolusAge >= 15) sens_predType = "BG+";
+                //if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < bg && ENWEndedAgo > 60 && lastBolusAge >= 15) sens_predType = "BG+";
+                if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < bg) sens_predType = "BG+";
             }
         }
 
@@ -1734,6 +1736,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             var ENReason = "";
             var ENMaxSMB = maxBolus; // inherit AAPS maxBolus
             var maxBolusOrig = maxBolus;
+            // maxBolus outside ENW
+            var EN_NoENW_maxBolus = maxBolus;
+            if (profile.EN_NoENW_maxBolus > 0) {
+                EN_NoENW_maxBolus = profile.EN_NoENW_maxBolus; // use EN_NoENW_maxBolus if its larger than restricted SMB
+                EN_NoENW_maxBolus = (EN_NoENW_maxBolus > max_iob ? profile.current_basal * EN_NoENW_maxBolus / 60 : EN_NoENW_maxBolus);
+            }
             var ENinsulinReqPct = 0.75; // EN insulinReqPct is 75%
 //            var ENWinsulinReqPct = (ENWStartedAgo <= ENWindowDuration / 3 ? 1 : 0.85); // ENW insulinReqPct is 100% for the first 30 mins then 85%
             var ENWinsulinReqPct = (ENWStartedAgo <= ENWindowDuration ? 1 : ENinsulinReqPct); // ENW insulinReqPct is 100% for the first 30 mins then 85%
@@ -1766,7 +1774,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 //if (UAMBGPreBolusAuto) ENMaxSMB = Math.max(ENMaxSMB, UAMBGPreBolusUnits - meal_data.ENWBolusIOB);
 
             } else {
-                ENMaxSMB = profile.EN_NoENW_maxBolus;
+                ENMaxSMB = EN_NoENW_maxBolus;
+                //ENMaxSMB = profile.EN_NoENW_maxBolus;
                 //if (sens_predType == "UAM+" && profile.EN_UAMPlusTBR_NoENW) ENMaxSMB = -1; // TBR only
             }
 
@@ -1787,9 +1796,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
             // restrict SMB when ENWBolusIOB will be exceeded by SMB but minimum is EN_NoENW_maxBolus
             if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB + ENMaxSMB > ENWBolusIOBMax) {
-                ENMaxSMB = profile.EN_NoENW_maxBolus; // use EN_NoENW_maxBolus if its larger than restricted SMB
-                if (ENMaxSMB > max_iob) ENMaxSMB = profile.current_basal * ENMaxSMB / 60;
-                ENMaxSMB = Math.max(ENWBolusIOBMax-meal_data.ENWBolusIOB, ENMaxSMB); // use EN_NoENW_maxBolus if its larger than restricted SMB
+                //ENMaxSMB = profile.EN_NoENW_maxBolus; // use EN_NoENW_maxBolus if its larger than restricted SMB
+                //if (ENMaxSMB > max_iob) ENMaxSMB = profile.current_basal * ENMaxSMB / 60;
+                ENMaxSMB = Math.max(ENWBolusIOBMax-meal_data.ENWBolusIOB, EN_NoENW_maxBolus); // use EN_NoENW_maxBolus if its larger than restricted SMB
             }
 
             // ============== MAXBOLUS RESTRICTIONS ==============
@@ -1926,6 +1935,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             rate = round_basal(rate, profile);
             //rT.reason += "=" + round_basal(rate, profile) + "** ";
         }
+
+        // BG+ TBR restriction to EN_NoENW_maxBolus
+        rate = (sens_predType == "BG+" && ENMaxSMB ==0 ? Math.min(EN_NoENW_maxBolus * 12,rate) : rate);
 
         if (rate > maxSafeBasal) {
             rT.reason += "adj. req. rate: " + round(rate, 3) + " to maxSafeBasal: " + maxSafeBasal + ", ";
