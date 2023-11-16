@@ -3,6 +3,8 @@ package app.aaps.ui.dialogs
 import app.aaps.ui.databinding.DialogEnTemptargetBinding
 import android.content.Context
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +14,8 @@ import app.aaps.core.interfaces.constraints.ConstraintsChecker
 import app.aaps.core.interfaces.db.GlucoseUnit
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.utils.DecimalFormatter
 import app.aaps.core.interfaces.profile.DefaultValueHelper
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.profile.ProfileUtil
@@ -28,6 +32,7 @@ import app.aaps.database.impl.AppRepository
 import app.aaps.database.impl.transactions.CancelCurrentTemporaryTargetIfAnyTransaction
 import app.aaps.database.impl.transactions.InsertAndCancelCurrentTemporaryTargetTransaction
 import app.aaps.ui.R
+import app.aaps.ui.databinding.DialogInsulinBinding
 import app.aaps.ui.databinding.DialogTemptargetBinding
 import com.google.common.base.Joiner
 import com.google.common.collect.Lists
@@ -37,6 +42,7 @@ import java.text.DecimalFormat
 import java.util.LinkedList
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.math.abs
 
 class ENTempTargetDialog : DialogFragmentWithDate() {
 
@@ -49,6 +55,8 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
     @Inject lateinit var repository: AppRepository
     @Inject lateinit var ctx: Context
     @Inject lateinit var protectionCheck: ProtectionCheck
+    @Inject lateinit var decimalFormatter: DecimalFormatter
+    @Inject lateinit var activePlugin: ActivePlugin
 
     private lateinit var reasonList: List<String>
 
@@ -58,6 +66,29 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
 
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
+
+    private val textWatcher: TextWatcher = object : TextWatcher {
+        override fun afterTextChanged(s: Editable) {
+            _binding?.let {
+                // validateInputs()
+            }
+        }
+
+        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+    }
+
+    // private fun validateInputs() {
+    //     val maxInsulin = constraintChecker.getMaxBolusAllowed().value()
+    //     if (abs(binding.time.value.toInt()) > 12 * 60) {
+    //         binding.time.value = 0.0
+    //         ToastUtils.warnToast(context, app.aaps.core.ui.R.string.constraint_applied)
+    //     }
+    //     if (binding.amount.value > maxInsulin) {
+    //         binding.amount.value = 0.0
+    //         ToastUtils.warnToast(context, R.string.bolus_constraint_applied)
+    //     }
+    // }
 
     override fun onSaveInstanceState(savedInstanceState: Bundle) {
         super.onSaveInstanceState(savedInstanceState)
@@ -97,11 +128,21 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
                     ?: enTT,
                 Constants.MIN_TT_MGDL, Constants.MAX_TT_MGDL, 1.0, DecimalFormat("0"), false, binding.okcancel.ok)
 
+        //prebolus amount
+        // val maxInsulin = constraintChecker.getMaxBolusAllowed().value()
+        val maxInsulin = Constants.MAX_EN_PREBOLUS
+        binding.amount.setParams(
+            savedInstanceState?.getDouble("amount")
+                ?: 0.0, 0.0, maxInsulin, activePlugin.activePump.pumpDescription.bolusStep, decimalFormatter.pumpSupportedBolusFormat(activePlugin.activePump.pumpDescription.bolusStep), false, binding
+                .okcancel.ok, textWatcher
+        )
+
         // temp target
         context?.let { context ->
             if (repository.getTemporaryTargetActiveAt(dateUtil.now()).blockingGet() is ValueWrapper.Existing) {
                 binding.targetCancel.visibility = View.VISIBLE
                 binding.prebolus.visibility = View.GONE // no prebolus checkbox when cancelling TT
+                binding.amount.visibility = View.GONE // no prebolus amount when cancelling TT
             } else
                 binding.targetCancel.visibility = View.GONE
 
@@ -123,8 +164,16 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
 
         // when the prebolus button is pressed
         binding.prebolus.setOnClickListener {
-            if (binding.prebolus.isChecked) binding.reasonList.setText(rh.gs(app.aaps.core.ui.R.string.eatingnow_prebolus), false)
-            else binding.reasonList.setText(rh.gs(app.aaps.core.ui.R.string.eatingnow), false)
+            if (binding.prebolus.isChecked) {
+                binding.reasonList.setText(rh.gs(app.aaps.core.ui.R.string.eatingnow_prebolus), false)
+                binding.amount.visibility = View.VISIBLE // show prebolus amount when using PB is checked
+                binding.amount.value = defaultValueHelper.determineEatingNowPreBolus()
+            }
+            else {
+                binding.reasonList.setText(rh.gs(app.aaps.core.ui.R.string.eatingnow), false)
+                binding.amount.visibility = View.GONE // hide prebolus amount when using PB is unchecked
+                binding.amount.value = 0.0
+            }
         }
     }
 
@@ -146,6 +195,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         val unitResId = if (profileFunction.getUnits() == GlucoseUnit.MGDL) app.aaps.core.ui.R.string.mgdl else app.aaps.core.ui.R.string.mmol
         val target = binding.temptarget.value
         val duration = binding.duration.value.toInt()
+        sp.putDouble("ENdb_PreBolusUnits",binding.amount.value) // add the prebolus amount for DetermineBasalAdapterENJS.kt
         if (target != 0.0 && duration != 0) {
             actions.add(rh.gs(app.aaps.core.ui.R.string.reason) + ": " + reason)
             actions.add(rh.gs(app.aaps.core.ui.R.string.target_label) + ": " + profileUtil.stringInCurrentUnitsDetect(target) + " " + rh.gs(unitResId))

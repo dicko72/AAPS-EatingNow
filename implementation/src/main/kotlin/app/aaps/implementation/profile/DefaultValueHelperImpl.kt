@@ -74,6 +74,17 @@ class DefaultValueHelperImpl @Inject constructor(
         }
     }
 
+    override fun determineEatingNowPreBolus(): Double {
+        return if (sp.getBoolean("ENdb_firstMealWindow", false)) {
+            val value = sp.getDouble(app.aaps.core.utils.R.string.key_eatingnow_uambgboost_maxbolus_bkfast, 0.0)
+            value
+        } else {
+            val value = sp.getDouble(app.aaps.core.utils.R.string.key_eatingnow_uambgboost_maxbolus, 0.0)
+            value
+        }
+    }
+
+
     /**
      * returns the configured Activity TempTarget, if this is set to 0, the Default-Value is returned.
      *

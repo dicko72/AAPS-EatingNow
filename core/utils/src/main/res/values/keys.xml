@@ -163,4 +163,7 @@
     <string name="key_eatingnow_enwindowminutes" translatable="false">key_eatingnow_enwindowminutes</string>
     <string name="key_enbkfstwindowminutes" translatable="false">key_enbkfstwindowminutes</string>
     <string name="key_en_variant" translatable="false">en_variant</string>
+    <string name="key_eatingnow_uambgboost_maxbolus_bkfast">key_eatingnow_uambgboost_maxbolus_bkfast</string>
+    <string name="key_eatingnow_uambgboost_maxbolus">key_eatingnow_uambgboost_maxbolus</string>
+
 </resources>

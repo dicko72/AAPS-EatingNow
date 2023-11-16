@@ -13,6 +13,7 @@ interface DefaultValueHelper {
 
     // Eating Now
     fun determineEatingNowTTDuration(): Int
+    fun determineEatingNowPreBolus(): Double
 
     /**
      * returns the configured Activity TempTarget, if this is set to 0, the Default-Value is returned.

@@ -44,7 +44,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="5dp" />
+            android:padding="5dp" >
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -118,6 +120,56 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/prebolus"
+                android:layout_width="120dp"
+                android:layout_height="37dp"
+                android:layout_marginTop="5dp"
+                android:text="Pre-Bolus" />
+
+            <app.aaps.core.ui.elements.NumberPicker
+                android:id="@+id/amount"
+                android:layout_width="133dp"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                app:customContentDescription="@string/overview_insulin_label">
+
+            </app.aaps.core.ui.elements.NumberPicker>
+
+        </LinearLayout>
+
+        <app.aaps.core.ui.elements.SingleClickButton
+            android:id="@+id/target_cancel"
+            style="@style/ButtonSmallFontStyle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="-2dp"
+            android:drawableTop="@drawable/ic_target_cancel"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:textColor="?attr/tempTargetConfirmation"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/spacer2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="5dp" />
+
+        <include
+            android:id="@+id/datetime"
+            layout="@layout/datetime" />
+
+        <include
+            android:id="@+id/okcancel"
+            layout="@layout/okcancel" />
+
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
@@ -135,90 +187,6 @@
                 android:visibility="gone" />
 
         </com.google.android.material.textfield.TextInputLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <app.aaps.core.ui.elements.SingleClickButton
-                android:id="@+id/eating_soon"
-                style="@style/ButtonSmallFontStyle"
-                android:layout_width="0px"
-                android:layout_height="fill_parent"
-                android:layout_marginEnd="-2dp"
-                android:layout_weight="0.5"
-                android:drawableTop="@drawable/ic_target_eatingsoon"
-                android:paddingStart="5dp"
-                android:paddingEnd="5dp"
-                android:text="@string/eatingsoon"
-                android:textColor="?attr/carbsColor"
-                android:visibility="gone" />
-
-            <app.aaps.core.ui.elements.SingleClickButton
-                android:id="@+id/activity"
-                style="@style/ButtonSmallFontStyle"
-                android:layout_width="0px"
-                android:layout_height="fill_parent"
-                android:layout_marginEnd="-2dp"
-                android:layout_weight="0.5"
-                android:drawableTop="@drawable/ic_target_activity"
-                android:paddingStart="5dp"
-                android:paddingEnd="5dp"
-                android:text="@string/activity"
-                android:textColor="?attr/exerciseColor"
-                android:visibility="gone" />
-
-            <app.aaps.core.ui.elements.SingleClickButton
-                android:id="@+id/hypo"
-                style="@style/ButtonSmallFontStyle"
-                android:layout_width="0px"
-                android:layout_height="fill_parent"
-                android:layout_weight="0.5"
-                android:drawableTop="@drawable/ic_target_hypo"
-                android:paddingStart="5dp"
-                android:paddingEnd="5dp"
-                android:text="@string/hypo"
-                android:textColor="?attr/lowColor"
-                android:visibility="gone" />
-
-            <CheckBox
-                android:id="@+id/prebolus"
-                android:layout_width="119dp"
-                android:layout_height="45dp"
-                android:layout_marginTop="5dp"
-                android:text="Pre-Bolus" />
-
-            <app.aaps.core.ui.elements.NumberPicker
-                android:id="@+id/amount"
-                android:layout_width="130dp"
-                android:layout_height="match_parent"
-                app:customContentDescription="@string/overview_insulin_label" >
-
-            </app.aaps.core.ui.elements.NumberPicker>
-
-        </LinearLayout>
-
-        <app.aaps.core.ui.elements.SingleClickButton
-            android:id="@+id/target_cancel"
-            style="@style/ButtonSmallFontStyle"
-            android:layout_width="0px"
-            android:layout_height="fill_parent"
-            android:layout_marginEnd="-2dp"
-            android:layout_weight="0.5"
-            android:drawableTop="@drawable/ic_target_cancel"
-            android:paddingStart="5dp"
-            android:paddingEnd="5dp"
-            android:textColor="?attr/tempTargetConfirmation"
-            android:visibility="gone" />
-
-        <include
-            android:id="@+id/datetime"
-            layout="@layout/datetime" />
-
-        <include
-            android:id="@+id/okcancel"
-            layout="@layout/okcancel" />
 
     </LinearLayout>
 

@@ -552,8 +552,8 @@
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_uambgboost_maxbolus_bkfast"
                 android:title="UAM+ Breakfast PreBolus"
-                android:dialogMessage="UAM+ Breakfast PreBolus maxBolus for initial UAM BG rise within the EN-TT Window.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will use existing EN UAM maxBolus limit."
-                validate:floatmaxNumber="200"
+                android:dialogMessage="UAM+ Breakfast PreBolus within the EN-TT Window."
+                validate:floatmaxNumber="15"
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
@@ -563,7 +563,7 @@
                 android:key="@string/key_eatingnow_uamplus_maxbolus_bkfast"
                 android:title="UAM+ Breakfast maxBolus"
                 android:dialogMessage="UAM+ Breakfast maxBolus for accelerated UAM BG rise within the EN-TT Window.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will disable UAM+ and fallback to usual UAM prediction."
-                validate:floatmaxNumber="200"
+                validate:floatmaxNumber="15"
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
@@ -572,8 +572,8 @@
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_uambgboost_maxbolus"
                 android:title="UAM+ PreBolus"
-                android:dialogMessage="UAM+ PreBolus maxBolus for initial UAM BG rise within the EN-TT Window.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will use existing EN UAM maxBolus limit."
-                validate:floatmaxNumber="200"
+                android:dialogMessage="UAM+ PreBolus within the EN-TT Window."
+                validate:floatmaxNumber="15"
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
