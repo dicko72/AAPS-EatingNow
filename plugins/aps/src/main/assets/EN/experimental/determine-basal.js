@@ -1834,8 +1834,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             durationReq = round(60 * worstCaseInsulinReq / profile.current_basal);
 
 
-            // when insulinReq is greater than 3 x maxBolus or PB dont allow ZT, unless BG+
-            AllowZT = (ENactive && insulinReq < microBolus *3 && sens_predType != "BG+" || UAMBGPreBolusUnitsLeft <= 0);
+            // when insulinReq is greater than 2 x maxBolus for UAM+ or PB disable ZT
+            if (ENactive && insulinReq > microBolus *2 && sens_predType == "UAM+" || UAMBGPreBolusUnitsLeft > 0) AllowZT = false;
             // No ZT allowed by EN
             if (!AllowZT) durationReq = 0;
 
