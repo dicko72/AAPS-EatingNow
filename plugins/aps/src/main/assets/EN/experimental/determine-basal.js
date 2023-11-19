@@ -1358,7 +1358,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (TIR_sens_limited > 1 && ENactive && MealScaler == 1) insulinReq_sens_normalTarget = sens_normalTarget;
         }
 
-        // IOB prediction - TESTING when lower than target for some time prevent additional insulin
+        // IOB prediction - 50% eBGw and eventualBG with negative IOB
         if (sens_predType == "IOB") {
             // When sensitive and below target with low IOB dont trust predictions and override eventualBG
             eventualBG = Math.min(eventualBG,bg);
@@ -1382,6 +1382,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // SAFETY: UAM+ when resistant use current BG ISF as prediction can be too much
         if (sens_predType == "UAM+" && TIR_sens_limited > 1) insulinReq_sens = sens;
+
+        // IOB prediction - 50% eBGw and eventualBG with negative IOB
+        if (sens_predType == "IOB") eventualBG = insulinReq_bg;
     }
 
     insulinReq_sens = round(insulinReq_sens, 1);
