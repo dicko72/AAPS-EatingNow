@@ -1297,8 +1297,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 var UAMDeltaXmax = (ENPBActive ? 90 : 90); // max increase of 5mmol or 7.5mmol
                 // Calculate the scaled UAMDeltaX based on the ENW
                 UAMDeltaX = (1-(ENWStartedAgo/ENWindowDuration)) * UAMDeltaXforecast / 5 * UAMDeltaXboost;
-                eventualBG = Math.max(eventualBG, bg + Math.min(UAMDeltaX * delta,UAMDeltaXmax)); //eBG max increase ~5mmol
-                UAMDeltaX = (eventualBG > eventualBG_orig ? UAMDeltaX : 0); // when UAMDeltaX provides no increase reset for reason later
+                //eventualBG = Math.max(eventualBG, bg + Math.min(UAMDeltaX * delta,UAMDeltaXmax)); //eBG max increase ~5mmol
+                eventualBG = bg + Math.min(UAMDeltaX * delta,UAMDeltaXmax); //eBG max increase ~5mmol as we are overriding LGS etc
+                //UAMDeltaX = (eventualBG > eventualBG_orig ? UAMDeltaX : 0); // when UAMDeltaX provides no increase reset for reason later
                 eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
                 //AllowZT = (ENWStartedAgo < 45 ? false : true); // allow ZT
                 minPredBG = Math.max(minPredBG,threshold); // bypass LGS for ENW
