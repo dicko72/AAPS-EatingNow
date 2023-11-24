@@ -428,7 +428,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         MealScaler = round(profile.MealPct/100,2);
         carb_ratio = round(profile.carb_ratio_midnight / MealScaler, 1);
         sens = round(profile.sens_midnight / MealScaler, 1);
-        if (!profile.scale_isf_profile) sens *= profile.percent/100;  // dont adjust ISF when using a profile switch
+        if (!profile.scale_isf_profile && profile.percent > 100) sens *= profile.percent/100;  // dont adjust ISF when using a profile switch if resistant and ENW
     }
 
 
@@ -474,10 +474,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (meal_data.TIRW2H > 0 && TIRB2 == 1) TIRB2 += meal_data.TIRW2H / 100;
         if (meal_data.TIRW3H > 0 && TIRB2 == 2) TIRB2 += meal_data.TIRW3H / 100;
         if (meal_data.TIRW4H > 0 && TIRB2 == 3) TIRB2 += meal_data.TIRW4H / 100;
+        TIRB2 = 1 + (TIRB2 * TIRH_percent);
     }
     //TIRB2 = (bg >= normalTarget + 50 && (delta >= -4 && delta <= 4) && glucose_status.long_avgdelta >= -4 && Math.min(DeltaPctS,DeltaPctL) > 0 ? 1 + (TIRB2 * TIRH_percent) : 1); // SAFETY: only within delta range
     //TIRB2 = (bg >= normalTarget + 50 && delta >-4 && glucose_status.long_avgdelta > -4 && Math.min(DeltaPctS,DeltaPctL) > 1 ? 1 + (TIRB2 * TIRH_percent) : 1); // SAFETY: when bg not falling too much or delta not slowing
-    TIRB2 = (bg >= normalTarget + 50 && delta >-4 && Math.min(DeltaPctS,DeltaPctL) > 0 ? 1 + (TIRB2 * TIRH_percent) : 1); // SAFETY: when bg not falling too much or delta not slowing
+    var TIRB2_safety = (bg >= normalTarget + 50 && delta >-4 && Math.min(DeltaPctS,DeltaPctL) > 0 ? TIRB2 : 1); // SAFETY: when bg not falling too much or delta not slowing
 
     // TIRB1 - The TIR for the lower band just above normalTarget (+18/1.0)
     if (TIRH_percent && !ENWindowOK && !HighTempTargetSet) {
@@ -485,9 +486,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (meal_data.TIRTW2H > 0 && TIRB1 ==1) TIRB1 += meal_data.TIRTW2H / 100;
         if (meal_data.TIRTW3H > 0 && TIRB1 ==2) TIRB1 += meal_data.TIRTW3H / 100;
         if (meal_data.TIRTW4H > 0 && TIRB1 ==3) TIRB1 += meal_data.TIRTW4H / 100;
+        TIRB1 = 1 + (TIRB1 * TIRH_percent);
     }
     //TIRB1 = (bg > normalTarget && (delta >= -4 && delta <= 4) && glucose_status.long_avgdelta >= -4 && Math.min(DeltaPctS,DeltaPctL) > 0 ? 1 + (TIRB1 * TIRH_percent) : 1); // experiment for overnight BG control regardless of delta
-    TIRB1 = (bg > normalTarget + 20 && delta >-4 && glucose_status.long_avgdelta >-4 && Math.min(DeltaPctS,DeltaPctL) > 1 ? 1 + (TIRB1 * TIRH_percent) : 1); // SAFETY: when bg not falling too much or delta not slowing
+    var TIRB1_safety = (bg > normalTarget + 20 && delta >-4 && glucose_status.long_avgdelta >-4 && Math.min(DeltaPctS,DeltaPctL) > 1 ? TIRB1 : 1); // SAFETY: when bg not falling too much or delta not slowing
 
     // TIRB0 - The TIR for the lowest band below normalTarget (-9/0.5)
     if (TIRH_percent && !ENWindowOK) {
@@ -502,7 +504,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     TIRB0 = 1 - (TIRB0 * TIRH_percent);
 
     // if we have low TIR data use it, else use max resistance data of B2 and B1
-    TIR_sens = (TIRB0 < 1 ? TIRB0 : Math.max(TIRB2,TIRB1) );
+    TIR_sens = (TIRB0 < 1 ? TIRB0 : Math.max(TIRB2_safety,TIRB1_safety) );
 
     // apply autosens limit to TIR_sens_limited
     TIR_sens_limited = Math.min(TIR_sens, profile.autosens_max);
@@ -573,7 +575,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         sensitivityRatio = 1;
     } else if (profile.enableSRTDD) {
         // SR_TDD overnight uses TIR or when bg higher and higher TIR band is resistant use TIR
-        SR_TDD = (ENSleepModeNoSMB && TIR_sens_limited !=1 || bg > ISFbgMax && TIRB2 > 1 ? TIR_sens_limited : SR_TDD);
+        SR_TDD = (ENSleepModeNoSMB && TIR_sens_limited !=1 || bg > ISFbgMax && TIRB2_safety > 1 ? TIR_sens_limited : SR_TDD);
         // Use SR_TDD when no TT, profile switch
         sensitivityRatio = (profile.temptargetSet && !ENWindowOK || profile.percent != 100 ?  1 : SR_TDD);
         // apply autosens limits
@@ -591,7 +593,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         basal = profile.current_basal * sensitivityRatio;
     }
 
-    if (!profile.scale_isf_profile) sens_normalTarget *= profile.percent/100; // dont adjust ISF when using a profile switch
+    if (!profile.scale_isf_profile && profile.percent > 100 && TIRB2 <= 1) sens_normalTarget *= profile.percent/100; // dont adjust ISF when using a profile switch if not resistant
 
     // apply TIRS to ISF only when delta is slight or bg higher
     if (TIR_sens_limited !=1 && TIR_sens !=1) {
