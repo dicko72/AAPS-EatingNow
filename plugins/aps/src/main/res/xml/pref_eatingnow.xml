@@ -563,7 +563,7 @@
                 android:key="@string/key_eatingnow_uamplus_maxbolus_bkfast"
                 android:title="UAM+ Breakfast maxBolus"
                 android:dialogMessage="UAM+ Breakfast maxBolus for accelerated UAM BG rise within the EN-TT Window.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will disable UAM+ and fallback to usual UAM prediction."
-                validate:floatmaxNumber="15"
+                validate:floatmaxNumber="200"
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange"/>
 
