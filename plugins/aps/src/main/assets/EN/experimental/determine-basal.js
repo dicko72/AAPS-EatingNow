@@ -489,7 +489,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         TIRB1 = 1 + (TIRB1 * TIRH_percent);
     }
     //TIRB1 = (bg > normalTarget && (delta >= -4 && delta <= 4) && glucose_status.long_avgdelta >= -4 && Math.min(DeltaPctS,DeltaPctL) > 0 ? 1 + (TIRB1 * TIRH_percent) : 1); // experiment for overnight BG control regardless of delta
-    var TIRB1_safety = (bg > normalTarget + 20 && delta >-4 && glucose_status.long_avgdelta >-4 && Math.min(DeltaPctS,DeltaPctL) > 1 ? TIRB1 : 1); // SAFETY: when bg not falling too much or delta not slowing
+    var TIRB1_safety = (bg > normalTarget + 20 && delta >-4 && delta <= 4 && glucose_status.long_avgdelta >-4 && Math.min(DeltaPctS,DeltaPctL) > 1 ? TIRB1 : 1); // SAFETY: when bg not falling too much or delta not slowing
 
     // TIRB0 - The TIR for the lowest band below normalTarget (-9/0.5)
     if (TIRH_percent && !ENWindowOK) {
