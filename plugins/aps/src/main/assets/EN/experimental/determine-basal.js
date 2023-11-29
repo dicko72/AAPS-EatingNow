@@ -1932,18 +1932,17 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         var maxSafeBasal = tempBasalFunctions.getMaxSafeBasal(profile);
 
         // SAFETY: if an SMB given reduce the temp rate when not sensitive including ENW to deliver remaining insulinReq over 30m
-        //if (microBolus && (TIR_sens_limited == 1 || !ENtimeOK) && AllowZT) {
         if (microBolus && TIR_sens_limited >= 1) {
-            // when resistant allow a extra basal rate portion of IOB
-            //var insulinReqTIRS = Math.max( (TIR_sens_limited > 1 ? (basal + iob_data.iob) * (TIR_sens_limited-1) : 0) ,0);
-            //rT.reason += "** DEBUG: " + "rate:" + round_basal(rate, profile);
             rate = Math.max(basal + (insulinReq * 2 - microBolus), 0); //remaining insulinReq over 60 minutes * 2 = 30 minutes
             rate = round_basal(rate, profile);
-            //rT.reason += "=" + round_basal(rate, profile) + "** ";
         }
 
         // BG+ TBR restriction to EN_NoENW_maxBolus
-        rate = (sens_predType == "BG+" && ENMaxSMB ==0 ? Math.min(EN_NoENW_maxBolus * 12,rate) : rate);
+        // rate = (sens_predType == "BG+" && ENMaxSMB ==0 ? Math.min(EN_NoENW_maxBolus * 12,rate) : rate);
+        if (sens_predType == "BG+" && ENMaxSMB == 0) {
+            rate = Math.max(basal + (EN_NoENW_maxBolus * 12), 0); //EN_NoENW_maxBolus over 5 minutes + basal
+            rate = round_basal(rate, profile);
+        }
 
         if (rate > maxSafeBasal) {
             rT.reason += "adj. req. rate: " + round(rate, 3) + " to maxSafeBasal: " + maxSafeBasal + ", ";
