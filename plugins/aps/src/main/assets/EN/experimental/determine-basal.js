@@ -1298,12 +1298,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 var UAMDeltaXboost = (ENPBActive ? 1 : 1.5);
                 var UAMDeltaXmax = (ENPBActive ? 90 : 90); // max increase of 5mmol or 7.5mmol
                 // Calculate the scaled UAMDeltaX based on the ENW
-                UAMDeltaX = (1-(ENWStartedAgo/ENWindowDuration)) * UAMDeltaXforecast / 5 * UAMDeltaXboost;
-                //eventualBG = Math.max(eventualBG, bg + Math.min(UAMDeltaX * delta,UAMDeltaXmax)); //eBG max increase ~5mmol
-                eventualBG = bg + Math.min(UAMDeltaX * delta,UAMDeltaXmax); //eBG max increase ~5mmol as we are overriding LGS etc
-                //UAMDeltaX = (eventualBG > eventualBG_orig ? UAMDeltaX : 0); // when UAMDeltaX provides no increase reset for reason later
+                UAMDeltaX = (1-(ENWStartedAgo/ENWindowDuration)) * UAMDeltaXforecast / 5 * UAMDeltaXboost; // unrestricted UAM delta extrapolation
+                eventualBG = bg + Math.min(UAMDeltaX * delta,UAMDeltaXmax); //eBG max increase UAMDeltaXmax as we are overriding LGS etc
                 eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
-                //AllowZT = (ENWStartedAgo < 45 ? false : true); // allow ZT
                 minPredBG = Math.max(minPredBG,threshold); // bypass LGS for ENW
                 minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS for ENW
                 minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
@@ -1400,6 +1397,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.COB = meal_data.mealCOB;
     rT.IOB = iob_data.iob;
     rT.reason = "COB: " + round(meal_data.mealCOB, 1) + (meal_data.carbs ? " " + round(fractionCOBAbsorbed * 100) + "%" : "") +  ", Dev: " + convert_bg(deviation, profile) + ", BGI: " + convert_bg(bgi, profile) + ", Delta: " + convert_bg(glucose_status.delta, profile) + "/" + convert_bg(glucose_status.short_avgdelta, profile) + "/" + convert_bg(glucose_status.long_avgdelta, profile) + "=" + round(DeltaPctS * 100) + "/" + round(DeltaPctL * 100) + "%";
+    if (UAMDeltaX) rT.reason += ", DeltaX: " + convert_bg(UAMDeltaX * delta, profile);
     rT.reason += ", ISF: " + convert_bg(sens_normalTarget, profile) + (MaxISF > 0 && sens_normalTarget == MaxISF ? "*" : "") + "/" + convert_bg(sens, profile) + "=" + convert_bg(insulinReq_sens, profile) + ", CR: " + round(carb_ratio, 2) + ", Target: " + convert_bg(target_bg, profile) + (target_bg != normalTarget ? "(" + convert_bg(normalTarget, profile) + ")" : "");
     rT.reason += ", minPredBG " + convert_bg(minPredBG_orig, profile) + (minPredBG > minPredBG_orig ? "=" + convert_bg(minPredBG, profile) : "") + ", minGuardBG " + convert_bg(minGuardBG_orig, profile) + (minGuardBG > minGuardBG_orig ? "=" + convert_bg(minGuardBG, profile) : "") + ", IOBpredBG " + convert_bg(lastIOBpredBG, profile);
 
