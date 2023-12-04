@@ -1936,11 +1936,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             rate = round_basal(rate, profile);
         }
 
-        // BG+ TBR restriction to EN_NoENW_maxBolus
-        // rate = (sens_predType == "BG+" && ENMaxSMB ==0 ? Math.min(EN_NoENW_maxBolus * 12,rate) : rate);
+        // BG+ TBR restriction to EN_NoENW_maxBolus unless overnight
         if (sens_predType == "BG+" && ENMaxSMB == 0) {
-            rate = Math.max(basal + (EN_NoENW_maxBolus * 12), 0); //EN_NoENW_maxBolus over 5 minutes + basal
-            rate = round_basal(rate, profile);
+            var maxTBR = ENtimeOK ? EN_NoENW_maxBolus : maxBolusOrig;
+            rate = round_basal(Math.max(basal + (maxTBR * 12), 0), profile);
         }
 
         if (rate > maxSafeBasal) {
