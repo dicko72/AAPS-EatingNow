@@ -1410,7 +1410,15 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // main EN status
     rT.reason += ", EN-" + profile.variant.substring(0,3) + ": " + (ENactive ? "On" : "Off");
-    if (profile.temptargetSet) rT.reason += (ENTTActive ? " EN-TT" : " TT") + "=" + convert_bg(target_bg, profile);
+    if (ENPBActive) {
+        rT.reason += " EN-PB";
+    } else if (ENTTActive) {
+        rT.reason += " EN-TT";
+    } else if (profile.temptargetSet) {
+        rT.reason += " TT";
+    }
+    if (profile.temptargetSet) rT.reason += "=" + convert_bg(target_bg, profile);
+
     rT.reason += (COB && !profile.temptargetSet && !ENWindowOK ? " COB&gt;0" : "");
 
     // EN window status
