@@ -131,7 +131,7 @@ class BgQualityCheckPlugin @Inject constructor(
         when (state) {
             BgQualityCheck.State.UNKNOWN       -> 0
             BgQualityCheck.State.FIVE_MIN_DATA -> 0
-            BgQualityCheck.State.RECALCULATED  -> R.drawable.ic_baseline_warning_24_yellow
+            BgQualityCheck.State.RECALCULATED  -> 0 // diabled: R.drawable.ic_baseline_warning_24_yellow
             BgQualityCheck.State.DOUBLED       -> R.drawable.ic_baseline_warning_24_red
             BgQualityCheck.State.FLAT          -> R.drawable.ic_baseline_trending_flat_24
         }
