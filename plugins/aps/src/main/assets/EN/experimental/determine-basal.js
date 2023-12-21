@@ -1252,11 +1252,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // if UAMBGPreBolusUnits is more than AAPS max IOB then consider the setting to be minutes
     if (UAMBGPreBolusUnits > max_iob) UAMBGPreBolusUnits = profile.current_basal * UAMBGPreBolusUnits / 60;
     if (profile.percent < 100) UAMBGPreBolusUnits *= profile.percent/100; // profile switch percentage applied when sensitive
-    // when TT duration is less than the ENW duration at this time do a % of prebolus and ENWBolusIOBMax
-    if (meal_data.activeENTempTargetDuration < profile.ENWDuration) {
-        UAMBGPreBolusUnits *= meal_data.activeENTempTargetDuration/profile.ENWDuration;
-//        ENWBolusIOBMax *= meal_data.activeENTempTargetDuration/profile.ENWDuration;
-    }
 
     // start with the prebolus in prefs as the minimum starting bolus amount for ENWBolusIOB then use the maxbolus for UAM+ as the increment
     var UAMBGPreBolus = (UAMBGPreBolusUnits > 0 && ENTTActive && ENPBActive && ENWStartedAgo < PBW && meal_data.ENWBolusIOB < UAMBGPreBolusUnits);
