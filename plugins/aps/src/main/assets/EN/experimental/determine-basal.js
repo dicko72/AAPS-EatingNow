@@ -1294,10 +1294,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 var UAMDeltaXforecast = Math.min(ENWindowDuration,120);
                 var UAMDeltaXboost = (ENPBActive ? 1 : 1.2);
                 var UAMDeltaXmax = (ENPBActive ? 65 : 90); // max increase of 3.5mmol or 5mmol
+                var eBGmax = 230; // safety max of 230mgdl/12.7mmol
                 // Calculate the scaled UAMDeltaX based on the ENW
                 UAMDeltaX = (1-(ENWStartedAgo/ENWindowDuration)) * UAMDeltaXforecast / 5 * UAMDeltaXboost; // unrestricted UAM delta extrapolation
                 eventualBG = bg + Math.min(UAMDeltaX * delta,UAMDeltaXmax); //eBG max increase UAMDeltaXmax as we are overriding LGS etc
-                eventualBG = Math.min(eventualBG, 230); // safety max of 230mgdl/12.7mmol
+                //eventualBG = Math.min(eventualBG, 230); // safety max of 230mgdl/12.7mmol
+                eventualBG = (bg > ISFbgMax ? Math.min(eventualBG, eBGmax) : eventualBG); // safety max of eBGmax
                 minPredBG = Math.max(minPredBG,threshold); // bypass LGS for ENW
                 minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS for ENW
                 minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
