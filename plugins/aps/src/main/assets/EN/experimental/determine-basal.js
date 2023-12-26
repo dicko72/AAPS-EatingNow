@@ -1287,15 +1287,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // UAM+ for slower delta but any acceleration, earlier detection for larger SMB's, bypass LGS
         if (sens_predType == "UAM+") {
             var UAMDeltaX = 0;
-            //if (ENWindowOK) {
+            var eBGmax = 230; // safety max of 230mgdl/12.7mmol
             // for lower eventualBg predictions increase eventualBG with UAMDeltaX using current bg as the basis when early on in ENW or less than 80 of ENWBolusIOBMax has been given
-            //if (ENWindowOK && ENWStartedAgo < 30 || (ENWBolusIOBMax > 0 && (meal_data.ENWBolusIOB / ENWBolusIOBMax) < 0.80) && eventualBG < 270) {
             if (ENWindowOK && ENWStartedAgo < ENWindowDuration) {
                 // Define the range for UAMDeltaX
                 var UAMDeltaXforecast = Math.min(ENWindowDuration,120);
                 var UAMDeltaXboost = (ENPBActive ? 1 : 1.2);
                 var UAMDeltaXmax = (ENPBActive ? 65 : 90); // max increase of 3.5mmol or 5mmol
-                var eBGmax = 230; // safety max of 230mgdl/12.7mmol
                 // Calculate the scaled UAMDeltaX based on the ENW
                 UAMDeltaX = (1-(ENWStartedAgo/ENWindowDuration)) * UAMDeltaXforecast / 5 * UAMDeltaXboost; // unrestricted UAM delta extrapolation
                 eventualBG = bg + Math.min(UAMDeltaX * delta,UAMDeltaXmax); //eBG max increase UAMDeltaXmax as we are overriding LGS etc
@@ -1309,12 +1307,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 minPredBG = Math.max(minPredBG,threshold); // bypass LGS for ENW
                 minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS for ENW
                 minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
-                eventualBG = Math.min(eventualBG, 270); // safety max of 15mmol
-                // when favouring minPredBG allow more of eventualBG
-                eBGweight = (eBGweight == 0 ? 0.5 : eBGweight);
+                eventualBG = Math.min(eventualBG, eBGmax); // safety max of eBGmax
+                // when favouring minPredBG allow more of eventualBG if resistance detected
+                eBGweight = (eBGweight == 0 && TIR_sens_limited > 1 ? 0.5 : eBGweight);
             } else { // low delta but accelerating no LGS bypass
-                // when favouring minPredBG allow more of eventualBG
-                eBGweight = (eBGweight == 0 ? 0.5 : eBGweight);
+                // when favouring minPredBG allow more of eventualBG if resistance detected
+                eBGweight = (eBGweight == 0 && TIR_sens_limited > 1 ? 0.5 : eBGweight);
                 // sens_predType = "UAM"; // pass onto UAM block
                 // Check for BG+ condition
                 //if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < bg && ENWEndedAgo > 60 && lastBolusAge >= 15) sens_predType = "BG+";
