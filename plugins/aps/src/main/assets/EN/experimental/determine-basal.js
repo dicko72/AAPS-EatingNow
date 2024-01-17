@@ -428,7 +428,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         MealScaler = round(profile.MealPct/100,2);
         carb_ratio = round(profile.carb_ratio_midnight / MealScaler, 1);
         sens = round(profile.sens_midnight / MealScaler, 1);
-        if (!profile.scale_isf_profile && profile.percent > 100) sens *= profile.percent/100;  // dont adjust ISF when using a profile switch if resistant and ENW
+//        if (!profile.scale_isf_profile && profile.percent > 100) sens *= profile.percent/100;  // dont adjust ISF when using a profile switch if resistant and ENW
     }
 
 
