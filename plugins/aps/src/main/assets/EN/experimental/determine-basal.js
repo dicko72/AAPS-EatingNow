@@ -1306,7 +1306,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             } else if (delta > 6) { // UAM+ safety needs slightly higher delta when no ENW
                 minPredBG = Math.max(minPredBG,threshold); // bypass LGS for ENW
                 minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS for ENW
-                minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
+                // minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
                 eventualBG = Math.min(eventualBG, eBGmax); // safety max of eBGmax
                 // when favouring minPredBG allow more of eventualBG if resistance detected
                 eBGweight = (eBGweight == 0 && TIR_sens_limited > 1 ? 0.5 : eBGweight);
