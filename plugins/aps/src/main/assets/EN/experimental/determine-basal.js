@@ -423,7 +423,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //    sens = (firstMealScaling ? round(profile.sens_midnight / (profile.BreakfastPct / 100), 1) : sens);
 
     // stronger CR and ISF can be used to scale within ENW when 1 CR and 1 ISF is within the profile
-    if (!profile.use_sens_TDD && profile.sens == profile.sens_midnight && profile.carb_ratio == profile.carb_ratio_midnight && ENWindowOK && !ENPBActive) {
+    //if (!profile.use_sens_TDD && profile.sens == profile.sens_midnight && profile.carb_ratio == profile.carb_ratio_midnight && ENWindowOK && !ENPBActive) {
+    if (!profile.use_sens_TDD && profile.sens == profile.sens_midnight && profile.carb_ratio == profile.carb_ratio_midnight && ENWindowOK) {
 //        MealScaler = round((firstMealWindow ? profile.BreakfastPct / 100 : profile.ENWPct / 100),2);
         MealScaler = round(profile.MealPct/100,2);
         carb_ratio = round(profile.carb_ratio_midnight / MealScaler, 1);
