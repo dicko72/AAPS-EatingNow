@@ -505,6 +505,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // if we have low TIR data use it, else use max resistance data of B2 and B1
     TIR_sens = (TIRB0 < 1 ? TIRB0 : Math.max(TIRB2_safety,TIRB1_safety) );
+    if (TIR_sens == 0) TIR_sens = 1;
 
     // apply autosens limit to TIR_sens_limited
     TIR_sens_limited = Math.min(TIR_sens, profile.autosens_max);
