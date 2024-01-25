@@ -1309,7 +1309,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 minPredBG = Math.max(minPredBG,threshold); // bypass LGS for ENW
                 minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS for ENW
                 // minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
-                eventualBG = Math.min(eventualBG, eBGmax); // safety max of eBGmax
+                // eventualBG = Math.min(eventualBG, eBGmax); // safety max of eBGmax
                 // when favouring minPredBG allow more of eventualBG if resistance detected
                 eBGweight = (eBGweight == 0 && TIR_sens_limited > 1 ? 0.5 : eBGweight);
             } else { // low delta but accelerating no LGS bypass
@@ -1381,7 +1381,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         //if (sens_predType == "UAM+" && !ENWindowOK) insulinReq_sens = sens_normalTarget_orig;
 
         // SAFETY: UAM+ when resistant use current BG ISF as prediction can be too much
-        if (sens_predType == "UAM+" && TIR_sens_limited > 1) insulinReq_sens = sens;
+        // if (sens_predType == "UAM+" && TIR_sens_limited > 1) insulinReq_sens = sens;
 
         // IOB prediction - 50% eBGw and eventualBG with negative IOB
         if (sens_predType == "IOB") eventualBG = insulinReq_bg;
