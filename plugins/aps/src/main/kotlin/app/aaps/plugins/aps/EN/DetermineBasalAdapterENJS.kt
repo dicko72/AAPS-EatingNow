@@ -395,6 +395,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.mealData.put("ENStartedTime", ENStartedTime) // the time EN started today
 
         val ENWStartTime = if (ENWStartTimeArray.isNotEmpty()) ENWStartTimeArray.max() else 0 // get the maximum (latest) time from the array or make it 0
+        var ENWDuration = 0
+
 
         // get the TDD since ENW Start
         this.mealData.put("ENWStartTime", ENWStartTime)
@@ -416,7 +418,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         // use the settings based on the first meal validation
         if (firstMealWindow) {
             // Breakfast profile
-            this.profile.put("ENWDuration", sp.getInt(R.string.key_enbkfstwindowminutes, 0)) // ENBkfstWindow
+            ENWDuration = sp.getInt(R.string.key_enbkfstwindowminutes, 0)
+            this.profile.put("ENWDuration",ENWDuration) // ENBkfstWindow
             this.profile.put("MealPct", sp.getInt(R.string.key_eatingnow_breakfastpct, 100)) // meal scaling - BreakfastPct
             this.profile.put("ENW_maxBolus_COB", sp.getDouble(R.string.key_eatingnow_cobboost_maxbolus_breakfast, 0.0)) // EN_COB_maxBolus_breakfast
             this.profile.put("ENW_maxBolus_UAM", sp.getDouble(R.string.key_eatingnow_uam_maxbolus_breakfast, 0.0)) // EN_UAM_maxBolus_breakfast
@@ -426,7 +429,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             this.profile.put("ENW_maxIOB", sp.getDouble(R.string.key_enw_breakfast_max_tdd, 0.0)) // ENW_breakfast_max_tdd
         } else {
             // Subsequent meals profile
-            this.profile.put("ENWDuration", sp.getInt(R.string.key_eatingnow_enwindowminutes, 0)) // ENWindow
+            ENWDuration = sp.getInt(R.string.key_eatingnow_enwindowminutes, 0)
+            this.profile.put("ENWDuration",ENWDuration ) // ENWindow
             this.profile.put("MealPct", sp.getInt(R.string.key_eatingnow_pct, 100)) // meal scaling - ENWPct
             this.profile.put("ENW_maxBolus_COB", sp.getDouble(R.string.key_eatingnow_cobboost_maxbolus, 0.0)) //EN_COB_maxBolus
             this.profile.put("ENW_maxBolus_UAM", sp.getDouble(R.string.key_eatingnow_uamboost_maxbolus, 0.0)) //EN_UAM_maxBolus
@@ -526,37 +530,74 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         // TIR Windows - 4 hours prior to current time - TIRB2
         val resistancePerHr = sp.getDouble(R.string.en_resistance_per_hour, 0.0)
         this.profile.put("resistancePerHr", sp.getDouble(R.string.en_resistance_per_hour, 0.0))
+        // if (resistancePerHr > 0) {
+        //     var TIRTarget = normalTargetBG + 20.0 // TIRB1 - lower band
+        //     // TIR 4h ago
+        //     tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4, 3, normalTargetBG-9.0, TIRTarget)).let { tir ->
+        //         this.mealData.put("TIRTW4H",tir.abovePct())
+        //         this.mealData.put("TIRTW4L",tir.belowPct())
+        //     }
+        //
+        //     // TIR 3h ago
+        //     tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3, 2, normalTargetBG-9.0, TIRTarget)).let { tir ->
+        //         this.mealData.put("TIRTW3H",tir.abovePct())
+        //         this.mealData.put("TIRTW3L",tir.belowPct())
+        //     }
+        //
+        //     // TIR 2h ago
+        //     tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2, 1, normalTargetBG-9.0, TIRTarget)).let { tir ->
+        //         this.mealData.put("TIRTW2H",tir.abovePct())
+        //         this.mealData.put("TIRTW2L",tir.belowPct())
+        //     }
+        //
+        //     // TIR 1h ago
+        //     tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1, 0, normalTargetBG-9.0, TIRTarget)).let { tir ->
+        //         this.mealData.put("TIRTW1H",tir.abovePct())
+        //         this.mealData.put("TIRTW1L",tir.belowPct())
+        //     }
+        //
+        //     TIRTarget = normalTargetBG + 50.0 // TIRB2 - higher band
+        //     this.mealData.put("TIRW4H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4, 3, 72.0, TIRTarget)).abovePct())
+        //     this.mealData.put("TIRW3H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3, 2, 72.0, TIRTarget)).abovePct())
+        //     this.mealData.put("TIRW2H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2, 1, 72.0, TIRTarget)).abovePct())
+        //     this.mealData.put("TIRW1H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1, 0, 72.0, TIRTarget)).abovePct())
+        // }
+
         if (resistancePerHr > 0) {
             var TIRTarget = normalTargetBG + 20.0 // TIRB1 - lower band
-            // TIR 4h ago
-            tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4, 3, normalTargetBG-9.0, TIRTarget)).let { tir ->
-                this.mealData.put("TIRTW4H",tir.abovePct())
-                this.mealData.put("TIRTW4L",tir.belowPct())
+            var TIRStart = ENWStartTime + (ENWDuration*60000)
+            if (now > TIRStart + (4*3600000)) TIRStart = now-(4*3600000) // if its been longer than 4h since ENW use current time as anchor
+            this.mealData.put("TIRStart", TIRStart)
+
+            // TIR end of ENW
+            tirCalculator.averageTIR(tirCalculator.calculateByTime(TIRStart+(0*3600000), normalTargetBG-9.0, TIRTarget)).let { tir ->
+                this.mealData.put("TIR_B1_0H",tir.abovePct())
+                this.mealData.put("TIR_B0_0L",tir.belowPct())
             }
 
-            // TIR 3h ago
-            tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3, 2, normalTargetBG-9.0, TIRTarget)).let { tir ->
-                this.mealData.put("TIRTW3H",tir.abovePct())
-                this.mealData.put("TIRTW3L",tir.belowPct())
+            // TIR end of ENW +1h
+            tirCalculator.averageTIR(tirCalculator.calculateByTime(TIRStart+(1*3600000), normalTargetBG-9.0, TIRTarget)).let { tir ->
+                this.mealData.put("TIR_B1_1H",tir.abovePct())
+                this.mealData.put("TIR_B0_1L",tir.belowPct())
             }
 
-            // TIR 2h ago
-            tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2, 1, normalTargetBG-9.0, TIRTarget)).let { tir ->
-                this.mealData.put("TIRTW2H",tir.abovePct())
-                this.mealData.put("TIRTW2L",tir.belowPct())
+            // TIR end of ENW +2h
+            tirCalculator.averageTIR(tirCalculator.calculateByTime(TIRStart+(2*3600000), normalTargetBG-9.0, TIRTarget)).let { tir ->
+                this.mealData.put("TIR_B1_2H",tir.abovePct())
+                this.mealData.put("TIR_B0_2L",tir.belowPct())
             }
 
-            // TIR 1h ago
-            tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1, 0, normalTargetBG-9.0, TIRTarget)).let { tir ->
-                this.mealData.put("TIRTW1H",tir.abovePct())
-                this.mealData.put("TIRTW1L",tir.belowPct())
+            // TIR end of ENW +3h
+            tirCalculator.averageTIR(tirCalculator.calculateByTime(TIRStart+(3*3600000), normalTargetBG-9.0, TIRTarget)).let { tir ->
+                this.mealData.put("TIR_B1_3H",tir.abovePct())
+                this.mealData.put("TIR_B0_3L",tir.belowPct())
             }
 
             TIRTarget = normalTargetBG + 50.0 // TIRB2 - higher band
-            this.mealData.put("TIRW4H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(4, 3, 72.0, TIRTarget)).abovePct())
-            this.mealData.put("TIRW3H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(3, 2, 72.0, TIRTarget)).abovePct())
-            this.mealData.put("TIRW2H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(2, 1, 72.0, TIRTarget)).abovePct())
-            this.mealData.put("TIRW1H", tirCalculator.averageTIR(tirCalculator.calculateHoursPrior(1, 0, 72.0, TIRTarget)).abovePct())
+            this.mealData.put("TIR_B2_0H", tirCalculator.averageTIR(tirCalculator.calculateByTime(TIRStart+(0*3600000), 72.0, TIRTarget)).abovePct())
+            this.mealData.put("TIR_B2_1H", tirCalculator.averageTIR(tirCalculator.calculateByTime(TIRStart+(1*3600000), 72.0, TIRTarget)).abovePct())
+            this.mealData.put("TIR_B2_2H", tirCalculator.averageTIR(tirCalculator.calculateByTime(TIRStart+(2*3600000), 72.0, TIRTarget)).abovePct())
+            this.mealData.put("TIR_B2_3H", tirCalculator.averageTIR(tirCalculator.calculateByTime(TIRStart+(3*3600000), 72.0, TIRTarget)).abovePct())
         }
 
         if (constraintChecker.isAutosensModeEnabled().value()) {
