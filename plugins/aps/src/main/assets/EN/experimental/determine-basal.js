@@ -486,6 +486,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     TIR_sens = (TIR_L < 1 ? TIR_L : Math.max(TIR_H_safety,TIR_M_safety) );
     if (TIR_sens == 0) TIR_sens = 1;
 
+//    var endebug = "TIRStart:"+meal_data.TIRStart+",TIRHrs:"+meal_data.TIRHrs;
     // apply autosens limit to TIR_sens_limited
     TIR_sens_limited = Math.min(TIR_sens, profile.autosens_max);
     TIR_sens_limited = Math.max(TIR_sens_limited, profile.autosens_min);

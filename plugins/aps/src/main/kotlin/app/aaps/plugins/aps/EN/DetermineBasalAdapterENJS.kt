@@ -535,19 +535,21 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             var TIRStart = ENWStartTime + (ENWDuration * 60000)
             if (now > TIRStart + (3 * 3600000)) TIRStart = now - (3 * 3600000) // if its been longer than 4h since ENW use current time as anchor
             this.mealData.put("TIRStart", TIRStart)
+            val TIRHrs = ((now - TIRStart).toDouble() / 3600000)
+            // this.mealData.put("TIRHrs", TIRHrs)
 
             // TIRB1 - lower band
             tirCalculator.averageTIR(tirCalculator.calculateByTime(TIRStart,normalTargetBG-9.0, normalTargetBG + 20.0)).let { tir ->
                 this.mealData.put("TIR_L_pct",tir.belowPct())
-                this.mealData.put("TIR_L",1 - ((((now - TIRStart) / 3600000) * resistancePerHr / 100) * (tir.belowPct()/100)) )
+                this.mealData.put("TIR_L",1 - ((TIRHrs * resistancePerHr / 100) * (tir.belowPct()/100)) )
                 this.mealData.put("TIR_M_pct",tir.abovePct())
-                this.mealData.put("TIR_M",1 + ((((now - TIRStart) / 3600000) * resistancePerHr / 100) * (tir.abovePct()/100)) )
+                this.mealData.put("TIR_M",1 + ((TIRHrs * resistancePerHr / 100) * (tir.abovePct()/100)) )
             }
 
             // TIRB2 - higher band
             tirCalculator.averageTIR(tirCalculator.calculateByTime(TIRStart,72.0, normalTargetBG + 50.0)).let { tir ->
                 this.mealData.put("TIR_H_pct",tir.abovePct())
-                this.mealData.put("TIR_H",1 + ((((now - TIRStart) / 3600000) * resistancePerHr / 100) * (tir.abovePct()/100)) )
+                this.mealData.put("TIR_H",1 + ((TIRHrs * resistancePerHr / 100) * (tir.abovePct()/100)) )
             }
         }
 
