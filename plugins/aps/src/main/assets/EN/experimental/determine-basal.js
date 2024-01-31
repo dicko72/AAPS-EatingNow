@@ -1288,7 +1288,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 minBG = minPredBG; // go with the largest value for UAM+ outside ENW
                 // eventualBG = Math.min(eventualBG, eBGmax); // safety max of eBGmax
                 // when favouring minPredBG allow more of eventualBG if resistance detected
-                eBGweight = (eBGweight == 0 && TIR_sens_limited > 1 ? 0.5 : eBGweight);
+                //eBGweight = (eBGweight == 0 && TIR_sens_limited > 1 ? 0.5 : eBGweight);
+                eBGweight = (eBGweight == 0 && ENtimeOK ? 0.5 : eBGweight); // if daytime allow more eBGw
             } else { // low delta but accelerating no LGS bypass
                 // when favouring minPredBG allow more of eventualBG if resistance detected
                 //eBGweight = (eBGweight == 0 && TIR_sens_limited > 1 ? 0.5 : eBGweight);
