@@ -1246,10 +1246,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // Pre-bolus condition matches set PB type when not accelerating
     if (UAMBGPreBolus && sens_predType != "UAM+") sens_predType = "PB";
 
-    // BG+ outside of UAM prediction
-    //if (profile.EN_BGPlus_maxBolus != 0 && !ENPBActive && ENWStartedAgo > 90 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < bg ) sens_predType = "BG+";
-    //if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < bg && ENWEndedAgo > 60 && lastBolusAge >= 15) sens_predType = "BG+";
-    if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < target_bg) sens_predType = "BG+";
+    // BG+ outside of UAM prediction when resistant and not falling on long average
+    if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < target_bg && glucose_status.long_avgdelta >= 0) sens_predType = "BG+";
 
     // TBR for tt that isn't EN at normal target
     if (profile.temptargetSet && !ENTTActive && target_bg == normalTarget) sens_predType = "TBR";
@@ -1303,7 +1301,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // sens_predType = "UAM"; // pass onto UAM block
                 // Check for BG+ condition
                 //if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < bg && ENWEndedAgo > 60 && lastBolusAge >= 15) sens_predType = "BG+";
-                if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < target_bg) sens_predType = "BG+";
+                //if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < target_bg) sens_predType = "BG+";
+                if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < target_bg && glucose_status.long_avgdelta >= 0) sens_predType = "BG+";
             }
         }
 
