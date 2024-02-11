@@ -478,7 +478,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var TIR_H_safety = (bg >= normalTarget + 50 && delta >-4 && DeltaPctS > 0 ? TIR_H : 1); // SAFETY: when bg not falling too much or delta not slowing
 
     // TIRM - The TIR for the lower band just above normalTarget (+18/1.0)
-    var TIR_M_safety = (bg > normalTarget + 20 && delta >-4 && delta <= 4 && glucose_status.long_avgdelta >-4 && Math.min(DeltaPctS,DeltaPctL) > 1 ? TIR_M : 1); // SAFETY: when bg not falling too much or delta not slowing
+    //var TIR_M_safety = (bg > normalTarget + 20 && delta >-4 && delta <= 4 && glucose_status.long_avgdelta >-4 && Math.min(DeltaPctS,DeltaPctL) > 1 ? TIR_M : 1); // SAFETY: when bg not falling too much or delta not slowing
+    var TIR_M_safety = (bg > normalTarget + 20 && delta >-4 && delta <= 4 && glucose_status.long_avgdelta >-4 ? TIR_M : 1); // SAFETY: when bg not falling too much or delta not slowing
 
 
 
