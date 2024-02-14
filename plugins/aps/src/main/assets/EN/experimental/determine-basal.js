@@ -575,13 +575,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         basal = profile.current_basal * sensitivityRatio;
     }
 
-    // Dont scale ISF with profile switch (optional)
-    if (!profile.scale_isf_profile && profile.percent < 100 && TIR_L >= 1) {
-        sens_normalTarget *= profile.percent/100; // cancel adjustment if not sensitive when switch < 100%
-    //} else if (!profile.scale_isf_profile && profile.percent > 100 && TIR_H <= 1 && bg < normalTarget + 50.0) {
-    } else if (!profile.scale_isf_profile && profile.percent > 100) {
-        sens_normalTarget *= profile.percent/100; // cancel adjustment when switch > 100%
-    }
+//    // Dont scale ISF with profile switch (optional)
+//    if (!profile.scale_isf_profile && profile.percent < 100 && TIR_L >= 1) {
+//        sens_normalTarget *= profile.percent/100; // cancel adjustment if not sensitive when switch < 100%
+//    //} else if (!profile.scale_isf_profile && profile.percent > 100 && TIR_H <= 1 && bg < normalTarget + 50.0) {
+//    } else if (!profile.scale_isf_profile && profile.percent > 100) {
+//        sens_normalTarget *= profile.percent/100; // cancel adjustment when switch > 100%
+//    }
 
     // apply TIRS to ISF only when delta is slight or bg higher
     if (TIR_sens_limited !=1 && TIR_sens !=1) {
@@ -660,6 +660,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "ISFBGscaler is now:" + ISFBGscaler + "\n";
     // Convert ISFBGscaler to %
     ISFBGscaler = (100 - ISFBGscaler) / 100;
+
+    // Dont scale ISF with profile switch (optional) but adjust ISFBGscaler - Resistant Only
+    if (!profile.scale_isf_profile && profile.percent >= 100 && TIR_sens_limited >= 1) {
+        sens_normalTarget *= profile.percent/100; // cancel adjustment when switch > 100%
+        ISFBGscaler *= profile.percent/100; // adjust ISFBGscaler
+    }
+
+
     enlog += "ISFBGscaler % is now:" + ISFBGscaler + "\n";
 
     // scale the current bg ISF using previously defined sens at normal target
@@ -1357,8 +1365,15 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // sometimes the weighting can provide a lower eBG, if so use the original
         insulinReq_bg = (TIR_sens_limited > 1 && insulinReq_bg < insulinReq_bg_orig ? insulinReq_bg_orig : insulinReq_bg);
 
-        // insulinReq_sens determines the ISF used for final insulinReq calc, only use when ENW or resistant
-        insulinReq_sens = (profile.useDynISF && ENWindowOK || TIR_sens_limited > 1 ? dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val) : sens); // dynISF?
+        // when using DynISF
+        if (profile.useDynISF) {
+            // insulinReq_sens determines the ISF used for final insulinReq calc, when ENW go with the predicted ISF
+            // otherwise use the current BG ISF as DynISF is in use
+            insulinReq_sens = (ENWindowOK ? dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val) : sens);
+
+            // when resistant use the stronger ISF
+            if (TIR_sens_limited > 1) insulinReq_sens = Math.min(dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val), sens);
+        }
 
         // use the strongest ISF when ENW active
         // insulinReq_sens = (!firstMealWindow && !COB && ENWStartedAgo <= ENWindowDuration ? Math.min(insulinReq_sens, sens) : insulinReq_sens);
