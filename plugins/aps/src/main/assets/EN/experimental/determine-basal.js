@@ -583,10 +583,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //        sens_normalTarget *= profile.percent/100; // cancel adjustment when switch > 100%
 //    }
 
-//    // apply TIRS to ISF only when delta is slight or bg higher
-//    if (TIR_sens_limited !=1 && TIR_sens !=1) {
-//        sens_normalTarget = sens_normalTarget / TIR_sens_limited;
-//    }
+    // apply TIRS to ISF only when delta is slight or bg higher
+    if (TIR_sens_limited !=1 && TIR_sens !=1) {
+        sens_normalTarget = sens_normalTarget / TIR_sens_limited;
+    }
 
     if (sensitivityRatio == 1 && TIRH_percent > 0) sensitivityRatio = TIR_sens_limited; // SR is TIRS if enabled
     sensitivityRatio = round(sensitivityRatio, 2);     // round SR
@@ -667,11 +667,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         ISFBGscaler = (200 - profile.percent) / 100.0 // adjust ISFBGscaler
     }
 
-    // apply TIRS to sens_currentBG via ISFBGscaler
-    if (TIR_sens_limited !=1 && TIR_sens !=1) {
-        sens_normalTarget = sens_normalTarget / TIR_sens_limited;
-        ISFBGscaler /= TIR_sens_limited; // adjust ISFBGscaler
-    }
+//    // apply TIRS to sens_currentBG via ISFBGscaler
+//    if (TIR_sens_limited !=1 && TIR_sens !=1) {
+//        sens_normalTarget = sens_normalTarget / TIR_sens_limited;
+//        ISFBGscaler /= TIR_sens_limited; // adjust ISFBGscaler
+//    }
 
 
 
