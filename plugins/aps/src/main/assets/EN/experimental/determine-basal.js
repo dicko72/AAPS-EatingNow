@@ -1266,11 +1266,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // BG+ outside of UAM prediction when resistant and not falling on long average
     //if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < target_bg && glucose_status.long_avgdelta >= 0) sens_predType = "BG+";
-    if (profile.EN_BGPlus_maxBolus != 0 && (TIR_sens_limited-1)/(TIRH_percent/100) >= 0.75 && TIR_H_safety > 1 && sens_predType == "NA") sens_predType = "BG+";
+    //if (profile.EN_BGPlus_maxBolus != 0 && (TIR_sens_limited-1)/(TIRH_percent/100) >= 0.75 && TIR_H_safety > 1 && sens_predType == "NA") sens_predType = "BG+";
+    if (profile.EN_BGPlus_maxBolus != 0 && (TIR_sens_limited-1)/(TIRH_percent/100) >= 0.75 && TIR_H_safety > 1 && delta < 9) sens_predType = "BG+";
 
 
     // TBR for tt that isn't EN at normal target
     if (profile.temptargetSet && !ENTTActive && target_bg == normalTarget) sens_predType = "TBR";
+//    if (profile.temptargetSet && !ENTTActive && target_bg == normalTarget) sens_predType = "BG+";     // TESTING ONLY
+
 
     // evaluate prediction type and weighting - Only use during when EN active or sensitive or resistant
     if (ENactive || TIR_sens_limited !=1 && !HighTempTargetSet) {
@@ -1323,7 +1326,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 //if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < bg && ENWEndedAgo > 60 && lastBolusAge >= 15) sens_predType = "BG+";
                 //if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < target_bg) sens_predType = "BG+";
 //                if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && eventualBG < target_bg && glucose_status.long_avgdelta >= 0) sens_predType = "BG+";
-                if (profile.EN_BGPlus_maxBolus != 0 && (TIR_sens_limited-1)/(TIRH_percent/100) >= 0.75 && TIR_H_safety > 1 && sens_predType == "NA") sens_predType = "BG+";
+//                if (profile.EN_BGPlus_maxBolus != 0 && (TIR_sens_limited-1)/(TIRH_percent/100) >= 0.75 && TIR_H_safety > 1) sens_predType = "BG+";
             }
         }
 
@@ -1805,7 +1808,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             }
 
             // BG+ is the only EN prediction type allowed outside of ENW
-            ENMaxSMB = (sens_predType == "BG+" ? profile.EN_BGPlus_maxBolus : ENMaxSMB);
+//            ENMaxSMB = (sens_predType == "BG+" ? profile.EN_BGPlus_maxBolus : ENMaxSMB);
+            ENMaxSMB = (sens_predType == "BG+" ? -1 : ENMaxSMB);
 
             // if ENMaxSMB is more than 0 use ENMaxSMB else use AAPS max minutes
             ENMaxSMB = (ENMaxSMB == 0 ? maxBolus : ENMaxSMB);
@@ -1960,11 +1964,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // BG+ TBR restriction to EN_NoENW_maxBolus unless overnight
         //if (sens_predType == "BG+" && ENMaxSMB == 0) {
         if (sens_predType == "BG+") {
-//            var maxTBR = ENtimeOK ? EN_NoENW_maxBolus : maxBolusOrig;
-            //rate = round_basal(Math.max(basal + (maxTBR * 12), 0), profile);
-            // 2 x tirs basal
-//            rate = round_basal(Math.max(maxTBR * 12, 0)
-            rate = round_basal(2 * TIR_sens_limited * basal, profile); // 2 x the current TIRS base basal
+            var maxTBR = (ENtimeOK ? EN_NoENW_maxBolus : maxBolusOrig) * 12;
+//            TIR_sens_limited = 1.15; // TESTING ONLY
+            var TBR = Math.min(basal + (4 * TIR_sens_limited * basal),maxTBR,maxSafeBasal);  // 4 x the current TIRS base max is SMB at appropriate time
+            rate = round_basal(TBR, profile);
+            rT.reason += "temp " + round(currenttemp.rate, 2) + " &lt; BG+ " + rate + "U/hr. ";
+            return tempBasalFunctions.setTempBasal(rate, 30, profile, rT, currenttemp);
         }
 
         if (rate > maxSafeBasal) {
