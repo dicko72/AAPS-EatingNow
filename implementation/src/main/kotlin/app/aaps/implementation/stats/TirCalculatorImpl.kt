@@ -69,16 +69,14 @@ class TirCalculatorImpl @Inject constructor(
         return totalTir
     }
 
-    override fun calculateByTime(timeStart: Long, lowMgdl: Double, highMgdl: Double): LongSparseArray<TIR> {
+    override fun calculateByTime(timeStart: Long, hours: Double, lowMgdl: Double, highMgdl: Double): LongSparseArray<TIR> {
         if (lowMgdl < 39) throw RuntimeException("Low below 39")
         if (lowMgdl > highMgdl) throw RuntimeException("Low > High")
-        // val startTime = dateUtil.now() - T.hours(hour = hrsPriorStart).msecs()
-        val timeEnd = dateUtil.now()
+        val timeEnd: Long = (timeStart + (hours * 3600000)).toLong()
         val bgReadings = repository.compatGetBgReadingsDataFromTime(timeStart, timeEnd, true).blockingGet()
 
         val result = LongSparseArray<TIR>()
         for (bg in bgReadings) {
-            //val midnight = MidnightTime.calc(bg.date)
             var tir = result[timeStart]
             if (tir == null) {
                 tir = TirImpl(timeStart, lowMgdl, highMgdl)
