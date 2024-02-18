@@ -484,7 +484,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
 
     // if we have low TIR data use it, else use max resistance data of B2 and B1
-    TIR_sens = (TIR_L < 1 ? TIR_L : Math.max(TIR_H_safety,TIR_M_safety) );
+    //TIR_sens = (TIR_L < 1 ? TIR_L : Math.max(TIR_H_safety,TIR_M_safety) );
+    TIR_sens = (TIR_L < 1 && meal_data.TIR0_L_pct > 0 ? TIR_L : Math.max(TIR_H_safety,TIR_M_safety) );
     if (TIR_sens == 0) TIR_sens = 1;
 
 //    var endebug = "TIRStart:"+meal_data.TIRStart+",TIRHrs:"+meal_data.TIRHrs;
