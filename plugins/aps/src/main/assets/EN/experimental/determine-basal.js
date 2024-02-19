@@ -1966,7 +1966,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (sens_predType == "BG+") {
             var maxTBR = (ENtimeOK ? EN_NoENW_maxBolus : maxBolusOrig) * 12;
 //            TIR_sens_limited = 1.15; // TESTING ONLY
-            var TBR = Math.min(basal + (4 * TIR_sens_limited * basal),maxTBR,maxSafeBasal);  // 4 x the current TIRS base max is SMB at appropriate time
+            var TBR = Math.min(3 * TIR_sens_limited * basal,maxTBR,maxSafeBasal);  // 4 x the current TIRS base max is SMB at appropriate time
             rate = round_basal(TBR, profile);
             rT.reason += "temp " + round(currenttemp.rate, 2) + " &lt; BG+ " + rate + "U/hr. ";
             return tempBasalFunctions.setTempBasal(rate, 30, profile, rT, currenttemp);
