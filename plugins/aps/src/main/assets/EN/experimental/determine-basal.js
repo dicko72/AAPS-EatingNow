@@ -1267,7 +1267,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // BG+ outside of UAM prediction when resistant and not falling on long average
     //if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < target_bg && glucose_status.long_avgdelta >= 0) sens_predType = "BG+";
     //if (profile.EN_BGPlus_maxBolus != 0 && (TIR_sens_limited-1)/(TIRH_percent/100) >= 0.75 && TIR_H_safety > 1 && sens_predType == "NA") sens_predType = "BG+";
-    if (profile.EN_BGPlus_maxBolus != 0 && (TIR_sens_limited-1)/(TIRH_percent/100) >= 0.50 && TIR_H_safety > 1 && delta < 9) sens_predType = "BG+";
+    //if (profile.EN_BGPlus_maxBolus != 0 && (TIR_sens_limited-1)/(TIRH_percent/100) >= 0.50 && TIR_H_safety > 1 && delta < 9) sens_predType = "BG+";
+    if (profile.EN_BGPlus_maxBolus != 0 && TIR_H_safety > 1 && delta < 9) sens_predType = "BG+";
 
 
     // TBR for tt that isn't EN at normal target
