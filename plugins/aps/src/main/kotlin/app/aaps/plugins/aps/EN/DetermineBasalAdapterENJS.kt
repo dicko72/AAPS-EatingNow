@@ -539,7 +539,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             // this.mealData.put("TIRHrs", TIRHrs)
 
             // TIR0 - recent TIR
-            tirCalculator.averageTIR(tirCalculator.calculateByTime(TIRStart,0.5,normalTargetBG-9.0, normalTargetBG + 50.0)).let { tir ->
+            tirCalculator.averageTIR(tirCalculator.calculateByTime( now - 1800000 ,0.5,normalTargetBG-9.0, normalTargetBG + 50.0)).let { tir ->
                 this.mealData.put("TIR0_L_pct",tir.belowPct())
                 this.mealData.put("TIR0_H_pct",tir.abovePct())
             }
