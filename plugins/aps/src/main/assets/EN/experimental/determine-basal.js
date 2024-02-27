@@ -576,13 +576,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         basal = profile.current_basal * sensitivityRatio;
     }
 
-//    // Dont scale ISF with profile switch (optional)
-//    if (!profile.scale_isf_profile && profile.percent < 100 && TIR_L >= 1) {
-//        sens_normalTarget *= profile.percent/100; // cancel adjustment if not sensitive when switch < 100%
-//    //} else if (!profile.scale_isf_profile && profile.percent > 100 && TIR_H <= 1 && bg < normalTarget + 50.0) {
-//    } else if (!profile.scale_isf_profile && profile.percent > 100) {
-//        sens_normalTarget *= profile.percent/100; // cancel adjustment when switch > 100%
-//    }
+    // Dont scale ISF with profile switch (optional)
+    if (!profile.scale_isf_profile && profile.percent < 100 && meal_data.TIR0_L_pct > 0) {
+        sens_normalTarget *= profile.percent/100; // cancel adjustment if not sensitive when switch < 100%
+    //} else if (!profile.scale_isf_profile && profile.percent > 100 && TIR_H <= 1 && bg < normalTarget + 50.0) {
+    } else if (!profile.scale_isf_profile && profile.percent > 100 && meal_data.TIR0_H_pct > 0) {
+        sens_normalTarget *= profile.percent/100; // cancel adjustment when switch > 100%
+    }
 
     // apply TIRS to ISF only when delta is slight or bg higher
     if (TIR_sens_limited !=1 && TIR_sens !=1) {
@@ -662,11 +662,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // Convert ISFBGscaler to %
     ISFBGscaler = (100 - ISFBGscaler) / 100;
 
-    // Dont scale ISF with profile switch (optional) but adjust ISFBGscaler - Resistant Only
-    if (ISFBGscaler == 1 && !profile.scale_isf_profile && profile.percent >= 100 && TIR_sens_limited >= 1) {
-        sens_normalTarget *= profile.percent/100; // cancel adjustment when switch > 100%
-        ISFBGscaler = (200 - profile.percent) / 100.0 // adjust ISFBGscaler
-    }
+//    // Dont scale ISF with profile switch (optional) but adjust ISFBGscaler - Resistant Only
+//    if (ISFBGscaler == 1 && !profile.scale_isf_profile && profile.percent >= 100 && TIR_sens_limited >= 1) {
+//        sens_normalTarget *= profile.percent/100; // cancel adjustment when switch > 100%
+//        ISFBGscaler = (200 - profile.percent) / 100.0 // adjust ISFBGscaler
+//    }
 
 //    // apply TIRS to sens_currentBG via ISFBGscaler
 //    if (TIR_sens_limited !=1 && TIR_sens !=1) {
