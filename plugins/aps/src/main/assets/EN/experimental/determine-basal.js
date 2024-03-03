@@ -577,11 +577,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     // Dont scale ISF with profile switch (optional)
-    if (!profile.scale_isf_profile && profile.percent < 100 && meal_data.TIR0_L_pct > 0) {
-        sens_normalTarget *= profile.percent/100; // cancel adjustment if not sensitive when switch < 100%
-    //} else if (!profile.scale_isf_profile && profile.percent > 100 && TIR_H <= 1 && bg < normalTarget + 50.0) {
-    } else if (!profile.scale_isf_profile && profile.percent > 100 && meal_data.TIR0_H_pct > 0) {
-        sens_normalTarget *= profile.percent/100; // cancel adjustment when switch > 100%
+    if (!profile.scale_isf_profile && profile.percent !=100 {
+        if (profile.percent < 100 && meal_data.TIR0_L_pct == 0) sens_normalTarget *= profile.percent/100; // cancel adjustment if not sensitive when switch < 100%
+        if (profile.percent > 100 && meal_data.TIR0_H_pct == 0) sens_normalTarget *= profile.percent/100; // cancel adjustment if not resistant when switch > 100%
     }
 
     // apply TIRS to ISF only when delta is slight or bg higher
