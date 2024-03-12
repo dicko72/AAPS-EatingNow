@@ -1331,7 +1331,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         // UAM predictions, no COB or GhostCOB
         if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
-           eBGweight = (ENWindowOK ? 0.50 : eBGweight); // allow more eBG within ENW or UAM+ inherited eBGw
+           eBGweight = (ENWindowOK || TIR_H_safety > 1 ? 0.50 : eBGweight); // allow more eBG within ENW or UAM+ inherited eBGw
 
             // SAFETY: UAM fast delta with higher bg lowers eBGw
             eBGweight = (bg > ISFbgMax && delta >= 15 && ENWBolusIOBMax == 0 ? 0.30 : eBGweight);
