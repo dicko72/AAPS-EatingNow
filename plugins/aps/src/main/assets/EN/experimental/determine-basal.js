@@ -1355,7 +1355,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //            eBGweight = round(TIR_sens_limited/profile.autosens_max,2); // increase eBGw as resistance builds
             eBGweight = 1;
             insulinReq_sens_normalTarget = sens_normalTarget; // use the SR adjusted sens_normalTarget
-            AllowZT = false;
+//            AllowZT = false;
         }
 
         // TBR only
@@ -1807,11 +1807,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             }
 
             // BG+ is the only EN prediction type allowed outside of ENW
-            ENMaxSMB = (sens_predType == "BG+" ? profile.EN_BGPlus_maxBolus : ENMaxSMB);
+//            ENMaxSMB = (sens_predType == "BG+" ? profile.EN_BGPlus_maxBolus : ENMaxSMB);
             if (sens_predType == "BG+") {
                 var maxTBR = (ENtimeOK ? EN_NoENW_maxBolus : maxBolusOrig) * 12;
-                var TBR = Math.min(4.5 / TIR_sens_limited * profile.current_basal,maxTBR,maxSafeBasal);  // 4 x the current TIRS base max is SMB at appropriate time
+                var TBR = Math.min(4.5 / TIR_sens_limited * profile.current_basal,maxTBR);  // 4.5 x the current TIRS base max is SMB at appropriate time
                 ENMaxSMB = TBR / 12;
+                var endebug = "maxTBR:" + maxTBR + ",TBR:" + TBR + ",ENMaxSMB:" + ENMaxSMB;
             }
 
             // if ENMaxSMB is more than 0 use ENMaxSMB else use AAPS max minutes
