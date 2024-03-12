@@ -1266,7 +1266,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     //if (profile.EN_BGPlus_maxBolus != 0 && TIR_sens_limited > 1 && sens_predType == "NA" && eventualBG < target_bg && glucose_status.long_avgdelta >= 0) sens_predType = "BG+";
     //if (profile.EN_BGPlus_maxBolus != 0 && (TIR_sens_limited-1)/(TIRH_percent/100) >= 0.75 && TIR_H_safety > 1 && sens_predType == "NA") sens_predType = "BG+";
     //if (profile.EN_BGPlus_maxBolus != 0 && (TIR_sens_limited-1)/(TIRH_percent/100) >= 0.50 && TIR_H_safety > 1 && delta < 9) sens_predType = "BG+";
-    if (profile.EN_BGPlus_maxBolus != 0 && TIR_H_safety > 1 && delta <= 6) sens_predType = "BG+";
+    if (profile.EN_BGPlus_maxBolus != 0 && TIR_H_safety > 1 && delta >-4 && delta <= 6) sens_predType = "BG+";
 
 
     // TBR for tt that isn't EN at normal target
@@ -1807,8 +1807,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             }
 
             // BG+ is the only EN prediction type allowed outside of ENW
-//            ENMaxSMB = (sens_predType == "BG+" ? profile.EN_BGPlus_maxBolus : ENMaxSMB);
-            ENMaxSMB = (sens_predType == "BG+" ? -1 : ENMaxSMB);
+            ENMaxSMB = (sens_predType == "BG+" ? profile.EN_BGPlus_maxBolus : ENMaxSMB);
+            if (sens_predType == "BG+") {
+                var maxTBR = (ENtimeOK ? EN_NoENW_maxBolus : maxBolusOrig) * 12;
+                var TBR = Math.min(4.5 / TIR_sens_limited * profile.current_basal,maxTBR,maxSafeBasal);  // 4 x the current TIRS base max is SMB at appropriate time
+                ENMaxSMB = TBR / 12;
+            }
 
             // if ENMaxSMB is more than 0 use ENMaxSMB else use AAPS max minutes
             ENMaxSMB = (ENMaxSMB == 0 ? maxBolus : ENMaxSMB);
@@ -1961,11 +1965,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
 
         // BG+ TBR restriction to EN_NoENW_maxBolus unless overnight
-        //if (sens_predType == "BG+" && ENMaxSMB == 0) {
-        if (sens_predType == "BG+") {
+        if (sens_predType == "BG+" && microBolus == 0) {
             var maxTBR = (ENtimeOK ? EN_NoENW_maxBolus : maxBolusOrig) * 12;
-//            TIR_sens_limited = 1.15; // TESTING ONLY
-            var TBR = Math.min(5 / TIR_sens_limited * profile.current_basal,maxTBR,maxSafeBasal);  // 4 x the current TIRS base max is SMB at appropriate time
+            var TBR = Math.min(4.5 / TIR_sens_limited * profile.current_basal,maxTBR,maxSafeBasal);  // 4 x the current TIRS base max is SMB at appropriate time
             rate = round_basal(TBR, profile);
             rT.reason += "temp " + round(currenttemp.rate, 2) + " &lt; BG+ " + rate + "U/hr. ";
             return tempBasalFunctions.setTempBasal(rate, 30, profile, rT, currenttemp);
