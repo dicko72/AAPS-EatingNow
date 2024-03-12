@@ -1355,7 +1355,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //            eBGweight = round(TIR_sens_limited/profile.autosens_max,2); // increase eBGw as resistance builds
             eBGweight = 1;
             insulinReq_sens_normalTarget = sens_normalTarget; // use the SR adjusted sens_normalTarget
-//            AllowZT = false;
+            AllowZT = (profile.EN_BGPlus_maxBolus > 0); // AllowZT false when -1
         }
 
         // TBR only
@@ -1808,7 +1808,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
             // BG+ is the only EN prediction type allowed outside of ENW
 //            ENMaxSMB = (sens_predType == "BG+" ? profile.EN_BGPlus_maxBolus : ENMaxSMB);
-            if (sens_predType == "BG+") {
+            if (sens_predType == "BG+" && profile.EN_BGPlus_maxBolus > 0) {
                 var maxTBR = (ENtimeOK ? EN_NoENW_maxBolus : maxBolusOrig) * 12;
                 var TBR = Math.min(4.5 / TIR_sens_limited * profile.current_basal,maxTBR);  // 4.5 x the current TIRS base max is SMB at appropriate time
                 ENMaxSMB = TBR / 12;
@@ -1966,7 +1966,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
 
         // BG+ TBR restriction to EN_NoENW_maxBolus unless overnight
-        if (sens_predType == "BG+" && microBolus == 0) {
+        if (sens_predType == "BG+" && profile.EN_BGPlus_maxBolus < 0) {
             var maxTBR = (ENtimeOK ? EN_NoENW_maxBolus : maxBolusOrig) * 12;
             var TBR = Math.min(4.5 / TIR_sens_limited * profile.current_basal,maxTBR,maxSafeBasal);  // 4 x the current TIRS base max is SMB at appropriate time
             rate = round_basal(TBR, profile);

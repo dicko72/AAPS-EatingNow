@@ -522,9 +522,9 @@
                 android:defaultValue="0"
                 android:inputType="numberDecimal"
                 android:key="@string/key_eatingnow_bgplus_maxbolus"
-                android:title="BG+ maxBolus"
-                android:dialogMessage="BG+ maxBolus for when there is resistance and BG is stuck higher than target.\n0 will use disable and -1 will disable SMB and use TBR only."
-                validate:floatmaxNumber="200"
+                android:title="BG+ mode"
+                android:dialogMessage="BG+ mode for when there is resistance and BG is stuck higher than target.\n0 will disable, -1 will use TBR only and 1 will use SMB."
+                validate:floatmaxNumber="1"
                 validate:floatminNumber="-1"
                 validate:testType="floatNumericRange"/>
 
