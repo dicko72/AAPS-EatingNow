@@ -129,7 +129,7 @@ class MainApp : DaggerApplication() {
                     if (config.isDev() && sp.getStringOrNull(app.aaps.core.utils.R.string.key_email_for_crash_report, null).isNullOrBlank())
                     // notificationStore.add(Notification(Notification.IDENTIFICATION_NOT_SET, rh.get().gs(R.string.identification_not_set), Notification.INFO))
                     // log version
-                        disposable += repository.runTransaction(VersionChangeTransaction(config.VERSION_NAME, BuildConfig.VERSION_CODE, gitRemote, commitHash)).subscribe()
+                    disposable += repository.runTransaction(VersionChangeTransaction(config.VERSION_NAME, BuildConfig.VERSION_CODE, gitRemote, commitHash)).subscribe()
                     // log app start
                     if (sp.getBoolean(app.aaps.plugins.sync.R.string.key_ns_log_app_started_event, config.APS))
                         disposable += repository

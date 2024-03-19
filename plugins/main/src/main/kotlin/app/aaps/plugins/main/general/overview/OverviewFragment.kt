@@ -629,11 +629,14 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                                 }
                                 it.setCompoundDrawablesWithIntrinsicBounds(null, rh.gd(app.aaps.core.ui.R.drawable.ic_user_options), null, null)
                                 it.text = event.title
-
                                 it.setOnClickListener {
                                     OKDialog.showConfirmation(context, rh.gs(R.string.run_question, event.title), { handler.post { automation.processEvent(event) } })
                                 }
                                 binding.buttonsLayout.userButtonsLayout.addView(it)
+                                for (drawable in it.compoundDrawables ) {
+                                    drawable?.mutate()
+                                    drawable?.colorFilter = PorterDuffColorFilter(rh.gac(context, app.aaps.core.ui.R.attr.userOptionColor), PorterDuff.Mode.SRC_IN)
+                                }
                             }
                         }
             binding.buttonsLayout.userButtonsLayout.visibility = events.isNotEmpty().toVisibility()
@@ -976,9 +979,12 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                     ENTTtext + profileUtil.toTargetRangeString(tempTarget.lowTarget, tempTarget.highTarget, GlucoseUnit.MGDL, units) + " " + dateUtil.untilString(tempTarget.end, rh)
                 )
             } else {
-                // If the target is not the same as set in the profile then oref has overridden it
                 profileFunction.getProfile()?.let { profile ->
-                    val targetUsed = loop.lastRun?.constraintsProcessed?.targetBG ?: 0.0
+                    // If the target is not the same as set in the profile then oref has overridden it
+                    val targetUsed =
+                        if (config.APS) loop.lastRun?.constraintsProcessed?.targetBG ?: 0.0
+                        else if (config.NSCLIENT) JsonHelper.safeGetDouble(processedDeviceStatusData.getAPSResult().json, "targetBG")
+                        else 0.0
 
                     if (targetUsed != 0.0 && abs(profile.getTargetMgdl() - targetUsed) > 0.01) {
                         aapsLogger.debug("Adjusted target. Profile: ${profile.getTargetMgdl()} APS: $targetUsed")
