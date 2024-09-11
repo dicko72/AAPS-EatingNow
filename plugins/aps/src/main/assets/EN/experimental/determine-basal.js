@@ -1233,7 +1233,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // Process BG+ first for slight delta when resistant, lower range when asleep
     if (TIR_sens_limited > 1 && !ENWindowOK && profile.EN_Use_BGPlus && (insulinReq_bg >= -1.5 * bg && insulinReq_bg <= threshold || minGuardBG >= -1.5 * bg && minGuardBG <= threshold) && delta > -4 && delta <= 6 && glucose_status.long_avgdelta > -4) {
-        if (TIR_H_safety > 1 || (TIR_M_safety > 1 && (!ENtimeOK || meal_data.TIR_M_pct == 100))) sens_predType = "BG+";
+        // if (TIR_H_safety > 1 || (TIR_M_safety > 1 && (!ENtimeOK || meal_data.TIR_M_pct == 100))) sens_predType = "BG+";
+        if (TIR_H_safety > 1 || TIR_M_safety > 1 && meal_data.TIR_M_pct == 100 && !ENtimeOK) sens_predType = "BG+";
     }
 
     // UAM+ predtype when sufficient delta not a COB prediction
@@ -1963,6 +1964,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 rate *= 12; // Allow TBR to deliver it within the 5m loop iteration
                 rate = Math.max(0, rate); // ZT is minimum
                 rate = round_basal(rate, profile);
+            }
+
+            // BG+ will resume profile basal when stuck higher than target
+            if (sens_predType == "BG+") {
+                microBolus = 0; // safety set SMB to 0
+                rate = round_basal(profile.current_basal, profile); // resume profile basal rate
             }
 
             //allow SMBs every 3 minutes by default
