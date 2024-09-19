@@ -1375,7 +1375,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             insulinReq_sens = (ENtimeOK ? dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val) : sens);
 
             // when resistant use the stronger ISF
-            if (TIR_sens_limited == autosens_max_tirs) insulinReq_sens = Math.min(dynISF(insulinReq_bg,target_bg,sens_normalTarget,ins_val), insulinReq_sens);
+            // if (TIR_sens_limited == autosens_max_tirs) insulinReq_sens = Math.min(dynISF(insulinReq_bg,target_bg,sens_normalTarget,ins_val), insulinReq_sens);
         }
 
         // IOB prediction - 50% eBGw and eventualBG with negative IOB
