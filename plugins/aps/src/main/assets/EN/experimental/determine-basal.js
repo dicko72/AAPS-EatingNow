@@ -1820,6 +1820,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 SMBinMins = ENMaxSMB;
                 ENMaxSMB = profile.current_basal * ENMaxSMB / 60;
             }
+            if (!SMBinMins && profile.percent !=100 && !UAMBGPreBolusUnitsLeft) ENMaxSMB *= (profile.percent/100); // scale maxBolus when not using minutes and profile switch percentage
 
             var roundSMBTo = 1 / profile.bolus_increment;
 
@@ -1838,8 +1839,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 maxBolus = Math.floor(maxBolus * roundSMBTo) / roundSMBTo;
                 maxBolus = round(maxBolus, 2);
             }
-            if (!SMBinMins && profile.percent !=100 && !UAMBGPreBolusUnitsLeft) maxBolus *= (profile.percent/100); // scale maxBolus when not using minutes and profile switch percentage
-            //var endebug = "ENMaxSMB:"+ENMaxSMB;
 
             // ============== IOB RESTRICTION  ==============
             if (!UAMBGPreBolus && max_iob_en > 0 && insulinReq > max_iob_en - iob_data.iob) {
