@@ -1968,7 +1968,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // BG+ will resume profile basal when stuck higher than target
             if (sens_predType == "BG+") {
                 microBolus = 0; // safety set SMB to 0
-                rate = round_basal(profile.current_basal * TIR_sens_limited, profile); // resume profile basal rate at TIRS
+                rate = profile.current_basal * TIR_sens_limited; // resume profile basal rate at TIRS
+                rate = round_basal(rate, profile);
             }
 
             //allow SMBs every 3 minutes by default
