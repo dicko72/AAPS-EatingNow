@@ -1382,7 +1382,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (sens_predType == "IOB") eventualBG = insulinReq_bg;
     }
 
-    if (HighTempTargetSet) insulinReq_sens = Math.max(sens,sens_currentBG); // HighTemp uses the highest ISF value
+    if (HighTempTargetSet || TIR_sens_limited < 1) insulinReq_sens = Math.max(sens,sens_currentBG); // HighTemp or sensitivity uses the highest ISF value
 
     insulinReq_sens = round(insulinReq_sens, 1);
     enlog += "* eBGweight:\n";
