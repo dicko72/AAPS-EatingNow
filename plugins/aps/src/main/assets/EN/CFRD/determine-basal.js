@@ -2024,6 +2024,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             rate = round_basal(maxSafeBasal, profile);
         }
 
+        if (profile.percent <= 100) rate *= (profile.percent/100); // scale eventual rate when profile switch is less than 100%
+
         insulinScheduled = currenttemp.duration * (currenttemp.rate - basal) / 60;
         if (insulinScheduled >= rate - basal) { // if current temp would deliver more than the required remaining insulin, lower the rate
             rT.reason += currenttemp.duration + "m@" + (currenttemp.rate).toFixed(2) + " &gt;" + rate + ". Setting temp basal of " + rate + "U/hr. ";
