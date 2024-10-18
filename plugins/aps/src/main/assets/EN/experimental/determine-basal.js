@@ -1376,7 +1376,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // insulinReq_sens determines the ISF used for final insulinReq calc based on original unadjusted ISF at normalTarget
             // when ENtimeOK base prediction ISF using insulinReq_sens_normalTarget which may have been adjusted by TIRS
             // otherwise use the current BG ISF as DynISF is in use
-            insulinReq_sens = (ENtimeOK ? dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val) : sens);
+//            insulinReq_sens = (ENtimeOK ? dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val) : sens);
+            insulinReq_sens = sens;
 
             // when resistant use the stronger ISF
             // if (TIR_sens_limited == autosens_max_tirs) insulinReq_sens = Math.min(dynISF(insulinReq_bg,target_bg,sens_normalTarget,ins_val), insulinReq_sens);
