@@ -546,7 +546,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("tirs_always", tirs_always)
 
         if (resistancePerHr > 0) {
-            var TIRStart = ENWStartTime + (ENWDuration * 60000)
+            var TIRStart = ENWStartTime + (ENWDuration * 60000) + (75 * 60000) // TIRS starts 75m after eating window finishes
             val TIRDuration = 2.0
             if (now > TIRStart + (TIRDuration * 3600000) || tirs_always) TIRStart = (now - (TIRDuration * 3600000)).toLong() // if its been longer than 4h since ENW use current time as anchor
             this.mealData.put("TIRStart", TIRStart)
