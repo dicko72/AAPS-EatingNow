@@ -1952,8 +1952,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // SAFETY: Calculate rate restricting to remaining maxBolus or remaining insulinReq differential
                 //rate = Math.min(maxBolus - microBolus, insulinReq * (insulinReqPct_orig-insulinReqPct));
                 rate = Math.min(maxBolus - microBolus, (insulinReq * insulinReqPct_orig) - microBolus);
-                // when AAPS original insulinReq is higher allow allow remaining insulinReqPct as TBR when not maxed out or AAPS insulinReq is greater up to max delta of 18
-                if (insulinReqOrig > 0 && microBolus > 0 && ENactive && delta < 18 && (microBolus < maxBolus || insulinReqOrig > microBolus)) {
+                // when AAPS original insulinReq is higher than restricted SMB allow remaining insulinReqPct as TBR
+                if (insulinReqOrig > microBolus && microBolus > 0 && ENactive && delta < 18 && microBolus < maxBolus) {
                     rate = (insulinReq * insulinReqPct_orig) - microBolus;
                 }
 
