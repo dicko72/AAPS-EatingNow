@@ -246,7 +246,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var ENTTActive = meal_data.activeENTempTargetDuration > 0;
     var ENPBActive = (typeof meal_data.activeENPB == 'undefined' ? false : meal_data.activeENPB);
     var HighTempTargetSet = (!ENTTActive && profile.temptargetSet && target_bg > normalTarget);
-    var LowTempTargetSet = (!ENTTActive && profile.temptargetSet && target_bg < normalTarget);
+    var LowTempTargetSet = (!ENTTActive && profile.temptargetSet && target_bg <= normalTarget);
     //var EN_UseTBR_NoENTT = (profile.EN_UseTBR_NoENTT & !ENTTActive && !ENPBActive && !HighTempTargetSet);
 
 
