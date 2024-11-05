@@ -1291,7 +1291,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             var UAMDeltaX = 0;
             var eBGmax = 230; // safety max of 230mgdl/12.7mmol
             // for lower eventualBg predictions increase eventualBG with UAMDeltaX using current bg as the basis when early on in ENW or less than 80 of ENWBolusIOBMax has been given
-            if (ENWindowOK && ENWStartedAgo < ENWindowDuration) {
+            if (ENWindowOK && ENWStartedAgo < ENWindowDuration && delta > 3) {
                 // Define the range for UAMDeltaX
                 var UAMDeltaXforecast = Math.min(ENWindowDuration,120);
                 var UAMDeltaXboost = (ENPBActive ? 1 : 1);
