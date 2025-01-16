@@ -31,7 +31,7 @@ object Constants {
     const val MAX_TT_MMOL = 10.0
 
     // Eating Now Temp targets
-    const val defaultEatingNowTTDuration = 30 // min
+    // const val defaultEatingNowTTDuration = 30 // min
     const val MAX_ENTT_DURATION = 240.0  // min
     const val MAX_EN_PREBOLUS = 15.0  // units
 

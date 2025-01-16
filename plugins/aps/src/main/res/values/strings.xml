@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+<!--    // Modified for Eating Now-->
     <!--Autotune-->
     <string name="key_autotune_last_run" translatable="false">key_autotune_last_run</string>
 

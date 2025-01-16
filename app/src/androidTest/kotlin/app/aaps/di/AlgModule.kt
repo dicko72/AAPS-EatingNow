@@ -6,6 +6,8 @@ import app.aaps.plugins.aps.openAPSAMA.DetermineBasalAdapterAMAJS
 import app.aaps.plugins.aps.openAPSAMA.DetermineBasalResultAMAFromJS
 import app.aaps.plugins.aps.openAPSSMB.DetermineBasalAdapterSMBJS
 import app.aaps.plugins.aps.openAPSSMB.DetermineBasalResultSMBFromJS
+import app.aaps.plugins.aps.openAPSSMB.DetermineBasalAdapterENJS
+import app.aaps.plugins.aps.openAPSSMB.DetermineBasalResultENFromJS
 import app.aaps.plugins.aps.openAPSSMBAutoISF.DetermineBasalAdapterAutoISFJS
 import app.aaps.plugins.aps.openAPSSMBDynamicISF.DetermineBasalAdapterSMBDynamicISFJS
 import dagger.Module
@@ -23,4 +25,5 @@ abstract class AlgModule {
     @ContributesAndroidInjector abstract fun determineBasalAdapterSMBDynamicISFJSInjector(): DetermineBasalAdapterSMBDynamicISFJS
     @ContributesAndroidInjector abstract fun determineBasalAdapterSMBAutoISFJSInjector(): DetermineBasalAdapterAutoISFJS
     @ContributesAndroidInjector abstract fun determineBasalAdapterENJSInjector(): DetermineBasalAdapterENJS
+    @ContributesAndroidInjector abstract fun determineBasalAdapterENJSInjector(): DetermineBasalResultENFromJS
 }
