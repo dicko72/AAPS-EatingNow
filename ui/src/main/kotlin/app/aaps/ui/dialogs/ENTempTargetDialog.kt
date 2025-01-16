@@ -1,0 +1,296 @@
+// Modified for Eating Now
+package app.aaps.ui.dialogs
+
+import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import app.aaps.core.data.configuration.Constants
+import app.aaps.core.data.model.GlucoseUnit
+import app.aaps.core.data.model.TT
+import app.aaps.core.data.ue.Action
+import app.aaps.core.data.ue.Sources
+import app.aaps.core.data.ue.ValueWithUnit
+import app.aaps.core.interfaces.constraints.ConstraintsChecker
+import app.aaps.core.interfaces.db.PersistenceLayer
+import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.protection.ProtectionCheck
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.utils.DecimalFormatter
+import app.aaps.core.interfaces.utils.HardLimits
+import app.aaps.core.keys.IntKey
+import app.aaps.core.keys.UnitDoubleKey
+import app.aaps.core.ui.dialogs.OKDialog
+import app.aaps.core.ui.extensions.toVisibility
+import app.aaps.core.ui.toast.ToastUtils
+import app.aaps.core.utils.HtmlHelper
+import app.aaps.ui.R
+import app.aaps.ui.databinding.DialogEnTemptargetBinding
+import com.google.common.base.Joiner
+import com.google.common.collect.Lists
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.kotlin.plusAssign
+import java.text.DecimalFormat
+import java.util.LinkedList
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import android.text.Editable
+import android.text.TextWatcher
+import app.aaps.core.interfaces.utils.SafeParse
+import app.aaps.core.objects.constraints.ConstraintObject
+import app.aaps.core.objects.extensions.formatColor
+// import app.aaps.database.ValueWrapper
+// import app.aaps.database.entities.TemporaryTarget
+// import app.aaps.database.entities.UserEntry
+// import app.aaps.database.entities.ValueWithUnit
+// import app.aaps.database.entities.data.GlucoseUnit
+import app.aaps.ui.databinding.DialogInsulinBinding
+import kotlin.math.abs
+
+
+
+
+class ENTempTargetDialog : DialogFragmentWithDate() {
+
+    @Inject lateinit var constraintChecker: ConstraintsChecker
+    @Inject lateinit var rh: ResourceHelper
+    @Inject lateinit var profileFunction: ProfileFunction
+    @Inject lateinit var profileUtil: ProfileUtil
+    @Inject lateinit var uel: UserEntryLogger
+    @Inject lateinit var persistenceLayer: PersistenceLayer
+    @Inject lateinit var ctx: Context
+    @Inject lateinit var protectionCheck: ProtectionCheck
+    @Inject lateinit var decimalFormatter: DecimalFormatter
+    @Inject lateinit var activePlugin: ActivePlugin
+    @Inject lateinit var hardLimits: HardLimits
+
+    private lateinit var reasonList: List<String>
+
+    private var queryingProtection = false
+    private val disposable = CompositeDisposable()
+    private var _binding: DialogEnTemptargetBinding? = null
+
+    // This property is only valid between onCreateView and onDestroyView.
+    private val binding get() = _binding!!
+
+    private val textWatcher: TextWatcher = object : TextWatcher {
+        override fun afterTextChanged(s: Editable) {
+            _binding?.let {
+                // validateInputs()
+            }
+        }
+
+        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+    }
+
+    override fun onSaveInstanceState(savedInstanceState: Bundle) {
+        super.onSaveInstanceState(savedInstanceState)
+        savedInstanceState.putDouble("duration", binding.duration.value)
+        savedInstanceState.putDouble("tempTarget", binding.temptarget.value)
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        onCreateViewGeneral()
+        _binding = DialogEnTemptargetBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val units = profileUtil.units
+        binding.units.text = if (units == GlucoseUnit.MMOL) rh.gs(app.aaps.core.ui.R.string.mmol) else rh.gs(app.aaps.core.ui.R.string.mgdl)
+
+        // set the Eating Now defaults
+        // val enTT = profileUtil.convertToMgdl(profileFunction.getProfile()!!.getTargetMgdl(), units)
+        //val enTT = profile.toCurrentUnits(units,profileFunction.getProfile()!!.getTargetMgdl())
+        val enTT = profileUtil.valueInCurrentUnitsDetect(profileFunction.getProfile()!!.getTargetMgdl())
+
+        binding.duration.setParams(
+            savedInstanceState?.getDouble("duration")
+                ?: 0.0, 0.0, Constants.MAX_ENTT_DURATION, 1.0, DecimalFormat("0"), false, binding.okcancel.ok)
+
+        if (profileFunction.getUnits() == GlucoseUnit.MMOL)
+            binding.temptarget.setParams(
+                savedInstanceState?.getDouble("tempTarget")
+                    ?: enTT,
+                Constants.MIN_TT_MMOL, enTT, 0.1, DecimalFormat("0.0"), false, binding.okcancel.ok)
+        else
+            binding.temptarget.setParams(
+                savedInstanceState?.getDouble("tempTarget")
+                    ?: enTT,
+                Constants.MIN_TT_MGDL, Constants.MAX_TT_MGDL, 1.0, DecimalFormat("0"), false, binding.okcancel.ok)
+
+        //ENW-IOB amount default
+        val maxIOB = hardLimits.maxIobSMB()
+        binding.enwIob.setParams(
+            savedInstanceState?.getDouble("enw_iob")
+                ?: preferences.get(UnitDoubleKey.OverviewEatingNowIOB).toDouble(), 0.0, maxIOB, activePlugin.activePump.pumpDescription.bolusStep, decimalFormatter.pumpSupportedBolusFormat(activePlugin.activePump.pumpDescription.bolusStep), false, binding
+                .okcancel.ok, textWatcher
+        )
+
+        //prebolus amount
+        // val maxInsulin = constraintChecker.getMaxBolusAllowed().value()
+        val maxInsulin = Constants.MAX_EN_PREBOLUS
+        binding.amount.setParams(
+            savedInstanceState?.getDouble("amount")
+                ?: 0.0, 0.0, maxInsulin, activePlugin.activePump.pumpDescription.bolusStep, decimalFormatter.pumpSupportedBolusFormat(activePlugin.activePump.pumpDescription.bolusStep), false, binding
+                .okcancel.ok, textWatcher
+        )
+
+        // temp target
+        context?.let { context ->
+            if (persistenceLayer.getTemporaryTargetActiveAt(dateUtil.now()) != null) {
+                binding.targetCancel.visibility = View.VISIBLE
+                binding.prebolus.visibility = View.GONE // no prebolus checkbox when cancelling TT
+                binding.amount.visibility = View.GONE // no prebolus amount when cancelling TT
+            } else
+                binding.targetCancel.visibility = View.GONE
+
+            reasonList = Lists.newArrayList(
+                rh.gs(app.aaps.core.ui.R.string.eatingnow),
+                rh.gs(app.aaps.core.ui.R.string.eatingnow_prebolus)
+            )
+            binding.reasonList.setAdapter(ArrayAdapter(context, app.aaps.core.ui.R.layout.spinner_centered, reasonList))
+
+            binding.targetCancel.setOnClickListener { binding.duration.value = 0.0; shortClick(it) }
+            binding.durationLabel.labelFor = binding.duration.editTextId
+            binding.temptargetLabel.labelFor = binding.temptarget.editTextId
+        }
+
+        // reset to Eating Now defaults
+        binding.duration.value =  preferences.get(IntKey.OverviewEatingNowDuration).toDouble()
+        binding.reasonList.setText(rh.gs(app.aaps.core.ui.R.string.eatingnow), false)
+        // binding.prebolus.isChecked = false
+
+        // when the prebolus button is pressed
+        binding.prebolus.setOnClickListener {
+            if (binding.prebolus.isChecked) {
+                binding.reasonList.setText(rh.gs(app.aaps.core.ui.R.string.eatingnow_prebolus), false)
+                binding.amount.visibility = View.VISIBLE // show prebolus amount when using PB is checked
+                binding.amount.value = preferences.get(UnitDoubleKey.OverviewEatingNowPreBolus).toDouble()
+            }
+            else {
+                binding.reasonList.setText(rh.gs(app.aaps.core.ui.R.string.eatingnow), false)
+                binding.amount.visibility = View.GONE // hide prebolus amount when using PB is unchecked
+                binding.amount.value = 0.0
+            }
+        }
+    }
+
+    private fun shortClick(v: View) {
+        v.performLongClick()
+        if (submit()) dismiss()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        disposable.clear()
+        _binding = null
+    }
+
+    override fun submit(): Boolean {
+        if (_binding == null) return false
+        val pumpDescription = activePlugin.activePump.pumpDescription
+        val insulin = SafeParse.stringToDouble(binding.amount.text)
+        val insulinAfterConstraints = constraintChecker.applyBolusConstraints(ConstraintObject(insulin, aapsLogger)).value()
+        val actions: LinkedList<String> = LinkedList()
+        var reason = binding.reasonList.text.toString()
+        val unitResId = if (profileFunction.getUnits() == GlucoseUnit.MGDL) app.aaps.core.ui.R.string.mgdl else app.aaps.core.ui.R.string.mmol
+        val target = binding.temptarget.value
+        val duration = binding.duration.value.toInt()
+        sp.putDouble("ENdb_PreBolusUnits",binding.amount.value) // add the prebolus amount for DetermineBasalAdapterENJS.kt
+        sp.putDouble("ENdb_PreBolusUnits",binding.amount.value) // add the prebolus amount for DetermineBasalAdapterENJS.kt
+        sp.putDouble("ENdb_ENWIOBUnits",binding.enwIob.value) // add the ENWIOB amount for DetermineBasalAdapterENJS.ktsp.putDouble("ENdb_ENWIOBUnits",binding.enwIob.value) // add the ENWIOB amount for DetermineBasalAdapterENJS.kt
+        if (target != 0.0 && duration != 0) {
+            // actions.add(rh.gs(app.aaps.core.ui.R.string.reason) + ": " + reason)
+            actions.add(rh.gs(app.aaps.core.ui.R.string.target_label) + ": " + profileUtil.stringInCurrentUnitsDetect(target) + " " + rh.gs(unitResId))
+            actions.add(rh.gs(app.aaps.core.ui.R.string.duration) + ": " + rh.gs(app.aaps.core.ui.R.string.format_mins, duration))
+            actions.add("Pre-Bolus: " + decimalFormatter.toPumpSupportedBolus(insulinAfterConstraints, activePlugin.activePump.pumpDescription.bolusStep).formatColor(context, rh, app.aaps.core.ui.R.attr.bolusColor))
+            actions.add("ENW-IOB Limit: " + binding.enwIob.text)
+        } else {
+            actions.add(rh.gs(app.aaps.core.ui.R.string.stoptemptarget))
+            reason = rh.gs(app.aaps.core.ui.R.string.stoptemptarget)
+        }
+        if (eventTimeChanged)
+            actions.add(rh.gs(app.aaps.core.ui.R.string.time) + ": " + dateUtil.dateAndTimeString(eventTime))
+
+        activity?.let { activity ->
+            OKDialog.showConfirmation(activity, reason, HtmlHelper.fromHtml(Joiner.on("<br/>").join(actions)), {
+                val units = profileFunction.getUnits()
+                val listValues = when (reason) {
+                    rh.gs(app.aaps.core.ui.R.string.eatingnow)          -> listOf(
+                        ValueWithUnit.Timestamp(eventTime).takeIf { eventTimeChanged },
+                        ValueWithUnit.TETTReason(TT.Reason.EATING_NOW),
+                        ValueWithUnit.fromGlucoseUnit(target, units),
+                        ValueWithUnit.Minute(duration)
+                    )
+
+                    rh.gs(app.aaps.core.ui.R.string.eatingnow_prebolus) -> listOf(
+                        ValueWithUnit.Timestamp(eventTime).takeIf { eventTimeChanged },
+                        ValueWithUnit.TETTReason(TT.Reason.EATING_NOW_PB),
+                        ValueWithUnit.fromGlucoseUnit(target, units),
+                        ValueWithUnit.Minute(duration)
+                    )
+
+                    rh.gs(app.aaps.core.ui.R.string.stopeatingnow)      -> listOf(ValueWithUnit.Timestamp(eventTime).takeIf { eventTimeChanged })
+
+                    else                                                -> listOf()
+                }
+                if (target == 0.0 || duration == 0) {
+                    disposable += persistenceLayer.cancelCurrentTemporaryTargetIfAny(
+                        timestamp = eventTime,
+                        action = Action.TT,
+                        source = Sources.TTDialog,
+                        note = null,
+                        listValues = listOf()
+                    ).subscribe()
+                } else {
+                    disposable += persistenceLayer.insertAndCancelCurrentTemporaryTarget(
+                        TT(
+                            timestamp = eventTime,
+                            duration = TimeUnit.MINUTES.toMillis(duration.toLong()),
+                            reason = when (reason) {
+                                rh.gs(app.aaps.core.ui.R.string.eatingnow)              -> TT.Reason.EATING_NOW
+                                rh.gs(app.aaps.core.ui.R.string.eatingnow_prebolus)     -> TT.Reason.EATING_NOW_PB
+                                else                                                    -> TT.Reason.CUSTOM
+                            },
+                            lowTarget = profileUtil.convertToMgdl(target, profileFunction.getUnits()),
+                            highTarget = profileUtil.convertToMgdl(target, profileFunction.getUnits())
+                        ),
+                        action = Action.TT,
+                        source = Sources.TTDialog,
+                        note = null,
+                        listValues = listValues.filterNotNull()
+                    ).subscribe()
+                }
+
+                if (duration == 10) sp.putBoolean(app.aaps.core.utils.R.string.key_objectiveusetemptarget, true)
+            })
+        }
+        return true
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!queryingProtection) {
+            queryingProtection = true
+            activity?.let { activity ->
+                val cancelFail = {
+                    queryingProtection = false
+                    aapsLogger.debug(LTag.APS, "Dialog canceled on resume protection: ${this.javaClass.simpleName}")
+                    ToastUtils.warnToast(ctx, R.string.dialog_canceled)
+                    dismiss()
+                }
+                protectionCheck.queryProtection(activity, ProtectionCheck.Protection.BOLUS, { queryingProtection = false }, cancelFail, cancelFail)
+            }
+        }
+    }
+}

@@ -225,4 +225,10 @@
     <string name="openapsama_iob_threshold_percent_summary" formatted="false">Percentage of maxIOB above which SMBs are disabled.\nDefault value: 100%\nWith 100% this feature is effectively disabled.</string>
     <string name="openapsama_iob_threshold_percent">maxIOB threshold percent for SMB\n(iob_threshold_percent)</string>
 
+    <!--    Eating Now -->
+    <string name="eatingnow_plugin">Eating Now</string>
+    <string name="eatingnow_plugin_description">Customisable plugin leveraging most recent algorithm</string>
+    <string name="eatingnow_plugin_shortname">DYNISF</string>
+
+
 </resources>

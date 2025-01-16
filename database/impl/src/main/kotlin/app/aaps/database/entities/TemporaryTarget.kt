@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.database.entities
 
 import androidx.room.Embedded
@@ -47,6 +48,8 @@ data class TemporaryTarget(
         HYPOGLYCEMIA,
         ACTIVITY,
         EATING_SOON,
+        EATING_NOW,
+        EATING_NOW_PB,
         AUTOMATION,
         WEAR
         ;

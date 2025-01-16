@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.implementation.stats
 
 import android.annotation.SuppressLint
@@ -50,7 +51,7 @@ class TirCalculatorImpl @Inject constructor(
         return result
     }
 
-    private fun averageTIR(tirs: LongSparseArray<TIR>): TIR {
+    override fun averageTIR(tirs: LongSparseArray<TIR>): TIR {
         val totalTir = if (tirs.size() > 0) {
             TirImpl(tirs.valueAt(0).date, tirs.valueAt(0).lowThreshold, tirs.valueAt(0).highThreshold)
         } else {
@@ -65,6 +66,27 @@ class TirCalculatorImpl @Inject constructor(
             totalTir.count += tir.count
         }
         return totalTir
+    }
+
+    override fun calculateByTime(timeStart: Long, hours: Double, lowMgdl: Double, highMgdl: Double): LongSparseArray<TIR> {
+        if (lowMgdl < 39) throw RuntimeException("Low below 39")
+        if (lowMgdl > highMgdl) throw RuntimeException("Low > High")
+        val timeEnd: Long = (timeStart + (hours * 3600000)).toLong()
+        val bgReadings = persistenceLayer.getBgReadingsDataFromTimeToTime(timeStart, timeEnd, true)
+
+        val result = LongSparseArray<TIR>()
+        for (bg in bgReadings) {
+            var tir = result[timeStart]
+            if (tir == null) {
+                tir = TirImpl(timeStart, lowMgdl, highMgdl)
+                result.append(timeStart, tir)
+            }
+            if (bg.value < 39) tir.error()
+            if (bg.value >= 39 && bg.value < lowMgdl) tir.below()
+            if (bg.value in lowMgdl..highMgdl) tir.inRange()
+            if (bg.value > highMgdl) tir.above()
+        }
+        return result
     }
 
     @SuppressLint("SetTextI18n")

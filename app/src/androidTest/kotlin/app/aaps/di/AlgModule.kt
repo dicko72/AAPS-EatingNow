@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.di
 
 import app.aaps.plugins.aps.logger.LoggerCallback
@@ -21,4 +22,5 @@ abstract class AlgModule {
     @ContributesAndroidInjector abstract fun determineBasalAdapterSMBJSInjector(): DetermineBasalAdapterSMBJS
     @ContributesAndroidInjector abstract fun determineBasalAdapterSMBDynamicISFJSInjector(): DetermineBasalAdapterSMBDynamicISFJS
     @ContributesAndroidInjector abstract fun determineBasalAdapterSMBAutoISFJSInjector(): DetermineBasalAdapterAutoISFJS
+    @ContributesAndroidInjector abstract fun determineBasalAdapterENJSInjector(): DetermineBasalAdapterENJS
 }

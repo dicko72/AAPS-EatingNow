@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.implementations
 
 import android.os.Build
@@ -35,7 +36,8 @@ class ConfigImpl @Inject constructor(
 
     override var appInitialized: Boolean = false
 
-    private var isEngineeringMode: Boolean? = null
+    //private var isEngineeringMode: Boolean? = null
+    private var isEngineeringMode = true
     private var isUnfinishedMode: Boolean? = null
     private var showUserActionsOnWatchOnly: Boolean? = null
     private var ignoreNightscoutV3Errors: Boolean? = null

@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.plugins.aps.di
 
 import app.aaps.core.interfaces.aps.Loop
@@ -8,6 +9,7 @@ import app.aaps.plugins.aps.loop.LoopPlugin
 import dagger.Binds
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
+import app.aaps.plugins.aps.loop.LoopVariantPreference
 
 @Module(
     includes = [
@@ -21,6 +23,8 @@ import dagger.android.ContributesAndroidInjector
 abstract class ApsModule {
 
     @ContributesAndroidInjector abstract fun contributesOpenAPSFragment(): OpenAPSFragment
+    @ContributesAndroidInjector abstract fun loopVariantPreferenceInjector(): LoopVariantPreference
+
 
     @Module
     interface Bindings {

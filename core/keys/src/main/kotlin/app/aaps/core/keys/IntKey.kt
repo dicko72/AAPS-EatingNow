@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.core.keys
 
 enum class IntKey(
@@ -20,6 +21,7 @@ enum class IntKey(
     OverviewCarbsButtonIncrement2("carbs_button_increment_2", 10, -50, 50, defaultedBySM = true),
     OverviewCarbsButtonIncrement3("carbs_button_increment_3", 20, -50, 50, defaultedBySM = true),
     OverviewEatingSoonDuration("eatingsoon_duration", 45, 15, 120, defaultedBySM = true, hideParentScreenIfHidden = true),
+    OverviewEatingNowDuration("eatingnow_duration", 45, 15, 120, defaultedBySM = true, hideParentScreenIfHidden = true),
     OverviewActivityDuration("activity_duration", 90, 15, 600, defaultedBySM = true),
     OverviewHypoDuration("hypo_duration", 60, 15, 180, defaultedBySM = true),
     OverviewCageWarning("statuslights_cage_warning", 48, 24, 240, defaultedBySM = true, dependency = BooleanKey.OverviewShowStatusLights),

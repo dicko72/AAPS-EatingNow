@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modified for Eating Now -->
 <resources>
     <string name="automation_short">Auto</string>
     <string name="automation">Automation</string>
@@ -30,6 +31,7 @@
     <string name="sendsmsactiondescription">Send SMS to all numbers</string>
     <string name="sendsmsactiontext">Send SMS with text</string>
     <string name="starttemptarget">Start temp target</string>
+    <string name="startentemptarget">Start EN temp target</string>
     <string name="islesser">is lesser than</string>
     <string name="isequalorlesser">is equal or lesser than</string>
     <string name="isequal">is equal to</string>
@@ -145,5 +147,6 @@
     <string name="triggerStepsCountLabel">Steps Count</string>
     <string name="triggerStepsCountDesc">Steps count per %1$s minutes %2$s %3$.0f</string>
     <string name="triggerStepsCountDropdownLabel">Measurement Duration</string>
+
 
 </resources>

@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.implementation.utils
 
 import app.aaps.core.data.model.OE
@@ -186,6 +187,8 @@ class TranslatorImpl @Inject internal constructor(
         TT.Reason.ACTIVITY     -> rh.gs(app.aaps.core.ui.R.string.activity)
         TT.Reason.AUTOMATION   -> rh.gs(app.aaps.core.ui.R.string.automation)
         TT.Reason.WEAR         -> rh.gs(app.aaps.core.ui.R.string.wear)
+        TT.Reason.EATING_NOW  -> rh.gs(app.aaps.core.ui.R.string.eatingnow)
+        TT.Reason.EATING_NOW_PB  -> rh.gs(app.aaps.core.ui.R.string.eatingnow_prebolus)
 
         else                   -> rh.gs(app.aaps.core.ui.R.string.unknown)
     }

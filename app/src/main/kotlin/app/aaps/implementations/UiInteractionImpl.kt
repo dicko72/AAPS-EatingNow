@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.implementations
 
 import android.content.Context
@@ -36,6 +37,7 @@ import app.aaps.ui.dialogs.ProfileSwitchDialog
 import app.aaps.ui.dialogs.ProfileViewerDialog
 import app.aaps.ui.dialogs.TempBasalDialog
 import app.aaps.ui.dialogs.TempTargetDialog
+import app.aaps.ui.dialogs.ENTempTargetDialog
 import app.aaps.ui.dialogs.TreatmentDialog
 import app.aaps.ui.dialogs.WizardDialog
 import app.aaps.ui.services.AlarmSoundService
@@ -129,6 +131,11 @@ class UiInteractionImpl @Inject constructor(
     override fun runTempTargetDialog(fragmentManager: FragmentManager) {
         TempTargetDialog()
             .show(fragmentManager, "TempTargetDialog")
+    }
+
+    override fun runENTempTargetDialog(fragmentManager: FragmentManager) {
+        ENTempTargetDialog()
+            .show(fragmentManager, "ENTempTargetDialog")
     }
 
     override fun runExtendedBolusDialog(fragmentManager: FragmentManager) {

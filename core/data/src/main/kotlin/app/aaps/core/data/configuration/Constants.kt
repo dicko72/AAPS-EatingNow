@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.core.data.configuration
 
 /**
@@ -28,6 +29,11 @@ object Constants {
     const val MAX_TT_MGDL = 180.0
     const val MIN_TT_MMOL = 4.0
     const val MAX_TT_MMOL = 10.0
+
+    // Eating Now Temp targets
+    const val defaultEatingNowTTDuration = 30 // min
+    const val MAX_ENTT_DURATION = 240.0  // min
+    const val MAX_EN_PREBOLUS = 15.0  // units
 
     //NSClientInternal
     const val MAX_LOG_LINES = 90

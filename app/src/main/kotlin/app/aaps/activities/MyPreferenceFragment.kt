@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.activities
 
 import android.annotation.SuppressLint

@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.ui.di
 
 import dagger.Module
@@ -31,6 +32,7 @@ import app.aaps.ui.dialogs.ProfileSwitchDialog
 import app.aaps.ui.dialogs.ProfileViewerDialog
 import app.aaps.ui.dialogs.TempBasalDialog
 import app.aaps.ui.dialogs.TempTargetDialog
+import app.aaps.ui.dialogs.ENTempTargetDialog
 import app.aaps.ui.dialogs.TreatmentDialog
 import app.aaps.ui.dialogs.WizardDialog
 import app.aaps.ui.dialogs.WizardInfoDialog
@@ -60,6 +62,7 @@ abstract class UiModule {
     @ContributesAndroidInjector abstract fun contributesProfileSwitchDialog(): ProfileSwitchDialog
     @ContributesAndroidInjector abstract fun contributesTempBasalDialog(): TempBasalDialog
     @ContributesAndroidInjector abstract fun contributesTempTargetDialog(): TempTargetDialog
+    @ContributesAndroidInjector abstract fun contributesENTempTargetDialog(): ENTempTargetDialog
     @ContributesAndroidInjector abstract fun contributesLoopDialog(): LoopDialog
     @ContributesAndroidInjector abstract fun contributesBolusProgressDialog(): BolusProgressDialog
     @ContributesAndroidInjector abstract fun contributesErrorDialog(): ErrorDialog

@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.database.persistence.converters
 
 import app.aaps.core.data.model.TT
@@ -9,6 +10,8 @@ fun TemporaryTarget.Reason.fromDb(): TT.Reason =
         TemporaryTarget.Reason.HYPOGLYCEMIA -> TT.Reason.HYPOGLYCEMIA
         TemporaryTarget.Reason.ACTIVITY     -> TT.Reason.ACTIVITY
         TemporaryTarget.Reason.EATING_SOON  -> TT.Reason.EATING_SOON
+        TemporaryTarget.Reason.EATING_NOW                -> TT.Reason.EATING_NOW
+        TemporaryTarget.Reason.EATING_NOW_PB             -> TT.Reason.EATING_NOW_PB
         TemporaryTarget.Reason.AUTOMATION   -> TT.Reason.AUTOMATION
         TemporaryTarget.Reason.WEAR         -> TT.Reason.WEAR
     }
@@ -19,6 +22,8 @@ fun TT.Reason.toDb(): TemporaryTarget.Reason =
         TT.Reason.HYPOGLYCEMIA -> TemporaryTarget.Reason.HYPOGLYCEMIA
         TT.Reason.ACTIVITY     -> TemporaryTarget.Reason.ACTIVITY
         TT.Reason.EATING_SOON  -> TemporaryTarget.Reason.EATING_SOON
+        TT.Reason.EATING_NOW  -> TemporaryTarget.Reason.EATING_NOW
+        TT.Reason.EATING_NOW_PB  -> TemporaryTarget.Reason.EATING_NOW_PB
         TT.Reason.AUTOMATION   -> TemporaryTarget.Reason.AUTOMATION
         TT.Reason.WEAR         -> TemporaryTarget.Reason.WEAR
     }

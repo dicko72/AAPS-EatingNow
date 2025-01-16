@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.plugins.constraints
 
 import app.aaps.core.data.aps.ApsMode
@@ -25,6 +26,8 @@ import app.aaps.plugins.aps.openAPSAMA.DetermineBasalAMA
 import app.aaps.plugins.aps.openAPSAMA.OpenAPSAMAPlugin
 import app.aaps.plugins.aps.openAPSSMB.DetermineBasalSMB
 import app.aaps.plugins.aps.openAPSSMB.OpenAPSSMBPlugin
+import app.aaps.plugins.aps.EN.DetermineBasalEN
+import app.aaps.plugins.aps.EN.ENPlugin
 import app.aaps.plugins.constraints.objectives.ObjectivesPlugin
 import app.aaps.plugins.constraints.objectives.objectives.Objective
 import app.aaps.plugins.constraints.safety.SafetyPlugin
@@ -66,6 +69,7 @@ class ConstraintsCheckerImplTest : TestBaseWithProfile() {
     @Mock lateinit var bgQualityCheck: BgQualityCheck
     @Mock lateinit var tddCalculator: TddCalculator
     @Mock lateinit var determineBasalSMB: DetermineBasalSMB
+    @Mock lateinit var determineBasalEN: DetermineBasalEN
     @Mock lateinit var determineBasalAMA: DetermineBasalAMA
 
     private lateinit var danaPump: DanaPump
@@ -77,6 +81,7 @@ class ConstraintsCheckerImplTest : TestBaseWithProfile() {
     private lateinit var danaRSPlugin: DanaRSPlugin
     private lateinit var insightPlugin: InsightPlugin
     private lateinit var openAPSSMBPlugin: OpenAPSSMBPlugin
+    private lateinit var ENPlugin: ENPlugin
     private lateinit var openAPSAMAPlugin: OpenAPSAMAPlugin
 
     init {
@@ -150,6 +155,12 @@ class ConstraintsCheckerImplTest : TestBaseWithProfile() {
                 injector, aapsLogger, rxBus, constraintChecker, rh, profileFunction, profileUtil, config, activePlugin, iobCobCalculator,
                 hardLimits, preferences, dateUtil, processedTbrEbData, persistenceLayer, glucoseStatusProvider, tddCalculator, bgQualityCheck,
                 uiInteraction, determineBasalSMB, profiler
+            )
+        ENPlugin =
+            ENPlugin(
+                injector, aapsLogger, rxBus, constraintChecker, rh, profileFunction, profileUtil, config, activePlugin, iobCobCalculator,
+                hardLimits, preferences, dateUtil, processedTbrEbData, persistenceLayer, glucoseStatusProvider, tddCalculator, bgQualityCheck,
+                uiInteraction, determineBasalEN, profiler
             )
         openAPSAMAPlugin =
             OpenAPSAMAPlugin(
