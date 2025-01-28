@@ -82,6 +82,10 @@ class VersionCheckerUtilsImpl @Inject constructor(
         val newVersionElements = newVersion.toNumberList()
         val currentVersionElements = currentVersion.toNumberList()
 
+        // Eating Now - disable version checker
+        onSameVersionDetected()
+        return
+
         aapsLogger.debug(LTag.CORE, "Compare versions: $currentVersion $currentVersionElements, $newVersion $newVersionElements")
         if (newVersionElements.isNullOrEmpty()) {
             onVersionNotDetectable()
