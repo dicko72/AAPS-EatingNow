@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.plugins.constraints.versionChecker
 
 import android.os.Build
@@ -73,6 +74,10 @@ class VersionCheckerUtilsImpl @Inject constructor(
 
     @Suppress("SameParameterValue")
     override fun compareWithCurrentVersion(newVersion: String?, currentVersion: String) {
+
+        // Eating Now - disable version checker
+        onSameVersionDetected()
+        return
 
         val newVersionElements = newVersion.toNumberList()
         val currentVersionElements = currentVersion.toNumberList()
