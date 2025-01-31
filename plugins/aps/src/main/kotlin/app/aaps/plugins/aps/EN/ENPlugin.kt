@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.plugins.aps.EN
 
 import android.content.Context
@@ -580,8 +581,8 @@ open class ENPlugin @Inject constructor(
         val category = PreferenceCategory(context)
         parent.addPreference(category)
         category.apply {
-            key = "openapssmb_settings"
-            title = rh.gs(R.string.openapssmb)
+            key = "eatingnow_settings"
+            title = rh.gs(R.string.eatingnow_plugin)
             initialExpandedChildrenCount = 0
             addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsMaxBasal, dialogMessage = R.string.openapsma_max_basal_summary, title = R.string.openapsma_max_basal_title))
             addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsSmbMaxIob, dialogMessage = R.string.openapssmb_max_iob_summary, title = R.string.openapssmb_max_iob_title))
