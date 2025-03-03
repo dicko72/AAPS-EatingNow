@@ -1786,6 +1786,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // UAM+ uses different SMB when configured, it can give prebolus is the condition is correct
                 if (sens_predType == "UAM+") ENMaxSMB = Math.max(profile.ENW_maxBolus_UAM_plus, UAMBGPreBolusUnitsLeft);
 
+                // allow ENMaxSMB to go up to remaining ENWBolusIOBMax with UAM+
+                if (ENWBolusIOBMax > 0 && sens_predType == "UAM+") ENMaxSMB = Math.max(ENWBolusIOBMax-meal_data.ENWBolusIOB,ENMaxSMB);
+
             } else {
                 ENMaxSMB = EN_NoENW_maxBolus; // start with the default maxBolus
                 if (sens_predType == "UAM+" && !ENWindowOK && profile.EN_UAMPlusSMB_NoENW) {

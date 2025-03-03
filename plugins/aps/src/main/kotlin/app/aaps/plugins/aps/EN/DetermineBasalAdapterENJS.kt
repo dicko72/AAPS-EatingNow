@@ -412,8 +412,13 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         // get the TDD since ENW Start
         this.mealData.put("ENWStartTime", ENWStartTime)
-        var ENWBolusIOB = if (now < ENWStartTime+(5*3600000)) tddCalculator.calculateENWIOB(ENWStartTime, now, allowMissingData = true)?.totalAmount else 0
-        if (ENWBolusIOB == null) ENWBolusIOB = 0
+        // var ENWBolusIOB = if (now < ENWStartTime+(5*3600000)) tddCalculator.calculateENWIOB(ENWStartTime, now, allowMissingData = true)?.totalAmount else 0
+        // if (ENWBolusIOB == null) ENWBolusIOB = 0
+        val ENWBolusIOB = if (now < ENWStartTime + 5 * 3600000) {
+            tddCalculator.calculateENWIOB(ENWStartTime, now, allowMissingData = true)?.totalAmount ?: 0
+        } else {
+            0
+        }
         this.mealData.put("ENWBolusIOB", ENWBolusIOB)
 
         // calculate the time that breakfast should be finished or ignored
