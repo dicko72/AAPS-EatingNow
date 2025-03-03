@@ -76,7 +76,8 @@ class VersionCheckerUtilsImpl @Inject constructor(
     override fun compareWithCurrentVersion(newVersion: String?, currentVersion: String) {
 
         // Eating Now - disable version checker
-        currentVersion = newVersion
+        onSameVersionDetected()
+        return
 
         val newVersionElements = newVersion.toNumberList()
         val currentVersionElements = currentVersion.toNumberList()
