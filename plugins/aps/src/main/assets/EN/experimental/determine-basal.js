@@ -1801,7 +1801,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
             // BG+ is the only EN prediction type allowed outside of ENW
             if (sens_predType == "BG+") {
-                ENMaxSMB = (profile.current_basal * 3) / 12;
+                ENMaxSMB = (profile.current_basal * TIR_sens_limited) / 12;
                 //if (TIR_sens > autosens_max_tirs && profile.EN_Use_BGPlus > 0) ENMaxSMB = Math.max(profile.current_basal / 12,profile.bolus_increment); // force smaller ENMaxSMB for safety
             }
 
@@ -1974,12 +1974,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 rate = round_basal(rate, profile);
             }
 
-            // BG+ will resume profile basal when stuck higher than target
-            if (sens_predType == "BG+") {
-                microBolus = 0; // safety set SMB to 0
-                rate = profile.current_basal * TIR_sens_limited; // resume profile basal rate at TIRS
-                rate = round_basal(rate, profile);
-            }
+//            // BG+ will resume profile basal when stuck higher than target
+//            if (sens_predType == "BG+") {
+//                microBolus = 0; // safety set SMB to 0
+//                rate = profile.current_basal * TIR_sens_limited; // resume profile basal rate at TIRS
+//                rate = round_basal(rate, profile);
+//            }
 
             //allow SMBs every 3 minutes by default
             var SMBInterval = 3;
