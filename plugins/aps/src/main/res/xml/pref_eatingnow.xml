@@ -523,7 +523,7 @@
                     android:inputType="number"
                     android:title="SMB Percentage outside ENW"
                     android:key="en_smb_percent"
-                    android:dialogMessage="All treatments outside ENW will provide SMB as a percentage of insulinReq with remaining as TBR. This is restricted to the respective prediction types maxBolus (UAM, UAM+ and BG+). Other temptargets will not be impacted."
+                    android:dialogMessage="All treatments outside ENW will provide SMB as a percentage of insulinReq with remaining as TBR. This is restricted to the respective prediction types maxBolus (UAM, UAM+ and BG+). Other temptargets will not be impacted. Does not apply overnight."
                     validate:maxNumber="100"
                     validate:minNumber="0"
                     validate:testType="numericRange" />
