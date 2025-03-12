@@ -1773,7 +1773,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             insulinReqPct = (insulinReqPctChanged ? EN_SMB_percent: insulinReqPct); // update insulinReqPct if reduced
 
             // PreBolus period gets 100% insulinReqPct
-            insulinReqPct = (ENWBolusIOBRemaining > 0 ? 1 : insulinReqPct); // dicko
+            insulinReqPct = (ENWBolusIOBRemaining > 0 && !insulinReqPctChanged ? 1 : insulinReqPct);
 
             // if ENWindowOK allow further increase max of SMB within the window
             if (ENWindowOK) {
