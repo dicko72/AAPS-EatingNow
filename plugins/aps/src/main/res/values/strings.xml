@@ -229,7 +229,6 @@
     <!--    Eating Now -->
     <string name="eatingnow_plugin">Eating Now</string>
     <string name="eatingnow_plugin_description">Customisable plugin leveraging most recent algorithm</string>
-    <string name="eatingnow_plugin_shortname">DYNISF</string>
-
+    <string name="eatingnow_plugin_shortname">EN</string>
 
 </resources>
