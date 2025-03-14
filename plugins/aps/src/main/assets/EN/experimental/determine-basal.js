@@ -1323,6 +1323,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //if (eBGweight == eBGweight_orig && ENactive) eBGweight = 0.75;
             //if (EN_SMB_percent == 0 && eBGweight == eBGweight_orig) eBGweight = 0.75;
             if (eBGweight == eBGweight_orig && ENactive && TIR_sens_limited > 1) eBGweight = 0.55;
+//            if (eBGweight == eBGweight_orig && ENactive && TIR_sens_limited > 1) eBGweight = 0.75; // perhaps increase this when resistant
         }
 
         // UAM predictions, no COB or GhostCOB
