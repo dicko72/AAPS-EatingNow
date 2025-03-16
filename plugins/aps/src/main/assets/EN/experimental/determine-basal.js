@@ -1788,7 +1788,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (sens_predType == "UAM+") ENMaxSMB = Math.max(profile.ENW_maxBolus_UAM_plus, UAMBGPreBolusUnitsLeft);
 
                 // allow ENMaxSMB to go up to remaining ENWBolusIOBMax with UAM+
-                if (ENWBolusIOBRemaining > 0 && sens_predType == "UAM+") ENMaxSMB = Math.max(ENWBolusIOBRemaining,ENMaxSMB);
+                if (ENWBolusIOBRemaining > 0 && sens_predType == "UAM+" && ENTTActive) ENMaxSMB = Math.max(ENWBolusIOBRemaining,ENMaxSMB);
 
             } else {
                 ENMaxSMB = EN_NoENW_maxBolus; // start with the default maxBolus
