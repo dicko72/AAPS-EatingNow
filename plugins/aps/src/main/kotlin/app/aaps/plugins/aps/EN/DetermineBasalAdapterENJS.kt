@@ -222,9 +222,9 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("max_bg", maxBg.roundToInt())
         this.profile.put("target_bg", targetBg.roundToInt())
         this.profile.put("carb_ratio", profile.getIc())
-        this.profile.put("carb_ratio_midnight", profile.getIc(MidnightTime.calc(now)))
+        // this.profile.put("carb_ratio_midnight", profile.getIc(MidnightTime.calc(now)))
         this.profile.put("sens", profile.getIsfMgdl())
-        this.profile.put("sens_midnight", profile.getIsfMgdl(MidnightTime.calc(now)))
+        // this.profile.put("sens_midnight", profile.getIsfMgdl(MidnightTime.calc(now)))
         this.profile.put("max_daily_safety_multiplier", sp.getInt(R.string.key_openapsama_max_daily_safety_multiplier, 3))
         this.profile.put("current_basal_safety_multiplier", sp.getDouble(R.string.key_openapsama_current_basal_safety_multiplier, 4.0))
 
@@ -461,6 +461,9 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             // this.profile.put("ENW_maxIOB", sp.getDouble(R.string.key_enw_max_tdd, 0.0)) //ENW_max_tdd
             this.profile.put("ENW_maxIOB", if (activeENTT) sp.getDouble("ENdb_ENWIOBUnits", 0.0) else sp.getDouble(R.string.key_enw_max_tdd, 0.0))
         }
+
+        this.profile.put("PPMealPct", sp.getInt(R.string.key_en_pp_isf_pct, 100)) // postprandial ISF scaling
+
 
         // TDD related functions
         val enableSensTDD = sp.getBoolean(R.string.key_use_sens_tdd, false)

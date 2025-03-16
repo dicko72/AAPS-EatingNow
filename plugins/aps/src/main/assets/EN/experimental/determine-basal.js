@@ -420,21 +420,20 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var ENWBolusIOBRemaining = (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB >=0 ? ENWBolusIOBMax - meal_data.ENWBolusIOB : 0);
 
     // stronger CR and ISF can be used when firstmeal is within 2h window
-//    var firstMealScaling = (firstMealWindow && !profile.use_sens_TDD && profile.sens == profile.sens_midnight && profile.carb_ratio == profile.carb_ratio_midnight);
     var carb_ratio = profile.carb_ratio;
-    var MealScaler = 1; // no scaling by default
-//    sens = (firstMealScaling ? round(profile.sens_midnight / (profile.BreakfastPct / 100), 1) : sens);
+    var MealScaler = 100; // no scaling by default
 
     // stronger CR and ISF can be used to scale within ENW when 1 CR and 1 ISF is within the profile
-    //if (!profile.use_sens_TDD && profile.sens == profile.sens_midnight && profile.carb_ratio == profile.carb_ratio_midnight && ENWindowOK && !ENPBActive) {
-    if (!profile.use_sens_TDD && profile.sens == profile.sens_midnight && profile.carb_ratio == profile.carb_ratio_midnight && ENWindowOK) {
-//        MealScaler = round((firstMealWindow ? profile.BreakfastPct / 100 : profile.ENWPct / 100),2);
-        MealScaler = round(profile.MealPct/100,2);
-        carb_ratio = round(profile.carb_ratio_midnight / MealScaler, 1);
-        sens = round(profile.sens_midnight / MealScaler, 1);
-//        if (!profile.scale_isf_profile && profile.percent > 100) sens *= profile.percent/100;  // dont adjust ISF when using a profile switch if resistant and ENW
+    if (!profile.use_sens_TDD && ENWindowOK) {
+        MealScaler = round(profile.MealPct);
+        sens = round(sens * (MealScaler / 100), 1);
     }
 
+    // Postprandial ISF scaling after ENW during active hours for 60m
+    if (!profile.use_sens_TDD && ENactive && !ENWindowOK && ENWEndedAgo < 60) {
+        MealScaler = round(profile.PPMealPct);
+        sens = round(sens * (MealScaler / 100), 1);
+    }
 
     enlog += "------ ENWindow ------" + "\n";
     enlog += "nowUTC:" + nowUTC + ", ENWStartTime:" + meal_data.ENWStartTime + "\n";
@@ -613,8 +612,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //        if (profile.percent > 100 && meal_data.TIR0_H_pct == 0) sens_normalTarget *= profile.percent/100; // cancel adjustment if not resistant when switch > 100%
 //    }
 
-    // apply TIRS to ISF only when delta is slight or bg higher
-    if (TIR_sens_limited !=1 && TIR_sens !=1) {
+    // apply TIRS to ISF only when delta is slight or bg higher when not ISF meal scaling
+    if (TIR_sens_limited !=1 && TIR_sens !=1 && MealScaler !=100) {
         sens_normalTarget = sens_normalTarget / TIR_sens_limited;
     }
 
@@ -1429,7 +1428,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += ", ENW: ";
     rT.reason += (ENWindowOK ? "On" : "Off");
     rT.reason += (firstMealWindow ? " Bkfst" : "");
-    rT.reason += (MealScaler > 1 ? " " + round(MealScaler*100) + "%" : "");
+    rT.reason += (MealScaler != 100 ? " " + round(MealScaler) + "%" : "");
     rT.reason += (ENWindowOK && ENWStartedAgo <= ENWindowDuration ? " " + round(ENWStartedAgo) + "/" + ENWindowDuration + "m" : "");
     rT.reason += (!ENWindowOK && ENWEndedAgo <= 240 ? " " + round(ENWindowDuration) + "m, " + round(ENWEndedAgo) + "m ago" : "");
     if (meal_data.ENWBolusIOB || ENWindowOK) rT.reason += ", ENW-IOB:" + round(meal_data.ENWBolusIOB,2) + (ENWBolusIOBMax > 0 ? "/" + ENWBolusIOBMax : "") + "=" + round(carb_ratio*meal_data.ENWBolusIOB)+"g";
