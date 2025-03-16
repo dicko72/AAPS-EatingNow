@@ -1449,7 +1449,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (TIRS_percent > 0) rT.reason += ", ISF@" + TIRS_percent + "%hr: " + TIR_sens.toFixed(2) + (round(TIR_sens_limited*100) != round(TIR_sens*100) ? "=" + TIR_sens_limited.toFixed(2) : "");
     if (profile.enableSRTDD) rT.reason += ", Basal%: " + round(SR_TDD*100) + (round(sensitivityRatio*100) != round(SR_TDD*100) ? "=" + round(sensitivityRatio*100) : "");
     rT.reason += ", LGS: " + convert_bg(threshold, profile);
-    rT.reason += ", LRT: " + round(60 * minAgo);
+    // rT.reason += ", LRT: " + round(60 * minAgo);
     rT.reason += "; ";
     rT.reason += (typeof endebug !== 'undefined' && !rT.reason.includes("DEBUG") ? "** DEBUG: " + endebug + "** ": "");
 
