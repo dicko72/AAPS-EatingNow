@@ -1947,8 +1947,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 rate = round_basal(rate, profile);
             }
 
-            // when AAPS original insulinReq is higher than restricted SMB with UAM+ allow remaining insulinReqPct as TBR
-            if (insulinReqOrig > microBolus && microBolus > 0 && sens_predType == "UAM+" && delta < 18 && microBolus < maxBolus) {
+            // when AAPS original insulinReq positive with UAM+ and minPredBG safe allow remaining insulinReqPct as TBR
+            if (insulinReqOrig > 0 && sens_predType == "UAM+" && delta < 18 && minPredBG_orig > target_bg) {
                 rate = (insulinReq * insulinReqPct_orig) - microBolus;
             }
 
