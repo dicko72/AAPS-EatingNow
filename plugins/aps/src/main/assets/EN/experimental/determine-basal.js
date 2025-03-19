@@ -1289,18 +1289,17 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // UAM+ for slower delta but any acceleration, earlier detection for larger SMB's, bypass LGS
         if (sens_predType == "UAM+") {
             var UAMDeltaX = 0;
-            var eBGmax = 230; // safety max of 230mgdl/12.7mmol
+            var eBGmax = (ENWBolusIOBRemaining > 0 ? 320 : 230); // safety max of 17.7mmol or 12.7mmol when ENW IOB reached
             // for lower eventualBg predictions increase eventualBG with UAMDeltaX using current bg as the basis when early on in ENW or less than 80 of ENWBolusIOBMax has been given
             if (ENWindowOK && ENWStartedAgo < ENWindowDuration && (delta > 3 || delta > 0 && ENWBolusIOBRemaining > 0)) {
                 // Define the range for UAMDeltaX
                 var UAMDeltaXforecast = Math.min(ENWindowDuration,120);
                 var UAMDeltaXboost = (ENPBActive ? 1 : 1);
-                //var UAMDeltaXmax = (ENPBActive ? 65 : 90); // max increase of 3.5mmol or 5mmol
-                var UAMDeltaXmax = 90; // max increase to current bg of 90mgdl/5mmol
+                // var UAMDeltaXmax = 90; // max increase to current bg of 90mgdl/5mmol
                 // Calculate the scaled UAMDeltaX based on the ENW
                 UAMDeltaX = (1-(ENWStartedAgo/ENWindowDuration)) * UAMDeltaXforecast / 5 * UAMDeltaXboost; // unrestricted UAM delta extrapolation
-                //var UAMDeltaXBG = bg + Math.min(UAMDeltaX * delta,UAMDeltaXmax); //eBG max increase UAMDeltaXmax as we are overriding LGS etc
-                var UAMDeltaXBG = Math.min(UAMDeltaX * delta,UAMDeltaXmax); //eBG max increase UAMDeltaXmax as we are overriding LGS etc
+                // var UAMDeltaXBG = Math.min(UAMDeltaX * delta,UAMDeltaXmax); //eBG max increase UAMDeltaXmax as we are overriding LGS etc
+                var UAMDeltaXBG = Math.min(UAMDeltaX * delta); //additional delta from UAMDeltaX multiplier
                 eventualBG = Math.max(eventualBG, bg + UAMDeltaXBG); // for when eBG is already greater than UAMDeltaXBG
                 eventualBG = Math.min(eventualBG, eBGmax); // safety max of eBGmax
                 // eventualBG = (bg > ISFbgMax ? Math.min(eventualBG, eBGmax) : eventualBG); // safety max of eBGmax
