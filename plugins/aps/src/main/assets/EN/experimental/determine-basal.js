@@ -1947,10 +1947,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 rate = round_basal(rate, profile);
             }
 
-            // when AAPS original insulinReq positive with UAM+ and minPredBG safe allow remaining insulinReqPct as TBR
-            if (insulinReqOrig > 0 && sens_predType == "UAM+" && delta < 18 && minPredBG_orig > target_bg) {
-                rate = (insulinReq * insulinReqPct_orig) - microBolus;
-            }
+//            // when AAPS original insulinReq positive with UAM+ and minPredBG safe allow remaining insulinReqPct as TBR
+//            if (insulinReqOrig > 0 && sens_predType == "UAM+" && delta < 18 && minPredBG_orig > target_bg) {
+//                rate = (insulinReq * insulinReqPct_orig) - microBolus;
+//            }
 
             // SAFETY: when overriding the insulinReqPct ensure that TBR is also provided - insulinReqPctChanged
             if (insulinReqPctChanged) {
