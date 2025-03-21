@@ -1947,6 +1947,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (sens_predType == "PB" && UAMBGPreBolusUnitsLeft - microBolus <= 0)  rate = 0; // if SMB prebolusing has given it all set ZT
                 rate = Math.max(0, rate); // ZT is minimum
                 rate = round_basal(rate, profile);
+                if (ENTTActive && lastUAMpredBG > bg) AllowZT = false; // No ZT when UAM exceeds bg in ENW remaining
             }
 
 //            // when AAPS original insulinReq positive with UAM+ and minPredBG safe allow remaining insulinReqPct as TBR
