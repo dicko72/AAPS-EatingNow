@@ -431,7 +431,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     // Postprandial ISF scaling after ENW during for 120m, allowed after hours
-    if (!profile.use_sens_TDD && !ENWindowOK && ENWEndedAgo <= 120) {
+    if (!profile.use_sens_TDD && !ENWindowOK && ENWEndedAgo <= 120 && bg > target_bg) {
         MealScaler = round(profile.PPMealPct);
         sens = round(sens * (MealScaler / 100), 1);
     }
