@@ -1943,7 +1943,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // SAFETY: if an SMB given adjust the temp rate when not sensitive including ENW to deliver remaining insulinReq over a dynamic period
             if (microBolus && TIR_sens_limited >= 1) {
                 rate = (insulinReq * insulinReqPct_orig) - microBolus;
-                rate *= (ENWBolusIOBRemaining > 0 || MealScaler != 100 ? 6 : 3); // Allow TBR to deliver it faster for ENW 12=5m, 6=30m, 3=15m
+                rate *= (ENWBolusIOBRemaining > 0 || MealScaler != 100 ? 12 : 3); // Allow TBR to deliver it faster for ENW 12=5m, 6=30m, 3=15m
                 // rate = Math.max(basal + (insulinReq * 3 - microBolus), 0); //remaining insulinReq over 60 minutes * 3 = 20 minutes
                 if (sens_predType == "PB" && UAMBGPreBolusUnitsLeft - microBolus <= 0)  rate = 0; // if SMB prebolusing has given it all set ZT
                 rate = Math.max(0, rate); // ZT is minimum
@@ -1998,7 +1998,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 rT.reason += "Waiting " + nextBolusMins + "m " + nextBolusSeconds + "s to microbolus again. ";
             }
             //rT.reason += ". ";
-            if (rate_orig != rate) rT.reason += (microBolus > 0 ? " +" : "") + " TBR " + rate + "U/hr. ";
+            if (rate_orig != rate) rT.reason += (microBolus > 0 ? " +" : "") + " TBR " + rate_orig + "=" + rate + "U/hr. ";
 
 
             // if no zero temp is required, don't return yet; allow later code to set a high temp
