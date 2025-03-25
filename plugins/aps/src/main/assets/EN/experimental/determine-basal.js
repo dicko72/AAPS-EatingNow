@@ -1948,6 +1948,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (sens_predType == "PB" && UAMBGPreBolusUnitsLeft - microBolus <= 0)  rate = 0; // if SMB prebolusing has given it all set ZT
                 rate = Math.max(0, rate); // ZT is minimum
                 rate = round_basal(rate, profile);
+                // when using postprandial ISF and insulinReq is twice the SMB disable ZT
+                if (MealScaler != 100 && insulinReqOrig > 0 && insulinReq > microBolus * 2) AllowZT = false;
             }
 
 //            // when AAPS original insulinReq positive with UAM+ and minPredBG safe allow remaining insulinReqPct as TBR
@@ -2000,6 +2002,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //rT.reason += ". ";
             if (rate_orig != rate) rT.reason += (microBolus > 0 ? " +" : "") + " TBR " + rate_orig + "=" + rate + "U/hr. ";
 
+            // No ZT allowed by EN
+            if (!AllowZT) durationReq = 0;
 
             // if no zero temp is required, don't return yet; allow later code to set a high temp
             if (durationReq > 0) {
