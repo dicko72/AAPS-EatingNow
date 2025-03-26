@@ -1940,16 +1940,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             rT.reason += ". ";
             rT.reason += (typeof endebug !== 'undefined' && !rT.reason.includes("DEBUG") ? "** DEBUG: " + endebug + "** ": "");
 
-            // SAFETY: if an SMB given adjust the temp rate when not sensitive including ENW to deliver remaining insulinReq over a dynamic period
-            if (microBolus && TIR_sens_limited >= 1) {
+            // PROACTIVE: if an SMB given with stronger ISF adjust the temp rate when not sensitive
+            if (MealScaler != 100 && insulinReqOrig > 0 && insulinReq > microBolus * 2 && TIR_sens_limited >= 1) {
                 rate = (insulinReq * insulinReqPct_orig) - microBolus;
-                rate *= (ENWBolusIOBRemaining > 0 || MealScaler != 100 ? 12 : 3); // Allow TBR to deliver it faster for ENW 12=5m, 6=30m, 3=15m
-                // rate = Math.max(basal + (insulinReq * 3 - microBolus), 0); //remaining insulinReq over 60 minutes * 3 = 20 minutes
-                if (sens_predType == "PB" && UAMBGPreBolusUnitsLeft - microBolus <= 0)  rate = 0; // if SMB prebolusing has given it all set ZT
+                rate *= 6; // deliver over 10m
                 rate = Math.max(0, rate); // ZT is minimum
                 rate = round_basal(rate, profile);
-                // when using postprandial ISF and insulinReq is twice the SMB disable ZT
-                if (MealScaler != 100 && insulinReqOrig > 0 && insulinReq > microBolus * 2) AllowZT = false;
+                AllowZT = false;
             }
 
 //            // when AAPS original insulinReq positive with UAM+ and minPredBG safe allow remaining insulinReqPct as TBR
@@ -1983,7 +1980,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //allow SMBs every 3 minutes by default
             var SMBInterval = 3;
             if (profile.SMBInterval) {
-                // allow SMBIntervals between 1 and 10 minutes
+                // allow/ SMBIntervals between 1 and 10 minutes
                 SMBInterval = Math.min(10, Math.max(1, profile.SMBInterval));
             }
             var nextBolusMins = round(SMBInterval - lastBolusAge, 0);
