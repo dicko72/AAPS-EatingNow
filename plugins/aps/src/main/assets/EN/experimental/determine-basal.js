@@ -1980,7 +1980,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             //allow SMBs every 3 minutes by default
             var SMBInterval = 3;
             if (profile.SMBInterval) {
-                // allow/ SMBIntervals between 1 and 10 minutes
+                // allow SMBIntervals between 1 and 10 minutes
                 SMBInterval = Math.min(10, Math.max(1, profile.SMBInterval));
             }
             var nextBolusMins = round(SMBInterval - lastBolusAge, 0);
