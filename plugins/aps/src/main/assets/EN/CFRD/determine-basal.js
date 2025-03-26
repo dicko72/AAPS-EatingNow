@@ -308,8 +308,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
     }
     */
-    //max_iob_en = (ENTTActive && bg >= 130 ? bg / 100 : max_iob_en); // CFRD
-    max_iob_en = (!ENWindowOK && bg >= 144 ? bg / 100 : max_iob_en); // CFRD
+    max_iob_en = (!ENTTActive && bg >= 130 ? bg / 100 : max_iob_en); // CFRD
 
 //    var endebug = "CFRD: max_iob_en=" + round(max_iob_en,2);
 
