@@ -444,9 +444,10 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             // this.profile.put("ENW_maxPreBolus", sp.getDouble(R.string.key_eatingnow_uambgboost_maxbolus_bkfast, 0.0)) // EN_UAMPlus_PreBolus_bkfast
             this.profile.put("ENW_maxPreBolus", sp.getDouble("ENdb_PreBolusUnits", 0.0)) //EN_UAMPlus_PreBolus
             this.profile.put("ENW_maxBolus_UAM_plus", sp.getDouble(R.string.key_eatingnow_uamplus_maxbolus_bkfast, 0.0)) //EN_UAMPlus_maxBolus_bkfst
-            this.profile.put("ENW_maxIOB", if (activeENTT) sp.getDouble("ENdb_ENWIOBUnits", 0.0) else sp.getDouble(R.string.key_enw_breakfast_max_tdd, 0.0))
-            // this.profile.put("ENW_maxIOB", sp.getDouble(R.string.key_enw_breakfast_max_tdd, 0.0)) // ENW_breakfast_max_tdd
-            this.profile.put("ENW_maxIOB", sp.getDouble("ENdb_ENWIOBUnits", 0.0)) // ENW_breakfast_max_tdd
+
+            if (activeENTT) sp.putDouble(R.string.key_enw_breakfast_max_tdd, sp.getDouble("ENdb_ENWIOBUnits", 0.0)) // put ENW_maxIOB in mealtime pref
+            this.profile.put("ENW_maxIOB", sp.getDouble(R.string.key_enw_breakfast_max_tdd, 0.0))
+
         } else {
             // Subsequent meals profile
             ENWDuration = sp.getInt(R.string.key_eatingnow_enwindowminutes, 0)
@@ -458,8 +459,9 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             // this.profile.put("ENW_maxPreBolus", sp.getDouble(R.string.key_eatingnow_uambgboost_maxbolus, 0.0)) //EN_UAMPlus_PreBolus
             this.profile.put("ENW_maxPreBolus", sp.getDouble("ENdb_PreBolusUnits", 0.0)) //EN_UAMPlus_PreBolus
             this.profile.put("ENW_maxBolus_UAM_plus", sp.getDouble(R.string.key_eatingnow_uamplus_maxbolus, 0.0)) //EN_UAMPlus_maxBolus
-            // this.profile.put("ENW_maxIOB", sp.getDouble(R.string.key_enw_max_tdd, 0.0)) //ENW_max_tdd
-            this.profile.put("ENW_maxIOB", if (activeENTT) sp.getDouble("ENdb_ENWIOBUnits", 0.0) else sp.getDouble(R.string.key_enw_max_tdd, 0.0))
+
+            if (activeENTT) sp.putDouble(R.string.key_enw_max_tdd, sp.getDouble("ENdb_ENWIOBUnits", 0.0)) // put ENW_maxIOB in mealtime pref
+            this.profile.put("ENW_maxIOB", sp.getDouble(R.string.key_enw_max_tdd, 0.0))
         }
 
         this.profile.put("PPMealPct", sp.getInt(R.string.key_en_pp_isf_pct, 100)) // postprandial ISF scaling
