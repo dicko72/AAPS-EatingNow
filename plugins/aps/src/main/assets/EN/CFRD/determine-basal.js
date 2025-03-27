@@ -419,8 +419,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     //var ENWBolusIOBMax = (firstMealWindow ? profile.ENW_breakfast_max_tdd : profile.ENW_max_tdd); // when EN started + breakfast window time is greater than the latest ENWstartTime there has been no other ENW so still firstmeal only
     var ENWBolusIOBMax = round(profile.ENW_maxIOB,2);
+    var ENWBolusIOB = iob_data.iob;
     ENWBolusIOBMax = (ENWindowOK && ENWStartedAgo <= ENWindowDuration ? ENWBolusIOBMax : 0); // reset to 0 if not within ENW
-    var ENWBolusIOBRemaining = (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB >=0 ? ENWBolusIOBMax - meal_data.ENWBolusIOB : 0);
+    var ENWBolusIOBRemaining = (ENWBolusIOBMax > 0 && ENWBolusIOB >=0 ? ENWBolusIOBMax - ENWBolusIOB : 0);
     ENWBolusIOBRemaining = Math.max(ENWBolusIOBRemaining, 0); // dont allow negative
 
     // stronger CR and ISF can be used when firstmeal is within 2h window
@@ -1268,8 +1269,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (UAMBGPreBolusUnits > max_iob) UAMBGPreBolusUnits = profile.current_basal * UAMBGPreBolusUnits / 60;
 
     // start with the prebolus in prefs as the minimum starting bolus amount for ENWBolusIOB then use the maxbolus for UAM+ as the increment
-    var UAMBGPreBolus = (UAMBGPreBolusUnits > 0 && ENTTActive && ENPBActive && ENWStartedAgo < PBW && meal_data.ENWBolusIOB < UAMBGPreBolusUnits);
-    var UAMBGPreBolusUnitsLeft = (UAMBGPreBolus ? UAMBGPreBolusUnits - meal_data.ENWBolusIOB : 0);
+    var UAMBGPreBolus = (UAMBGPreBolusUnits > 0 && ENTTActive && ENPBActive && ENWStartedAgo < PBW && ENWBolusIOB < UAMBGPreBolusUnits);
+    var UAMBGPreBolusUnitsLeft = (UAMBGPreBolus ? UAMBGPreBolusUnits - ENWBolusIOB : 0);
 
     // Pre-bolus condition matches set PB type when not accelerating
     if (UAMBGPreBolus && sens_predType != "UAM+") sens_predType = "PB";
@@ -1435,7 +1436,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += (MealScaler != 100 ? " " + round(MealScaler) + "%" : "");
     rT.reason += (ENWindowOK && ENWStartedAgo <= ENWindowDuration ? " " + round(ENWStartedAgo) + "/" + ENWindowDuration + "m" : "");
     rT.reason += (!ENWindowOK && ENWEndedAgo <= 240 ? " " + round(ENWindowDuration) + "m, " + round(ENWEndedAgo) + "m ago" : "");
-    if (meal_data.ENWBolusIOB || ENWindowOK) rT.reason += ", ENW-IOB:" + round(meal_data.ENWBolusIOB,2) + "/" + round(profile.ENW_maxIOB,2);
+    if (meal_data.ENWBolusIOB || ENWindowOK) rT.reason += ", ENW-IOB:" + round(ENWBolusIOB,2) + "/" + round(profile.ENW_maxIOB,2);
 
     // other EN stuff
     rT.reason += ", eBGw: " + sens_predType + " " + convert_bg(insulinReq_bg_orig, profile);
@@ -1823,7 +1824,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (max_iob_en > 0 && iob_data.iob > max_iob_en) ENMaxSMB = (profile.EN_max_iob_allow_smb ? maxBolus : 0);
 
             // restrict SMB when ENWBolusIOB will be exceeded by SMB but minimum is EN_NoENW_maxBolus
-            if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB + ENMaxSMB > ENWBolusIOBMax) {
+            if (ENWBolusIOBMax > 0 && ENWBolusIOB + ENMaxSMB > ENWBolusIOBMax) {
                 ENMaxSMB = Math.max(ENWBolusIOBRemaining, EN_NoENW_maxBolus); // use EN_NoENW_maxBolus if its larger than restricted SMB
             }
 
