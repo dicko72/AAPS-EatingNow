@@ -1898,8 +1898,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // if EN_SMB_percent has reduced the insulinReqPct (insulinReqPctChanged)
             if (insulinReqPctChanged && insulinReq > 0) AllowZT = false;
 
-
-
             // TBR only when below respective SMBbgOffsets with no low TT / no COB
             if (ENSleepModeNoSMB || ENDayModeNoSMB) {
                 microBolus = 0;
@@ -1916,7 +1914,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 rate *= 6; // deliver over 10m
                 rate = Math.max(0, rate); // ZT is minimum
                 rate = round_basal(rate, profile);
-                AllowZT = (ENWindowOK && ENWBolusIOBRemaining > 0 || lastUAMPredBG > bg ? false : AllowZT); // ZT if exceeded ENWBolusIOB or UAM predicted higher
+                AllowZT = (ENWindowOK && ENWBolusIOBRemaining > 0 ? false : AllowZT); // ZT if exceeded ENWBolusIOB or UAM predicted higher
+//                AllowZT = (ENWindowOK && ENWBolusIOBRemaining > 0 || lastUAMPredBG > bg ? false : AllowZT); // ZT if exceeded ENWBolusIOB or UAM predicted higher
             }
 
             // SAFETY: when overriding the insulinReqPct ensure that TBR is also provided - insulinReqPctChanged
