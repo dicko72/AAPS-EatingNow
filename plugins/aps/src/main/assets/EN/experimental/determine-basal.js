@@ -1914,8 +1914,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 rate *= 6; // deliver over 10m
                 rate = Math.max(0, rate); // ZT is minimum
                 rate = round_basal(rate, profile);
-                AllowZT = (ENWindowOK && ENWBolusIOBRemaining > 0 ? false : AllowZT); // ZT if exceeded ENWBolusIOB or UAM predicted higher
-//                AllowZT = (ENWindowOK && ENWBolusIOBRemaining > 0 || lastUAMPredBG > bg ? false : AllowZT); // ZT if exceeded ENWBolusIOB or UAM predicted higher
+                // AllowZT = (ENWindowOK && ENWBolusIOBRemaining > 0 || lastUAMPredBG > bg ? false : AllowZT); // ZT if exceeded ENWBolusIOB or UAM predicted higher
+                if (lastUAMPredBG > bg) {
+                    AllowZT = false; // no ZT?
+                }
             }
 
             // SAFETY: when overriding the insulinReqPct ensure that TBR is also provided - insulinReqPctChanged
