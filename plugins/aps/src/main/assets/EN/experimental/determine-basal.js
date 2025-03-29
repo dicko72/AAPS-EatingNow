@@ -398,6 +398,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     //var firstMealWindow = nowUTC <= firstMealWindowFinish;
     //var firstMealWindow = meal_data.ENStartedTime == meal_data.ENWStartTime && nowhrs < EN_BkfstCutOff;
     var firstMealWindow = meal_data.firstMealWindow;
+    var endebug = "ENStartedTime:" + ENStartedTime + ",ENWStartTime:" + ENWStartTime;
 
     // set the ENW duration depending on meal type
     //var ENWDuration_profile = ENWDuration (firstMealWindow ? ENBkfstWindow : profile.ENWindow);
@@ -1256,7 +1257,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // EXPERIMENT: Use NA as BG+ when safe
     if (profile.EN_Use_BGPlus && TIR_sens_limited > 1 && sens_predType == "NA" && insulinReq_bg >= threshold && minGuardBG >= threshold && TIR_H_safety > 1) {
         sens_predType = "BG+";
-        var endebug = "BG+ NA";
+//        var endebug = "BG+ NA";
     }
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
@@ -1918,6 +1919,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (lastUAMPredBG > bg) {
                     AllowZT = false; // no ZT?
                 }
+                endebug += ",iRPChg:" + insulinReqPctChanged + ",TIRsl:" + TIR_sens_limited + ",AZT:" + AllowZT + ",dReq:" + durationReq;
             }
 
             // SAFETY: when overriding the insulinReqPct ensure that TBR is also provided - insulinReqPctChanged
