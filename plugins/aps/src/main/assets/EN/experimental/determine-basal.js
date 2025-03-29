@@ -398,7 +398,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     //var firstMealWindow = nowUTC <= firstMealWindowFinish;
     //var firstMealWindow = meal_data.ENStartedTime == meal_data.ENWStartTime && nowhrs < EN_BkfstCutOff;
     var firstMealWindow = meal_data.firstMealWindow;
-    var endebug = "ENStartedTime:" + ENStartedTime + ",ENWStartTime:" + ENWStartTime;
+    var endebug = "ENStartedTime:" + meal_data.ENStartedTime + ",ENWStartTime:" + meal_data.ENWStartTime;
 
     // set the ENW duration depending on meal type
     //var ENWDuration_profile = ENWDuration (firstMealWindow ? ENBkfstWindow : profile.ENWindow);
