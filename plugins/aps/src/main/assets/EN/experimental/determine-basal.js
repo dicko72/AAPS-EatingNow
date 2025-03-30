@@ -425,16 +425,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var carb_ratio = profile.carb_ratio;
     var MealScaler = 100; // no scaling by default
 
-    // stronger CR and ISF can be used to scale within ENW when 1 CR and 1 ISF is within the profile
-    if (!profile.use_sens_TDD && ENWindowOK) {
-        MealScaler = round(profile.MealPct);
-        sens = round(sens * (MealScaler / 100), 1);
-    }
-
-    // Postprandial ISF scaling after ENW during for 3h, allowed after hours
-    if (!profile.use_sens_TDD && !ENWindowOK && ENWEndedAgo <= 180 && bg >= target_bg + 18) {
-        // MealScaler = round(profile.PPMealPct);
-        MealScaler = round(profile.MealPct);
+    // stronger ISF can be used to scale within ENW and 3h after
+    if (profile.MealPct != MealScaler && !profile.use_sens_TDD) {
+        if (ENWindowOK) MealScaler = round(profile.MealPct);
+        // Postprandial ISF scaling after ENW during for 3h, allowed after hours
+        if (!ENWindowOK && ENWEndedAgo <= 180 && bg >= target_bg + 18) MealScaler = round(profile.MealPct);
+        //if (!ENWindowOK && ENWEndedAgo <= 180 && bg >= target_bg + 18) MealScaler = round(profile.PPMealPct);
         sens = round(sens * (MealScaler / 100), 1);
     }
 
