@@ -1908,17 +1908,17 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
             // PROACTIVE: if an SMB given with stronger ISF adjust the temp rate when not sensitive
             // if (MealScaler != 100 && insulinReqOrig > 0 && insulinReq > microBolus * 2 && TIR_sens_limited >= 1) {
-            if (MealScaler != 100 && insulinReq > microBolus * 2 && TIR_sens_limited >= 1) {
-                rate = (insulinReq * insulinReqPct_orig) - microBolus;
-                rate *= 6; // deliver over 10m
-                rate = Math.max(0, rate); // ZT is minimum
-                rate = round_basal(rate, profile);
-                // AllowZT = (ENWindowOK && ENWBolusIOBRemaining > 0 || lastUAMPredBG > bg ? false : AllowZT); // ZT if exceeded ENWBolusIOB or UAM predicted higher
-                if (lastUAMPredBG > bg) {
-                    AllowZT = false; // no ZT?
-                }
-                endebug += ",iRPChg:" + insulinReqPctChanged + ",TIRsl:" + TIR_sens_limited + ",AZT:" + AllowZT + ",dReq:" + durationReq;
-            }
+//            if (MealScaler != 100 && insulinReq > microBolus * 2 && TIR_sens_limited >= 1) {
+//                rate = (insulinReq * insulinReqPct_orig) - microBolus;
+//                rate *= 6; // deliver over 10m
+//                rate = Math.max(0, rate); // ZT is minimum
+//                rate = round_basal(rate, profile);
+//                // AllowZT = (ENWindowOK && ENWBolusIOBRemaining > 0 || lastUAMPredBG > bg ? false : AllowZT); // ZT if exceeded ENWBolusIOB or UAM predicted higher
+//                if (lastUAMPredBG > bg) {
+//                    AllowZT = false; // no ZT?
+//                }
+//                endebug += ",iRPChg:" + insulinReqPctChanged + ",TIRsl:" + TIR_sens_limited + ",AZT:" + AllowZT + ",dReq:" + durationReq;
+//            }
 
             // SAFETY: when overriding the insulinReqPct ensure that TBR is also provided - insulinReqPctChanged
             if (insulinReqPctChanged) {
