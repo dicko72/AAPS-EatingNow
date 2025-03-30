@@ -339,7 +339,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.mealData.put("lastCarbTime", mealData.lastCarbTime)
 
         // set the EN start time based on prefs
-        val ENStartTime = 3600000 * sp.getInt(R.string.key_eatingnow_timestart, 9) + MidnightTime.calc(now)
+        var ENStartTime = 3600000 * sp.getInt(R.string.key_eatingnow_timestart, 9) + MidnightTime.calc(now)
+        if (now < ENStartTime) ENStartTime -= 86400000 // if today start time hasn't happened use yesterdays start time
         // this.mealData.put("ENStartTime",ENStartTime)
 
         // Create array to contain treatment times for ENWStartTime for today
