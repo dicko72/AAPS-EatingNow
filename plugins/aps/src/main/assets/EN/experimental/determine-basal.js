@@ -1907,7 +1907,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //            }
 
             // PROACTIVE: if an SMB given with stronger ISF adjust the temp rate when not sensitive
-            if (MealScaler != 100 && insulinReqOrig > 0 && insulinReq > microBolus * 2 && TIR_sens_limited >= 1) {
+            // if (MealScaler != 100 && insulinReqOrig > 0 && insulinReq > microBolus * 2 && TIR_sens_limited >= 1) {
+            if (MealScaler != 100 && insulinReq > microBolus * 2 && TIR_sens_limited >= 1) {
                 rate = (insulinReq * insulinReqPct_orig) - microBolus;
                 rate *= 6; // deliver over 10m
                 rate = Math.max(0, rate); // ZT is minimum
