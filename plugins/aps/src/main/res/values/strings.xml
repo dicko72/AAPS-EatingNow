@@ -167,7 +167,7 @@
     <string name="key_eatingnow_enwindowminutes" translatable="false">key_eatingnow_enwindowminutes</string>
     <string name="key_enbkfstwindowminutes" translatable="false">key_enbkfstwindowminutes</string>
     <string name="key_enwminbolus" translatable="false">key_enwminbolus</string>
-    <string name="key_enautostart" translatable="false">key_enautostart</string>
+<!--    <string name="key_enautostart" translatable="false">key_enautostart</string>-->
     <string name="key_eatingnow_cobboost_maxbolus_breakfast">key_eatingnow_cobboost_maxbolus_breakfast</string>
     <string name="key_eatingnow_breakfastpct">key_eatingnow_breakfastpct</string>
     <string name="key_eatingnow_pct">key_eatingnow_pct</string>
@@ -190,7 +190,7 @@
     <string name="key_eatingnow_isfbgscaler">key_eatingnow_isfbgscaler</string>
     <string name="key_use_sr_tdd">key_use_sr_tdd</string>
     <string name="key_eatingnow_maxisfpct">key_eatingnow_maxisfpct</string>
-    <string name="key_eatingnow_timestart">key_eatingnow_timestart</string>
+<!--    <string name="key_eatingnow_timestart">key_eatingnow_timestart</string>-->
     <string name="key_eatingnow_timeend">key_eatingnow_timeend</string>
     <string name="key_eatingnow_bkfstcutoff">key_eatingnow_bkfstcutoff</string>
     <string name="key_openapsama_TDD" translatable="false">7 day average Total Daily Dose</string>

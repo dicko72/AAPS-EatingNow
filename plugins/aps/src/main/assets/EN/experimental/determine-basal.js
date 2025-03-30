@@ -235,12 +235,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     */
 
     // Eating Now Variables, relocated for SR
-    var ENactive = false, ENtimeOK = false, ENmaxIOBOK = false, enlog = "";
+    var ENactive = false, ENmaxIOBOK = false, enlog = "";
+
     //Create the time variable to be used to allow the EN to function only between certain hours
-    var now = new Date(), nowdec = round(now.getHours() + now.getMinutes() / 60, 2), nowhrs = now.getHours(), nowmins = now.getMinutes(), nowUTC = new Date(systemTime).getTime();
+//    var now = new Date(), nowdec = round(now.getHours() + now.getMinutes() / 60, 2), nowhrs = now.getHours(), nowmins = now.getMinutes(), nowUTC = new Date(systemTime).getTime();
+    var nowUTC = new Date(systemTime).getTime();
     // calculate the epoch time for EN start and end applying an offset when end time is lower than start time
-    var ENStartOffset = (profile.EatingNowTimeEnd < profile.EatingNowTimeStart && nowhrs < profile.EatingNowTimeEnd ? 86400000 : 0), ENEndOffset = (profile.EatingNowTimeEnd < profile.EatingNowTimeStart && nowhrs > profile.EatingNowTimeStart ? 86400000 : 0);
-    var ENStartTime = new Date().setHours(profile.EatingNowTimeStart, 0, 0, 0) - ENStartOffset, ENEndTime = new Date().setHours(profile.EatingNowTimeEnd, 0, 0, 0) + ENEndOffset;
+//    var ENStartOffset = (profile.EatingNowTimeEnd < profile.EatingNowTimeStart && nowhrs < profile.EatingNowTimeEnd ? 86400000 : 0), ENEndOffset = (profile.EatingNowTimeEnd < profile.EatingNowTimeStart && nowhrs > profile.EatingNowTimeStart ? 86400000 : 0);
+//    var ENStartTime = new Date().setHours(profile.EatingNowTimeStart, 0, 0, 0) - ENStartOffset, ENEndTime = new Date().setHours(profile.EatingNowTimeEnd, 0, 0, 0) + ENEndOffset;
 //    var EN_BkfstCutOff = (profile.EN_BkfstCutOff == 0 ? ENEndTime : profile.EN_BkfstCutOff);
     // var COB = meal_data.mealCOB;
     var ENTTActive = meal_data.activeENTempTargetDuration > 0;
@@ -256,20 +258,23 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (glucose_status.short_avgdelta != 0) DeltaPctS = round(1 + ((glucose_status.delta - glucose_status.short_avgdelta) / Math.abs(glucose_status.short_avgdelta)),2);
     if (glucose_status.long_avgdelta != 0) DeltaPctL = round(1 + ((glucose_status.delta - glucose_status.long_avgdelta) / Math.abs(glucose_status.long_avgdelta)),2);
 
-    // eating now time can be delayed if there is no first bolus or carbs
-//    if (now >= ENStartTime && now < ENEndTime && (meal_data.lastENCarbTime >= ENStartTime || meal_data.lastENBolusTime >= ENStartTime || meal_data.firstENTempTargetTime >= ENStartTime)) ENtimeOK = true;
-    if (now >= ENStartTime && now < ENEndTime && (meal_data.ENStartedTime >= ENStartTime)) ENtimeOK = true;
-    if (now >= ENStartTime && now < ENEndTime && profile.ENautostart) ENtimeOK = true;
+    // eating now time can be delayed if there is no first bolus or carbs.
+    var ENtimeOK = (meal_data.ENStartedTime > 0 && nowUTC < profile.EatingNowTimeEnd); // true if ENStartedTime has a value and now is before EatingNowTimeEnd
+
+    //if (now >= ENStartTime && now < ENEndTime && (meal_data.ENStartedTime >= ENStartTime)) ENtimeOK = true;
+    //if (now >= ENStartTime && now < ENEndTime && profile.ENautostart) ENtimeOK = true;
     var lastNormalCarbAge = round((new Date(systemTime).getTime() - meal_data.lastENCarbTime) / 60000);
     var lastBolusAge = (new Date(systemTime).getTime() - meal_data.lastBolusTime) / 60000; // minutes since last bolus for BG+
 
 
-    enlog += "nowhrs: " + nowhrs + ", now: " + now + "\n";
-    enlog += "ENStartOffset: " + ENStartOffset + ", ENEndOffset: " + ENEndOffset + "\n";
-    enlog += "ENStartTime: " + new Date(ENStartTime).toLocaleString() + "\n";
-    enlog += "ENEndTime: " + new Date(ENEndTime).toLocaleString() + "\n";
+//    enlog += "nowhrs: " + nowhrs + ", now: " + now + "\n";
+//    enlog += "ENStartOffset: " + ENStartOffset + ", ENEndOffset: " + ENEndOffset + "\n";
+//    enlog += "ENStartTime: " + new Date(ENStartTime).toLocaleString() + "\n";
+    enlog += "ENStartedTime: " + new Date(meal_data.ENStartedTime).toLocaleString() + "\n";
+//    enlog += "ENEndTime: " + new Date(ENEndTime).toLocaleString() + "\n";
+    enlog += "EatingNowTimeEnd: " + new Date(profile.EatingNowTimeEnd).toLocaleString() + "\n";
 //    enlog += "lastENCarbTime: " + meal_data.lastENCarbTime + ", lastENBolusTime: " + meal_data.lastENBolusTime + "\n";
-    enlog += "lastNormalCarbAge: " + lastNormalCarbAge + "\n";
+//    enlog += "lastNormalCarbAge: " + lastNormalCarbAge + "\n";
 
     /*
     // set sensitivityRatio to a minimum of 1 when EN active allowing resistance, and allow <1 overnight to allow sensitivity
@@ -393,10 +398,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var ENWindowOK = false, ENWStartedAgo = 0;
 
     // breakfast/first meal related vars
-    //var ENBkfstWindow = (profile.ENBkfstWindow == 0 ? profile.ENWindow : profile.ENBkfstWindow); // if breakfast window not set use ENW
-    //var firstMealWindowFinish = (meal_data.ENStartedTime + (ENBkfstWindow * 60000));
-    //var firstMealWindow = nowUTC <= firstMealWindowFinish;
-    //var firstMealWindow = meal_data.ENStartedTime == meal_data.ENWStartTime && nowhrs < EN_BkfstCutOff;
     var firstMealWindow = meal_data.firstMealWindow;
     var endebug = "ENStartedTime:" + meal_data.ENStartedTime + ",ENWStartTime:" + meal_data.ENWStartTime;
 

@@ -269,9 +269,17 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
 //**********************************************************************************************************************************************
         // Eating Now
-        this.profile.put("EatingNowTimeStart", sp.getInt(R.string.key_eatingnow_timestart, 9))
-        val EatingNowTimeEnd = sp.getInt(R.string.key_eatingnow_timeend, 17)
+        // val EatingNowTimeEnd = sp.getInt(R.string.key_eatingnow_timeend, 17)
+        // this.profile.put("EatingNowTimeEnd", EatingNowTimeEnd)
+
+        // Eating Now end time for today
+        var EatingNowTimeEnd = 3600000 * sp.getInt(R.string.key_eatingnow_timeend, 17) + MidnightTime.calc(now)
         this.profile.put("EatingNowTimeEnd", EatingNowTimeEnd)
+
+        // Eating Now start time, any bolus or COB treatment after the previous EatingNowTimeEnd will start EN
+        var EatingNowTimeStart = EatingNowTimeEnd-86400000 // Start time is always the previous days end time
+        this.profile.put("EatingNowTimeStart", EatingNowTimeStart)
+
 
         val normalTargetBG = profile.getTargetMgdl().roundToInt()
         this.profile.put("normal_target_bg", normalTargetBG)
@@ -285,7 +293,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("allowENWovernight", sp.getBoolean(R.string.key_use_enw_overnight, false))
         val enwMinBolus = sp.getDouble(R.string.key_enwminbolus, 0.0)
         this.profile.put("ENWMinBolus", enwMinBolus)
-        this.profile.put("ENautostart", sp.getBoolean(R.string.key_enautostart, false))
+        // this.profile.put("ENautostart", sp.getBoolean(R.string.key_enautostart, false))
         this.profile.put("SMBbgOffset",profileUtil.convertToMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset, 0.0), profileFunction.getUnits()))
         this.profile.put("SMBbgOffset_day",profileUtil.convertToMgdl(sp.getDouble(R.string.key_eatingnow_smbbgoffset_day, 0.0), profileFunction.getUnits()))
         this.profile.put("ISFbgscaler", sp.getDouble(R.string.key_eatingnow_isfbgscaler, 0.0))
@@ -338,12 +346,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         // this.mealData.put("lastBolusUnits", repository.getLastBolusRecord()?.amount ?: 0L) // EatingNow
         this.mealData.put("lastCarbTime", mealData.lastCarbTime)
 
-        // set the EN start time based on prefs
-        var ENStartTime = 3600000 * sp.getInt(R.string.key_eatingnow_timestart, 9) + MidnightTime.calc(now)
-        if (now < ENStartTime) ENStartTime -= 86400000 // if today start time hasn't happened use yesterdays start time
-        // this.mealData.put("ENStartTime",ENStartTime)
-
-        // Create array to contain treatment times for ENWStartTime for today
+        // Create array to contain treatment times for ENWStartTime since EatingNowTimeEnd
         var ENWStartTimeArray: Array<Long> = arrayOf() // Create array to contain last treatment times for ENW for today
         var ENStartedArray: Array<Long> = arrayOf() // Create array to contain first treatment times for ENStartTime for today
 
@@ -351,8 +354,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         var lastENTempTargetEndTime: Long // Declare outside the block
         var lastENTempTargetDuration: Int // Declare outside the block
 
-        // get the FIRST and LAST ENTempTarget time since EN activation
-        repository.getENTemporaryTargetDataFromTimetoTime(ENStartTime,now,true).blockingGet().let { ENTempTarget ->
+        // get the FIRST and LAST ENTempTarget time since EatingNowTimeStart
+        repository.getENTemporaryTargetDataFromTimetoTime(EatingNowTimeStart,now,true).blockingGet().let { ENTempTarget ->
             val firstENTempTargetTime = with(ENTempTarget.firstOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("firstENTempTargetTime",firstENTempTargetTime)
             if (firstENTempTargetTime >0) ENStartedArray += firstENTempTargetTime
@@ -368,8 +371,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             this.mealData.put("lastENTempTargetEndTime",lastENTempTargetEndTime)
         }
 
-        // get the FIRST and LAST carb time since EN activation NEW
-        repository.getCarbsDataFromTimeToTime(ENStartTime,now,false, minCOB).blockingGet().let { ENCarbs->
+        // get the FIRST and LAST carb time since EatingNowTimeStart
+        repository.getCarbsDataFromTimeToTime(EatingNowTimeStart,now,false, minCOB).blockingGet().let { ENCarbs->
             val firstENCarbTime = with(ENCarbs.firstOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("firstENCarbTime",firstENCarbTime)
             if (firstENCarbTime >0) ENStartedArray += firstENCarbTime
@@ -379,8 +382,8 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             if (lastENCarbTime > lastENTempTargetEndTime)  ENWStartTimeArray += lastENCarbTime // check here for ENTT overlap
         }
 
-        // get the FIRST and LAST bolus time since EN activation NEW
-        repository.getENBolusFromTimeOfType(ENStartTime,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().let { ENBolus->
+        // get the FIRST and LAST bolus time since EatingNowTimeStart
+        repository.getENBolusFromTimeOfType(EatingNowTimeStart,true, Bolus.Type.NORMAL, enwMinBolus ).blockingGet().let { ENBolus->
             val firstENBolusTime = with(ENBolus.firstOrNull()?.timestamp) { this ?: 0 }
             this.mealData.put("firstENBolusTime",firstENBolusTime)
             if (firstENBolusTime >0) ENStartedArray += firstENBolusTime
