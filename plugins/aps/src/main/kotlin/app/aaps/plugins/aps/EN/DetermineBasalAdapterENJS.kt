@@ -426,9 +426,11 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.mealData.put("ENWBolusIOB", ENWBolusIOB)
 
         // calculate the time that breakfast should be finished or ignored
-        var EN_BkfstCutOffhr = sp.getInt(R.string.key_eatingnow_bkfstcutoff, 0) // cutoff pref
-        if (EN_BkfstCutOffhr == 0) EN_BkfstCutOffhr = EatingNowTimeEnd
-        val EN_BkfstCutOffTime = 3600000 * EN_BkfstCutOffhr + MidnightTime.calc(now)
+        val EN_BkfstCutOffhr = sp.getInt(R.string.key_eatingnow_bkfstcutoff, 0)
+        val EN_BkfstCutOffTime = if (EN_BkfstCutOffhr > 0) 3600000 * EN_BkfstCutOffhr + MidnightTime.calc(now) else EatingNowTimeEnd
+        // var EN_BkfstCutOffhr = sp.getInt(R.string.key_eatingnow_bkfstcutoff, 0) // cutoff pref
+        // if (EN_BkfstCutOffhr == 0) EN_BkfstCutOffhr = EatingNowTimeEnd
+        // val EN_BkfstCutOffTime = 3600000 * EN_BkfstCutOffhr + MidnightTime.calc(now)
 
 
         // determine if the current ENW is the first meal of the day
