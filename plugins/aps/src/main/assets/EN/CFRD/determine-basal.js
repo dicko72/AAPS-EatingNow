@@ -235,12 +235,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     */
 
     // Eating Now Variables, relocated for SR
-    var ENactive = false, ENtimeOK = false, ENmaxIOBOK = false, enlog = "";
+    var ENactive = false, ENmaxIOBOK = false, enlog = "";
+
     //Create the time variable to be used to allow the EN to function only between certain hours
-    var now = new Date(), nowdec = round(now.getHours() + now.getMinutes() / 60, 2), nowhrs = now.getHours(), nowmins = now.getMinutes(), nowUTC = new Date(systemTime).getTime();
+//    var now = new Date(), nowdec = round(now.getHours() + now.getMinutes() / 60, 2), nowhrs = now.getHours(), nowmins = now.getMinutes(), nowUTC = new Date(systemTime).getTime();
+    var nowUTC = new Date(systemTime).getTime();
     // calculate the epoch time for EN start and end applying an offset when end time is lower than start time
-    var ENStartOffset = (profile.EatingNowTimeEnd < profile.EatingNowTimeStart && nowhrs < profile.EatingNowTimeEnd ? 86400000 : 0), ENEndOffset = (profile.EatingNowTimeEnd < profile.EatingNowTimeStart && nowhrs > profile.EatingNowTimeStart ? 86400000 : 0);
-    var ENStartTime = new Date().setHours(profile.EatingNowTimeStart, 0, 0, 0) - ENStartOffset, ENEndTime = new Date().setHours(profile.EatingNowTimeEnd, 0, 0, 0) + ENEndOffset;
+//    var ENStartOffset = (profile.EatingNowTimeEnd < profile.EatingNowTimeStart && nowhrs < profile.EatingNowTimeEnd ? 86400000 : 0), ENEndOffset = (profile.EatingNowTimeEnd < profile.EatingNowTimeStart && nowhrs > profile.EatingNowTimeStart ? 86400000 : 0);
+//    var ENStartTime = new Date().setHours(profile.EatingNowTimeStart, 0, 0, 0) - ENStartOffset, ENEndTime = new Date().setHours(profile.EatingNowTimeEnd, 0, 0, 0) + ENEndOffset;
 //    var EN_BkfstCutOff = (profile.EN_BkfstCutOff == 0 ? ENEndTime : profile.EN_BkfstCutOff);
     // var COB = meal_data.mealCOB;
     var ENTTActive = meal_data.activeENTempTargetDuration > 0;
@@ -256,20 +258,23 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (glucose_status.short_avgdelta != 0) DeltaPctS = round(1 + ((glucose_status.delta - glucose_status.short_avgdelta) / Math.abs(glucose_status.short_avgdelta)),2);
     if (glucose_status.long_avgdelta != 0) DeltaPctL = round(1 + ((glucose_status.delta - glucose_status.long_avgdelta) / Math.abs(glucose_status.long_avgdelta)),2);
 
-    // eating now time can be delayed if there is no first bolus or carbs
-//    if (now >= ENStartTime && now < ENEndTime && (meal_data.lastENCarbTime >= ENStartTime || meal_data.lastENBolusTime >= ENStartTime || meal_data.firstENTempTargetTime >= ENStartTime)) ENtimeOK = true;
-    if (now >= ENStartTime && now < ENEndTime && (meal_data.ENStartedTime >= ENStartTime)) ENtimeOK = true;
-    if (now >= ENStartTime && now < ENEndTime && profile.ENautostart) ENtimeOK = true;
+    // eating now time can be delayed if there is no first bolus or carbs.
+    var ENtimeOK = (meal_data.ENStartedTime > 0 && nowUTC < profile.EatingNowTimeEnd); // true if ENStartedTime has a value and now is before EatingNowTimeEnd
+
+    //if (now >= ENStartTime && now < ENEndTime && (meal_data.ENStartedTime >= ENStartTime)) ENtimeOK = true;
+    //if (now >= ENStartTime && now < ENEndTime && profile.ENautostart) ENtimeOK = true;
     var lastNormalCarbAge = round((new Date(systemTime).getTime() - meal_data.lastENCarbTime) / 60000);
     var lastBolusAge = (new Date(systemTime).getTime() - meal_data.lastBolusTime) / 60000; // minutes since last bolus for BG+
 
 
-    enlog += "nowhrs: " + nowhrs + ", now: " + now + "\n";
-    enlog += "ENStartOffset: " + ENStartOffset + ", ENEndOffset: " + ENEndOffset + "\n";
-    enlog += "ENStartTime: " + new Date(ENStartTime).toLocaleString() + "\n";
-    enlog += "ENEndTime: " + new Date(ENEndTime).toLocaleString() + "\n";
+//    enlog += "nowhrs: " + nowhrs + ", now: " + now + "\n";
+//    enlog += "ENStartOffset: " + ENStartOffset + ", ENEndOffset: " + ENEndOffset + "\n";
+//    enlog += "ENStartTime: " + new Date(ENStartTime).toLocaleString() + "\n";
+    enlog += "ENStartedTime: " + new Date(meal_data.ENStartedTime).toLocaleString() + "\n";
+//    enlog += "ENEndTime: " + new Date(ENEndTime).toLocaleString() + "\n";
+    enlog += "EatingNowTimeEnd: " + new Date(profile.EatingNowTimeEnd).toLocaleString() + "\n";
 //    enlog += "lastENCarbTime: " + meal_data.lastENCarbTime + ", lastENBolusTime: " + meal_data.lastENBolusTime + "\n";
-    enlog += "lastNormalCarbAge: " + lastNormalCarbAge + "\n";
+//    enlog += "lastNormalCarbAge: " + lastNormalCarbAge + "\n";
 
     /*
     // set sensitivityRatio to a minimum of 1 when EN active allowing resistance, and allow <1 overnight to allow sensitivity
@@ -401,6 +406,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     //var firstMealWindow = nowUTC <= firstMealWindowFinish;
     //var firstMealWindow = meal_data.ENStartedTime == meal_data.ENWStartTime && nowhrs < EN_BkfstCutOff;
     var firstMealWindow = meal_data.firstMealWindow;
+//    var endebug = "ENStartedTime:" + meal_data.ENStartedTime + ",ENWStartTime:" + meal_data.ENWStartTime;
 
     // set the ENW duration depending on meal type
     //var ENWDuration_profile = ENWDuration (firstMealWindow ? ENBkfstWindow : profile.ENWindow);
@@ -1260,7 +1266,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // EXPERIMENT: Use NA as BG+ when safe
     if (profile.EN_Use_BGPlus && TIR_sens_limited > 1 && sens_predType == "NA" && insulinReq_bg >= threshold && minGuardBG >= threshold && TIR_H_safety > 1) {
         sens_predType = "BG+";
-        var endebug = "BG+ NA";
+//        var endebug = "BG+ NA";
     }
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
@@ -1269,8 +1275,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (UAMBGPreBolusUnits > max_iob) UAMBGPreBolusUnits = profile.current_basal * UAMBGPreBolusUnits / 60;
 
     // start with the prebolus in prefs as the minimum starting bolus amount for ENWBolusIOB then use the maxbolus for UAM+ as the increment
-    var UAMBGPreBolus = (UAMBGPreBolusUnits > 0 && ENTTActive && ENPBActive && ENWStartedAgo < PBW && ENWBolusIOB < UAMBGPreBolusUnits);
-    var UAMBGPreBolusUnitsLeft = (UAMBGPreBolus ? UAMBGPreBolusUnits - ENWBolusIOB : 0);
+    var UAMBGPreBolus = (UAMBGPreBolusUnits > 0 && ENTTActive && ENPBActive && ENWStartedAgo < PBW && meal_data.ENWBolusIOB < UAMBGPreBolusUnits);
+    var UAMBGPreBolusUnitsLeft = (UAMBGPreBolus ? UAMBGPreBolusUnits - meal_data.ENWBolusIOB : 0);
 
     // Pre-bolus condition matches set PB type when not accelerating
     if (UAMBGPreBolus && sens_predType != "UAM+") sens_predType = "PB";
@@ -1436,7 +1442,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += (MealScaler != 100 ? " " + round(MealScaler) + "%" : "");
     rT.reason += (ENWindowOK && ENWStartedAgo <= ENWindowDuration ? " " + round(ENWStartedAgo) + "/" + ENWindowDuration + "m" : "");
     rT.reason += (!ENWindowOK && ENWEndedAgo <= 240 ? " " + round(ENWindowDuration) + "m, " + round(ENWEndedAgo) + "m ago" : "");
-    if (meal_data.ENWBolusIOB || ENWindowOK) rT.reason += ", ENW-IOB:" + round(ENWBolusIOB,2) + "/" + round(profile.ENW_maxIOB,2);
+    if (meal_data.ENWBolusIOB || ENWindowOK) rT.reason += ", ENW-IOB:" + round(meal_data.ENWBolusIOB,2) + "/" + round(profile.ENW_maxIOB,2);
 
     // other EN stuff
     rT.reason += ", eBGw: " + sens_predType + " " + convert_bg(insulinReq_bg_orig, profile);
@@ -1824,7 +1830,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (max_iob_en > 0 && iob_data.iob > max_iob_en) ENMaxSMB = (profile.EN_max_iob_allow_smb ? maxBolus : 0);
 
             // restrict SMB when ENWBolusIOB will be exceeded by SMB but minimum is EN_NoENW_maxBolus
-            if (ENWBolusIOBMax > 0 && ENWBolusIOB + ENMaxSMB > ENWBolusIOBMax) {
+            if (ENWBolusIOBMax > 0 && meal_data.ENWBolusIOB + ENMaxSMB > ENWBolusIOBMax) {
                 ENMaxSMB = Math.max(ENWBolusIOBRemaining, EN_NoENW_maxBolus); // use EN_NoENW_maxBolus if its larger than restricted SMB
             }
 
@@ -1902,18 +1908,52 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // if EN_SMB_percent has reduced the insulinReqPct (insulinReqPctChanged)
             if (insulinReqPctChanged && insulinReq > 0) AllowZT = false;
 
-            // No ZT allowed by EN
-            if (!AllowZT) durationReq = 0;
-
             // TBR only when below respective SMBbgOffsets with no low TT / no COB
             if (ENSleepModeNoSMB || ENDayModeNoSMB) {
                 microBolus = 0;
             }
 
-            // if insulinReq > 0 but not enough for a microBolus, don't set an SMB zero temp
-            if (insulinReq > 0 && microBolus < profile.bolus_increment) {
-                durationReq = 0;
+//            // if insulinReq > 0 but not enough for a microBolus, don't set an SMB zero temp
+//            if (insulinReq > 0 && microBolus < profile.bolus_increment) {
+//                durationReq = 0;
+//            }
+
+            // PROACTIVE: if an SMB given with stronger ISF adjust the temp rate when not sensitive
+            // if (MealScaler != 100 && insulinReqOrig > 0 && insulinReq > microBolus * 2 && TIR_sens_limited >= 1) {
+//            if (MealScaler != 100 && insulinReq > microBolus * 2 && TIR_sens_limited >= 1) {
+//                rate = (insulinReq * insulinReqPct_orig) - microBolus;
+//                rate *= 6; // deliver over 10m
+//                rate = Math.max(0, rate); // ZT is minimum
+//                rate = round_basal(rate, profile);
+//                // AllowZT = (ENWindowOK && ENWBolusIOBRemaining > 0 || lastUAMPredBG > bg ? false : AllowZT); // ZT if exceeded ENWBolusIOB or UAM predicted higher
+//                if (lastUAMPredBG > bg) {
+//                    AllowZT = false; // no ZT?
+//                }
+//                endebug += ",iRPChg:" + insulinReqPctChanged + ",TIRsl:" + TIR_sens_limited + ",AZT:" + AllowZT + ",dReq:" + durationReq;
+//            }
+
+            // SAFETY: when overriding the insulinReqPct ensure that TBR is also provided - insulinReqPctChanged
+            if (insulinReqPctChanged) {
+                // Reset insulinReqPct to allow rate to get default insulinReq
+                if (microBolus == 0 || insulinReqPct == 0) insulinReqPct = insulinReqPct_orig;
+
+                // Skip small SMB as TBR will pick up the slack
+                if (microBolus <= profile.bolus_increment) microBolus = 0;
+
+                // SAFETY: Calculate rate restricting to remaining maxBolus or remaining insulinReq differential
+                rate = Math.min(maxBolus - microBolus, (insulinReq * insulinReqPct_orig) - microBolus);
+                // when AAPS original insulinReq is higher than restricted SMB allow remaining insulinReqPct as TBR
+                if (insulinReqOrig > microBolus && microBolus > 0 && ENactive && delta < 18 && microBolus < maxBolus) {
+                    rate = (insulinReq * insulinReqPct_orig) - microBolus;
+                }
+
+                rate *= 12; // Allow TBR to deliver it within the 5m loop iteration
+                rate = Math.max(0, rate); // ZT is minimum
+                rate = round_basal(rate, profile);
             }
+
+            // No ZT allowed by EN
+            if (!AllowZT) durationReq = 0;
 
             var smbLowTempReq = 0;
             if (durationReq <= 0) {
@@ -1943,43 +1983,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             rT.reason += ENReason;
             rT.reason += ". ";
             rT.reason += (typeof endebug !== 'undefined' && !rT.reason.includes("DEBUG") ? "** DEBUG: " + endebug + "** ": "");
-
-            // PROACTIVE: if an SMB given with stronger ISF adjust the temp rate when not sensitive
-            if (MealScaler != 100 && insulinReqOrig > 0 && insulinReq > microBolus * 2 && TIR_sens_limited >= 1) {
-                rate = (insulinReq * insulinReqPct_orig) - microBolus;
-                rate *= 6; // deliver over 10m
-                rate = Math.max(0, rate); // ZT is minimum
-                rate = round_basal(rate, profile);
-                AllowZT = false;
-            }
-
-//            // when AAPS original insulinReq positive with UAM+ and minPredBG safe allow remaining insulinReqPct as TBR
-//            if (insulinReqOrig > 0 && sens_predType == "UAM+" && delta < 18 && minPredBG_orig > target_bg) {
-//                rate = (insulinReq * insulinReqPct_orig) - microBolus;
-//                rate *= 12; // Allow TBR to deliver it within the 5m loop iteration
-//                rate = Math.max(0, rate); // ZT is minimum
-//                rate = round_basal(rate, profile);
-//            }
-
-            // SAFETY: when overriding the insulinReqPct ensure that TBR is also provided - insulinReqPctChanged
-            if (insulinReqPctChanged) {
-                // Reset insulinReqPct to allow rate to get default insulinReq
-                if (microBolus == 0 || insulinReqPct == 0) insulinReqPct = insulinReqPct_orig;
-
-                // Skip small SMB as TBR will pick up the slack
-                if (microBolus <= profile.bolus_increment) microBolus = 0;
-
-                // SAFETY: Calculate rate restricting to remaining maxBolus or remaining insulinReq differential
-                rate = Math.min(maxBolus - microBolus, (insulinReq * insulinReqPct_orig) - microBolus);
-                // when AAPS original insulinReq is higher than restricted SMB allow remaining insulinReqPct as TBR
-                if (insulinReqOrig > microBolus && microBolus > 0 && ENactive && delta < 18 && microBolus < maxBolus) {
-                    rate = (insulinReq * insulinReqPct_orig) - microBolus;
-                }
-
-                rate *= 12; // Allow TBR to deliver it within the 5m loop iteration
-                rate = Math.max(0, rate); // ZT is minimum
-                rate = round_basal(rate, profile);
-            }
 
             //allow SMBs every 3 minutes by default
             var SMBInterval = 3;
