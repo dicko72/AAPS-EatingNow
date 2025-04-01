@@ -430,11 +430,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // stronger ISF can be used to scale within ENW and 3h after
     if (profile.MealPct != MealScaler && !profile.use_sens_TDD && !HighTempTargetSet) {
         var MealScalerDuration = 180;
-        //if (ENWindowOK) MealScaler = round(profile.MealPct);
-        MealScaler = round(profile.MealPct);
+        if (ENWindowOK || !ENWindowOK && ENWEndedAgo <= MealScalerDuration) MealScaler = round(profile.MealPct);
         // Postprandial ISF scaling after ENW during for 3h, allowed after hours reducing back to profile ISF
         if (!ENWindowOK && ENWEndedAgo <= MealScalerDuration) MealScaler += ((100-MealScaler) * (ENWEndedAgo/MealScalerDuration)); // Scaled addition over MealScalerDuration
-//        var endebug = "MealScaler:" + MealScaler;
         MealScaler = Math.min(MealScaler,100); // never exceed 100%
         sens = round(sens * (MealScaler / 100), 1);
     }
