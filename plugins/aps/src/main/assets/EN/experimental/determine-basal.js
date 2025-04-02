@@ -1790,7 +1790,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // UAM+ uses different SMB when configured, it can give prebolus is the condition is correct
                 if (sens_predType == "UAM+") ENMaxSMB = Math.max(profile.ENW_maxBolus_UAM_plus, UAMBGPreBolusUnitsLeft);
 
-                // allow ENMaxSMB to go up to remaining ENWBolusIOBMax with UAM+
+                // allow ENMaxSMB to go up to remaining ENWBolusIOBMax with UAM+ allowing faster delivery of insulin earlier
                 if (ENWBolusIOBRemaining > 0 && sens_predType == "UAM+" && ENTTActive) ENMaxSMB = Math.max(ENWBolusIOBRemaining,ENMaxSMB);
 
             } else {
@@ -1823,6 +1823,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // restrict SMB when ENWBolusIOB will be exceeded by SMB but minimum is EN_NoENW_maxBolus
             if (ENWBolusIOBMax > 0 && ENWBolusIOB + ENMaxSMB > ENWBolusIOBMax) {
                 ENMaxSMB = Math.max(ENWBolusIOBRemaining, EN_NoENW_maxBolus); // use EN_NoENW_maxBolus if its larger than restricted SMB
+                if (sens_predType == "UAM+" && ENWindowOK) ENMaxSMB =  Math.max(ENMaxSMB,profile.ENW_maxBolus_UAM_plus); // allow UAM+ when ENWIOB exceeded within ENW
             }
 
             // ============== MAXBOLUS RESTRICTIONS ==============
