@@ -614,8 +614,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //        if (profile.percent > 100 && meal_data.TIR0_H_pct == 0) sens_normalTarget *= profile.percent/100; // cancel adjustment if not resistant when switch > 100%
 //    }
 
-    // apply TIRS to ISF only when delta is slight or bg higher
-    if (TIR_sens_limited !=1 && TIR_sens !=1) {
+    // apply TIRS to ISF only when delta is slight or bg higher and no MealScaler active
+    if (TIR_sens_limited !=1 && TIR_sens !=1 && MealScaler == 100) {
         sens_normalTarget = sens_normalTarget / TIR_sens_limited;
     }
 
