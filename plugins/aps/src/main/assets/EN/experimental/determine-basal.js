@@ -1232,7 +1232,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (sens_predType == "NA" && TIR_sens_limited < 1 && iob_data.iob <= 0) sens_predType = "IOB"; // if low IOB and no other prediction type is present
 
     // Process BG+ first for slight delta when resistant, lower range when asleep
-    if (TIR_sens_limited > 1 && !ENWindowOK && profile.EN_Use_BGPlus && (insulinReq_bg >= -1.5 * bg && insulinReq_bg <= threshold || minGuardBG >= -1.5 * bg && minGuardBG <= threshold) && delta > -4 && delta <= 6 && glucose_status.long_avgdelta > -4) {
+    if (TIR_sens_limited > 1 && !ENWindowOK && !PPWindowOK && profile.EN_Use_BGPlus && (insulinReq_bg >= -1.5 * bg && insulinReq_bg <= threshold || minGuardBG >= -1.5 * bg && minGuardBG <= threshold) && delta > -4 && delta <= 6 && glucose_status.long_avgdelta > -4) {
         // if (TIR_H_safety > 1 || (TIR_M_safety > 1 && (!ENtimeOK || meal_data.TIR_M_pct == 100))) sens_predType = "BG+";
         // if (TIR_H_safety > 1 || TIR_M_safety > 1 && meal_data.TIR_M_pct == 100 && !ENtimeOK) sens_predType = "BG+"; // commenting out as safer BG+ with basal
         if (TIR_H_safety > 1 || TIR_M_safety > 1) sens_predType = "BG+"; // trying as BG+ now uses basal at TIRS%
@@ -1251,11 +1251,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //        if (sens_predType == "UAM+" && !ENWindowOK && profile.EN_UAMPlusSMB_NoENW) ENWindowOK = true;
     }
 
-    // EXPERIMENT: Use NA as BG+ when safe
-    if (profile.EN_Use_BGPlus && TIR_sens_limited > 1 && sens_predType == "NA" && insulinReq_bg >= threshold && minGuardBG >= threshold && TIR_H_safety > 1) {
-        sens_predType = "BG+";
-//        var endebug = "BG+ NA";
-    }
+//    // EXPERIMENT: Use NA as BG+ when safe
+//    if (profile.EN_Use_BGPlus && TIR_sens_limited > 1 && sens_predType == "NA" && insulinReq_bg >= threshold && minGuardBG >= threshold && TIR_H_safety > 1) {
+//        sens_predType = "BG+";
+////        var endebug = "BG+ NA";
+//    }
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
     var UAMBGPreBolusUnits = profile.ENW_maxPreBolus, PBW = 30;
