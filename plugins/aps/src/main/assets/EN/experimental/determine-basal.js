@@ -1245,6 +1245,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
         //sens_predType = (ENWindowOK && delta > glucose_status.long_avgdelta && DeltaPctL > 1 ? "UAM+" : sens_predType); // when long average is still accelerated and delta is still higher
         sens_predType = (TIR_sens_limited > 1 && DeltaPctS > 1 ? "UAM+" : sens_predType); // any accelerated short delta with resistance outside of ENW
+
+        // Experimental enforced UAM+ for early window for TT only
+        if (ENWStartedAgo < ins_peak/2 && ENTTActive) sens_predType = "UAM+";
+
         // reset to UAM prediction when COB are not mostly absorbed
         if (meal_data.carbs && fractionCOBAbsorbed < 0.75) sens_predType = "UAM";
         // if there is no ENW and UAM+ triggered with EN_UAMPlusSMB_NoENW so formally enable the ENW to allow the larger SMB later
