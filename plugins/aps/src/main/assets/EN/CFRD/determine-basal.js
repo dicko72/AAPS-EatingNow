@@ -398,30 +398,20 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     //console.error("CR:", );
     */
 
-    var ENWindowOK = false, ENWStartedAgo = 0;
+//    var ENWindowOK = false, ENWStartedAgo = 0;
 
     // breakfast/first meal related vars
-    //var ENBkfstWindow = (profile.ENBkfstWindow == 0 ? profile.ENWindow : profile.ENBkfstWindow); // if breakfast window not set use ENW
-    //var firstMealWindowFinish = (meal_data.ENStartedTime + (ENBkfstWindow * 60000));
-    //var firstMealWindow = nowUTC <= firstMealWindowFinish;
-    //var firstMealWindow = meal_data.ENStartedTime == meal_data.ENWStartTime && nowhrs < EN_BkfstCutOff;
     var firstMealWindow = meal_data.firstMealWindow;
-//    var endebug = "ENStartedTime:" + meal_data.ENStartedTime + ",ENWStartTime:" + meal_data.ENWStartTime;
 
     // set the ENW duration depending on meal type
-    //var ENWDuration_profile = ENWDuration (firstMealWindow ? ENBkfstWindow : profile.ENWindow);
-    //var ENWDuration_profile = profile.ENWDuration;
     var ENWindowDuration = profile.ENWDuration;
-    // when the TT was the last trigger for ENW use the duration of the last EN TT
-    // ENWindowDuration = (meal_data.lastENTempTargetTime == meal_data.ENWStartTime ? meal_data.lastENTempTargetDuration : ENWindowDuration); // relocated to DetermineBasalAdapterENJS
 
     // set the ENW time since started and ended
-    ENWStartedAgo = (nowUTC - (firstMealWindow ? meal_data.ENStartedTime : meal_data.ENWStartTime)) / 60000;
+    var ENWStartedAgo = (nowUTC - (firstMealWindow ? meal_data.ENStartedTime : meal_data.ENWStartTime)) / 60000;
     var ENWEndedAgo = ENWStartedAgo-ENWindowDuration;
-    //var endebug = "ENWEndedAgo:" + round(ENWEndedAgo);
 
     // ENWindowOK is when there is a recent COB entry or manual bolus
-    ENWindowOK = (ENactive && ENWStartedAgo < ENWindowDuration);
+    var ENWindowOK = ENactive && ENWStartedAgo < ENWindowDuration;
 
     //var ENWBolusIOBMax = (firstMealWindow ? profile.ENW_breakfast_max_tdd : profile.ENW_max_tdd); // when EN started + breakfast window time is greater than the latest ENWstartTime there has been no other ENW so still firstmeal only
     var ENWBolusIOBMax = round(profile.ENW_maxIOB,2);
@@ -434,15 +424,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var carb_ratio = profile.carb_ratio;
     var MealScaler = 100; // no scaling by default
 
-    // stronger CR and ISF can be used to scale within ENW when 1 CR and 1 ISF is within the profile
-    if (!profile.use_sens_TDD && ENWindowOK) {
-        MealScaler = round(profile.MealPct);
-        sens = round(sens * (MealScaler / 100), 1);
-    }
+    // PPWindowOK
+    var MealScalerDuration = 180; // maybe add this in prefs?
+    var PPWindowOK = (!ENWindowOK && ENWEndedAgo <= MealScalerDuration);
 
-    // Postprandial ISF scaling after ENW during for 3h, allowed after hours
-    if (!profile.use_sens_TDD && !ENWindowOK && ENWEndedAgo <= 180 && bg >= target_bg + 9) {
-        MealScaler = round(profile.PPMealPct);
+    // stronger ISF can be used to scale within ENW and 3h after
+    if (profile.MealPct != MealScaler && (ENWindowOK || PPWindowOK) && !profile.use_sens_TDD && !HighTempTargetSet) {
+        MealScaler = round(profile.MealPct);
+        // Postprandial ISF scaling after ENW during for 3h, allowed after hours reducing back to profile ISF
+        if (PPWindowOK) MealScaler += ((100-MealScaler) * (ENWEndedAgo/MealScalerDuration)); // Scaled addition over MealScalerDuration
+        MealScaler = Math.min(MealScaler,100); // never exceed 100%
         sens = round(sens * (MealScaler / 100), 1);
     }
 
@@ -623,8 +614,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //        if (profile.percent > 100 && meal_data.TIR0_H_pct == 0) sens_normalTarget *= profile.percent/100; // cancel adjustment if not resistant when switch > 100%
 //    }
 
-    // apply TIRS to ISF only when delta is slight or bg higher
-    if (TIR_sens_limited !=1 && TIR_sens !=1) {
+    // apply TIRS to ISF only when delta is slight or bg higher and no MealScaler active
+    if (TIR_sens_limited !=1 && TIR_sens !=1 && MealScaler == 100) {
         sens_normalTarget = sens_normalTarget / TIR_sens_limited;
     }
 
@@ -1244,7 +1235,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (sens_predType == "NA" && TIR_sens_limited < 1 && iob_data.iob <= 0) sens_predType = "IOB"; // if low IOB and no other prediction type is present
 
     // Process BG+ first for slight delta when resistant, lower range when asleep
-    if (TIR_sens_limited > 1 && !ENWindowOK && profile.EN_Use_BGPlus && (insulinReq_bg >= -1.5 * bg && insulinReq_bg <= threshold || minGuardBG >= -1.5 * bg && minGuardBG <= threshold) && delta > -4 && delta <= 6 && glucose_status.long_avgdelta > -4) {
+    if (TIR_sens_limited > 1 && !ENWindowOK && !PPWindowOK && profile.EN_Use_BGPlus && (insulinReq_bg >= -1.5 * bg && insulinReq_bg <= threshold || minGuardBG >= -1.5 * bg && minGuardBG <= threshold) && delta > -4 && delta <= 6 && glucose_status.long_avgdelta > -4) {
         // if (TIR_H_safety > 1 || (TIR_M_safety > 1 && (!ENtimeOK || meal_data.TIR_M_pct == 100))) sens_predType = "BG+";
         // if (TIR_H_safety > 1 || TIR_M_safety > 1 && meal_data.TIR_M_pct == 100 && !ENtimeOK) sens_predType = "BG+"; // commenting out as safer BG+ with basal
         if (TIR_H_safety > 1 || TIR_M_safety > 1) sens_predType = "BG+"; // trying as BG+ now uses basal at TIRS%
@@ -1263,11 +1254,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //        if (sens_predType == "UAM+" && !ENWindowOK && profile.EN_UAMPlusSMB_NoENW) ENWindowOK = true;
     }
 
-    // EXPERIMENT: Use NA as BG+ when safe
-    if (profile.EN_Use_BGPlus && TIR_sens_limited > 1 && sens_predType == "NA" && insulinReq_bg >= threshold && minGuardBG >= threshold && TIR_H_safety > 1) {
-        sens_predType = "BG+";
-//        var endebug = "BG+ NA";
-    }
+//    // EXPERIMENT: Use NA as BG+ when safe
+//    if (profile.EN_Use_BGPlus && TIR_sens_limited > 1 && sens_predType == "NA" && insulinReq_bg >= threshold && minGuardBG >= threshold && TIR_H_safety > 1) {
+//        sens_predType = "BG+";
+////        var endebug = "BG+ NA";
+//    }
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
     var UAMBGPreBolusUnits = profile.ENW_maxPreBolus, PBW = 30;
@@ -1441,7 +1432,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += (firstMealWindow ? " Bkfst" : "");
     rT.reason += (MealScaler != 100 ? " " + round(MealScaler) + "%" : "");
     rT.reason += (ENWindowOK && ENWStartedAgo <= ENWindowDuration ? " " + round(ENWStartedAgo) + "/" + ENWindowDuration + "m" : "");
-    rT.reason += (!ENWindowOK && ENWEndedAgo <= 240 ? " " + round(ENWindowDuration) + "m, " + round(ENWEndedAgo) + "m ago" : "");
+    rT.reason += (PPWindowOK ? " " + round(ENWindowDuration) + "m, " + round(ENWEndedAgo) + "m ago" : "");
     if (meal_data.ENWBolusIOB || ENWindowOK) rT.reason += ", ENW-IOB:" + round(ENWBolusIOB,2) + "/" + round(profile.ENW_maxIOB,2);
 
     // other EN stuff
@@ -1799,22 +1790,20 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // UAM+ uses different SMB when configured, it can give prebolus is the condition is correct
                 if (sens_predType == "UAM+") ENMaxSMB = Math.max(profile.ENW_maxBolus_UAM_plus, UAMBGPreBolusUnitsLeft);
 
-                // allow ENMaxSMB to go up to remaining ENWBolusIOBMax with UAM+
-                if (ENWBolusIOBRemaining > 0 && sens_predType == "UAM+" && ENTTActive) ENMaxSMB = Math.max(ENWBolusIOBRemaining,ENMaxSMB);
+                // allow ENMaxSMB to go up to remaining ENWBolusIOBMax with UAM+ allowing faster delivery of insulin earlier
+                if (profile.EN_Use_LargerENWSMB && ENWBolusIOBRemaining > 0 && sens_predType == "UAM+" && ENTTActive) ENMaxSMB = Math.max(ENWBolusIOBRemaining,ENMaxSMB);
 
             } else {
-                ENMaxSMB = EN_NoENW_maxBolus; // start with the default maxBolus
-                if (sens_predType == "UAM+" && !ENWindowOK && profile.EN_UAMPlusSMB_NoENW) {
-                    ENMaxSMB = Math.max(profile.ENW_maxBolus_UAM_plus, UAMBGPreBolusUnitsLeft);
-                    //ENMaxSMB = (insulinReqOrig * ENinsulinReqPct >= ENMaxSMB ? ENMaxSMB : EN_NoENW_maxBolus); // when AAPS insulinReq is higher allow UAM+ maxBolus outside ENW if enabled
-                    ENMaxSMB = (insulinReqOrig > EN_NoENW_maxBolus ? Math.min(insulinReqOrig, ENMaxSMB) : EN_NoENW_maxBolus); // when AAPS insulinReq is higher than EN_NoENW_maxBolus allow larger UAM+ maxBolus up to ENW_maxBolus_UAM_plus
+                // start with the default maxBolus
+                ENMaxSMB = EN_NoENW_maxBolus;
+                // When AAPS insulinReq is positive allow larger UAM+ maxBolus when enabled
+k                if (sens_predType == "UAM+" && PPWindowOK && profile.EN_UAMPlusSMB_NoENW) {
+                    ENMaxSMB = (insulinReqOrig > 0 ? Math.max(profile.ENW_maxBolus_UAM_plus, ENMaxSMB) : EN_NoENW_maxBolus);
                 }
-            }
-
-            // BG+ is the only EN prediction type allowed outside of ENW
-            if (sens_predType == "BG+") {
-                ENMaxSMB = (profile.current_basal * TIR_sens_limited) / 12;
-                //if (TIR_sens > autosens_max_tirs && profile.EN_Use_BGPlus > 0) ENMaxSMB = Math.max(profile.current_basal / 12,profile.bolus_increment); // force smaller ENMaxSMB for safety
+                // BG+ is the only EN prediction type allowed outside of ENW
+                if (sens_predType == "BG+") {
+                    ENMaxSMB = (profile.current_basal * TIR_sens_limited) / 12;
+                }
             }
 
             // if ENMaxSMB is more than 0 use ENMaxSMB else use AAPS max minutes
@@ -1832,6 +1821,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // restrict SMB when ENWBolusIOB will be exceeded by SMB but minimum is EN_NoENW_maxBolus
             if (ENWBolusIOBMax > 0 && ENWBolusIOB + ENMaxSMB > ENWBolusIOBMax) {
                 ENMaxSMB = Math.max(ENWBolusIOBRemaining, EN_NoENW_maxBolus); // use EN_NoENW_maxBolus if its larger than restricted SMB
+//                if (sens_predType == "UAM+" && ENWindowOK) ENMaxSMB =  Math.max(ENMaxSMB,profile.ENW_maxBolus_UAM_plus); // allow UAM+ when ENWIOB exceeded within ENW
             }
 
             // ============== MAXBOLUS RESTRICTIONS ==============
