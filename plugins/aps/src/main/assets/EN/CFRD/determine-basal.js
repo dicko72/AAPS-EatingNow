@@ -425,8 +425,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var MealScaler = 100; // no scaling by default
 
     // PPWindowOK
-    var MealScalerDuration = 180; // maybe add this in prefs?
-    var PPWindowOK = (!ENWindowOK && ENWEndedAgo <= MealScalerDuration);
+    var MealScalerDuration = profile.PPMealDuration; // maybe add this in prefs?
+    var PPWindowOK = (MealScalerDuration > 0 && !ENWindowOK && ENWEndedAgo <= MealScalerDuration);
 
     // stronger ISF can be used to scale within ENW and 3h after
     if (profile.MealPct != MealScaler && (ENWindowOK || PPWindowOK) && !profile.use_sens_TDD && !HighTempTargetSet) {

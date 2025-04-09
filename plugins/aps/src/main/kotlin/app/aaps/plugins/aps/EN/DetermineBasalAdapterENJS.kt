@@ -471,7 +471,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             this.profile.put("ENW_maxIOB", sp.getDouble(R.string.key_enw_max_tdd, 0.0))
         }
 
-        this.profile.put("PPMealPct", sp.getInt(R.string.key_en_pp_isf_pct, 100)) // postprandial ISF scaling
+        this.profile.put("PPMealDuration", sp.getInt(R.string.key_en_pp_isf_minutes, 0)) // postprandial ISF scaling duration after ENW ended
 
 
         // TDD related functions

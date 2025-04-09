@@ -607,16 +607,6 @@
                 validate:minNumber="0"
                 validate:testType="numericRange" />
 
-            <app.aaps.core.validators.ValidatingEditTextPreference
-                android:defaultValue="100"
-                android:inputType="number"
-                android:title="Postprandial ISF Weighting"
-                android:key="@string/key_en_pp_isf_pct"
-                android:dialogMessage="After ENW ISF will be scaled over a period of 60 minutes.\n100 will be no change.\n25 will use 25% of the current ISF/CR values."
-                validate:maxNumber="100"
-                validate:minNumber="1"
-                validate:testType="numericRange" />
-
         </androidx.preference.PreferenceScreen>
 
         </PreferenceCategory>
@@ -752,6 +742,16 @@
                     android:key="en_use_bgplus"
                     android:title="Enable BG+"
                     android:summary="When BG is stable but high for an extended period of time eventalBG will be overridden."/>
+
+                <app.aaps.core.validators.ValidatingEditTextPreference
+                    android:defaultValue="0"
+                    android:inputType="number"
+                    android:title="Postprandial ISF Duration"
+                    android:key="@string/key_en_pp_isf_minutes"
+                    android:dialogMessage="After ENW ISF will be scaled over from the ISF in the ENW back to the profile ISF over this period."
+                    validate:maxNumber="180"
+                    validate:minNumber="0"
+                    validate:testType="numericRange" />
 
             </androidx.preference.PreferenceScreen>
 
