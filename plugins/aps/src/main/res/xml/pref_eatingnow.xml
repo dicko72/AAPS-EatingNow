@@ -402,7 +402,7 @@
 
                 <app.aaps.core.validators.ValidatingEditTextPreference
                     android:defaultValue="0"
-                    android:dialogMessage="Max insulin units received from treatments within breakfast eating window. Once reached the maxBolus will fallback to AAPS maxBolus."
+                    android:dialogMessage="Max insulin units received from treatments within breakfast eating window. Once reached insulin delivery will cease until the window ends."
                     android:inputType="numberDecimal"
                     android:key="key_enw_breakfast_max_tdd"
                     android:title="Breakfast ENW max units"
@@ -463,7 +463,7 @@
 
                 <app.aaps.core.validators.ValidatingEditTextPreference
                     android:defaultValue="0"
-                    android:dialogMessage="Max insulin units received from treatments within subsequent eating windows. Once reached the maxBolus will fallback to AAPS maxBolus."
+                    android:dialogMessage="Max insulin units received from treatments within subsequent eating windows. Once reached insulin delivery will cease until the window ends."
                     android:inputType="numberDecimal"
                     android:key="key_enw_max_tdd"
                     android:title="ENW max units for subsequent meals"
