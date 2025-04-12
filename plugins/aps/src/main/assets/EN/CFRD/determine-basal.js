@@ -1861,7 +1861,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             }
 
             // restrict insulinReq when ENWBolusIOB will be exceeded
-            if (ENWBolusIOBMax > 0) {
+            if (ENWBolusIOBMax > 0 && insulinReq > ENWBolusIOBRemaining) {
                 insulinReq = Math.min(insulinReq,ENWBolusIOBRemaining);
                 insulinReq = round(insulinReq, 2);
             }
