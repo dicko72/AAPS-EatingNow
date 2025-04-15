@@ -415,7 +415,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     //var ENWBolusIOBMax = (firstMealWindow ? profile.ENW_breakfast_max_tdd : profile.ENW_max_tdd); // when EN started + breakfast window time is greater than the latest ENWstartTime there has been no other ENW so still firstmeal only
     var ENWBolusIOBMax = round(profile.ENW_maxIOB,2);
-    var ENWBolusIOB = iob_data.iob; // CFRD uses total IOB not ENW IOB
+    var ENWBolusIOB = meal_data.ENWBolusIOB;
     ENWBolusIOBMax = (ENWindowOK && ENWStartedAgo <= ENWindowDuration ? ENWBolusIOBMax : 0); // reset to 0 if not within ENW
     var ENWBolusIOBRemaining = (ENWBolusIOBMax > 0 && ENWBolusIOB >=0 ? ENWBolusIOBMax - ENWBolusIOB : 0);
     ENWBolusIOBRemaining = Math.max(ENWBolusIOBRemaining, 0); // dont allow negative
@@ -1406,7 +1406,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.COB = meal_data.mealCOB;
     rT.IOB = iob_data.iob;
     rT.reason = "COB: " + round(meal_data.mealCOB, 1) + (meal_data.carbs ? " " + round(fractionCOBAbsorbed * 100) + "%" : "") +  ", Dev: " + convert_bg(deviation, profile) + ", BGI: " + convert_bg(bgi, profile) + ", Delta: " + convert_bg(glucose_status.delta, profile) + "/" + convert_bg(glucose_status.short_avgdelta, profile) + "/" + convert_bg(glucose_status.long_avgdelta, profile) + "=" + round(DeltaPctS * 100) + "/" + round(DeltaPctL * 100) + "%";
-    if (UAMDeltaX) rT.reason += ", DeltaX: " + convert_bg(delta, profile) + "*" + round(UAMDeltaX,2) + "=" + convert_bg(UAMDeltaX * delta, profile);
+    if (UAMDeltaX) rT.reason += ", DeltaX: " + round(UAMDeltaX,2) + "*" + convert_bg(delta, profile) + "=" + convert_bg(UAMDeltaX * delta, profile);
     rT.reason += ", ISF: " + convert_bg(sens_normalTarget, profile) + (MaxISF > 0 && sens_normalTarget == MaxISF ? "*" : "") + "/" + convert_bg(sens, profile) + "=" + convert_bg(insulinReq_sens, profile) + ", CR: " + round(carb_ratio, 2) + ", Target: " + convert_bg(target_bg, profile) + (target_bg != normalTarget ? "(" + convert_bg(normalTarget, profile) + ")" : "");
     rT.reason += ", minPredBG " + convert_bg(minPredBG_orig, profile) + (minPredBG > minPredBG_orig ? "=" + convert_bg(minPredBG, profile) : "") + ", minGuardBG " + convert_bg(minGuardBG_orig, profile) + (minGuardBG > minGuardBG_orig ? "=" + convert_bg(minGuardBG, profile) : "") + ", IOBpredBG " + convert_bg(lastIOBpredBG, profile);
 
@@ -1859,6 +1859,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (!UAMBGPreBolus && max_iob_en > 0 && insulinReq > max_iob_en - iob_data.iob) {
                 insulinReq = round(max_iob_en - iob_data.iob, 2);
             }
+
+            // CFRD will use IOB instead of ENWIOB when no prebolus left
+            ENWBolusIOBRemaining = (UAMBGPreBolusUnitsLeft !=0 ? ENWBolusIOBMax - iob_data.iob : 0);
+            ENWBolusIOBRemaining = Math.max(ENWBolusIOBRemaining, 0); // dont allow negative
 
             // restrict insulinReq when ENWBolusIOB will be exceeded
             if (ENWBolusIOBMax > 0 && insulinReq > ENWBolusIOBRemaining) {
