@@ -1263,7 +1263,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //    }
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
-    var UAMBGPreBolusUnits = profile.ENW_maxPreBolus, PBW = 30;
+    var UAMBGPreBolusUnits = profile.ENW_maxPreBolus, PBW = 15;
     // if UAMBGPreBolusUnits is more than AAPS max IOB then consider the setting to be minutes
     if (UAMBGPreBolusUnits > max_iob) UAMBGPreBolusUnits = profile.current_basal * UAMBGPreBolusUnits / 60;
 
@@ -1778,7 +1778,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             insulinReqPct = (insulinReqPctChanged ? EN_SMB_percent: insulinReqPct); // update insulinReqPct if reduced
 
             // PreBolus period gets 100% insulinReqPct
-            insulinReqPct = (ENWBolusIOBRemaining > 0 && !insulinReqPctChanged ? 1 : insulinReqPct);
+            insulinReqPct = (UAMBGPreBolus ? 1 : insulinReqPct);
 
             // if ENWindowOK allow further increase max of SMB within the window
             if (ENWindowOK) {
@@ -1854,6 +1854,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             }
 
             // ============== IOB RESTRICTION  ==============
+
+            // simplify PB by using the remaining PB
+            if (UAMBGPreBolus) {
+                insulinReq = UAMBGPreBolusUnitsLeft;
+                insulinReq = round(insulinReq, 2);
+            }
+
+            // restrict insulinReq when max_iob_en will be exceeded
             if (!UAMBGPreBolus && max_iob_en > 0 && insulinReq > max_iob_en - iob_data.iob) {
                 insulinReq = round(max_iob_en - iob_data.iob, 2);
             }
