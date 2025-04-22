@@ -1872,10 +1872,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 insulinReq = round(max_iob_en - iob_data.iob, 2);
             }
 
-            // CFRD will use IOB instead of ENWIOB when no prebolus left
-            ENWBolusIOBRemaining = (UAMBGPreBolusUnitsLeft !=0 ? ENWBolusIOBMax - iob_data.iob : 0);
-            ENWBolusIOBRemaining = Math.max(ENWBolusIOBRemaining, 0); // dont allow negative
-
             // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
             if (ENWBolusIOBMax > 0 && insulinReq > ENWBolusIOBRemaining) {
                 insulinReq = Math.min(insulinReq,ENWBolusIOBRemaining);
