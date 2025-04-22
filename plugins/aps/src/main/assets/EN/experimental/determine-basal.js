@@ -1869,10 +1869,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 insulinReq = round(max_iob_en - iob_data.iob, 2);
             }
 
-            // restrict insulinReq when ENWBolusIOB will be exceeded
+            // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
             if (ENWBolusIOBMax > 0 && insulinReq > ENWBolusIOBRemaining) {
                 insulinReq = Math.min(insulinReq,ENWBolusIOBRemaining);
-                insulinReq = round(insulinReq, 2);
+                insulinReq = round(insulinReq, 2)
+                rate = 0;
             }
 
             // END === if we are eating now and BGL prediction is higher than normal target ===

@@ -1780,6 +1780,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (ENactive && !HighTempTargetSet && !LowTempTargetSet && EN_SMB_percent != insulinReqPct && !UAMBGPreBolus) insulinReqPctChanged = true; // var for EN_SMB_percent during active hours
             insulinReqPct = (insulinReqPctChanged ? EN_SMB_percent: insulinReqPct); // update insulinReqPct if reduced
 
+            var endebug = "iRPChg:" + insulinReqPctChanged;
+
+
             // PreBolus period gets 100% insulinReqPct
             insulinReqPct = (UAMBGPreBolus ? 1 : insulinReqPct);
 
@@ -1873,10 +1876,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             ENWBolusIOBRemaining = (UAMBGPreBolusUnitsLeft !=0 ? ENWBolusIOBMax - iob_data.iob : 0);
             ENWBolusIOBRemaining = Math.max(ENWBolusIOBRemaining, 0); // dont allow negative
 
-            // restrict insulinReq when ENWBolusIOB will be exceeded
+            // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
             if (ENWBolusIOBMax > 0 && insulinReq > ENWBolusIOBRemaining) {
                 insulinReq = Math.min(insulinReq,ENWBolusIOBRemaining);
-                insulinReq = round(insulinReq, 2);
+                insulinReq = round(insulinReq, 2)
+                rate = 0;
             }
 
             // END === if we are eating now and BGL prediction is higher than normal target ===
@@ -1980,7 +1984,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 smbLowTempReq = round(basal * durationReq / 30, 2);
                 durationReq = 30;
             }
-            rT.reason += " insulinReq" + (UAMBGPreBolus ? "+ " : " ") + insulinReq + (insulinReq != insulinReqOrig ? "(" + insulinReqOrig + ")" : "") + "@" + round(insulinReqPct * 100, 0) + "%";
+            rT.reason += " insulinReq" + (UAMBGPreBolus ? "PB " : " ") + insulinReq + (insulinReq != insulinReqOrig ? "(" + insulinReqOrig + ")" : "") + "@" + round(insulinReqPct * 100, 0) + "%";
             if (ENSleepModeNoSMB || ENDayModeNoSMB) rT.reason += "; No SMB < " + convert_bg( (ENSleepModeNoSMB ? SMBbgOffset_night : SMBbgOffset_day) , profile);
 
             /*
