@@ -1796,7 +1796,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (sens_predType == "UAM+") ENMaxSMB = Math.max(profile.ENW_maxBolus_UAM_plus, UAMBGPreBolusUnitsLeft);
 
                 // allow ENMaxSMB to go up to remaining ENWBolusIOBMax with UAM+ allowing faster delivery of insulin earlier
-                if (profile.EN_Use_LargerENWSMB && sens_predType == "UAM+" && ENTTActive) ENMaxSMB = ENWBolusIOBRemaining;
+                if (profile.EN_Use_LargerENWSMB && sens_predType == "UAM+" && ENTTActive) ENMaxSMB = Math.max(ENMaxSMB,ENWBolusIOBRemaining);
 
             } else {
                 // start with the default maxBolus
@@ -1873,7 +1873,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (ENWBolusIOBMax > 0 && insulinReq > ENWBolusIOBRemaining) {
                 insulinReq = Math.min(insulinReq,ENWBolusIOBRemaining);
                 insulinReq = round(insulinReq, 2)
-                rate = 0;
+                rate = (bg > ISFbgMax ? profile.current_basal : 0); // allow profile basal when higher?
             }
 
             // END === if we are eating now and BGL prediction is higher than normal target ===
