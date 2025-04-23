@@ -268,18 +268,31 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         this.profile.put("autosens_max", SafeParse.stringToDouble(sp.getString(app.aaps.core.utils.R.string.key_openapsama_autosens_max, "1.2")))
 
 //**********************************************************************************************************************************************
-        // Eating Now
-        // val EatingNowTimeEnd = sp.getInt(R.string.key_eatingnow_timeend, 17)
-        // this.profile.put("EatingNowTimeEnd", EatingNowTimeEnd)
+        // Eating Now Start and End Times
+        val startHour = sp.getInt(R.string.key_eatingnow_timestart, 9)
+        val endHour = sp.getInt(R.string.key_eatingnow_timeend, 17)
 
-        // Eating Now end time for today
-        var EatingNowTimeEnd = 3600000 * sp.getInt(R.string.key_eatingnow_timeend, 17) + MidnightTime.calc(now)
-        this.profile.put("EatingNowTimeEnd", EatingNowTimeEnd)
+        val midnightToday = MidnightTime.calc(now)
+        val oneHourInMillis = 3600000L
 
-        // Eating Now start time, any bolus or COB treatment after the previous EatingNowTimeEnd will start EN
-        var EatingNowTimeStart = EatingNowTimeEnd-86400000 // Start time is always the previous days end time
+        // Convert hours to time-of-day in ms
+        val startTimeOfDay = startHour * oneHourInMillis
+        val endTimeOfDay = endHour * oneHourInMillis
+
+        // Now calculate start and end times as absolute timestamps
+        val EatingNowTimeStart = midnightToday + startTimeOfDay
+        val EatingNowTimeEnd = if (endTimeOfDay <= startTimeOfDay) {
+            // End time is on the next day
+            midnightToday + endTimeOfDay + 86400000L
+        } else {
+            // End time is on the same day
+            midnightToday + endTimeOfDay
+        }
+
+        // Eating Now start time, any bolus or COB treatment after EatingNowTimeStart will start EN
         this.profile.put("EatingNowTimeStart", EatingNowTimeStart)
-
+        this.profile.put("EatingNowTimeEnd", EatingNowTimeEnd)
+        // Eating Now Start and End Times -- END
 
         val normalTargetBG = profile.getTargetMgdl().roundToInt()
         this.profile.put("normal_target_bg", normalTargetBG)

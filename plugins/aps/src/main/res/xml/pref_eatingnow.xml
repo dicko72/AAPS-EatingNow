@@ -262,15 +262,15 @@
         <Preference android:summary="Eating Now operates within the Start and End time specified.\nLarger boluses from the Eating Now Window are allowed within this time range.">
         </Preference>
 
-<!--        <app.aaps.core.validators.ValidatingEditTextPreference-->
-<!--                android:defaultValue="9"-->
-<!--                android:dialogMessage="Enter Eating Now start time in 24h e.g. 9AM is 9"-->
-<!--                android:inputType="number"-->
-<!--                android:key="@string/key_eatingnow_timestart"-->
-<!--                android:title="Start Time"-->
-<!--                validate:maxNumber="23"-->
-<!--                validate:minNumber="0"-->
-<!--                validate:testType="numericRange" />-->
+        <app.aaps.core.validators.ValidatingEditTextPreference
+                android:defaultValue="9"
+                android:dialogMessage="Enter Eating Now start time in 24h e.g. 9AM is 9"
+                android:inputType="number"
+                android:key="@string/key_eatingnow_timestart"
+                android:title="Start Time"
+                validate:maxNumber="23"
+                validate:minNumber="0"
+                validate:testType="numericRange" />
 
             <app.aaps.core.validators.ValidatingEditTextPreference
                 android:defaultValue="17"
