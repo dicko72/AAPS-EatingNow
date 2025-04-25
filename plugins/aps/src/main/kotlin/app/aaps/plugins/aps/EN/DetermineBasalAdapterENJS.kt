@@ -279,14 +279,24 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         val startTimeOfDay = startHour * oneHourInMillis
         val endTimeOfDay = endHour * oneHourInMillis
 
-        // Now calculate start and end times as absolute timestamps
-        val EatingNowTimeStart = midnightToday + startTimeOfDay
-        val EatingNowTimeEnd = if (endTimeOfDay <= startTimeOfDay) {
-            // End time is on the next day
-            midnightToday + endTimeOfDay + 86400000L
+        val EatingNowTimeStart: Long
+        val EatingNowTimeEnd: Long
+
+        if (endTimeOfDay <= startTimeOfDay) {
+            // Window crosses midnight, determine correct end day based on current time
+            if (now < midnightToday + endTimeOfDay) {
+                // We're in the early hours *before* end time — end is today
+                EatingNowTimeEnd = midnightToday + endTimeOfDay
+                EatingNowTimeStart = midnightToday + startTimeOfDay - 86400000L
+            } else {
+                // We're past end time — end is tomorrow
+                EatingNowTimeEnd = midnightToday + endTimeOfDay + 86400000L
+                EatingNowTimeStart = midnightToday + startTimeOfDay
+            }
         } else {
-            // End time is on the same day
-            midnightToday + endTimeOfDay
+            // Normal same-day window
+            EatingNowTimeStart = midnightToday + startTimeOfDay
+            EatingNowTimeEnd = midnightToday + endTimeOfDay
         }
 
         // Eating Now start time, any bolus or COB treatment after EatingNowTimeStart will start EN
