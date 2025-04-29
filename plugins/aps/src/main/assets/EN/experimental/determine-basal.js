@@ -1695,7 +1695,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq = round((insulinReq_bg_orig - target_bg) / sens_profile, 2);
 
         // keep the original insulinReq for reporting
-        var insulinReqOrig = insulinReq;
+        var insulinReqAAPS = insulinReq;
 
         // use eBGweight for insulinReq
         insulinReq = (insulinReq_bg - target_bg) / insulinReq_sens;
@@ -1717,6 +1717,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         rate = round_basal(rate, profile);
         var rate_orig = rate; // capture the original TBR
         insulinReq = round(insulinReq, 3);
+        var insulinReqEN = insulinReq;
         rT.insulinReq = insulinReq;
         // rT.reason += "** " + "insulinReq:" + insulinReq + ",rate:" + rate + "**"; // experiment
 
@@ -1803,7 +1804,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 ENMaxSMB = EN_NoENW_maxBolus;
                 // When AAPS insulinReq is positive allow larger UAM+ maxBolus when enabled
                 if (sens_predType == "UAM+" && PPWindowOK && profile.EN_UAMPlusSMB_NoENW) {
-                    ENMaxSMB = (insulinReqOrig > 0 ? Math.max(profile.ENW_maxBolus_UAM_plus, ENMaxSMB) : EN_NoENW_maxBolus);
+                    ENMaxSMB = (insulinReqAAPS > 0 ? Math.max(profile.ENW_maxBolus_UAM_plus, ENMaxSMB) : EN_NoENW_maxBolus);
                 }
                 // BG+ is the only EN prediction type allowed outside of ENW
                 if (sens_predType == "BG+") {
@@ -1914,7 +1915,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
 
             // when resistant allow basal and prevent zero temp
-            if (ENactive && TIR_sens_limited > 1 && insulinReqOrig > 0) AllowZT = false;
+            if (ENactive && TIR_sens_limited > 1 && insulinReqAAPS > 0) AllowZT = false;
 
             // if EN_SMB_percent has reduced the insulinReqPct (insulinReqPctChanged)
             if (insulinReqPctChanged && insulinReq > 0) AllowZT = false;
@@ -1930,7 +1931,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //            }
 
             // PROACTIVE: if an SMB given with stronger ISF adjust the temp rate when not sensitive
-            // if (MealScaler != 100 && insulinReqOrig > 0 && insulinReq > microBolus * 2 && TIR_sens_limited >= 1) {
+            // if (MealScaler != 100 && insulinReqAAPS > 0 && insulinReq > microBolus * 2 && TIR_sens_limited >= 1) {
 //            if (MealScaler != 100 && insulinReq > microBolus * 2 && TIR_sens_limited >= 1) {
 //                rate = (insulinReq * insulinReqPct_orig) - microBolus;
 //                rate *= 6; // deliver over 10m
@@ -1954,7 +1955,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // SAFETY: Calculate rate restricting to remaining maxBolus or remaining insulinReq differential
                 rate = Math.min(maxBolus - microBolus, (insulinReq * insulinReqPct_orig) - microBolus);
                 // when AAPS original insulinReq is higher than restricted SMB allow remaining insulinReqPct as TBR
-                if (insulinReqOrig > microBolus && microBolus > 0 && ENactive && delta < 18 && microBolus < maxBolus) {
+                if (insulinReqAAPS > microBolus && microBolus > 0 && ENactive && delta < 18 && microBolus < maxBolus) {
                     rate = (insulinReq * insulinReqPct_orig) - microBolus;
                 }
 
@@ -1978,7 +1979,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 smbLowTempReq = round(basal * durationReq / 30, 2);
                 durationReq = 30;
             }
-            rT.reason += " insulinReq" + (UAMBGPreBolus ? "PB " : " ") + insulinReq + (insulinReq != insulinReqOrig ? "(" + insulinReqOrig + ")" : "") + "@" + round(insulinReqPct * 100, 0) + "%";
+            //rT.reason += " insulinReq" + (UAMBGPreBolus ? "PB " : " ") + insulinReq + (insulinReq != insulinReqAAPS ? "(" + insulinReqAAPS + ")" : "") + "@" + round(insulinReqPct * 100, 0) + "%";
+            rT.reason += " insulinReq" + (UAMBGPreBolus ? "PB " : " ") + insulinReq + (insulinReq != insulinReqEN ? "=" + insulinReqEN : "") + " (" + insulinReqAAPS + ") @" + round(insulinReqPct * 100, 0) + "%";
             if (ENSleepModeNoSMB || ENDayModeNoSMB) rT.reason += "; No SMB < " + convert_bg( (ENSleepModeNoSMB ? SMBbgOffset_night : SMBbgOffset_day) , profile);
 
             /*
