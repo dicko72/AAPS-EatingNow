@@ -483,7 +483,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // TIRH - The TIR for the higher band above 150/8.3
     //var TIR_H_safety = (bg >= normalTarget + 50 && delta >-4 && DeltaPctS > 0 && DeltaPctL > 0 ? TIR_H : 1); // SAFETY: when bg not falling too much, removed delta acceleration as BG+ has eBG safety
-    var TIR_H_safety = (bg >= normalTarget + 50 && delta >-4 ? TIR_H : 1); // SAFETY: when bg not falling too much or delta not slowing
+    var TIR_H_safety = (bg >= normalTarget + 50 && delta >-4 && glucose_status.long_avgdelta > -4 ? TIR_H : 1); // SAFETY: when bg not falling too much or delta not slowing
     TIR_M_safety = (TIR_H_safety > 1 ? TIR_M : TIR_M_safety); // SAFETY: when bg not falling too much or delta not slowing
 
     // if we have low TIR data use it, else use the average of the two TIR bands
