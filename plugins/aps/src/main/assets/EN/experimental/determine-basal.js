@@ -1985,7 +1985,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 durationReq = 30;
             }
             //rT.reason += " insulinReq" + (UAMBGPreBolus ? "PB " : " ") + insulinReq + (insulinReq != insulinReqAAPS ? "(" + insulinReqAAPS + ")" : "") + "@" + round(insulinReqPct * 100, 0) + "%";
-            rT.reason += " insulinReq" + (UAMBGPreBolus ? "PB " : " ") + insulinReq + (insulinReq != insulinReqEN ? "=" + insulinReqEN : "") + " (" + insulinReqAAPS + ") @" + round(insulinReqPct * 100, 0) + "%";
+            rT.reason += " insulinReq" + (UAMBGPreBolus ? "PB " : " ") + (insulinReq != insulinReqEN ? insulinReqEN + "=" : "") + insulinReq +  " (" + insulinReqAAPS + ") @" + round(insulinReqPct * 100, 0) + "%";
             if (ENSleepModeNoSMB || ENDayModeNoSMB) rT.reason += "; No SMB < " + convert_bg( (ENSleepModeNoSMB ? SMBbgOffset_night : SMBbgOffset_day) , profile);
 
             /*
