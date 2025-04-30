@@ -1879,7 +1879,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             if (ENWBolusIOBMax > 0 && insulinReq > ENWBolusIOBRemaining) {
                 insulinReq = Math.min(insulinReq,ENWBolusIOBRemaining);
                 insulinReq = round(insulinReq, 2)
-                rate = (bg > ISFbgMax ? profile.current_basal : 0); // allow profile basal when higher?
+                rate = round_basal(profile.current_basal, profile);
+                AllowZT = false;
             }
 
             // END === if we are eating now and BGL prediction is higher than normal target ===
