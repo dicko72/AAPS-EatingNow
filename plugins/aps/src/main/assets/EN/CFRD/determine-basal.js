@@ -1329,7 +1329,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // allow more eBG when reistant with TBR enabled for all UAM+
             //if (eBGweight == eBGweight_orig && ENactive) eBGweight = 0.75;
             //if (EN_SMB_percent == 0 && eBGweight == eBGweight_orig) eBGweight = 0.75;
-            if (eBGweight == eBGweight_orig && ENactive && TIR_sens_limited > 1) eBGweight = 0.55;
+//            if (eBGweight == eBGweight_orig && ENactive && TIR_sens_limited > 1 && !PPWindowOK) eBGweight = 0.55;
 //            if (eBGweight == eBGweight_orig && ENactive && TIR_sens_limited > 1) eBGweight = 0.75; // perhaps increase this when resistant
         }
 
@@ -1337,16 +1337,16 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
             // allow more eBG with TBR enabled for all UAM
             //if (eBGweight == eBGweight_orig && ENactive) eBGweight = 0.75;
-            if (eBGweight == eBGweight_orig && ENactive) eBGweight = 0.65;
+//            if (eBGweight == eBGweight_orig && ENactive) eBGweight = 0.65;
             // SAFETY: UAM fast delta with higher bg lowers eBGw when SMB
-            eBGweight = (bg > ISFbgMax && delta >= 15 && ENWBolusIOBMax == 0 ? 0.30 : eBGweight);
+//            eBGweight = (bg > ISFbgMax && delta >= 15 && ENWBolusIOBMax == 0 ? 0.30 : eBGweight);
         }
 
         // COB predictions or UAM with COB
         if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
             // positive or negative delta with acceleration and UAM default
-            eBGweight = (DeltaPctS > 1.0 && sens_predType == "COB" && bg > threshold ? 0.75 : 0.50);
-            eBGweight = (DeltaPctS > 1.0 && sens_predType == "UAM" && bg > threshold ? 0.50 : eBGweight);
+//            eBGweight = (DeltaPctS > 1.0 && sens_predType == "COB" && bg > threshold ? 0.75 : 0.50);
+//            eBGweight = (DeltaPctS > 1.0 && sens_predType == "UAM" && bg > threshold ? 0.50 : eBGweight);
         }
 
         // BG+ bg is stuck with resistance or UAM+ activated with minGuardBG
