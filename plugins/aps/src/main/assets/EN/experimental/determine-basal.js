@@ -406,10 +406,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     // set the ENW time since started and ended
     var ENWStartedAgo = (nowUTC - (firstMealWindow ? meal_data.ENStartedTime : meal_data.ENWStartTime)) / 60000;
     var ENWEndedAgo = (nowUTC - meal_data.ENWEndTime) / 60000;
-//    var ENWEndedAgo = ENWStartedAgo-ENWindowDuration;
+    ENWEndedAgo = Math.max(ENWEndedAgo,0); // no negative time remaining
 
     // ENWindowOK is when there is a recent COB entry or manual bolus
-    var ENWindowOK = ENactive && ENWEndedAgo < 0; // negative number is how long until it ends
+    var ENWindowOK = ENactive && ENWEndedAgo <= 0; // 0 is just ended
 //    var ENWindowOK = ENactive && ENWStartedAgo < ENWindowDuration;
 
     //var ENWBolusIOBMax = (firstMealWindow ? profile.ENW_breakfast_max_tdd : profile.ENW_max_tdd); // when EN started + breakfast window time is greater than the latest ENWstartTime there has been no other ENW so still firstmeal only
