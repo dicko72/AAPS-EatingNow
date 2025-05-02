@@ -612,8 +612,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //        if (profile.percent > 100 && meal_data.TIR0_H_pct == 0) sens_normalTarget *= profile.percent/100; // cancel adjustment if not resistant when switch > 100%
 //    }
 
-    // apply TIRS to ISF only when delta is slight or bg higher and no MealScaler active
-    if (TIR_sens_limited !=1 && TIR_sens !=1 && MealScaler == 100) {
+    // apply TIRS to ISF only when delta is slight or bg higher
+    //if (TIR_sens_limited !=1 && TIR_sens !=1 && MealScaler == 100) {
+    if (TIR_sens_limited !=1 && TIR_sens !=1) {
         sens_normalTarget = sens_normalTarget / TIR_sens_limited;
     }
 
@@ -1816,6 +1817,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     // when eventual bg is less than target and still resistant just basal rate
                     if (insulinReq_bg_orig < target_bg) rate = profile_current_basal;
                     AllowZT = false;
+                    TIR_H_safety > 1
                }
             }
 
