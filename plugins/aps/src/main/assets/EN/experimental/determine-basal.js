@@ -1814,10 +1814,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     ENMaxSMB = -1;
                     // if the original TBR is more allow it because resistant
                     rate = Math.max(rate_orig,profile_current_basal);
-                    // when eventual bg is less than target and still resistant just basal rate
-                    if (insulinReq_bg_orig < target_bg) rate = profile_current_basal;
+                    // when not in the higher band TIRH just use basal rate
+                    if (TIR_H_safety == 1) rate = profile_current_basal;
                     AllowZT = false;
-                    TIR_H_safety > 1
                }
             }
 
