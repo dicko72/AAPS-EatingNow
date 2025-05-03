@@ -467,7 +467,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             // Breakfast profile
             ENWDuration = sp.getInt(R.string.key_enbkfstwindowminutes, 0)
             ENWDuration = (if (lastENTempTargetTime == ENWStartTime) lastENTempTargetDuration / 60000 else ENWDuration)
-            this.profile.put("ENWEndTime", ENWStartTime + ENWDuration * 60000L)
+            this.mealData.put("ENWEndTime", ENWStartTime + ENWDuration * 60000L)
             this.profile.put("ENWDuration",ENWDuration) // ENBkfstWindow
             this.profile.put("MealPct", sp.getInt(R.string.key_eatingnow_breakfastpct, 100)) // meal scaling - BreakfastPct
             this.profile.put("ENW_maxBolus_COB", sp.getDouble(R.string.key_eatingnow_cobboost_maxbolus_breakfast, 0.0)) // EN_COB_maxBolus_breakfast
@@ -483,7 +483,7 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
             // Subsequent meals profile
             ENWDuration = sp.getInt(R.string.key_eatingnow_enwindowminutes, 0)
             ENWDuration = (if (lastENTempTargetTime == ENWStartTime) lastENTempTargetDuration / 60000 else ENWDuration)
-            this.profile.put("ENWEndTime", ENWStartTime + ENWDuration * 60000L)
+            this.mealData.put("ENWEndTime", ENWStartTime + ENWDuration * 60000L)
             this.profile.put("ENWDuration",ENWDuration ) // ENWindow
             this.profile.put("MealPct", sp.getInt(R.string.key_eatingnow_pct, 100)) // meal scaling - ENWPct
             this.profile.put("ENW_maxBolus_COB", sp.getDouble(R.string.key_eatingnow_cobboost_maxbolus, 0.0)) //EN_COB_maxBolus
