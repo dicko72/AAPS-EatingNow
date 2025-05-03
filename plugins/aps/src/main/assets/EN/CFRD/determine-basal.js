@@ -408,15 +408,18 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // set the ENW time since started and ended
     var ENWStartedAgo = (nowUTC - (firstMealWindow ? meal_data.ENStartedTime : meal_data.ENWStartTime)) / 60000;
-    var ENWEndedAgo = ENWStartedAgo-ENWindowDuration;
+    var ENWEndedAgo = (nowUTC - meal_data.ENWEndTime) / 60000;
+    ENWEndedAgo = Math.max(ENWEndedAgo,0); // no negative time remaining
 
     // ENWindowOK is when there is a recent COB entry or manual bolus
-    var ENWindowOK = ENactive && ENWStartedAgo < ENWindowDuration;
+    var ENWindowOK = ENactive && ENWEndedAgo <= 0; // 0 is just ended
+//    var ENWindowOK = ENactive && ENWStartedAgo < ENWindowDuration;
 
     //var ENWBolusIOBMax = (firstMealWindow ? profile.ENW_breakfast_max_tdd : profile.ENW_max_tdd); // when EN started + breakfast window time is greater than the latest ENWstartTime there has been no other ENW so still firstmeal only
     var ENWBolusIOBMax = round(profile.ENW_maxIOB,2);
     var ENWBolusIOB = Math.max(meal_data.ENWBolusIOB,0);
-    ENWBolusIOBMax = (ENWindowOK && ENWStartedAgo <= ENWindowDuration ? ENWBolusIOBMax : 0); // reset to 0 if not within ENW
+    ENWBolusIOBMax = (ENWindowOK ? ENWBolusIOBMax : 0); // reset to 0 if not within ENW
+//    ENWBolusIOBMax = (ENWindowOK && ENWStartedAgo <= ENWindowDuration ? ENWBolusIOBMax : 0); // reset to 0 if not within ENW
     //var ENWBolusIOBRemaining = (ENWBolusIOBMax > 0 && ENWBolusIOB >=0 ? ENWBolusIOBMax - ENWBolusIOB : 0);
     var ENWBolusIOBRemaining = (ENWBolusIOBMax > 0 ? ENWBolusIOBMax - ENWBolusIOB : 0);
     ENWBolusIOBRemaining = Math.max(ENWBolusIOBRemaining, 0); // dont allow negative
@@ -615,8 +618,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //        if (profile.percent > 100 && meal_data.TIR0_H_pct == 0) sens_normalTarget *= profile.percent/100; // cancel adjustment if not resistant when switch > 100%
 //    }
 
-    // apply TIRS to ISF only when delta is slight or bg higher and no MealScaler active
-    if (TIR_sens_limited !=1 && TIR_sens !=1 && MealScaler == 100) {
+    // apply TIRS to ISF only when delta is slight or bg higher
+    //if (TIR_sens_limited !=1 && TIR_sens !=1 && MealScaler == 100) {
+    if (TIR_sens_limited !=1 && TIR_sens !=1) {
         sens_normalTarget = sens_normalTarget / TIR_sens_limited;
     }
 
@@ -1237,7 +1241,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // Process BG+ first for slight delta when resistant, lower range when asleep
 //    if (TIR_sens_limited > 1 && !ENWindowOK && profile.EN_Use_BGPlus && (insulinReq_bg >= -1.5 * bg && insulinReq_bg <= threshold || minGuardBG >= -1.5 * bg && minGuardBG <= threshold) && delta > -4 && delta <= 6 && glucose_status.long_avgdelta > -2) {
-    if (TIR_sens_limited > 1 && !ENWindowOK && profile.EN_Use_BGPlus && delta > -4 && delta <= 6 && glucose_status.long_avgdelta > -2 && insulinReq_bg <= bg) {
+    if (TIR_sens_limited > 1 && !ENWindowOK && profile.EN_Use_BGPlus && (insulinReq_bg >= -1 * bg && insulinReq_bg <= threshold || minGuardBG >= -1 * bg && minGuardBG <= threshold) && delta > -4 && delta <= 6 && glucose_status.long_avgdelta > -2) {
         // if (TIR_H_safety > 1 || (TIR_M_safety > 1 && (!ENtimeOK || meal_data.TIR_M_pct == 100))) sens_predType = "BG+";
         // if (TIR_H_safety > 1 || TIR_M_safety > 1 && meal_data.TIR_M_pct == 100 && !ENtimeOK) sens_predType = "BG+"; // commenting out as safer BG+ with basal
         if (TIR_H_safety > 1 || TIR_M_safety > 1) sens_predType = "BG+"; // trying as BG+ now uses basal at TIRS%
@@ -1299,7 +1303,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             var UAMDeltaX = 0;
             var eBGmax = (ENWBolusIOBRemaining > 0 ? 320 : 230); // safety max of 17.7mmol or 12.7mmol when ENW IOB reached
             // for lower eventualBg predictions increase eventualBG with UAMDeltaX using current bg as the basis when early on in ENW or less than 80 of ENWBolusIOBMax has been given
-            if (ENWindowOK && ENWStartedAgo < ENWindowDuration && (delta > 3 || delta > 0 && ENWBolusIOBRemaining > 0)) {
+            if (ENWindowOK && (delta > 3 || delta > 0 && ENWBolusIOBRemaining > 0)) {
+//            if (ENWindowOK && ENWStartedAgo < ENWindowDuration && (delta > 3 || delta > 0 && ENWBolusIOBRemaining > 0)) {
                 // Define the range for UAMDeltaX
                 var UAMDeltaXforecast = Math.min(ENWindowDuration,120);
                 var UAMDeltaXboost = (ENPBActive ? 1 : 1);
@@ -1437,7 +1442,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     rT.reason += (ENWindowOK ? "On" : "Off");
     rT.reason += (firstMealWindow ? " Bkfst" : "");
     rT.reason += (MealScaler != 100 ? " " + round(MealScaler) + "%" : "");
-    rT.reason += (ENWindowOK && ENWStartedAgo <= ENWindowDuration ? " " + round(ENWStartedAgo) + "/" + ENWindowDuration + "m" : "");
+//    rT.reason += (ENWindowOK && ENWStartedAgo <= ENWindowDuration ? " " + round(ENWStartedAgo) + "/" + ENWindowDuration + "m" : "");
+    rT.reason += (ENWindowOK ? " " + round(ENWStartedAgo) + "/" + ENWindowDuration + "m" : "");
     rT.reason += (PPWindowOK ? " " + round(ENWindowDuration) + "m, " + round(ENWEndedAgo) + "m ago" : "");
     if (meal_data.ENWBolusIOB || ENWindowOK) rT.reason += ", ENW-IOB:" + round(ENWBolusIOB,2) + "/" + round(profile.ENW_maxIOB,2);
 
@@ -1772,7 +1778,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             var ENinsulinReqPct = 0.75; // EN insulinReqPct is 75%
             var EN_SMB_percent = (ENWindowOK ? profile.ENW_SMB_percent : profile.EN_SMB_percent) /100; // use EN_SMB_percent to indicate EN vs ENW SMB%
             var insulinReqPctChanged = false;
-            var ENWinsulinReqPct = (ENWStartedAgo <= ENWindowDuration ? 1 : ENinsulinReqPct); // ENW insulinReqPct is 100% for the first 30 mins then 85%
+            var ENWinsulinReqPct = (ENWindowOK ? 1 : ENinsulinReqPct); // ENW insulinReqPct is 100% for the first 30 mins then 85%
 
 
             // ============== INSULINREQPCT CHANGES ==============
@@ -1814,7 +1820,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (sens_predType == "BG+") {
                     //ENMaxSMB = (profile.current_basal * TIR_sens_limited) / 12;
                     ENMaxSMB = -1;
-                    rate = round_basal(profile.current_basal, profile);
+                    // if the original TBR is more allow it otherwise give insulinReq
+                    rate = Math.max(rate_orig,insulinReq * insulinReqPct * 12);
+
+                    // when not in the higher band TIRH just use basal rate and original TBR
+                    if (TIR_H_safety == 1) rate = Math.max(rate_orig,profile_current_basal);
                     AllowZT = false;
                }
             }
