@@ -1239,13 +1239,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (lastUAMpredBG > 0 && sens_predType != "COB") sens_predType = "UAM"; // UAM prediction
     if (sens_predType == "NA" && TIR_sens_limited < 1 && iob_data.iob <= 0) sens_predType = "IOB"; // if low IOB and no other prediction type is present
 
-    // Process BG+ first for slight delta when resistant, lower range when asleep
-//    if (TIR_sens_limited > 1 && !ENWindowOK && profile.EN_Use_BGPlus && (insulinReq_bg >= -1.5 * bg && insulinReq_bg <= threshold || minGuardBG >= -1.5 * bg && minGuardBG <= threshold) && delta > -4 && delta <= 6 && glucose_status.long_avgdelta > -2) {
-    if (TIR_sens_limited > 1 && !ENWindowOK && profile.EN_Use_BGPlus && (insulinReq_bg >= -1 * bg && insulinReq_bg <= threshold || minGuardBG >= -1 * bg && minGuardBG <= threshold) && delta > -4 && delta <= 6 && glucose_status.long_avgdelta > -2) {
-        // if (TIR_H_safety > 1 || (TIR_M_safety > 1 && (!ENtimeOK || meal_data.TIR_M_pct == 100))) sens_predType = "BG+";
-        // if (TIR_H_safety > 1 || TIR_M_safety > 1 && meal_data.TIR_M_pct == 100 && !ENtimeOK) sens_predType = "BG+"; // commenting out as safer BG+ with basal
-        if (TIR_H_safety > 1 || TIR_M_safety > 1) sens_predType = "BG+"; // trying as BG+ now uses basal at TIRS%
-    }
+    // Process BG+ first for slight delta when enabled and minPredBG not too low TIRS not required
+    if (profile.EN_Use_BGPlus && !ENWindowOK && bg >= normalTarget + 50 && insulinReq_bg >= -0.5 * bg && delta > -4 && delta <= 6 && glucose_status.long_avgdelta > -2) sens_predType = "BG+";
 
     // UAM+ predtype when sufficient delta not a COB prediction
     if (profile.ENW_maxBolus_UAM_plus > 0 && (profile.EN_UAMPlusSMB_NoENW || ENWindowOK) && !PPWindowOK && ENtimeOK && delta >= 0 && (sens_predType == "UAM" || sens_predType == "NA")) {
@@ -1332,11 +1327,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // when favouring minPredBG allow more of eventualBG if resistance detected
                 //eBGweight = (eBGweight == 0 && ENtimeOK ? 0.5 : eBGweight); // if daytime allow more eBGw
             }
-            // allow more eBG when reistant with TBR enabled for all UAM+
-            //if (eBGweight == eBGweight_orig && ENactive) eBGweight = 0.75;
-            //if (EN_SMB_percent == 0 && eBGweight == eBGweight_orig) eBGweight = 0.75;
-//            if (eBGweight == eBGweight_orig && ENactive && TIR_sens_limited > 1 && !PPWindowOK) eBGweight = 0.55;
-//            if (eBGweight == eBGweight_orig && ENactive && TIR_sens_limited > 1) eBGweight = 0.75; // perhaps increase this when resistant
+            // allow more eBG when for all UAM+ predictions when eBGw has not been changed
+            if (eBGweight == eBGweight_orig && ENactive) eBGweight = 0.50;
         }
 
         // UAM predictions, no COB or GhostCOB
@@ -1360,9 +1352,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             minGuardBG = threshold; // required to allow SMB consistently
             minBG = target_bg;
             eventualBG = bg;
-            //eBGweight = (TIR_H_safety > 1 ? 1 : 0.5);
             eBGweight = 0.35;
-            //insulinReq_sens_normalTarget = sens_normalTarget; // use the SR adjusted sens_normalTarget
         }
 
         // TBR only
