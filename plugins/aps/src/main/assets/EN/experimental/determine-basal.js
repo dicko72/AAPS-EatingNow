@@ -1808,8 +1808,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (sens_predType == "BG+") {
                     //ENMaxSMB = (profile.current_basal * TIR_sens_limited) / 12;
                     ENMaxSMB = -1;
-                    // if the original TBR is more allow it otherwise give insulinReq
-                    rate = Math.max(rate_orig,insulinReq * insulinReqPct * 12);
+                    // use TBR calculated from insulinReq
+                    rate = rate_orig;
+                    //rate = Math.max(rate_orig,insulinReq * insulinReqPct * 12);
 
                     // when not in the higher band TIRH just use basal rate and original TBR
                     if (TIR_H_safety == 1) rate = Math.max(rate_orig,profile_current_basal);
