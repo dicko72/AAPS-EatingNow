@@ -483,12 +483,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     // TIRM - The TIR for the lower band just above normalTarget (+18/1.0)
-    //var TIR_M_safety = (bg > normalTarget + 18 && delta >-4 && delta <= 4 && glucose_status.long_avgdelta >-4 && DeltaPctS > 0 && DeltaPctL > 0 ? TIR_M : 1); // SAFETY: when bg not falling too much or delta not slowing
-    //var TIR_M_safety = (bg > normalTarget + 18 && delta >-4 && delta <= 4 && glucose_status.long_avgdelta >-4 ? TIR_M : 1); // SAFETY: when bg not falling too much, removed delta acceleration as BG+ has eBG safety
     var TIR_M_safety = (bg > normalTarget + 18 && delta >-4 && glucose_status.long_avgdelta >-4 ? TIR_M : 1); // SAFETY: when bg not falling too much, removed delta acceleration as BG+ has eBG safety
 
     // TIRH - The TIR for the higher band above 150/8.3
-    //var TIR_H_safety = (bg >= normalTarget + 50 && delta >-4 && DeltaPctS > 0 && DeltaPctL > 0 ? TIR_H : 1); // SAFETY: when bg not falling too much, removed delta acceleration as BG+ has eBG safety
     var TIR_H_safety = (bg >= normalTarget + 50 && delta >-4 && glucose_status.long_avgdelta > -4 ? TIR_H : 1); // SAFETY: when bg not falling too much or delta not slowing
     TIR_M_safety = (TIR_H_safety > 1 ? TIR_M : TIR_M_safety); // SAFETY: when bg not falling too much or delta not slowing
 
@@ -1240,7 +1237,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (sens_predType == "NA" && TIR_sens_limited < 1 && iob_data.iob <= 0) sens_predType = "IOB"; // if low IOB and no other prediction type is present
 
     // Process BG+ first for slight delta when enabled and minPredBG not too low TIRS not required
-    if (profile.EN_Use_BGPlus && !ENWindowOK && bg >= normalTarget + 50 && insulinReq_bg >= -0.5 * bg && delta > -4 && delta <= 6 && glucose_status.long_avgdelta > -2) sens_predType = "BG+";
+    if (profile.EN_Use_BGPlus && !ENWindowOK && bg >= normalTarget + 50 && ((insulinReq_bg >= -0.5 * bg && insulinReq_bg <= target_bg) || (minGuardBG >= -0.5 * bg && minGuardBG <= target_bg)) && (delta > -4 && delta <= 6 && glucose_status.long_avgdelta > -2)) sens_predType = "BG+";
 
     // UAM+ predtype when sufficient delta not a COB prediction
     if (profile.ENW_maxBolus_UAM_plus > 0 && (profile.EN_UAMPlusSMB_NoENW || ENWindowOK) && !PPWindowOK && ENtimeOK && delta >= 0 && (sens_predType == "UAM" || sens_predType == "NA")) {
@@ -1281,116 +1278,97 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     //if (profile.temptargetSet && !ENTTActive && target_bg == normalTarget) sens_predType = "TBR";
 
     // evaluate prediction type and weighting - Only use during when EN active or sensitive or resistant
-    if (ENactive || TIR_sens_limited !=1 && !HighTempTargetSet) {
+    //if (ENactive || TIR_sens_limited !=1 || sens_predType == "BG+" && !HighTempTargetSet) {
 
-        // PREbolus active - PB used for increasing Bolus IOB within ENW
-        if (sens_predType == "PB") {
-            // increase predictions to force a prebolus when allowed
-            minPredBG = Math.max(minPredBG,threshold);
-            minGuardBG = Math.max(minGuardBG,threshold);
-            eventualBG = Math.max(bg,eventualBG,target_bg); // bg + delta * 3
-            eBGweight = 1; // 100% eBGw as unrestricted insulin delivery is required
-//            AllowZT = false; // no ZT allowed
+    // START: evaluate prediction type and weighting - time limit removed as other safeties are applicable
+    // PREbolus active - PB used for increasing Bolus IOB within ENW
+    if (sens_predType == "PB") {
+        // increase predictions to force a prebolus when allowed
+        minPredBG = Math.max(minPredBG,threshold);
+        minGuardBG = Math.max(minGuardBG,threshold);
+        eventualBG = Math.max(bg,eventualBG,target_bg); // bg + delta * 3
+        eBGweight = 1; // 100% eBGw as unrestricted insulin delivery is required
+    }
+
+    // UAM+ for slower delta but any acceleration, earlier detection for larger SMB's, bypass LGS
+    if (sens_predType == "UAM+") {
+        var UAMDeltaX = 0;
+        var eBGmax = (ENWBolusIOBRemaining > 0 ? 320 : 230); // safety max of 17.7mmol or 12.7mmol when ENW IOB reached
+        // for lower eventualBg predictions increase eventualBG with UAMDeltaX using current bg as the basis when early on in ENW or less than 80 of ENWBolusIOBMax has been given
+        if (ENWindowOK && (delta > 3 || delta > 0 && ENWBolusIOBRemaining > 0)) {
+            // Define the range for UAMDeltaX
+            var UAMDeltaXforecast = Math.min(ENWindowDuration,120);
+            var UAMDeltaXboost = (ENPBActive ? 1 : 1);
+            // Calculate the scaled UAMDeltaX based on the ENW
+            UAMDeltaX = (1-(ENWStartedAgo/ENWindowDuration)) * UAMDeltaXforecast / 5 * UAMDeltaXboost; // unrestricted UAM delta extrapolation
+            var UAMDeltaXBG = Math.min(UAMDeltaX * delta); //additional delta from UAMDeltaX multiplier
+            eventualBG = (eventualBG < bg ? bg + UAMDeltaXBG : eventualBG); // for when eBG is lower use UAMDeltaXBG
+            eventualBG = Math.min(eventualBG, eBGmax); // safety max of eBGmax
+            minPredBG = Math.max(minPredBG,threshold, minPredBG + UAMDeltaXBG); // bypass LGS for ENW
+            minGuardBG = Math.max(minGuardBG,threshold, minGuardBG + UAMDeltaXBG); // bypass LGS for ENW
+            minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
+            eBGweight = 1; // 100% eBGw in ENW
+        } else if (delta > 6) { // UAM+ safety needs slightly higher delta when no ENW
+            minPredBG = Math.max(minPredBG,threshold); // bypass LGS for ENW
+            minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS for ENW
+            minBG = minPredBG; // go with the largest value for UAM+ outside ENW
+        } else { // low delta but accelerating no LGS bypass
         }
+        // allow more eBG when for all UAM+ predictions when eBGw has not been changed
+        if (eBGweight == eBGweight_orig && (!COB || ignoreCOB)) eBGweight = 0.50;
+    }
 
-        // UAM+ for slower delta but any acceleration, earlier detection for larger SMB's, bypass LGS
-        if (sens_predType == "UAM+") {
-            var UAMDeltaX = 0;
-            var eBGmax = (ENWBolusIOBRemaining > 0 ? 320 : 230); // safety max of 17.7mmol or 12.7mmol when ENW IOB reached
-            // for lower eventualBg predictions increase eventualBG with UAMDeltaX using current bg as the basis when early on in ENW or less than 80 of ENWBolusIOBMax has been given
-            if (ENWindowOK && (delta > 3 || delta > 0 && ENWBolusIOBRemaining > 0)) {
-//            if (ENWindowOK && ENWStartedAgo < ENWindowDuration && (delta > 3 || delta > 0 && ENWBolusIOBRemaining > 0)) {
-                // Define the range for UAMDeltaX
-                var UAMDeltaXforecast = Math.min(ENWindowDuration,120);
-                var UAMDeltaXboost = (ENPBActive ? 1 : 1);
-                // var UAMDeltaXmax = 90; // max increase to current bg of 90mgdl/5mmol
-                // Calculate the scaled UAMDeltaX based on the ENW
-                UAMDeltaX = (1-(ENWStartedAgo/ENWindowDuration)) * UAMDeltaXforecast / 5 * UAMDeltaXboost; // unrestricted UAM delta extrapolation
-                // var UAMDeltaXBG = Math.min(UAMDeltaX * delta,UAMDeltaXmax); //eBG max increase UAMDeltaXmax as we are overriding LGS etc
-                var UAMDeltaXBG = Math.min(UAMDeltaX * delta); //additional delta from UAMDeltaX multiplier
-                eventualBG = (eventualBG < bg ? bg + UAMDeltaXBG : eventualBG); // for when eBG is lower use UAMDeltaXBG
-//                eventualBG = Math.max(eventualBG, bg + UAMDeltaXBG); // for when eBG is already greater than UAMDeltaXBG
-                eventualBG = Math.min(eventualBG, eBGmax); // safety max of eBGmax
-                // eventualBG = (bg > ISFbgMax ? Math.min(eventualBG, eBGmax) : eventualBG); // safety max of eBGmax
-                minPredBG = Math.max(minPredBG,threshold, minPredBG + UAMDeltaXBG); // bypass LGS for ENW
-                minGuardBG = Math.max(minGuardBG,threshold, minGuardBG + UAMDeltaXBG); // bypass LGS for ENW
-                minBG = Math.max(minPredBG,minGuardBG); // go with the largest value for UAM+
-                eBGweight = 1; // 100% eBGw in ENW
-            } else if (delta > 6) { // UAM+ safety needs slightly higher delta when no ENW
-                minPredBG = Math.max(minPredBG,threshold); // bypass LGS for ENW
-                minGuardBG = Math.max(minGuardBG,threshold); // bypass LGS for ENW
-                minBG = minPredBG; // go with the largest value for UAM+ outside ENW
-                // eventualBG = Math.min(eventualBG, eBGmax); // safety max of eBGmax
-                // when favouring minPredBG allow more of eventualBG if resistance detected
-                //eBGweight = (eBGweight == 0 && ENtimeOK ? 0.5 : eBGweight); // if daytime allow more eBGw
-            } else { // low delta but accelerating no LGS bypass
-                // when favouring minPredBG allow more of eventualBG if resistance detected
-                //eBGweight = (eBGweight == 0 && ENtimeOK ? 0.5 : eBGweight); // if daytime allow more eBGw
-            }
-            // allow more eBG when for all UAM+ predictions when eBGw has not been changed
-            if (eBGweight == eBGweight_orig && ENactive) eBGweight = 0.50;
-        }
+    // UAM predictions, no COB or GhostCOB
+    if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
+        if (eBGweight == eBGweight_orig && (!COB || ignoreCOB)) eBGweight = 0.50;
+    }
 
-        // UAM predictions, no COB or GhostCOB
-        if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
-            // allow more eBG with TBR enabled for all UAM
-            //if (eBGweight == eBGweight_orig && ENactive) eBGweight = 0.75;
-//            if (eBGweight == eBGweight_orig && ENactive) eBGweight = 0.65;
-            // SAFETY: UAM fast delta with higher bg lowers eBGw when SMB
-//            eBGweight = (bg > ISFbgMax && delta >= 15 && ENWBolusIOBMax == 0 ? 0.30 : eBGweight);
-        }
-
-        // COB predictions or UAM with COB
-        if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
-            // positive or negative delta with acceleration and UAM default
+    // COB predictions or UAM with COB
+    if (sens_predType == "COB" || (sens_predType == "UAM" && COB)) {
+        // positive or negative delta with acceleration and UAM default
 //            eBGweight = (DeltaPctS > 1.0 && sens_predType == "COB" && bg > threshold ? 0.75 : 0.50);
 //            eBGweight = (DeltaPctS > 1.0 && sens_predType == "UAM" && bg > threshold ? 0.50 : eBGweight);
-        }
-
-        // BG+ bg is stuck with resistance or UAM+ activated with minGuardBG
-        if (sens_predType == "BG+") {
-            minGuardBG = threshold; // required to allow SMB consistently
-            minBG = target_bg;
-            eventualBG = bg;
-            eBGweight = 0.35;
-        }
-
-        // TBR only
-        if (sens_predType == "TBR") {
-            eBGweight = 1; // 100% eBGw as SMB is disabled
-            // AllowZT = false;
-            // When resistant and insulin delivery is restricted allow the SR adjusted sens_normalTarget
-            //if (TIR_sens_limited > 1 && ENactive && MealScaler == 1) insulinReq_sens_normalTarget = sens_normalTarget;
-        }
-
-        // IOB prediction - 50% eBGw and eventualBG with negative IOB
-        if (sens_predType == "IOB") {
-            // When sensitive and below target with low IOB dont trust predictions and override eventualBG
-            eventualBG = Math.min(eventualBG,bg);
-            //insulinReq_sens_normalTarget = sens_normalTarget; // use the SR adjusted sens_normalTarget
-            eBGweight = 0.5; // use eBG between bg and minPredBG
-        }
-
-        // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
-        insulinReq_bg = (Math.max(minBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight);
-        // sometimes the weighting can provide a lower eBG, if so use the original
-        insulinReq_bg = (TIR_sens_limited > 1 && insulinReq_bg < insulinReq_bg_orig ? insulinReq_bg_orig : insulinReq_bg);
-
-        // when using DynISF
-        if (profile.useDynISF) {
-            // insulinReq_sens determines the ISF used for final insulinReq calc based on original unadjusted ISF at normalTarget
-            // when ENtimeOK base prediction ISF using insulinReq_sens_normalTarget which may have been adjusted by TIRS
-            // otherwise use the current BG ISF as DynISF is in use
-//            insulinReq_sens = (ENtimeOK ? dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val) : sens);
-            insulinReq_sens = sens;
-
-            // when resistant use the stronger ISF
-            // if (TIR_sens_limited == autosens_max_tirs) insulinReq_sens = Math.min(dynISF(insulinReq_bg,target_bg,sens_normalTarget,ins_val), insulinReq_sens);
-        }
-
-        // IOB prediction - 50% eBGw and eventualBG with negative IOB
-        if (sens_predType == "IOB") eventualBG = insulinReq_bg;
     }
+
+    // BG+ bg is stuck with resistance or UAM+ activated with minGuardBG
+    if (sens_predType == "BG+") {
+        minGuardBG = threshold; // required to allow SMB consistently
+        minBG = target_bg;
+        eventualBG = bg;
+        eBGweight = 0.35;
+    }
+
+    // TBR only
+    if (sens_predType == "TBR") {
+        eBGweight = 1; // 100% eBGw as SMB is disabled
+    }
+
+    // IOB prediction - 50% eBGw and eventualBG with negative IOB
+    if (sens_predType == "IOB") {
+        // When sensitive and below target with low IOB dont trust predictions and override eventualBG
+        eventualBG = Math.min(eventualBG,bg);
+        //insulinReq_sens_normalTarget = sens_normalTarget; // use the SR adjusted sens_normalTarget
+        eBGweight = 0.5; // use eBG between bg and minPredBG
+    }
+
+    // calculate the prediction bg based on the weightings for minPredBG and eventualBG, if boosting use eventualBG
+    insulinReq_bg = (Math.max(minBG, 40) * (1 - eBGweight)) + (Math.max(eventualBG, 40) * eBGweight);
+    // sometimes the weighting can provide a lower eBG, if so use the original
+    insulinReq_bg = (TIR_sens_limited > 1 && insulinReq_bg < insulinReq_bg_orig ? insulinReq_bg_orig : insulinReq_bg);
+
+    // when using DynISF
+    if (profile.useDynISF) {
+        // insulinReq_sens determines the ISF used for final insulinReq calc based on original unadjusted ISF at normalTarget
+        // when ENtimeOK base prediction ISF using insulinReq_sens_normalTarget which may have been adjusted by TIRS
+        // otherwise use the current BG ISF as DynISF is in use
+//            insulinReq_sens = (ENtimeOK ? dynISF(insulinReq_bg,target_bg,insulinReq_sens_normalTarget,ins_val) : sens);
+        insulinReq_sens = sens;
+    }
+
+    // IOB prediction - 50% eBGw and eventualBG with negative IOB
+    if (sens_predType == "IOB") eventualBG = insulinReq_bg;
+//    }
+    // END: evaluate prediction type and weighting - time limit removed as other safeties are applicable
 
     if (HighTempTargetSet || TIR_sens_limited < 1) insulinReq_sens = Math.max(sens,sens_currentBG); // HighTemp or sensitivity uses the highest ISF value
 
@@ -1814,9 +1792,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                     // use TBR calculated from insulinReq
                     rate = rate_orig;
                     //rate = Math.max(rate_orig,insulinReq * insulinReqPct * 12);
-
-                    // when not in the higher band TIRH just use basal rate and original TBR
-                    if (TIR_H_safety == 1) rate = Math.max(rate_orig,profile_current_basal);
                     AllowZT = false;
                }
             }
