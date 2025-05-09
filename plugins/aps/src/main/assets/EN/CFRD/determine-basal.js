@@ -1240,7 +1240,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (profile.EN_Use_BGPlus && !ENWindowOK && bg >= normalTarget + 50 && ((insulinReq_bg >= -0.5 * bg && insulinReq_bg <= target_bg) || (minGuardBG >= -0.5 * bg && minGuardBG <= target_bg)) && (delta > -4 && delta <= 6 && glucose_status.long_avgdelta > -2)) sens_predType = "BG+";
 
     // UAM+ predtype when sufficient delta not a COB prediction
-    if (profile.ENW_maxBolus_UAM_plus > 0 && (profile.EN_UAMPlusSMB_NoENW || ENWindowOK) && !PPWindowOK && ENtimeOK && delta >= 0 && (sens_predType == "UAM" || sens_predType == "NA")) {
+//    if (profile.ENW_maxBolus_UAM_plus > 0 && (profile.EN_UAMPlusSMB_NoENW || ENWindowOK) && !PPWindowOK && ENtimeOK && delta >= 0 && (sens_predType == "UAM" || sens_predType == "NA")) {
+    if (profile.ENW_maxBolus_UAM_plus > 0 && ENtimeOK && delta >= 0 && (sens_predType == "UAM" || sens_predType == "NA")) {
         if (DeltaPctS >= 1 && DeltaPctL > 1) sens_predType = "UAM+" // short & long average accelerated rise for No ENW
         if (DeltaPctS >= 1 && ENWindowOK) sens_predType = "UAM+" // EXPERIMENT: UAM+ short average accelerated rise with ENW
 
@@ -1315,12 +1316,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         } else { // low delta but accelerating no LGS bypass
         }
         // allow more eBG when for all UAM+ predictions when eBGw has not been changed
-        if (eBGweight == eBGweight_orig && (!COB || ignoreCOB)) eBGweight = 0.50;
+        if (eBGweight == 0 && delta > 0 && sens_normalTarget == sens_normalTarget_orig && (!COB || ignoreCOB)) eBGweight = 0.50;
     }
 
     // UAM predictions, no COB or GhostCOB
     if (sens_predType == "UAM" && (!COB || ignoreCOB)) {
-        if (eBGweight == eBGweight_orig && (!COB || ignoreCOB)) eBGweight = 0.50;
+//        if (eBGweight == 0 && delta > 0 && sens_normalTarget == sens_normalTarget_orig && (!COB || ignoreCOB)) eBGweight = 0.50;
     }
 
     // COB predictions or UAM with COB
@@ -1782,7 +1783,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 // start with the default maxBolus
                 ENMaxSMB = EN_NoENW_maxBolus;
                 // When AAPS insulinReq is positive allow larger UAM+ maxBolus when enabled
-                if (sens_predType == "UAM+" && PPWindowOK && profile.EN_UAMPlusSMB_NoENW) {
+                if (sens_predType == "UAM+" && profile.EN_UAMPlusSMB_NoENW) {
                     ENMaxSMB = (insulinReqAAPS > 0 ? Math.max(profile.ENW_maxBolus_UAM_plus, ENMaxSMB) : EN_NoENW_maxBolus);
                 }
                 // BG+ is the only EN prediction type allowed outside of ENW
