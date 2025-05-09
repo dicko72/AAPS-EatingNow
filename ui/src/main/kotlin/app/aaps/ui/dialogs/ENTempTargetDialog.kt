@@ -42,6 +42,7 @@ import com.google.common.base.Joiner
 import com.google.common.collect.Lists
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
+import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.util.LinkedList
 import java.util.concurrent.TimeUnit
@@ -211,8 +212,10 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         val unitResId = if (profileFunction.getUnits() == GlucoseUnit.MGDL) app.aaps.core.ui.R.string.mgdl else app.aaps.core.ui.R.string.mmol
         val target = binding.temptarget.value
         val duration = binding.duration.value.toInt()
-        sp.putDouble("ENdb_PreBolusUnits",binding.amount.value) // add the prebolus amount for DetermineBasalAdapterENJS.kt
-        sp.putDouble("ENdb_ENWIOBUnits",binding.enwIob.value) // add the ENWIOB amount for DetermineBasalAdapterENJS.kt
+        val prebolus = binding.amount.value.toBigDecimal().setScale(2, RoundingMode.HALF_UP)
+        val enwiob = binding.enwIob.value.toBigDecimal().setScale(2, RoundingMode.HALF_UP)
+        sp.putDouble("ENdb_PreBolusUnits",prebolus.toDouble()) // add the prebolus amount for DetermineBasalAdapterENJS.kt
+        sp.putDouble("ENdb_ENWIOBUnits",enwiob.toDouble()) // add the ENWIOB amount for DetermineBasalAdapterENJS.kt
         if (target != 0.0 && duration != 0) {
             // actions.add(rh.gs(app.aaps.core.ui.R.string.reason) + ": " + reason)
             actions.add(rh.gs(app.aaps.core.ui.R.string.target_label) + ": " + profileUtil.stringInCurrentUnitsDetect(target) + " " + rh.gs(unitResId))
