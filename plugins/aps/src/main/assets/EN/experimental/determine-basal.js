@@ -1228,6 +1228,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     var insulinReq_sens = sens_normalTarget, insulinReq_sens_normalTarget = sens_normalTarget_orig;
 
+    var endebug = "sens_nT:" + sens_normalTarget + ",sens_prf:" + profile.sens;
+
+
     // categorize the eventualBG prediction type for more accurate weighting
     if (lastCOBpredBG > 0 && eventualBG == lastCOBpredBG) sens_predType = "COB"; // if COB prediction is present eventualBG aligns
     if (lastUAMpredBG > 0 && sens_predType != "COB") sens_predType = "UAM"; // UAM prediction
@@ -1313,7 +1316,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         } else { // low delta but accelerating no LGS bypass
         }
         // allow more eBG when for all UAM+ predictions when eBGw has not been changed
-        if (eBGweight == 0 && delta > 0 && sens_normalTarget == sens_normalTarget_orig && (!COB || ignoreCOB)) eBGweight = 0.50;
+        if (eBGweight == 0 && delta > 0 && sens_normalTarget == profile.sens && (!COB || ignoreCOB)) eBGweight = 0.50;
     }
 
     // UAM predictions, no COB or GhostCOB
@@ -1754,9 +1757,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             var insulinReqPct_orig = insulinReqPct;
             if (ENactive && !HighTempTargetSet && !LowTempTargetSet && EN_SMB_percent != insulinReqPct && !UAMBGPreBolus) insulinReqPctChanged = true; // var for EN_SMB_percent during active hours
             insulinReqPct = (insulinReqPctChanged ? EN_SMB_percent: insulinReqPct); // update insulinReqPct if reduced
-
-            var endebug = "iRPChg:" + insulinReqPctChanged;
-
 
             // PreBolus period gets 100% insulinReqPct
             insulinReqPct = (UAMBGPreBolus ? 1 : insulinReqPct);
