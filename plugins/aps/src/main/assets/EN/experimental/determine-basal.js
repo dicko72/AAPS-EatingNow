@@ -1228,7 +1228,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     var insulinReq_sens = sens_normalTarget, insulinReq_sens_normalTarget = sens_normalTarget_orig;
 
-    var endebug = "sens_nT:" + sens_normalTarget + ",sens_prf:" + profile.sens;
+    //var endebug = "sens_nT:" + sens_normalTarget + ",sens_prf:" + profile.sens;
 
 
     // categorize the eventualBG prediction type for more accurate weighting
@@ -1264,16 +1264,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 //    }
 
     // EN TT active and no bolus yet with UAM increase insulinReq_bg to provide initial bolus
-    var UAMBGPreBolusUnits = profile.ENW_maxPreBolus, PBW = 15;
+    var UAMBGPreBolusUnits = profile.ENW_maxPreBolus;
     // if UAMBGPreBolusUnits is more than AAPS max IOB then consider the setting to be minutes
     if (UAMBGPreBolusUnits > max_iob) UAMBGPreBolusUnits = profile.current_basal * UAMBGPreBolusUnits / 60;
 
     // start with the prebolus in prefs as the minimum starting bolus amount for ENWBolusIOB then use the maxbolus for UAM+ as the increment
-    var UAMBGPreBolus = (UAMBGPreBolusUnits > 0 && ENTTActive && ENPBActive && ENWStartedAgo < PBW && ENWBolusIOB < UAMBGPreBolusUnits);
+    var UAMBGPreBolus = (UAMBGPreBolusUnits > 0 && ENTTActive && ENPBActive && ENWBolusIOB < UAMBGPreBolusUnits);
     var UAMBGPreBolusUnitsLeft = (UAMBGPreBolus ? UAMBGPreBolusUnits - ENWBolusIOB : 0);
-
-    // Pre-bolus condition matches set PB type when not accelerating
-    if (UAMBGPreBolus && sens_predType != "UAM+") sens_predType = "PB";
 
     // TBR for tt that isn't EN at normal target
     //if (profile.temptargetSet && !ENTTActive && target_bg == normalTarget) sens_predType = "TBR";
@@ -1283,7 +1280,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // START: evaluate prediction type and weighting - time limit removed as other safeties are applicable
     // PREbolus active - PB used for increasing Bolus IOB within ENW
-    if (sens_predType == "PB") {
+    if (UAMBGPreBolusUnitsLeft > 0) {
         // increase predictions to force a prebolus when allowed
         minPredBG = Math.max(minPredBG,threshold);
         minGuardBG = Math.max(minGuardBG,threshold);
@@ -1767,14 +1764,14 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
                 ENMaxSMB = (sens_predType == "COB" ? profile.ENW_maxBolus_COB : profile.ENW_maxBolus_UAM);
 
-                // when prebolusing allow as much as safety_maxbolus will allow
-                if (sens_predType == "PB") ENMaxSMB = UAMBGPreBolusUnitsLeft;
-
                 // UAM+ uses different SMB when configured, it can give prebolus is the condition is correct
-                if (sens_predType == "UAM+") ENMaxSMB = Math.max(profile.ENW_maxBolus_UAM_plus, UAMBGPreBolusUnitsLeft);
+                if (sens_predType == "UAM+") ENMaxSMB = profile.ENW_maxBolus_UAM_plus;
 
                 // allow ENMaxSMB to go up to remaining ENWBolusIOBMax with UAM+ allowing faster delivery of insulin earlier
                 if (profile.EN_Use_LargerENWSMB && sens_predType == "UAM+" && ENTTActive) ENMaxSMB = Math.max(ENMaxSMB,ENWBolusIOBRemaining);
+
+                // when prebolusing allow as much as safety_maxbolus will allow
+                if (UAMBGPreBolusUnitsLeft >0) ENMaxSMB = Math.max(ENMaxSMB,UAMBGPreBolusUnitsLeft);
 
             } else {
                 // start with the default maxBolus
@@ -1990,7 +1987,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             var nextBolusSeconds = round((SMBInterval - lastBolusAge) * 60, 0) % 60;
             //console.error(naive_eventualBG, insulinReq, worstCaseInsulinReq, durationReq);
             console.error("naive_eventualBG", naive_eventualBG + ",", durationReq + "m " + smbLowTempReq + "U/h temp needed; last bolus", lastBolusAge + "m ago; maxBolus: " + maxBolus);
-            if (lastBolusAge > SMBInterval || sens_predType == "PB") {
+            if (lastBolusAge > SMBInterval || UAMBGPreBolusUnitsLeft > 0) {
                 if (microBolus > 0) {
                     rT.units = microBolus;
                     rT.reason += (UAMBGPreBolusUnitsLeft > 0 ? "Pre-bolusing " : "Microbolusing ") + microBolus;
