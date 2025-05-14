@@ -1237,7 +1237,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (sens_predType == "NA" && TIR_sens_limited < 1 && iob_data.iob <= 0) sens_predType = "IOB"; // if low IOB and no other prediction type is present
 
     // Process BG+ first for slight delta when enabled and minPredBG not too low TIRS not required
-    if (profile.EN_Use_BGPlus && !ENWindowOK && bg >= normalTarget + 50 && ((insulinReq_bg >= -0.5 * bg && insulinReq_bg <= target_bg) || (minGuardBG >= -0.5 * bg && minGuardBG <= target_bg)) && (delta > -4 && delta <= 6 && glucose_status.long_avgdelta >= 0)) sens_predType = "BG+";
+    if (profile.EN_Use_BGPlus && !ENWindowOK && bg >= normalTarget + 50 && ((insulinReq_bg >= -0.5 * bg && insulinReq_bg <= target_bg) || (minGuardBG >= -0.5 * bg && minGuardBG <= target_bg) || PPWindowOK) && (delta > -4 && delta <= 6 && glucose_status.long_avgdelta >= 0)) sens_predType = "BG+";
 
     // UAM+ predtype when sufficient delta not a COB prediction
 //    if (profile.ENW_maxBolus_UAM_plus > 0 && (profile.EN_UAMPlusSMB_NoENW || ENWindowOK) && !PPWindowOK && ENtimeOK && delta >= 0 && (sens_predType == "UAM" || sens_predType == "NA")) {
