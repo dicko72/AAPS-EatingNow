@@ -427,13 +427,13 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // PPWindowOK
     var MealScalerDuration = profile.PPMealDuration; // maybe add this in prefs?
-    var PPWindowOK = (MealScalerDuration > 0 && !ENWindowOK && ENWEndedAgo <= MealScalerDuration);
+    var PPWindowOK = (MealScalerDuration > 0 && !ENWindowOK && ENWEndedAgo <= MealScalerDuration && bg >= normalTarget + 50);
 
-    // stronger ISF can be used to scale within ENW and 3h after
+    // stronger ISF can be used to scale within ENW and within Postprandial window duration
     if (profile.MealPct != MealScaler && (ENWindowOK || PPWindowOK) && !profile.use_sens_TDD && !HighTempTargetSet) {
         MealScaler = round(profile.MealPct);
         // Postprandial ISF scaling after ENW during for 3h, allowed after hours reducing back to profile ISF
-        if (PPWindowOK) MealScaler += ((100-MealScaler) * (ENWEndedAgo/MealScalerDuration)); // Scaled addition over MealScalerDuration
+        //if (PPWindowOK) MealScaler += ((100-MealScaler) * (ENWEndedAgo/MealScalerDuration)); // Scaled addition over MealScalerDuration
         MealScaler = Math.min(MealScaler,100); // never exceed 100%
         sens = round(sens * (MealScaler / 100), 1);
     }
@@ -1237,7 +1237,8 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (sens_predType == "NA" && TIR_sens_limited < 1 && iob_data.iob <= 0) sens_predType = "IOB"; // if low IOB and no other prediction type is present
 
     // Process BG+ first for slight delta when enabled and minPredBG not too low TIRS not required
-    if (profile.EN_Use_BGPlus && !ENWindowOK && bg >= normalTarget + 50 && ((insulinReq_bg >= -0.5 * bg && insulinReq_bg <= target_bg) || (minGuardBG >= -0.5 * bg && minGuardBG <= target_bg) || PPWindowOK) && (delta > -4 && delta <= 6 && glucose_status.long_avgdelta >= 0)) sens_predType = "BG+";
+//    if (profile.EN_Use_BGPlus && !ENWindowOK && bg >= normalTarget + 50 && ((insulinReq_bg >= -0.5 * bg && insulinReq_bg <= target_bg) || (minGuardBG >= -0.5 * bg && minGuardBG <= target_bg) || PPWindowOK) && (delta > -4 && delta <= 6 && glucose_status.long_avgdelta >= 0)) sens_predType = "BG+";
+    if (profile.EN_Use_BGPlus && PPWindowOK && eventualBG < target_bg && (delta > -4 && delta <= 6 && glucose_status.long_avgdelta >= 0)) sens_predType = "BG+"; // only within PPWindow
 
     // UAM+ predtype when sufficient delta not a COB prediction
 //    if (profile.ENW_maxBolus_UAM_plus > 0 && (profile.EN_UAMPlusSMB_NoENW || ENWindowOK) && !PPWindowOK && ENtimeOK && delta >= 0 && (sens_predType == "UAM" || sens_predType == "NA")) {
