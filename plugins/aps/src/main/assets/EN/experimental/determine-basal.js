@@ -1313,8 +1313,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             minBG = minPredBG; // go with the largest value for UAM+ outside ENW
         } else { // low delta but accelerating no LGS bypass
         }
-        // allow more eBG when for all UAM+ predictions when eBGw has not been changed
-        if (eBGweight == 0 && delta > 0 && sens_normalTarget == profile.sens && (!COB || ignoreCOB)) eBGweight = 0.50;
+        // allow more eBG when for all UAM+ predictions when ISF is stronger
+        if (eBGweight == 0 && delta > 0 && sens_normalTarget < profile.sens && (!COB || ignoreCOB)) eBGweight = 0.35;
+//        if (eBGweight == 0 && delta > 0 && sens_normalTarget == profile.sens && (!COB || ignoreCOB)) eBGweight = 0.35;
     }
 
     // UAM predictions, no COB or GhostCOB
@@ -1334,7 +1335,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         minGuardBG = threshold; // required to allow SMB consistently
         minBG = target_bg;
         eventualBG = bg;
-        eBGweight = 0.35;
+        eBGweight = 0.30;
     }
 
     // TBR only
