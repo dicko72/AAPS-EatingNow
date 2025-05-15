@@ -1840,12 +1840,12 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
             // ============== IOB RESTRICTION  ==============
 
-            // simplify PB by using the remaining PB with no TBR
-            if (UAMBGPreBolus) {
-                insulinReq = UAMBGPreBolusUnitsLeft;
-                insulinReq = round(insulinReq, 2);
-                rate = 0;
-            }
+//            // simplify PB by using the remaining PB with no TBR
+//            if (UAMBGPreBolus) {
+//                insulinReq = UAMBGPreBolusUnitsLeft;
+//                insulinReq = round(insulinReq, 2);
+//                rate = 0;
+//            }
 
             // restrict insulinReq when max_iob_en will be exceeded
             if (!UAMBGPreBolus && max_iob_en > 0 && insulinReq > max_iob_en - iob_data.iob) {
