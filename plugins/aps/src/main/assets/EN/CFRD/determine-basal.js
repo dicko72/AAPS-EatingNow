@@ -430,7 +430,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // PPWindowOK
     var MealScalerDuration = profile.PPMealDuration; // maybe add this in prefs?
-    var PPWindowOK = (MealScalerDuration > 0 && !ENWindowOK && ENWEndedAgo <= MealScalerDuration && bg >= normalTarget + 50);
+    var PPWindowOK = (ENactive && MealScalerDuration > 0 && !ENWindowOK && ENWEndedAgo <= MealScalerDuration && bg >= normalTarget + 50);
 
     // stronger ISF can be used to scale within ENW and within Postprandial window duration
     if (profile.MealPct != MealScaler && (ENWindowOK || PPWindowOK) && !profile.use_sens_TDD && !HighTempTargetSet) {
