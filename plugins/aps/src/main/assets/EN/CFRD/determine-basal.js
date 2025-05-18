@@ -187,7 +187,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     }
 
     var max_iob = profile.max_iob; // maximum amount of non-bolus IOB OpenAPS will ever deliver
-    var max_iob_en = profile.EN_max_iob; // maximum amount IOB EN will deliver before falling back to AAPS maxBolus
 
     // if min and max are set, then set target to their average
     var target_bg;
@@ -235,7 +234,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     */
 
     // Eating Now Variables, relocated for SR
-    var ENactive = false, ENmaxIOBOK = false, enlog = "";
+    var ENactive = false, enlog = "";
 
     //Create the time variable to be used to allow the EN to function only between certain hours
 //    var now = new Date(), nowdec = round(now.getHours() + now.getMinutes() / 60, 2), nowhrs = now.getHours(), nowmins = now.getMinutes(), nowUTC = new Date(systemTime).getTime();
@@ -313,9 +312,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         }
     }
     */
-    max_iob_en = (!ENTTActive && bg >= 130 ? bg / 100 : max_iob_en); // CFRD
-
-//    var endebug = "CFRD: max_iob_en=" + round(max_iob_en,2);
+    max_iob = (!ENTTActive && bg >= 130 ? bg / 100 : max_iob); // CFRD
 
     if (typeof iob_data === 'undefined') {
         rT.error = 'Error: iob_data undefined. ';
@@ -337,9 +334,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     var ignoreCOB = (profile.enableGhostCOB || profile.enableGhostCOBAlways); //MD#01: Ignore any COB and rely purely on UAM after initial rise
     var ignoreCOBAlways = profile.enableGhostCOBAlways; //MD#01: Ignore any COB and rely purely on UAM after initial rise
 
-    // Check that max iob is OK
-    if (iob_data.iob <= max_iob) ENmaxIOBOK = true;
-
     // check if SMB is allowed
     var enableSMB = enable_smb(
         profile,
@@ -349,7 +343,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     );
 
     // If we have UAM enabled with IOB less than max enable eating now mode
-    if (profile.enableUAM && ENmaxIOBOK) {
+    if (profile.enableUAM) {
         // if time is OK EN is active
         if (ENtimeOK) ENactive = true;
         // If there are COB or ENTT EN is active
@@ -366,7 +360,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     //ENactive = false; //DEBUG
     enlog += "ENactive: " + ENactive + ", ENtimeOK: " + ENtimeOK + "\n";
-    enlog += "ENmaxIOBOK: " + ENmaxIOBOK + ", max_iob: " + max_iob + "\n";
 
    // patches ===== END
 
@@ -1697,9 +1690,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         if (insulinReq > max_iob - iob_data.iob) {
             rT.reason += "max_iob " + max_iob + ", ";
             insulinReq = max_iob-iob_data.iob;
-        } else if (max_iob_en > 0 && insulinReq > max_iob_en - iob_data.iob) {
-            rT.reason += "max_iob_en " + max_iob_en + ", ";
-            //insulinReq = max_iob_en - iob_data.iob;
         }
 
         // rate required to deliver insulinReq more insulin over 20m:
@@ -1814,15 +1804,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             // if bg numbers resumed after sensor errors dont allow a large SMB
             ENMaxSMB = (minAgo < 1 && delta == 0 && glucose_status.short_avgdelta == 0 ? maxBolus : ENMaxSMB);
 
-            // IOB > EN max IOB fallback to AAPS maxBolus (default) or TBR
-            if (max_iob_en > 0 && iob_data.iob > max_iob_en) ENMaxSMB = (profile.EN_max_iob_allow_smb ? maxBolus : 0);
-
-//            // restrict SMB when ENWBolusIOB will be exceeded by SMB but minimum is EN_NoENW_maxBolus
-//            if (ENWBolusIOBMax > 0 && ENWBolusIOB + ENMaxSMB > ENWBolusIOBMax) {
-//                ENMaxSMB = Math.max(ENWBolusIOBRemaining, EN_NoENW_maxBolus); // use EN_NoENW_maxBolus if its larger than restricted SMB
-//                if (sens_predType == "UAM+" && ENWindowOK) ENMaxSMB =  Math.max(ENMaxSMB,profile.ENW_maxBolus_UAM_plus); // allow UAM+ when ENWIOB exceeded within ENW
-//            }
-
             // ============== MAXBOLUS RESTRICTIONS ==============
             // if ENMaxSMB is more than AAPS max IOB then consider the setting to be minutes
             var SMBinMins = 0;
@@ -1852,18 +1833,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
             // ============== IOB RESTRICTION  ==============
 
-//            // simplify PB by using the remaining PB with no TBR
-//            if (UAMBGPreBolus) {
-//                insulinReq = UAMBGPreBolusUnitsLeft;
-//                insulinReq = round(insulinReq, 2);
-//                rate = 0;
-//            }
-
-            // restrict insulinReq when max_iob_en will be exceeded
-            if (!UAMBGPreBolus && max_iob_en > 0 && insulinReq > max_iob_en - iob_data.iob) {
-                insulinReq = round(max_iob_en - iob_data.iob, 2);
-            }
-
             // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
             if (ENWBolusIOBMax > 0 && insulinReq > ENWBolusIOBRemaining) {
                 insulinReq = Math.min(insulinReq,ENWBolusIOBRemaining);
@@ -1879,28 +1848,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             var microBolus = Math.floor(Math.min(insulinReq * insulinReqPct, maxBolus) * roundSMBTo) / roundSMBTo;
             // reduce to safety maxbolus if required, displays SMB correctly and allows TBR to have the correct treatment remainder
             microBolus = Math.min(microBolus,profile.safety_maxbolus);
-
-//            // SAFETY: if no SMB given and ENMaxSMB is set to TBR only restrict basal rate based on
-//            if (EN_UseTBR_NoENTT) {
-//                // when SMB is 0 or -1 its TBR only, microBolus has already been adjusted by insulinReqPct
-//                rate = (microBolus <= 0 ? Math.floor((insulinReq * insulinReqPct) * roundSMBTo) / roundSMBTo : microBolus);
-//                rate = rate * 12; // allow TBR to deliver it within the 5m loop interation
-//                rate = Math.max(0, rate); // ZT is minimum
-//                //rate = Math.min(rate,profile.safety_maxbolus); // maxBolus is max, maxSafeBasal applied later
-//
-//                // restrict BG+ to basal rate * 3 with EN_UseTBR_NoENTT
-//                if (sens_predType == "BG+" && TIR_sens_limited > 1) rate = Math.min(rate, profile.current_basal * 3);
-//                rate = round_basal(rate, profile);
-//                rT.reason += sens_predType + " TBR only " + (SMBinMins > 0 ? SMBinMins + "m/" : "");
-//                rT.reason += (microBolus > 0 ? microBolus + "U=" : "") + rate + "U/hr. ";
-//
-//                microBolus = 0; // set SMB to 0 as using TBR
-//                ENMaxSMB = 0; // fix bug for later code if using -1
-//
-//                //return tempBasalFunctions.setTempBasal(rate, 30, profile, rT, currenttemp);
-//                // maxIOB when using TBR code within SMB routine
-//                // if (iob_data.iob + rate / 12 >= max_iob) rate = (max_iob - iob_data.iob) * 12;
-//            }
 
             // calculate a long enough zero temp to eventually correct back up to target
             var smbTarget = target_bg;
