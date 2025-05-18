@@ -579,13 +579,11 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
         // TIR Windows
         val resistancePerHr = sp.getDouble(R.string.en_resistance_per_hour, 0.0)
         this.profile.put("resistancePerHr", resistancePerHr)
-        val tirs_always = sp.getBoolean(R.string.en_tirs_always, false)
-        this.profile.put("tirs_always", tirs_always)
 
         if (resistancePerHr > 0) {
             var TIRStart = ENWStartTime + (ENWDuration * 60000) + (0 * 60000) // TIRS starts immediately after eating window finishes does not impact sens due to PPWindow
             val TIRDuration = 2.0
-            if (now > TIRStart + (TIRDuration * 3600000) || tirs_always) TIRStart = (now - (TIRDuration * 3600000)).toLong() // if its been longer than 4h since ENW use current time as anchor
+            if (now > TIRStart + (TIRDuration * 3600000)) TIRStart = (now - (TIRDuration * 3600000)).toLong() // if its been longer than 4h since ENW use current time as anchor
             this.mealData.put("TIRStart", TIRStart)
             val TIRHrs = ((now - TIRStart).toDouble() / 3600000)
             // this.mealData.put("TIRHrs", TIRHrs)
