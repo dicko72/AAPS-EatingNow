@@ -1682,12 +1682,10 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         // override insulinReq for initial pre-bolus (PB) if there are more units left
         insulinReq = (UAMBGPreBolusUnitsLeft > 0 ? Math.max(insulinReq,UAMBGPreBolusUnitsLeft) : insulinReq);
 
-        // for the first half of the window distribute insulin
+        // for the first half of the window increase minimum insulin
         var InsulinReqENW = 0;
         if (profile.EN_Use_LargerENWSMB && ENTTActive && ENWStartedAgo < ENWindowDuration/2) {
-//        if (ENTTActive && ENWStartedAgo < ENWindowDuration/2) {
             InsulinReqENW = ENWBolusIOBRemaining / ((ENWindowDuration - ENWStartedAgo) /5);
-            var endebug = "InsulinReqENW:"+  round(InsulinReqENW,3);
             insulinReq = Math.max(insulinReq,InsulinReqENW);
         }
 
@@ -1781,7 +1779,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 if (sens_predType == "UAM+") ENMaxSMB = profile.ENW_maxBolus_UAM_plus;
 
                 // allow ENMaxSMB to go up to remaining ENWBolusIOBMax allowing faster delivery of insulin earlier
-                if (profile.EN_Use_LargerENWSMB && ENTTActive) ENMaxSMB = Math.max(ENMaxSMB,InsulinReqENW);
+                // if (profile.EN_Use_LargerENWSMB && ENTTActive) ENMaxSMB = Math.max(ENMaxSMB,InsulinReqENW);
 
                 // when prebolusing allow as much as safety_maxbolus will allow
                 if (UAMBGPreBolusUnitsLeft >0) ENMaxSMB = Math.max(ENMaxSMB,UAMBGPreBolusUnitsLeft);

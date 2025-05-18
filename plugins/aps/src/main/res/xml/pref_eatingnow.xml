@@ -652,9 +652,8 @@
                 <SwitchPreference
                     android:defaultValue="false"
                     android:key="key_use_enw_iob_smb"
-                    android:title="Allow larger SMB for ENW IOB"
-                    android:summary="Within ENW a larger SMB can be given up to the size of the remaining ENW IOB balance. Use this with extreme caution. Ensure ENW IOB is set correctly. Only for ENW with UAM+." />
-
+                    android:title="Deliver ENW insulin faster"
+                    android:summary="Within ENW insulinReq will be increased to a minimum proportion of ENW-IOB for half of the window duration. SMB maxBolus remains, ensure ENW IOB is set correctly." />
 
             </androidx.preference.PreferenceScreen>
 
@@ -741,14 +740,14 @@
                     android:defaultValue="false"
                     android:key="en_use_bgplus"
                     android:title="Enable BG+"
-                    android:summary="When BG is stable but high for an extended period of time eventalBG will be overridden."/>
+                    android:summary="When BG is stable but high for an extended period of time eventualBG will be overridden."/>
 
                 <app.aaps.core.validators.ValidatingEditTextPreference
                     android:defaultValue="0"
                     android:inputType="number"
                     android:title="Postprandial ISF Duration"
                     android:key="@string/key_en_pp_isf_minutes"
-                    android:dialogMessage="After ENW ISF will be scaled over from the ISF in the ENW back to the profile ISF over this period."
+                    android:dialogMessage="After ENW has finished the ISF will remain stronger over this period in minutes."
                     validate:maxNumber="180"
                     validate:minNumber="0"
                     validate:testType="numericRange" />
