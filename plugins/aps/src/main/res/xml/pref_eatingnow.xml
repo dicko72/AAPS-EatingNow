@@ -321,12 +321,6 @@
                 validate:floatminNumber="0"
                 validate:testType="floatNumericRange" />
 
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="key_scale_isf_profile_switch"
-            android:title="Scale ISF when using profile switch"
-            android:summary="Enabled is the default behaviour." />
-
         </PreferenceCategory>
 
         <PreferenceCategory

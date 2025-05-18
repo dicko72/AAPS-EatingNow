@@ -306,7 +306,6 @@ class DetermineBasalAdapterENJS internal constructor(private val scriptReader: S
 
         val normalTargetBG = profile.getTargetMgdl().roundToInt()
         this.profile.put("normal_target_bg", normalTargetBG)
-        this.profile.put("scale_isf_profile", sp.getBoolean(R.string.key_scale_isf_profile_switch, true))
         this.profile.put("enableGhostCOB", sp.getBoolean(R.string.key_use_ghostcob, false))
         this.profile.put("enableGhostCOBAlways", sp.getBoolean(R.string.key_use_ghostcob_always, false))
         val minCOB = sp.getInt(R.string.key_mincob, 0)

@@ -487,27 +487,9 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (TIR_L < 1 && meal_data.TIR0_L_pct > 0) TIR_sens = TIR_L; // override when low
     if (TIR_sens == 0) TIR_sens = 1;
 
-    // Adjust TIR_sens by the profile switch when not 100% of ISF
-    //if (!profile.scale_isf_profile && profile.percent !=100 && TIR_sens > 1) TIR_sens *= profile.percent/100;
-    if (!profile.scale_isf_profile && profile.percent !== 100 && TIR_sens !== 1) {
-        TIR_sens = TIR_sens > 1
-            ? (TIR_sens - 1) * profile.percent / 100 + 1
-            : TIR_sens * profile.percent / 100;
-    }
-
-    //if (!profile.scale_isf_profile && profile.percent !=100 && TIR_sens > 1) TIR_sens += profile.percent/100-1;
-    var autosens_max_tirs = profile.autosens_max + (!profile.scale_isf_profile && profile.percent > 100 ? profile.percent/100-1 : 0);
-    if (profile.scale_isf_profile) autosens_max_tirs = Math.min(1+(2*TIRS_percent/100),autosens_max_tirs);
-
-//    var TIR_max = (TIR_M_safety > 1 && meal_data.TIR_M_pct == 100) || (TIR_H_safety > 1 && meal_data.TIR_H_pct == 100); // when TIR is at max for the TIR band
-
-
-//    var endebug = "TIRStart:"+meal_data.TIRStart+",TIRHrs:"+meal_data.TIRHrs;
-    // apply autosens limit to TIR_sens_limited with extra profile switch if using scale_isf_profile
-    TIR_sens_limited = Math.min(TIR_sens, autosens_max_tirs);
+    // apply autosens limit to TIR_sens_limited
+    TIR_sens_limited = Math.min(TIR_sens, profile.autosens_max);
     TIR_sens_limited = Math.max(TIR_sens_limited, profile.autosens_min);
-//    var endebug = "as_max_tirs:" + autosens_max_tirs + ", TIRsltd:" + TIR_sens_limited;
-
     // ******  END TIR_sens - a very simple implementation of autoISF configurable % per hour
 
     // TDD ********************************
@@ -535,15 +517,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
 
     // ISF at normal target
     var sens_normalTarget = sens, sens_profile = sens; // use profile sens and keep profile sens with any SR
-//    var endebug = "ISF:"+convert_bg(sens_normalTarget, profile);
-
-    // Dont scale ISF with profile switch (optional)
-    if (!profile.scale_isf_profile && profile.percent !=100) {
-         sens_normalTarget *= profile.percent/100; // cancel adjustment from profile switch, use it with TIR_sens later
-         carb_ratio *= profile.percent/100; // cancel adjustment from profile switch, use it with TIR_sens later
-    }
-//    var endebug += "="+convert_bg(sens_normalTarget, profile);
-
     enlog += "sens_normalTarget:" + convert_bg(sens_normalTarget, profile) + "\n";
 
     // MaxISF is the user defined limit for adjusted ISF based on a percentage of the current profile based ISF
@@ -601,14 +574,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         basal = profile.current_basal * sensitivityRatio;
     }
 
-//    // Dont scale ISF with profile switch (optional)
-//    if (!profile.scale_isf_profile && profile.percent !=100) {
-//        if (profile.percent < 100 && meal_data.TIR0_L_pct == 0) sens_normalTarget *= profile.percent/100; // cancel adjustment if not sensitive when switch < 100%
-//        if (profile.percent > 100 && meal_data.TIR0_H_pct == 0) sens_normalTarget *= profile.percent/100; // cancel adjustment if not resistant when switch > 100%
-//    }
-
     // apply TIRS to ISF only when delta is slight or bg higher
-    //if (TIR_sens_limited !=1 && TIR_sens !=1 && MealScaler == 100) {
     if (TIR_sens_limited !=1 && TIR_sens !=1) {
         sens_normalTarget = sens_normalTarget / TIR_sens_limited;
     }
@@ -653,20 +619,6 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     enlog += "ISFBGscaler is now:" + ISFBGscaler + "\n";
     // Convert ISFBGscaler to %
     ISFBGscaler = (100 - ISFBGscaler) / 100;
-
-//    // Dont scale ISF with profile switch (optional) but adjust ISFBGscaler - Resistant Only
-//    if (ISFBGscaler == 1 && !profile.scale_isf_profile && profile.percent >= 100 && TIR_sens_limited >= 1) {
-//        sens_normalTarget *= profile.percent/100; // cancel adjustment when switch > 100%
-//        ISFBGscaler = (200 - profile.percent) / 100.0 // adjust ISFBGscaler
-//    }
-
-//    // apply TIRS to sens_currentBG via ISFBGscaler
-//    if (TIR_sens_limited !=1 && TIR_sens !=1) {
-//        sens_normalTarget = sens_normalTarget / TIR_sens_limited;
-//        ISFBGscaler /= TIR_sens_limited; // adjust ISFBGscaler
-//    }
-
-
 
     enlog += "ISFBGscaler % is now:" + ISFBGscaler + "\n";
 
