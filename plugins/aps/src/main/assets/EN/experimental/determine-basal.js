@@ -1630,10 +1630,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
         insulinReq = (UAMBGPreBolusUnitsLeft > 0 ? Math.max(insulinReq,UAMBGPreBolusUnitsLeft) : insulinReq);
 
         // for the first half of the window increase minimum insulin
-        var InsulinReqENW = 0;
-        if (profile.EN_Use_LargerENWSMB && ENTTActive && ENWStartedAgo < ENWindowDuration/2) {
-            InsulinReqENW = ENWBolusIOBRemaining / ((ENWindowDuration - ENWStartedAgo) /5);
-            insulinReq = Math.max(insulinReq,InsulinReqENW);
+        var insulinReqENW = 0;
+        if (profile.EN_Use_LargerENWSMB && ENTTActive && delta >= 0 && ENWStartedAgo < ENWindowDuration/2) {
+            insulinReqENW = ENWBolusIOBRemaining / ((ENWindowDuration - ENWStartedAgo) /5);
+            insulinReqENW = round(insulinReqENW, 3);
+            insulinReq = Math.max(insulinReq,insulinReqENW);
         }
 
 
@@ -1872,6 +1873,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 durationReq = 30;
             }
             //rT.reason += " insulinReq" + (UAMBGPreBolus ? "PB " : " ") + insulinReq + (insulinReq != insulinReqAAPS ? "(" + insulinReqAAPS + ")" : "") + "@" + round(insulinReqPct * 100, 0) + "%";
+            if (insulinReqENW) rT.reason += " insulinReqENW " + insulinReqENW + ",";
             rT.reason += " insulinReq" + (UAMBGPreBolus ? "PB " : " ") + (insulinReq != insulinReqEN ? insulinReqEN + "=" : "") + insulinReq +  " (" + insulinReqAAPS + ") @" + round(insulinReqPct * 100, 0) + "%";
             if (ENSleepModeNoSMB || ENDayModeNoSMB) rT.reason += "; No SMB < " + convert_bg( (ENSleepModeNoSMB ? SMBbgOffset_night : SMBbgOffset_day) , profile);
 
