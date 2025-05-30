@@ -20,10 +20,10 @@ abstract class AlgModule {
     @ContributesAndroidInjector abstract fun loggerCallbackInjector(): LoggerCallback
     @ContributesAndroidInjector abstract fun determineBasalResultSMBInjector(): DetermineBasalResultSMBFromJS
     @ContributesAndroidInjector abstract fun determineBasalResultAMAInjector(): DetermineBasalResultAMAFromJS
+    @ContributesAndroidInjector abstract fun determineBasalAdapterENJSInjector(): DetermineBasalResultENFromJS
     @ContributesAndroidInjector abstract fun determineBasalAdapterAMAJSInjector(): DetermineBasalAdapterAMAJS
     @ContributesAndroidInjector abstract fun determineBasalAdapterSMBJSInjector(): DetermineBasalAdapterSMBJS
+    @ContributesAndroidInjector abstract fun determineBasalAdapterENJSInjector(): DetermineBasalAdapterENJS
     @ContributesAndroidInjector abstract fun determineBasalAdapterSMBDynamicISFJSInjector(): DetermineBasalAdapterSMBDynamicISFJS
     @ContributesAndroidInjector abstract fun determineBasalAdapterSMBAutoISFJSInjector(): DetermineBasalAdapterAutoISFJS
-    @ContributesAndroidInjector abstract fun determineBasalAdapterENJSInjector(): DetermineBasalAdapterENJS
-    @ContributesAndroidInjector abstract fun determineBasalAdapterENJSInjector(): DetermineBasalResultENFromJS
 }
