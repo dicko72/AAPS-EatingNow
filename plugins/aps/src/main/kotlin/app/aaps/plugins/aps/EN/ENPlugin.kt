@@ -20,6 +20,7 @@ import app.aaps.core.interfaces.aps.APSResult
 import app.aaps.core.interfaces.aps.AutosensResult
 import app.aaps.core.interfaces.aps.CurrentTemp
 import app.aaps.core.interfaces.aps.OapsProfile
+import app.aaps.core.interfaces.aps.ENConfig
 import app.aaps.core.interfaces.bgQualityCheck.BgQualityCheck
 import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.constraints.Constraint
@@ -101,7 +102,7 @@ open class ENPlugin @Inject constructor(
     private val tddCalculator: TddCalculator,
     private val bgQualityCheck: BgQualityCheck,
     private val uiInteraction: UiInteraction,
-    private val determineBasalSMB: DetermineBasalEN,
+    private val determineBasalEN: DetermineBasalEN,
     private val profiler: Profiler,
 ) : PluginBase(
     PluginDescription()
@@ -458,6 +459,13 @@ open class ENPlugin @Inject constructor(
             insulinDivisor = dynIsfResult.insulinDivisor,
             TDD = dynIsfResult.tdd ?: 0.0
         )
+
+        @Suppress("KotlinConstantConditions")
+        val enConfig = ENConfig(
+            // Eating Now
+            EatingNowTimeStart = preferences.get(IntKey.Eatingnow_timestart)
+        )
+
         val microBolusAllowed = constraintsChecker.isSMBModeEnabled(ConstraintObject(tempBasalFallback.not(), aapsLogger)).also { inputConstraints.copyReasons(it) }.value()
         val flatBGsDetected = bgQualityCheck.state == BgQualityCheck.State.FLAT
 
@@ -472,7 +480,7 @@ open class ENPlugin @Inject constructor(
         aapsLogger.debug(LTag.APS, "flatBGsDetected:    $flatBGsDetected")
         aapsLogger.debug(LTag.APS, "DynIsfMode:         $dynIsfMode")
 
-        determineBasalSMB.determine_basal(
+        determineBasalEN.determine_basal(
             glucose_status = glucoseStatus,
             currenttemp = currentTemp,
             iob_data_array = iobArray,
@@ -482,7 +490,9 @@ open class ENPlugin @Inject constructor(
             microBolusAllowed = microBolusAllowed,
             currentTime = now,
             flatBGsDetected = flatBGsDetected,
-            dynIsfMode = dynIsfMode && dynIsfResult.tddPartsCalculated()
+            dynIsfMode = dynIsfMode && dynIsfResult.tddPartsCalculated(),
+            enConfig = enConfig
+
         ).also {
             val determineBasalResult = DetermineBasalResult(injector, it)
             // Preserve input data
@@ -581,8 +591,8 @@ open class ENPlugin @Inject constructor(
         val category = PreferenceCategory(context)
         parent.addPreference(category)
         category.apply {
-            key = "openapssmb_settings"
-            title = rh.gs(R.string.openapssmb)
+            key = "eatingnow_settings"
+            title = rh.gs(R.string.eatingnow_plugin)
             initialExpandedChildrenCount = 0
             addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsMaxBasal, dialogMessage = R.string.openapsma_max_basal_summary, title = R.string.openapsma_max_basal_title))
             addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsSmbMaxIob, dialogMessage = R.string.openapssmb_max_iob_summary, title = R.string.openapssmb_max_iob_title))
@@ -620,6 +630,24 @@ open class ENPlugin @Inject constructor(
                 addPreference(
                     AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsMaxCurrentBasalMultiplier, dialogMessage = R.string.openapsama_current_basal_safety_multiplier_summary, title = R.string.openapsama_current_basal_safety_multiplier)
                 )
+            })
+
+            // Eating Now
+            addPreference(preferenceManager.createPreferenceScreen(context).apply {
+                key = "openaps_smb"
+                title = "OpenAPS SMB"
+                // addPreference(
+                //     AdaptiveIntentPreference(
+                //         ctx = context,
+                //         intentKey = IntentKey.ApsLinkToDocs,
+                //         intent = Intent().apply { action = Intent.ACTION_VIEW; data = Uri.parse(rh.gs(R.string.openapsama_link_to_preference_json_doc)) },
+                //         summary = R.string.openapsama_link_to_preference_json_doc_txt
+                //     )
+                // )
+                addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ApsCarbsRequestThreshold, dialogMessage = R.string.carbs_req_threshold_summary, title = R.string.carbs_req_threshold))
+                addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_timestart, dialogMessage = R.string.eatingnow_timestart, title = R.string.eatingnow_timestart_title))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsAlwaysUseShortDeltas, summary = R.string.always_use_short_avg_summary, title = R.string.always_use_short_avg))
+
             })
         }
     }

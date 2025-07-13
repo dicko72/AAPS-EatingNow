@@ -230,5 +230,7 @@
     <string name="eatingnow_plugin">Eating Now</string>
     <string name="eatingnow_plugin_description">Customisable plugin leveraging most recent algorithm</string>
     <string name="eatingnow_plugin_shortname">EN</string>
+    <string name="eatingnow_timestart">Start Time</string>
+    <string name="eatingnow_timestart_title">Enter Eating Now start time in 24h e.g. 9AM is 9</string>
 
 </resources>

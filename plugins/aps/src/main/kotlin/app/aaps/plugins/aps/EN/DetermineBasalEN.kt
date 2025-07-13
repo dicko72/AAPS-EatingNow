@@ -3,6 +3,7 @@ package app.aaps.plugins.aps.EN
 import app.aaps.core.interfaces.aps.APSResult
 import app.aaps.core.interfaces.aps.AutosensResult
 import app.aaps.core.interfaces.aps.CurrentTemp
+import app.aaps.core.interfaces.aps.ENConfig
 import app.aaps.core.interfaces.aps.GlucoseStatus
 import app.aaps.core.interfaces.aps.IobTotal
 import app.aaps.core.interfaces.aps.MealData
@@ -150,7 +151,7 @@ class DetermineBasalEN @Inject constructor(
 
     fun determine_basal(
         glucose_status: GlucoseStatus, currenttemp: CurrentTemp, iob_data_array: Array<IobTotal>, profile: OapsProfile, autosens_data: AutosensResult, meal_data: MealData,
-        microBolusAllowed: Boolean, currentTime: Long, flatBGsDetected: Boolean, dynIsfMode: Boolean
+        microBolusAllowed: Boolean, currentTime: Long, flatBGsDetected: Boolean, dynIsfMode: Boolean, enConfig: ENConfig
     ): RT {
         consoleError.clear()
         consoleLog.clear()
