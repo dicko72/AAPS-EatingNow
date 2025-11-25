@@ -681,7 +681,7 @@ class OmnipodDashOverviewFragment : DaggerFragment() {
     }
 
     private fun isAutomaticallySilenceAlertsEnabled(): Boolean {
-        return sp.getBoolean(app.aaps.pump.omnipod.common.R.string.omnipod_common_preferences_automatically_silence_alerts, false)
+        return false // Automatic alert silencing is not supported for DASH (see also Omnipod EROS)
     }
 
     private fun displayErrorDialog(title: String, message: String, withSound: Boolean) {

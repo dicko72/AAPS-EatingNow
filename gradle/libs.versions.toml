@@ -1,6 +1,6 @@
 # libs.versions.toml
 [versions]
-gradlePlugin = "8.9.1"
+gradlePlugin = "8.11.1"
 googleServices = "4.4.2"
 kotlin = "2.1.20"
 wearable = "2.9.0"
@@ -45,6 +45,8 @@ com-google-android-gms-playservices-wearable = { group = "com.google.android.gms
 com-google-android-places = { group = "com.google.android.libraries.places", name = "places", version = "4.1.0" }
 com-google-android-gms-playservices-location = { group = "com.google.android.gms", name = "play-services-location", version = "21.3.0" }
 
+# Check for bugfix in MaterialDataPicker and remove workaround in DateUtil::mergeUtcDateToTimestamp
+# https://github.com/material-components/material-components-android/issues/4373
 com-google-android-material = { group = "com.google.android.material", name = "material", version = "1.12.0" }
 com-google-android-flexbox = { group = "com.google.android.flexbox", name = "flexbox", version = "3.0.0" }
 

@@ -1336,23 +1336,32 @@ class DataHandlerMobile @Inject constructor(
             .forEach { (_, _, _, isValid, _, _, timestamp, _, amount, type) -> boluses.add(EventData.TreatmentData.Treatment(timestamp, amount, 0.0, type === BS.Type.SMB, isValid)) }
         persistenceLayer.getCarbsFromTimeExpanded(startTimeWindow, true)
             .forEach { (_, _, _, isValid, _, _, timestamp, _, _, amount) -> boluses.add(EventData.TreatmentData.Treatment(timestamp, 0.0, amount, false, isValid)) }
-        val finalLastRun = loop.lastRun
-        if (finalLastRun?.request?.hasPredictions == true && finalLastRun.constraintsProcessed != null) {
-            val predArray = finalLastRun.constraintsProcessed!!.predictionsAsGv
-            if (predArray.isNotEmpty())
-                for (bg in predArray) if (bg.value > 39)
-                    predictions.add(
-                        EventData.SingleBg(
-                            dataset = 0,
-                            timeStamp = bg.timestamp,
-                            glucoseUnits = GlucoseUnit.MGDL.asText,
-                            sgv = bg.value,
-                            high = 0.0,
-                            low = 0.0,
-                            color = predictionColor(context, bg)
-                        )
-                    )
+
+        val apsResult = if (config.APS) {
+            val lastRun = loop.lastRun
+            if (lastRun?.request?.hasPredictions == true) {
+                lastRun.constraintsProcessed
+            } else null
+        } else {
+            processedDeviceStatusData.getAPSResult()
         }
+
+        apsResult
+            ?.predictionsAsGv
+            ?.filter { it.value > 39 }
+            ?.forEach { bg ->
+                predictions.add(
+                    EventData.SingleBg(
+                        dataset = 0,
+                        timeStamp = bg.timestamp,
+                        glucoseUnits = GlucoseUnit.MGDL.asText,
+                        sgv = bg.value,
+                        high = 0.0,
+                        low = 0.0,
+                        color = predictionColor(context, bg)
+                    )
+                )
+            }
         rxBus.send(EventMobileToWear(EventData.TreatmentData(temps, basals, boluses, predictions)))
     }
 
