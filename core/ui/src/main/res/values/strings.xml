@@ -649,4 +649,10 @@
     <string name="eatingnow_prebolus">Eating Now PB</string>
     <!--    <string name="key_eatingnow_duration" translatable="false">eatingnow_duration</string>-->
 
+    <!--    Eating Now Preferences -->
+    <string name="en_pref_general_title">General Settings</string>
+    <string name="en_pref_uam_plus_title">UAM Plus</string>
+    <string name="en_pref_enw_title">Eating Now Window</string>
+    <string name="en_pref_isf_title">ISF Settings</string>
+    <string name="en_pref_isf_summary">ISF related settings</string>
 </resources>

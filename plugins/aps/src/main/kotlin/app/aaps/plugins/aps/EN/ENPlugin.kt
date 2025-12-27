@@ -492,7 +492,6 @@ open class ENPlugin @Inject constructor(
             flatBGsDetected = flatBGsDetected,
             dynIsfMode = dynIsfMode && dynIsfResult.tddPartsCalculated(),
             enConfig = enConfig
-
         ).also {
             val determineBasalResult = DetermineBasalResult(injector, it)
             // Preserve input data
@@ -587,36 +586,70 @@ open class ENPlugin @Inject constructor(
     }
 
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
-        if (requiredKey != null && requiredKey != "absorption_smb_advanced") return
+        if (requiredKey != null && requiredKey !="openapssmb_settings" && requiredKey != "absorption_smb_advanced" && !requiredKey.startsWith("eating_now")) return
         val category = PreferenceCategory(context)
         parent.addPreference(category)
         category.apply {
             key = "eatingnow_settings"
             title = rh.gs(R.string.eatingnow_plugin)
             initialExpandedChildrenCount = 0
-            addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsMaxBasal, dialogMessage = R.string.openapsma_max_basal_summary, title = R.string.openapsma_max_basal_title))
-            addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsSmbMaxIob, dialogMessage = R.string.openapssmb_max_iob_summary, title = R.string.openapssmb_max_iob_title))
-            addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseDynamicSensitivity, summary = R.string.use_dynamic_sensitivity_summary, title = R.string.use_dynamic_sensitivity_title))
-            addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseAutosens, title = R.string.openapsama_use_autosens))
-            addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ApsDynIsfAdjustmentFactor, dialogMessage = R.string.dyn_isf_adjust_summary, title = R.string.dyn_isf_adjust_title))
-            addPreference(AdaptiveUnitPreference(ctx = context, unitKey = UnitDoubleKey.ApsLgsThreshold, dialogMessage = R.string.lgs_threshold_summary, title = R.string.lgs_threshold_title))
-            addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsDynIsfAdjustSensitivity, summary = R.string.dynisf_adjust_sensitivity_summary, title = R.string.dynisf_adjust_sensitivity))
-            addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsSensitivityRaisesTarget, summary = R.string.sensitivity_raises_target_summary, title = R.string.sensitivity_raises_target_title))
-            addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsResistanceLowersTarget, summary = R.string.resistance_lowers_target_summary, title = R.string.resistance_lowers_target_title))
-            addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseSmb, summary = R.string.enable_smb_summary, title = R.string.enable_smb))
-            addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseSmbWithHighTt, summary = R.string.enable_smb_with_high_temp_target_summary, title = R.string.enable_smb_with_high_temp_target))
-            addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseSmbAlways, summary = R.string.enable_smb_always_summary, title = R.string.enable_smb_always))
-            addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseSmbWithCob, summary = R.string.enable_smb_with_cob_summary, title = R.string.enable_smb_with_cob))
-            addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseSmbWithLowTt, summary = R.string.enable_smb_with_temp_target_summary, title = R.string.enable_smb_with_temp_target))
-            addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseSmbAfterCarbs, summary = R.string.enable_smb_after_carbs_summary, title = R.string.enable_smb_after_carbs))
-            addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ApsMaxSmbFrequency, title = R.string.smb_interval_summary))
-            addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ApsMaxMinutesOfBasalToLimitSmb, title = R.string.smb_max_minutes_summary))
-            addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ApsUamMaxMinutesOfBasalToLimitSmb, dialogMessage = R.string.uam_smb_max_minutes, title = R.string.uam_smb_max_minutes_summary))
-            addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseUam, summary = R.string.enable_uam_summary, title = R.string.enable_uam))
-            addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ApsCarbsRequestThreshold, dialogMessage = R.string.carbs_req_threshold_summary, title = R.string.carbs_req_threshold))
+
             addPreference(preferenceManager.createPreferenceScreen(context).apply {
-                key = "absorption_smb_advanced"
-                title = rh.gs(app.aaps.core.ui.R.string.advanced_settings_title)
+                key = "openapssmb_settings"
+                title = rh.gs(R.string.openapssmb)
+                addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsMaxBasal, dialogMessage = R.string.openapsma_max_basal_summary, title = R.string.openapsma_max_basal_title))
+                addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsSmbMaxIob, dialogMessage = R.string.openapssmb_max_iob_summary, title = R.string.openapssmb_max_iob_title))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseDynamicSensitivity, summary = R.string.use_dynamic_sensitivity_summary, title = R.string.use_dynamic_sensitivity_title))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseAutosens, title = R.string.openapsama_use_autosens))
+                addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ApsDynIsfAdjustmentFactor, dialogMessage = R.string.dyn_isf_adjust_summary, title = R.string.dyn_isf_adjust_title))
+                addPreference(AdaptiveUnitPreference(ctx = context, unitKey = UnitDoubleKey.ApsLgsThreshold, dialogMessage = R.string.lgs_threshold_summary, title = R.string.lgs_threshold_title))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsDynIsfAdjustSensitivity, summary = R.string.dynisf_adjust_sensitivity_summary, title = R.string.dynisf_adjust_sensitivity))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsSensitivityRaisesTarget, summary = R.string.sensitivity_raises_target_summary, title = R.string.sensitivity_raises_target_title))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsResistanceLowersTarget, summary = R.string.resistance_lowers_target_summary, title = R.string.resistance_lowers_target_title))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseSmb, summary = R.string.enable_smb_summary, title = R.string.enable_smb))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseSmbWithHighTt, summary = R.string.enable_smb_with_high_temp_target_summary, title = R.string.enable_smb_with_high_temp_target))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseSmbAlways, summary = R.string.enable_smb_always_summary, title = R.string.enable_smb_always))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseSmbWithCob, summary = R.string.enable_smb_with_cob_summary, title = R.string.enable_smb_with_cob))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseSmbWithLowTt, summary = R.string.enable_smb_with_temp_target_summary, title = R.string.enable_smb_with_temp_target))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseSmbAfterCarbs, summary = R.string.enable_smb_after_carbs_summary, title = R.string.enable_smb_after_carbs))
+                addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ApsMaxSmbFrequency, title = R.string.smb_interval_summary))
+                addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ApsMaxMinutesOfBasalToLimitSmb, title = R.string.smb_max_minutes_summary))
+                addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ApsUamMaxMinutesOfBasalToLimitSmb, dialogMessage = R.string.uam_smb_max_minutes, title = R.string.uam_smb_max_minutes_summary))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseUam, summary = R.string.enable_uam_summary, title = R.string.enable_uam))
+                addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ApsCarbsRequestThreshold, dialogMessage = R.string.carbs_req_threshold_summary, title = R.string.carbs_req_threshold))
+                addPreference(preferenceManager.createPreferenceScreen(context).apply {
+                    key = "absorption_smb_advanced"
+                    title = rh.gs(app.aaps.core.ui.R.string.advanced_settings_title)
+                    addPreference(
+                        AdaptiveIntentPreference(
+                            ctx = context,
+                            intentKey = IntentKey.ApsLinkToDocs,
+                            intent = Intent().apply { action = Intent.ACTION_VIEW; data = Uri.parse(rh.gs(R.string.openapsama_link_to_preference_json_doc)) },
+                            summary = R.string.openapsama_link_to_preference_json_doc_txt
+                        )
+                    )
+                    addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsAlwaysUseShortDeltas, summary = R.string.always_use_short_avg_summary, title = R.string.always_use_short_avg))
+                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsMaxDailyMultiplier, dialogMessage = R.string.openapsama_max_daily_safety_multiplier_summary, title = R.string.openapsama_max_daily_safety_multiplier))
+                    addPreference(
+                        AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsMaxCurrentBasalMultiplier, dialogMessage = R.string.openapsama_current_basal_safety_multiplier_summary, title = R.string.openapsama_current_basal_safety_multiplier)
+                    )
+                })
+            })
+
+            addPreference(preferenceManager.createPreferenceScreen(context).apply {
+                key = "eating_now1"
+                title = rh.gs(app.aaps.core.ui.R.string.en_pref_general_title)
+                addPreference(androidx.preference.Preference(context).apply {
+                    summary = "Eating Now operates within the Start and End time specified.\nLarger boluses from the Eating Now Window are allowed within this time range."
+                    isSelectable = false
+                })
+                addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_timestart, dialogMessage = R.string.eatingnow_timestart_summary, title = R.string.eatingnow_timestart_title))
+                addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_timeend, dialogMessage = R.string.eatingnow_timeend_summary, title = R.string.eatingnow_timeend_title))
+            })
+
+            addPreference(preferenceManager.createPreferenceScreen(context).apply {
+                key = "eating_now2"
+                title = rh.gs(app.aaps.core.ui.R.string.en_pref_uam_plus_title)
                 addPreference(
                     AdaptiveIntentPreference(
                         ctx = context,
@@ -632,22 +665,24 @@ open class ENPlugin @Inject constructor(
                 )
             })
 
-            // Eating Now
             addPreference(preferenceManager.createPreferenceScreen(context).apply {
-                key = "openaps_smb"
-                title = "OpenAPS SMB"
-                // addPreference(
-                //     AdaptiveIntentPreference(
-                //         ctx = context,
-                //         intentKey = IntentKey.ApsLinkToDocs,
-                //         intent = Intent().apply { action = Intent.ACTION_VIEW; data = Uri.parse(rh.gs(R.string.openapsama_link_to_preference_json_doc)) },
-                //         summary = R.string.openapsama_link_to_preference_json_doc_txt
-                //     )
-                // )
-                addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ApsCarbsRequestThreshold, dialogMessage = R.string.carbs_req_threshold_summary, title = R.string.carbs_req_threshold))
-                addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_timestart, dialogMessage = R.string.eatingnow_timestart, title = R.string.eatingnow_timestart_title))
-                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsAlwaysUseShortDeltas, summary = R.string.always_use_short_avg_summary, title = R.string.always_use_short_avg))
+                key = "eating_now3"
+                title = rh.gs(app.aaps.core.ui.R.string.en_pref_enw_title)
+                addPreference(androidx.preference.Preference(context).apply {
+                    summary = "Settings for within the EN Window activated when there is a manual bolus,carb entry or EN temptarget after the Start Time setting."
+                    isSelectable = false
+                })
+            // Eating Now Window Settings
+            })
 
+            addPreference(preferenceManager.createPreferenceScreen(context).apply {
+                key = "eating_now4"
+                title = rh.gs(app.aaps.core.ui.R.string.en_pref_isf_title)
+                addPreference(androidx.preference.Preference(context).apply {
+                    summary = "These settings are for sensitivity within Eating Now only"
+                    isSelectable = false
+                })
+                // ISF Settings may not be as relevant with dynISF in the code
             })
         }
     }
