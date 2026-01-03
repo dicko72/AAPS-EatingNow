@@ -463,7 +463,8 @@ open class ENPlugin @Inject constructor(
         @Suppress("KotlinConstantConditions")
         val enConfig = ENConfig(
             // Eating Now
-            EatingNowTimeStart = preferences.get(IntKey.Eatingnow_timestart)
+            EatingNowTimeStart = preferences.get(IntKey.Eatingnow_timestart),
+            EatingNowTimeEnd = preferences.get(IntKey.Eatingnow_timeend)
         )
 
         val microBolusAllowed = constraintsChecker.isSMBModeEnabled(ConstraintObject(tempBasalFallback.not(), aapsLogger)).also { inputConstraints.copyReasons(it) }.value()
@@ -474,6 +475,7 @@ open class ENPlugin @Inject constructor(
         aapsLogger.debug(LTag.APS, "Current temp:       $currentTemp")
         aapsLogger.debug(LTag.APS, "IOB data:           ${iobArray.joinToString()}")
         aapsLogger.debug(LTag.APS, "Profile:            $oapsProfile")
+        aapsLogger.debug(LTag.APS, "ENConfig:           $enConfig")
         aapsLogger.debug(LTag.APS, "Autosens data:      $autosensResult")
         aapsLogger.debug(LTag.APS, "Meal data:          $mealData")
         aapsLogger.debug(LTag.APS, "MicroBolusAllowed:  $microBolusAllowed")
@@ -485,13 +487,13 @@ open class ENPlugin @Inject constructor(
             currenttemp = currentTemp,
             iob_data_array = iobArray,
             profile = oapsProfile,
+            enConfig = enConfig,
             autosens_data = autosensResult,
             meal_data = mealData,
             microBolusAllowed = microBolusAllowed,
             currentTime = now,
             flatBGsDetected = flatBGsDetected,
-            dynIsfMode = dynIsfMode && dynIsfResult.tddPartsCalculated(),
-            enConfig = enConfig
+            dynIsfMode = dynIsfMode && dynIsfResult.tddPartsCalculated()
         ).also {
             val determineBasalResult = DetermineBasalResult(injector, it)
             // Preserve input data
@@ -502,6 +504,7 @@ open class ENPlugin @Inject constructor(
             determineBasalResult.currentTemp = currentTemp
             determineBasalResult.oapsProfile = oapsProfile
             determineBasalResult.mealData = mealData
+            determineBasalResult.enConfig = enConfig
             lastAPSResult = determineBasalResult
             lastAPSRun = now
             aapsLogger.debug(LTag.APS, "Result: $it")
@@ -597,6 +600,7 @@ open class ENPlugin @Inject constructor(
             addPreference(preferenceManager.createPreferenceScreen(context).apply {
                 key = "openapssmb_settings"
                 title = rh.gs(R.string.openapssmb)
+                summary = "OpenAPS SMB plugin settings"
                 addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsMaxBasal, dialogMessage = R.string.openapsma_max_basal_summary, title = R.string.openapsma_max_basal_title))
                 addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsSmbMaxIob, dialogMessage = R.string.openapssmb_max_iob_summary, title = R.string.openapssmb_max_iob_title))
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseDynamicSensitivity, summary = R.string.use_dynamic_sensitivity_summary, title = R.string.use_dynamic_sensitivity_title))

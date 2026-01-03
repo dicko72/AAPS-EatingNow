@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.core.objects.aps
 
 import android.text.Spanned
@@ -11,6 +12,7 @@ import app.aaps.core.interfaces.aps.CurrentTemp
 import app.aaps.core.interfaces.aps.GlucoseStatus
 import app.aaps.core.interfaces.aps.IobTotal
 import app.aaps.core.interfaces.aps.MealData
+import app.aaps.core.interfaces.aps.ENConfig
 import app.aaps.core.interfaces.aps.OapsProfile
 import app.aaps.core.interfaces.aps.OapsProfileAutoIsf
 import app.aaps.core.interfaces.aps.Predictions
@@ -83,6 +85,7 @@ class DetermineBasalResult @Inject constructor(val injector: HasAndroidInjector)
     override var oapsProfile: OapsProfile? = null
     override var oapsProfileAutoIsf: OapsProfileAutoIsf? = null
     override var mealData: MealData? = null
+    override var enConfig: ENConfig? = null
 
     lateinit var result: RT
 

@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.core.interfaces.aps
 
 import android.text.Spanned
@@ -44,6 +45,7 @@ interface APSResult {
     var glucoseStatus: GlucoseStatus?
     var currentTemp: CurrentTemp?
     var oapsProfile: OapsProfile?
+    var enConfig: ENConfig?
     var oapsProfileAutoIsf: OapsProfileAutoIsf?
     var mealData: MealData?
 
