@@ -75,6 +75,7 @@ import app.aaps.plugins.aps.events.EventOpenAPSUpdateGui
 import app.aaps.plugins.aps.events.EventResetOpenAPSGui
 import app.aaps.plugins.aps.openAPS.TddStatus
 import dagger.android.HasAndroidInjector
+import kotlinx.serialization.builtins.DoubleArraySerializer
 import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -463,7 +464,9 @@ open class ENPlugin @Inject constructor(
         @Suppress("KotlinConstantConditions")
         val enConfig = ENConfig(
             // Eating Now
-            EatingNowTimeStart = preferences.get(IntKey.Eatingnow_timestart)
+            EatingNowTimeStart = preferences.get(IntKey.Eatingnow_timestart),
+            EatingNowTimeEnd = preferences.get(IntKey.Eatingnow_timeend),
+            OvernightSMBRestrict = preferences.get(_root_ide_package_.app.aaps.core.keys.DoubleKey.Eatingnow_overnightSMB)
         )
 
         val microBolusAllowed = constraintsChecker.isSMBModeEnabled(ConstraintObject(tempBasalFallback.not(), aapsLogger)).also { inputConstraints.copyReasons(it) }.value()
@@ -474,6 +477,7 @@ open class ENPlugin @Inject constructor(
         aapsLogger.debug(LTag.APS, "Current temp:       $currentTemp")
         aapsLogger.debug(LTag.APS, "IOB data:           ${iobArray.joinToString()}")
         aapsLogger.debug(LTag.APS, "Profile:            $oapsProfile")
+        aapsLogger.debug(LTag.APS, "ENConfig:           $enConfig")
         aapsLogger.debug(LTag.APS, "Autosens data:      $autosensResult")
         aapsLogger.debug(LTag.APS, "Meal data:          $mealData")
         aapsLogger.debug(LTag.APS, "MicroBolusAllowed:  $microBolusAllowed")
@@ -485,13 +489,13 @@ open class ENPlugin @Inject constructor(
             currenttemp = currentTemp,
             iob_data_array = iobArray,
             profile = oapsProfile,
+            enConfig = enConfig,
             autosens_data = autosensResult,
             meal_data = mealData,
             microBolusAllowed = microBolusAllowed,
             currentTime = now,
             flatBGsDetected = flatBGsDetected,
-            dynIsfMode = dynIsfMode && dynIsfResult.tddPartsCalculated(),
-            enConfig = enConfig
+            dynIsfMode = dynIsfMode && dynIsfResult.tddPartsCalculated()
         ).also {
             val determineBasalResult = DetermineBasalResult(injector, it)
             // Preserve input data
@@ -502,6 +506,7 @@ open class ENPlugin @Inject constructor(
             determineBasalResult.currentTemp = currentTemp
             determineBasalResult.oapsProfile = oapsProfile
             determineBasalResult.mealData = mealData
+            determineBasalResult.enConfig = enConfig
             lastAPSResult = determineBasalResult
             lastAPSRun = now
             aapsLogger.debug(LTag.APS, "Result: $it")
@@ -597,6 +602,7 @@ open class ENPlugin @Inject constructor(
             addPreference(preferenceManager.createPreferenceScreen(context).apply {
                 key = "openapssmb_settings"
                 title = rh.gs(R.string.openapssmb)
+                summary = "OpenAPS SMB plugin settings"
                 addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsMaxBasal, dialogMessage = R.string.openapsma_max_basal_summary, title = R.string.openapsma_max_basal_title))
                 addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsSmbMaxIob, dialogMessage = R.string.openapssmb_max_iob_summary, title = R.string.openapssmb_max_iob_title))
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseDynamicSensitivity, summary = R.string.use_dynamic_sensitivity_summary, title = R.string.use_dynamic_sensitivity_title))
@@ -639,12 +645,15 @@ open class ENPlugin @Inject constructor(
             addPreference(preferenceManager.createPreferenceScreen(context).apply {
                 key = "eating_now1"
                 title = rh.gs(app.aaps.core.ui.R.string.en_pref_general_title)
+                summary = "General settings for Eating Now"
                 addPreference(androidx.preference.Preference(context).apply {
+                    title = rh.gs(app.aaps.core.ui.R.string.en_pref_general_title)
                     summary = "Eating Now operates within the Start and End time specified.\nLarger boluses from the Eating Now Window are allowed within this time range."
                     isSelectable = false
                 })
                 addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_timestart, dialogMessage = R.string.eatingnow_timestart_summary, title = R.string.eatingnow_timestart_title))
                 addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_timeend, dialogMessage = R.string.eatingnow_timeend_summary, title = R.string.eatingnow_timeend_title))
+                addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_overnightSMB, dialogMessage = R.string.eatingnow_overnightSMB_summary, title = R.string.eatingnow_overnightSMB_title))
             })
 
             addPreference(preferenceManager.createPreferenceScreen(context).apply {

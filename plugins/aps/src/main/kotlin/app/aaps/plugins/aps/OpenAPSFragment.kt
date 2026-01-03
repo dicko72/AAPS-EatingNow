@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.plugins.aps
 
 import android.annotation.SuppressLint
@@ -131,6 +132,7 @@ class OpenAPSFragment : DaggerFragment(), MenuProvider {
             binding.currenttemp.text = lastAPSResult.currentTemp?.dataClassToHtml()
             binding.iobdata.text = rh.gs(R.string.array_of_elements, lastAPSResult.iobData?.size) + "\n" + lastAPSResult.iob?.dataClassToHtml()
             binding.profile.text = lastAPSResult.oapsProfile?.dataClassToHtml() ?: lastAPSResult.oapsProfileAutoIsf?.dataClassToHtml()
+            binding.enconfig.text = lastAPSResult.enConfig?.dataClassToHtml()
             binding.mealdata.text = lastAPSResult.mealData?.dataClassToHtml()
             binding.scriptdebugdata.text = lastAPSResult.scriptDebug?.joinToString("\n")
             binding.constraints.text = lastAPSResult.inputConstraints?.getReasons()
@@ -148,6 +150,7 @@ class OpenAPSFragment : DaggerFragment(), MenuProvider {
         binding.currenttemp.text = ""
         binding.iobdata.text = ""
         binding.profile.text = ""
+        binding.enconfig.text= ""
         binding.mealdata.text = ""
         binding.autosensdata.text = ""
         binding.scriptdebugdata.text = ""
