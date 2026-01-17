@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.core.keys
 
 enum class BooleanKey(
@@ -112,4 +113,7 @@ enum class BooleanKey(
     WearCustomWatchfaceAuthorization(key = "wear_custom_watchface_autorization", defaultValue = false),
     WearNotifyOnSmb(key = "wear_notifySMB", defaultValue = true),
     WearBroadcastData(key = "wear_broadcast_data", defaultValue = false),
+
+    // Eating Now
+    EatingNow_RespectISFIOB("RespectISFIOB", false, defaultedBySM = true, hideParentScreenIfHidden = true),
 }

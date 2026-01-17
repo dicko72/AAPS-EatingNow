@@ -461,12 +461,32 @@ open class ENPlugin @Inject constructor(
             TDD = dynIsfResult.tdd ?: 0.0
         )
 
+        // Eating Now
         @Suppress("KotlinConstantConditions")
         val enConfig = ENConfig(
-            // Eating Now
+            // General
             EatingNowTimeStart = preferences.get(IntKey.Eatingnow_timestart),
             EatingNowTimeEnd = preferences.get(IntKey.Eatingnow_timeend),
-            OvernightSMBRestrict = preferences.get(_root_ide_package_.app.aaps.core.keys.DoubleKey.Eatingnow_overnightSMB)
+            OvernightSMBRestrict = preferences.get(_root_ide_package_.app.aaps.core.keys.DoubleKey.Eatingnow_overnightSMB),
+            RespectISFIOB = preferences.get(BooleanKey.EatingNow_RespectISFIOB),
+
+            // Breakfast
+            Eatingnow_bkfast_enw_minutes = preferences.get(IntKey.Eatingnow_bkfast_enw_minutes),
+            Eatingnow_bkfast_enw_pct = preferences.get(IntKey.Eatingnow_bkfast_enw_pct),
+            Eatingnow_bkfast_enw_cob_maxbolus = preferences.get(DoubleKey.Eatingnow_bkfast_enw_cob_maxbolus),
+            Eatingnow_bkfast_enw_uam_maxbolus = preferences.get(DoubleKey.Eatingnow_bkfast_enw_uam_maxbolus),
+            Eatingnow_bkfast_enw_maxiob = preferences.get(DoubleKey.Eatingnow_bkfast_enw_maxiob),
+            Eatingnow_bkfast_enw_prebolus = preferences.get(DoubleKey.Eatingnow_bkfast_enw_prebolus),
+
+            // ENW other Meals
+            Eatingnow_enw_minutes = preferences.get(IntKey.Eatingnow_enw_minutes),
+            Eatingnow_enw_pct = preferences.get(IntKey.Eatingnow_enw_pct),
+            Eatingnow_enw_smb_pct = preferences.get(IntKey.Eatingnow_enw_smb_pct),
+            Eatingnow_enw_cob_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus),
+            Eatingnow_enw_uam_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_uam_maxbolus),
+            Eatingnow_enw_maxiob = preferences.get(DoubleKey.Eatingnow_enw_maxiob),
+            Eatingnow_enw_prebolus = preferences.get(DoubleKey.Eatingnow_enw_prebolus),
+            Eatingnow_enw_uamplus_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus),
         )
 
         val microBolusAllowed = constraintsChecker.isSMBModeEnabled(ConstraintObject(tempBasalFallback.not(), aapsLogger)).also { inputConstraints.copyReasons(it) }.value()
@@ -642,6 +662,7 @@ open class ENPlugin @Inject constructor(
                 })
             })
 
+            // Eating Now General Settings
             addPreference(preferenceManager.createPreferenceScreen(context).apply {
                 key = "eating_now1"
                 title = rh.gs(app.aaps.core.ui.R.string.en_pref_general_title)
@@ -654,6 +675,7 @@ open class ENPlugin @Inject constructor(
                 addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_timestart, dialogMessage = R.string.eatingnow_timestart_summary, title = R.string.eatingnow_timestart_title))
                 addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_timeend, dialogMessage = R.string.eatingnow_timeend_summary, title = R.string.eatingnow_timeend_title))
                 addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_overnightSMB, dialogMessage = R.string.eatingnow_overnightSMB_summary, title = R.string.eatingnow_overnightSMB_title))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.EatingNow_RespectISFIOB, summary = R.string.EatingNow_RespectISFIOB_summary, title = R.string.EatingNow_RespectISFIOB_title))
             })
 
             addPreference(preferenceManager.createPreferenceScreen(context).apply {
@@ -674,14 +696,28 @@ open class ENPlugin @Inject constructor(
                 )
             })
 
+            // Eating Now Window menu options
             addPreference(preferenceManager.createPreferenceScreen(context).apply {
                 key = "eating_now3"
-                title = rh.gs(app.aaps.core.ui.R.string.en_pref_enw_title)
+                title = "Eating Now Window"
+                summary = "The EN Window is activated when there is a manual bolus,carb entry or EN temptarget."
                 addPreference(androidx.preference.Preference(context).apply {
-                    summary = "Settings for within the EN Window activated when there is a manual bolus,carb entry or EN temptarget after the Start Time setting."
+                    title = "Eating Now Window"
+                    summary = "The EN Window is activated when there is a manual bolus,carb entry or EN temptarget."
                     isSelectable = false
                 })
-            // Eating Now Window Settings
+                // Eating Now Window submenu options
+                addPreference(preferenceManager.createPreferenceScreen(context).apply {
+                    key = "eating_now3a"
+                    title = "ENW Breakfast Settings"
+                    summary = "ENW Settings for the first meal of the day."
+                    addPreference(androidx.preference.Preference(context).apply {
+                        title = "ENW Breakfast Settings"
+                        summary = "ENW Settings for the first meal of the day."
+                        isSelectable = false
+                    })
+                    addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_bkfast_enw_minutes, dialogMessage = R.string.eatingnow_timestart_summary, title = R.string.eatingnow_timestart_title))
+                })
             })
 
             addPreference(preferenceManager.createPreferenceScreen(context).apply {

@@ -50,6 +50,22 @@ enum class DoubleKey(
     ApsAutoIsfSmbMaxRangeExtension("openapsama_smb_max_range_extension", 1.0, 1.0, 5.0, defaultedBySM = true),
 
     // Eating Now
+
+    // General
     Eatingnow_overnightSMB("overnightSMB", 0.0, 0.0, 270.0, defaultedBySM = true),
+
+    // ENW Breakfast
+    Eatingnow_bkfast_enw_cob_maxbolus("Eatingnow_bkfast_enw_cob_maxbolus", 0.0, 0.0, 180.0, defaultedBySM = true),
+    Eatingnow_bkfast_enw_uam_maxbolus("Eatingnow_bkfast_enw_uam_maxbolus", 0.0, 0.0, 180.0, defaultedBySM = true),
+    Eatingnow_bkfast_enw_maxiob("Eatingnow_bkfast_enw_maxiob", 0.0, 0.0, 50.0, defaultedBySM = true),
+    Eatingnow_bkfast_enw_prebolus("Eatingnow_bkfast_enw_prebolus", 0.0, 0.0, 15.0, defaultedBySM = true),
+
+
+    // ENW other Meals
+    Eatingnow_enw_cob_maxbolus("Eatingnow_enw_cob_maxbolus", 0.0, 0.0, 180.0, defaultedBySM = true),
+    Eatingnow_enw_uam_maxbolus("Eatingnow_enw_uam_maxbolus", 0.0, 0.0, 180.0, defaultedBySM = true),
+    Eatingnow_enw_maxiob("Eatingnow_enw_maxiob", 0.0, 0.0, 50.0, defaultedBySM = true),
+    Eatingnow_enw_prebolus("Eatingnow_enw_prebolus", 0.0, 0.0, 15.0, defaultedBySM = true),
+    Eatingnow_enw_uamplus_maxbolus("Eatingnow_enw_uamplus_maxbolus", 0.0, 0.0, 180.0, defaultedBySM = true),
 
 }
