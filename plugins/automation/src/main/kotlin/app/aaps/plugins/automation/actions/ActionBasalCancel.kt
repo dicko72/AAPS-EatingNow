@@ -24,7 +24,7 @@ class ActionBasalCancel(injector: HasAndroidInjector) : Action(injector) {
     override fun icon(): Int = app.aaps.core.objects.R.drawable.ic_cp_basal_no_tbr
 
     override fun doAction(callback: Callback) {
-        commandQueue.cancelTempBasal(true, object : Callback() {
+        commandQueue.cancelTempBasal(enforceNew = true, callback = object : Callback() {
             override fun run() {
                 if (!result.success) {
                     uiInteraction.runAlarm(result.comment, rh.gs(app.aaps.core.ui.R.string.temp_basal_delivery_error), app.aaps.core.ui.R.raw.boluserror)
