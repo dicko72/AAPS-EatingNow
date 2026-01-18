@@ -1,4 +1,3 @@
-// Modified for Eating Now
 package app.aaps.core.data.model
 
 import java.util.TimeZone
@@ -15,7 +14,8 @@ data class TT(
     var reason: Reason,
     var highTarget: Double, // in mgdl
     var lowTarget: Double, // in mgdl
-    var duration: Long // in millis
+    /** Duration in milliseconds */
+    var duration: Long
 ) : HasIDs {
 
     fun contentEqualsTo(other: TT): Boolean =
@@ -38,8 +38,6 @@ data class TT(
         HYPOGLYCEMIA("Hypo"),
         ACTIVITY("Activity"),
         EATING_SOON("Eating Soon"),
-        EATING_NOW("Eating Now"),
-        EATING_NOW_PB("Eating Now PB"),
         AUTOMATION("Automation"),
         WEAR("Wear")
         ;

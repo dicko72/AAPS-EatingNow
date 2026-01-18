@@ -64,7 +64,12 @@ interface UiInteraction {
     fun runENTempTargetDialog(fragmentManager: FragmentManager)
     fun runExtendedBolusDialog(fragmentManager: FragmentManager)
     fun runFillDialog(fragmentManager: FragmentManager)
-    fun runBolusProgressDialog(fragmentManager: FragmentManager, insulin: Double, id: Long)
+    enum class SiteMode(val i: Int) {
+        VIEW(1),
+        EDIT(2)
+    }
+    fun runSiteRotationDialog(fragmentManager: FragmentManager)
+    fun runBolusProgressDialog(fragmentManager: FragmentManager)
     enum class Mode(val i: Int) {
         RUNNING_PROFILE(1),
         CUSTOM_PROFILE(2),
@@ -118,7 +123,7 @@ interface UiInteraction {
      */
     fun addNotification(id: Int, text: String, level: Int, @StringRes actionButtonId: Int, action: Runnable, validityCheck: (() -> Boolean)?)
 
-    fun showToastAndNotification(ctx: Context?, string: String, @RawRes soundID: Int)
+    fun showToastAndNotification(ctx: Context, string: String, @RawRes soundID: Int)
 
     fun startAlarm(@RawRes sound: Int, reason: String)
     fun stopAlarm(reason: String)
