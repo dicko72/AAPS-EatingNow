@@ -22,6 +22,7 @@ import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.protection.ProtectionCheck
 import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.keys.BooleanNonKey
 import app.aaps.core.interfaces.utils.DecimalFormatter
 import app.aaps.core.interfaces.utils.HardLimits
 import app.aaps.core.keys.IntKey
@@ -42,6 +43,8 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import android.text.Editable
 import android.text.TextWatcher
+import androidx.annotation.Dimension
+import app.aaps.core.interfaces.sharedPreferences.SP
 import app.aaps.core.interfaces.utils.SafeParse
 import app.aaps.core.objects.constraints.ConstraintObject
 import app.aaps.core.objects.extensions.formatColor
@@ -69,6 +72,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
     @Inject lateinit var decimalFormatter: DecimalFormatter
     @Inject lateinit var activePlugin: ActivePlugin
     @Inject lateinit var hardLimits: HardLimits
+    @Inject lateinit var sp: SP
 
     private lateinit var reasonList: List<String>
 
@@ -207,7 +211,6 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         val target = binding.temptarget.value
         val duration = binding.duration.value.toInt()
         sp.putDouble("ENdb_PreBolusUnits",binding.amount.value) // add the prebolus amount for DetermineBasalAdapterENJS.kt
-        sp.putDouble("ENdb_PreBolusUnits",binding.amount.value) // add the prebolus amount for DetermineBasalAdapterENJS.kt
         sp.putDouble("ENdb_ENWIOBUnits",binding.enwIob.value) // add the ENWIOB amount for DetermineBasalAdapterENJS.ktsp.putDouble("ENdb_ENWIOBUnits",binding.enwIob.value) // add the ENWIOB amount for DetermineBasalAdapterENJS.kt
         if (target != 0.0 && duration != 0) {
             // actions.add(rh.gs(app.aaps.core.ui.R.string.reason) + ": " + reason)
@@ -242,7 +245,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
 
                     rh.gs(app.aaps.core.ui.R.string.stopeatingnow)      -> listOf(ValueWithUnit.Timestamp(eventTime).takeIf { eventTimeChanged })
 
-                    else                                                -> listOf()
+                    else                                            -> listOf()
                 }
                 if (target == 0.0 || duration == 0) {
                     disposable += persistenceLayer.cancelCurrentTemporaryTargetIfAny(
@@ -272,7 +275,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
                     ).subscribe()
                 }
 
-                if (duration == 10) sp.putBoolean(app.aaps.core.utils.R.string.key_objectiveusetemptarget, true)
+                if (duration == 10) preferences.put(BooleanNonKey.ObjectivesTempTargetUsed, true)
             })
         }
         return true
