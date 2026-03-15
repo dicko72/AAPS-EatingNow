@@ -727,7 +727,12 @@ open class ENPlugin @Inject constructor(
                         summary = "ENW Settings for the first meal of the day."
                         isSelectable = false
                     })
-                    addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_bkfast_enw_minutes, dialogMessage = R.string.eatingnow_timestart_summary, title = R.string.eatingnow_timestart_title))
+                    addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_bkfast_enw_minutes, dialogMessage = R.string.Eatingnow_bkfast_enw_minutes_summary, title = R.string.Eatingnow_bkfast_enw_minutes_title))
+                    addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_bkfast_enw_pct, dialogMessage = R.string.Eatingnow_bkfast_enw_pct_summary, title = R.string.Eatingnow_bkfast_enw_pct_title))
+                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_bkfast_enw_cob_maxbolus, dialogMessage = R.string.Eatingnow_bkfast_enw_cob_maxbolus_summary, title = R.string.Eatingnow_bkfast_enw_cob_maxbolus_title))
+                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_bkfast_enw_uam_maxbolus, dialogMessage = R.string.Eatingnow_bkfast_enw_uam_maxbolus_summary, title = R.string.Eatingnow_bkfast_enw_uam_maxbolus_title))
+                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_bkfast_enw_maxiob, dialogMessage = R.string.Eatingnow_bkfast_enw_maxiob_summary, title = R.string.Eatingnow_bkfast_enw_maxiob_title))
+                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_bkfast_enw_prebolus, dialogMessage = R.string.Eatingnow_bkfast_enw_prebolus_summary, title = R.string.Eatingnow_bkfast_enw_prebolus_title))
                 })
             })
 
