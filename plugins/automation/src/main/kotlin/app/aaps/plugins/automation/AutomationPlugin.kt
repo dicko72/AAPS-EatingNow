@@ -404,6 +404,7 @@ class AutomationPlugin @Inject constructor(
             ActionProfileSwitchPercent(injector),
             ActionProfileSwitch(injector),
             ActionSendSMS(injector),
+            ActionSMBChange(injector),
             ActionStartENTempTarget(injector),
             ActionBasalCancel(injector)
         )
