@@ -3,6 +3,8 @@ package app.aaps.ui.dialogs
 
 import android.content.Context
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,11 +24,15 @@ import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.protection.ProtectionCheck
 import app.aaps.core.interfaces.resources.ResourceHelper
-import app.aaps.core.keys.BooleanNonKey
+import app.aaps.core.interfaces.sharedPreferences.SP
 import app.aaps.core.interfaces.utils.DecimalFormatter
 import app.aaps.core.interfaces.utils.HardLimits
+import app.aaps.core.interfaces.utils.SafeParse
+import app.aaps.core.keys.BooleanNonKey
 import app.aaps.core.keys.IntKey
 import app.aaps.core.keys.UnitDoubleKey
+import app.aaps.core.objects.constraints.ConstraintObject
+import app.aaps.core.objects.extensions.formatColor
 import app.aaps.core.ui.dialogs.OKDialog
 import app.aaps.core.ui.extensions.toVisibility
 import app.aaps.core.ui.toast.ToastUtils
@@ -41,23 +47,6 @@ import java.text.DecimalFormat
 import java.util.LinkedList
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import android.text.Editable
-import android.text.TextWatcher
-import androidx.annotation.Dimension
-import app.aaps.core.interfaces.sharedPreferences.SP
-import app.aaps.core.interfaces.utils.SafeParse
-import app.aaps.core.objects.constraints.ConstraintObject
-import app.aaps.core.objects.extensions.formatColor
-// import app.aaps.database.ValueWrapper
-// import app.aaps.database.entities.TemporaryTarget
-// import app.aaps.database.entities.UserEntry
-// import app.aaps.database.entities.ValueWithUnit
-// import app.aaps.database.entities.data.GlucoseUnit
-import app.aaps.ui.databinding.DialogInsulinBinding
-import kotlin.math.abs
-
-
-
 
 class ENTempTargetDialog : DialogFragmentWithDate() {
 
@@ -98,6 +87,8 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         super.onSaveInstanceState(savedInstanceState)
         savedInstanceState.putDouble("duration", binding.duration.value)
         savedInstanceState.putDouble("tempTarget", binding.temptarget.value)
+        savedInstanceState.putDouble("enw_iob", binding.enwIob.value)
+        savedInstanceState.putDouble("amount", binding.amount.value)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -113,8 +104,6 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         binding.units.text = if (units == GlucoseUnit.MMOL) rh.gs(app.aaps.core.ui.R.string.mmol) else rh.gs(app.aaps.core.ui.R.string.mgdl)
 
         // set the Eating Now defaults
-        // val enTT = profileUtil.convertToMgdl(profileFunction.getProfile()!!.getTargetMgdl(), units)
-        //val enTT = profile.toCurrentUnits(units,profileFunction.getProfile()!!.getTargetMgdl())
         val enTT = profileUtil.valueInCurrentUnitsDetect(profileFunction.getProfile()!!.getTargetMgdl())
 
         binding.duration.setParams(
@@ -141,7 +130,6 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         )
 
         //prebolus amount
-        // val maxInsulin = constraintChecker.getMaxBolusAllowed().value()
         val maxInsulin = Constants.MAX_EN_PREBOLUS
         binding.amount.setParams(
             savedInstanceState?.getDouble("amount")
@@ -172,7 +160,6 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         // reset to Eating Now defaults
         binding.duration.value =  preferences.get(IntKey.OverviewEatingNowDuration).toDouble()
         binding.reasonList.setText(rh.gs(app.aaps.core.ui.R.string.eatingnow), false)
-        // binding.prebolus.isChecked = false
 
         // when the prebolus button is pressed
         binding.prebolus.setOnClickListener {
@@ -202,7 +189,6 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
 
     override fun submit(): Boolean {
         if (_binding == null) return false
-        val pumpDescription = activePlugin.activePump.pumpDescription
         val insulin = SafeParse.stringToDouble(binding.amount.text)
         val insulinAfterConstraints = constraintChecker.applyBolusConstraints(ConstraintObject(insulin, aapsLogger)).value()
         val actions: LinkedList<String> = LinkedList()
@@ -210,10 +196,9 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         val unitResId = if (profileFunction.getUnits() == GlucoseUnit.MGDL) app.aaps.core.ui.R.string.mgdl else app.aaps.core.ui.R.string.mmol
         val target = binding.temptarget.value
         val duration = binding.duration.value.toInt()
-        sp.putDouble("ENdb_PreBolusUnits",binding.amount.value) // add the prebolus amount for DetermineBasalAdapterENJS.kt
-        sp.putDouble("ENdb_ENWIOBUnits",binding.enwIob.value) // add the ENWIOB amount for DetermineBasalAdapterENJS.ktsp.putDouble("ENdb_ENWIOBUnits",binding.enwIob.value) // add the ENWIOB amount for DetermineBasalAdapterENJS.kt
+        sp.putDouble("ENdb_PreBolusUnits", binding.amount.value) // add the prebolus amount for DetermineBasalAdapterENJS.kt
+        sp.putDouble("ENdb_ENWIOBUnits", binding.enwIob.value) // add the ENWIOB amount for DetermineBasalAdapterENJS.kt
         if (target != 0.0 && duration != 0) {
-            // actions.add(rh.gs(app.aaps.core.ui.R.string.reason) + ": " + reason)
             actions.add(rh.gs(app.aaps.core.ui.R.string.target_label) + ": " + profileUtil.stringInCurrentUnitsDetect(target) + " " + rh.gs(unitResId))
             actions.add(rh.gs(app.aaps.core.ui.R.string.duration) + ": " + rh.gs(app.aaps.core.ui.R.string.format_mins, duration))
             actions.add("Pre-Bolus: " + decimalFormatter.toPumpSupportedBolus(insulinAfterConstraints, activePlugin.activePump.pumpDescription.bolusStep).formatColor(context, rh, app.aaps.core.ui.R.attr.bolusColor))
