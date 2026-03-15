@@ -490,8 +490,8 @@ open class ENPlugin @Inject constructor(
         }
 
         // Determine if EN is started yet
-        val ENStarted = (persistenceLayer.getENTemporaryTargetCountFromTime(EatingNowTimeStart).blockingGet() ?: 0) > 0 // true if there are any EN TTs
-        val ENWfirstMeal = (persistenceLayer.getENTemporaryTargetCountFromTime(EatingNowTimeStart).blockingGet() ?: 0) == 1 // true if there are any EN TTs
+        val ENStarted = (persistenceLayer.getENTemporaryTargetCountFromTime(EatingNowTimeStart).blockingGet() ?: 0) > 0 // true if there are any EN TTs today
+        val ENWfirstMeal = (persistenceLayer.getENTemporaryTargetCountFromTime(EatingNowTimeStart).blockingGet() ?: 0) == 1 // true if there is only one EN TT today
 
         // Check to see if there is an EN TT and if PB
         val ENActiveTT = persistenceLayer.getENTemporaryTargetActiveAt(dateUtil.now())?.reason
