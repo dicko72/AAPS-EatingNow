@@ -496,16 +496,6 @@ open class ENPlugin @Inject constructor(
         // Check to see if there is an EN TT and if PB
         val ENActiveTT = persistenceLayer.getENTemporaryTargetActiveAt(dateUtil.now())?.reason
 
-        // // get the current EN TT info
-        // var activeENTT = false
-        // repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.let { activeENTempTarget ->
-        //     this.mealData.put("activeENTempTargetStartTime",activeENTempTarget.timestamp)
-        //     this.mealData.put("activeENTempTargetDuration",activeENTempTarget.duration/60000)
-        //     activeENTT = true
-        //     this.mealData.put("activeENPB",activeENTempTarget.reason == TemporaryTarget.Reason.EATING_NOW_PB)
-        // }
-
-
         // Define the variables to be available to DetermineBasalEN.kt
         @Suppress("KotlinConstantConditions")
         val enConfig = ENConfig(
