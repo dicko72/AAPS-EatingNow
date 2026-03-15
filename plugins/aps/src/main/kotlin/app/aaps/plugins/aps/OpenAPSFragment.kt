@@ -171,7 +171,7 @@ class OpenAPSFragment : DaggerFragment(), MenuProvider {
             StringBuilder().also { sb ->
                 this::class.declaredMemberProperties.forEach { property ->
                     property.call(this)?.let { value ->
-                        if (ClassUtils.isPrimitiveOrWrapper(value::class.java)) sb.append(property.name.bold(), ": ", value, br)
+                        if (ClassUtils.isPrimitiveOrWrapper(value::class.java) || value is Enum<*>) sb.append(property.name.bold(), ": ", value, br)
                         if (value is StringBuilder) sb.append(property.name.bold(), ": ", value.toString(), br)
                     }
                 }
@@ -185,7 +185,7 @@ class OpenAPSFragment : DaggerFragment(), MenuProvider {
                     this::class.declaredMemberProperties
                         .firstOrNull { it.name == property }?.call(this)
                         ?.let { value ->
-                            if (ClassUtils.isPrimitiveOrWrapper(value::class.java)) sb.append(property.bold(), ": ", value, br)
+                            if (ClassUtils.isPrimitiveOrWrapper(value::class.java) || value is Enum<*>) sb.append(property.bold(), ": ", value, br)
                             if (value is StringBuilder) sb.append(property.bold(), ": ", value.toString(), br)
                         }
                 }

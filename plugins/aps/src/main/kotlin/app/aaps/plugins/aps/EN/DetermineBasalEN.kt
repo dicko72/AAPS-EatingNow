@@ -1,5 +1,6 @@
 package app.aaps.plugins.aps.EN
 
+import app.aaps.core.data.model.TT
 import app.aaps.core.interfaces.aps.APSResult
 import app.aaps.core.interfaces.aps.AutosensResult
 import app.aaps.core.interfaces.aps.CurrentTemp
