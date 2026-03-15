@@ -6,7 +6,6 @@ import android.content.Intent
 import androidx.collection.LongSparseArray
 import androidx.collection.forEach
 import android.net.Uri
-import androidx.core.net.toUri
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
@@ -50,6 +49,7 @@ import app.aaps.core.interfaces.stats.TddCalculator
 import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.HardLimits
+import app.aaps.core.interfaces.utils.MidnightTime
 import app.aaps.core.interfaces.utils.Round
 import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.DoubleKey
@@ -471,31 +471,70 @@ open class ENPlugin @Inject constructor(
         )
 
         // Eating Now
+
+        // Define the initial start time variables
+        val startHour = preferences.get(IntKey.Eatingnow_timestart)
+        val endHour = preferences.get(IntKey.Eatingnow_timeend)
+
+        val midnightToday = MidnightTime.calc(now)
+        val oneHourMs = 3_600_000L
+        val oneDayMs = 86_400_000L
+
+        val startMs = midnightToday + (startHour * oneHourMs)
+        val endMs = midnightToday + (endHour * oneHourMs)
+
+        val (EatingNowTimeStart, EatingNowTimeEnd) = when {
+            endHour > startHour -> startMs to endMs             // Normal same-day window
+            now < endMs -> (startMs - oneDayMs) to endMs        // Crosses midnight, currently early morning
+            else -> startMs to (endMs + oneDayMs)               // Crosses midnight, currently evening/daytime
+        }
+
+        // Determine if EN is started yet
+        val ENStarted = (persistenceLayer.getENTemporaryTargetCountFromTime(EatingNowTimeStart).blockingGet() ?: 0) > 0 // true if there are any EN TTs
+        val ENWfirstMeal = (persistenceLayer.getENTemporaryTargetCountFromTime(EatingNowTimeStart).blockingGet() ?: 0) == 1 // true if there are any EN TTs
+
+        // Check to see if there is an EN TT and if PB
+        var ENActiveTT = persistenceLayer.getENTemporaryTargetActiveAt(dateUtil.now())?.let { activeENTempTarget -> activeENTempTarget.reason}
+
+        // // get the current EN TT info
+        // var activeENTT = false
+        // repository.getENTemporaryTargetActiveAt(now).blockingGet().lastOrNull()?.let { activeENTempTarget ->
+        //     this.mealData.put("activeENTempTargetStartTime",activeENTempTarget.timestamp)
+        //     this.mealData.put("activeENTempTargetDuration",activeENTempTarget.duration/60000)
+        //     activeENTT = true
+        //     this.mealData.put("activeENPB",activeENTempTarget.reason == TemporaryTarget.Reason.EATING_NOW_PB)
+        // }
+
+
+        // Define the variables to be available to DetermineBasalEN.kt
         @Suppress("KotlinConstantConditions")
         val enConfig = ENConfig(
             // General
-            EatingNowTimeStart = preferences.get(IntKey.Eatingnow_timestart),
-            EatingNowTimeEnd = preferences.get(IntKey.Eatingnow_timeend),
+            ENTimeStart = EatingNowTimeStart,
+            ENTimeEnd = EatingNowTimeEnd,
+            ENStarted = ENStarted,
+            ENWfirstMeal = ENWfirstMeal,
+            ENActiveTT = ENActiveTT,
             OvernightSMBRestrict = preferences.get(_root_ide_package_.app.aaps.core.keys.DoubleKey.Eatingnow_overnightSMB),
             RespectISFIOB = preferences.get(BooleanKey.EatingNow_RespectISFIOB),
 
             // Breakfast
-            Eatingnow_bkfast_enw_minutes = preferences.get(IntKey.Eatingnow_bkfast_enw_minutes),
-            Eatingnow_bkfast_enw_pct = preferences.get(IntKey.Eatingnow_bkfast_enw_pct),
-            Eatingnow_bkfast_enw_cob_maxbolus = preferences.get(DoubleKey.Eatingnow_bkfast_enw_cob_maxbolus),
-            Eatingnow_bkfast_enw_uam_maxbolus = preferences.get(DoubleKey.Eatingnow_bkfast_enw_uam_maxbolus),
-            Eatingnow_bkfast_enw_maxiob = preferences.get(DoubleKey.Eatingnow_bkfast_enw_maxiob),
-            Eatingnow_bkfast_enw_prebolus = preferences.get(DoubleKey.Eatingnow_bkfast_enw_prebolus),
+            EN_bkfast_enw_minutes = preferences.get(IntKey.Eatingnow_bkfast_enw_minutes),
+            EN_bkfast_enw_pct = preferences.get(IntKey.Eatingnow_bkfast_enw_pct),
+            EN_bkfast_enw_cob_maxbolus = preferences.get(DoubleKey.Eatingnow_bkfast_enw_cob_maxbolus),
+            EN_bkfast_enw_uam_maxbolus = preferences.get(DoubleKey.Eatingnow_bkfast_enw_uam_maxbolus),
+            EN_bkfast_enw_maxiob = preferences.get(DoubleKey.Eatingnow_bkfast_enw_maxiob),
+            EN_bkfast_enw_prebolus = preferences.get(DoubleKey.Eatingnow_bkfast_enw_prebolus),
 
             // ENW other Meals
-            Eatingnow_enw_minutes = preferences.get(IntKey.Eatingnow_enw_minutes),
-            Eatingnow_enw_pct = preferences.get(IntKey.Eatingnow_enw_pct),
-            Eatingnow_enw_smb_pct = preferences.get(IntKey.Eatingnow_enw_smb_pct),
-            Eatingnow_enw_cob_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus),
-            Eatingnow_enw_uam_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_uam_maxbolus),
-            Eatingnow_enw_maxiob = preferences.get(DoubleKey.Eatingnow_enw_maxiob),
-            Eatingnow_enw_prebolus = preferences.get(DoubleKey.Eatingnow_enw_prebolus),
-            Eatingnow_enw_uamplus_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus),
+            EN_enw_minutes = preferences.get(IntKey.Eatingnow_enw_minutes),
+            EN_enw_pct = preferences.get(IntKey.Eatingnow_enw_pct),
+            EN_enw_smb_pct = preferences.get(IntKey.Eatingnow_enw_smb_pct),
+            EN_enw_cob_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus),
+            EN_enw_uam_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_uam_maxbolus),
+            EN_enw_maxiob = preferences.get(DoubleKey.Eatingnow_enw_maxiob),
+            EN_enw_prebolus = preferences.get(DoubleKey.Eatingnow_enw_prebolus),
+            EN_enw_uamplus_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus),
         )
 
         val microBolusAllowed = constraintsChecker.isSMBModeEnabled(ConstraintObject(tempBasalFallback.not(), aapsLogger)).also { inputConstraints.copyReasons(it) }.value()

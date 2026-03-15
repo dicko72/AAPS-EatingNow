@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.database
 
 import app.aaps.database.entities.APSResult
@@ -217,6 +218,23 @@ class AppRepository @Inject internal constructor(
 
     fun getLastTempTargetId(): Long? =
         database.temporaryTargetDao.getLastId()
+
+    // Eating Now Count EN TempTargets since EN start time
+    fun getENTemporaryTargetCountFromTime(from: Long): Single<Int> =
+        database.temporaryTargetDao.getENTemporaryTargetCountFromTime(from, TemporaryTarget.Reason.EATING_NOW, TemporaryTarget.Reason.EATING_NOW_PB)
+            .subscribeOn(Schedulers.io())
+
+    // // Eating Now: Get the first EN TT since EN start time
+    // fun getENTemporaryTargetDataFromTimetoTime(timestamp: Long, to: Long, ascending: Boolean): Single<List<TemporaryTarget>> =
+    //     database.temporaryTargetDao.getENTemporaryTargetDataFromTimetoTime(timestamp, to, TemporaryTarget.Reason.EATING_NOW, TemporaryTarget.Reason.EATING_NOW_PB)
+    //         .map { if (!ascending) it.reversed() else it }
+    //         .subscribeOn(Schedulers.io())
+    //
+
+    // Eating Now: Get the EN TT at time
+    fun getENTemporaryTargetActiveAt(timestamp: Long):Maybe<TemporaryTarget> =
+        database.temporaryTargetDao.getENTemporaryTargetActiveAt(timestamp,TemporaryTarget.Reason.EATING_NOW, TemporaryTarget.Reason.EATING_NOW_PB)
+            .subscribeOn(Schedulers.io())
 
     // USER ENTRY
     fun getUserEntryDataFromTime(timestamp: Long): Single<List<UserEntry>> =

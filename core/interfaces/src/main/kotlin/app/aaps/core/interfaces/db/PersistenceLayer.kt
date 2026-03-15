@@ -1048,13 +1048,19 @@ interface PersistenceLayer {
     fun getLastTemporaryTargetId(): Long?
 
     /**
+     *  Eating Now
+     *  Count EN TempTargets since EN start time
+     */
+    fun getENTemporaryTargetCountFromTime(timestamp: Long): Single<Int>
+    fun getENTemporaryTargetActiveAt(timestamp: Long): TT?
+
+    /**
      *  Get temporary target by NS id
      *  @return temporary target
      */
     fun getTemporaryTargetByNSId(nsId: String): TT?
 
-    fun getTemporaryTargetDataFromTime(timestamp: Long, ascending: Boolean): Single<List<TT>>
-    fun getTemporaryTargetDataIncludingInvalidFromTime(timestamp: Long, ascending: Boolean): Single<List<TT>>
+    fun getTemporaryTargetDataFromTime(timestamp: Long, ascending: Boolean): Single<List<TT>>    fun getTemporaryTargetDataIncludingInvalidFromTime(timestamp: Long, ascending: Boolean): Single<List<TT>>
 
     /**
      * Get next changed record after id
