@@ -494,7 +494,7 @@ open class ENPlugin @Inject constructor(
         val ENWfirstMeal = (persistenceLayer.getENTemporaryTargetCountFromTime(EatingNowTimeStart).blockingGet() ?: 0) == 1 // true if there are any EN TTs
 
         // Check to see if there is an EN TT and if PB
-        var ENActiveTT = persistenceLayer.getENTemporaryTargetActiveAt(dateUtil.now())?.let { activeENTempTarget -> activeENTempTarget.reason}
+        val ENActiveTT = persistenceLayer.getENTemporaryTargetActiveAt(dateUtil.now())?.reason
 
         // // get the current EN TT info
         // var activeENTT = false
