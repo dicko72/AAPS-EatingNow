@@ -1,6 +1,7 @@
 // Modified for Eating Now
 package app.aaps.core.interfaces.aps
 
+import app.aaps.core.data.model.TT
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.Serializable
 
@@ -8,28 +9,31 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ENConfig(
     //General
-    var EatingNowTimeStart: Int,
-    var EatingNowTimeEnd: Int,
+    var ENTimeStart: Long,
+    var ENTimeEnd: Long,
+    var ENStarted: Boolean,
+    var ENWfirstMeal: Boolean,
+    var ENActiveTT: TT.Reason?,
     var OvernightSMBRestrict: Double,
     var RespectISFIOB: Boolean,
 
     // ENW Breakfast
-    var Eatingnow_bkfast_enw_minutes: Int,
-    var Eatingnow_bkfast_enw_pct: Int,
-    var Eatingnow_bkfast_enw_cob_maxbolus: Double,
-    var Eatingnow_bkfast_enw_uam_maxbolus: Double,
-    var Eatingnow_bkfast_enw_maxiob: Double,
-    var Eatingnow_bkfast_enw_prebolus: Double,
+    var EN_bkfast_enw_minutes: Int,
+    var EN_bkfast_enw_pct: Int,
+    var EN_bkfast_enw_cob_maxbolus: Double,
+    var EN_bkfast_enw_uam_maxbolus: Double,
+    var EN_bkfast_enw_maxiob: Double,
+    var EN_bkfast_enw_prebolus: Double,
 
     // ENW other Meals
-    var Eatingnow_enw_minutes: Int,
-    var Eatingnow_enw_pct: Int,
-    var Eatingnow_enw_cob_maxbolus: Double,
-    var Eatingnow_enw_uam_maxbolus: Double,
-    var Eatingnow_enw_maxiob: Double,
-    var Eatingnow_enw_prebolus: Double,
-    var Eatingnow_enw_smb_pct: Int,
-    var Eatingnow_enw_uamplus_maxbolus: Double,
+    var EN_enw_minutes: Int,
+    var EN_enw_pct: Int,
+    var EN_enw_cob_maxbolus: Double,
+    var EN_enw_uam_maxbolus: Double,
+    var EN_enw_maxiob: Double,
+    var EN_enw_prebolus: Double,
+    var EN_enw_smb_pct: Int,
+    var EN_enw_uamplus_maxbolus: Double,
 
     // Outside ENW
     // Outside ENW maxBolus

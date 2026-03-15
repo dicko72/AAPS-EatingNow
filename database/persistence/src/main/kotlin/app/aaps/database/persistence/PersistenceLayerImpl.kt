@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.database.persistence
 
 import android.os.SystemClock
@@ -32,6 +33,7 @@ import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.database.AppRepository
 import app.aaps.database.ValueWrapper
+import app.aaps.database.entities.TemporaryTarget
 import app.aaps.database.entities.TherapyEvent
 import app.aaps.database.persistence.converters.fromDb
 import app.aaps.database.persistence.converters.toDb
@@ -1404,6 +1406,18 @@ class PersistenceLayerImpl @Inject constructor(
                 log(ueValues)
                 transactionResult
             }
+
+    // // Eating Now: Get the first EN TT since EN start time
+    // override fun getENTemporaryTargetDataFromTimetoTime(timestamp: Long, to: Long, ascending: Boolean): Single<List<TT>> =
+    //     repository.getENTemporaryTargetDataFromTimetoTime(timestamp, to, ascending).map { list -> list.asSequence().map { it.fromDb() }.toList() }
+
+    // Eating Now Count EN TempTargets since EN start time
+    override fun getENTemporaryTargetCountFromTime(timestamp: Long): Single<Int> =
+        repository.getENTemporaryTargetCountFromTime(timestamp)
+
+    // EATING NOW TT at time
+    override fun getENTemporaryTargetActiveAt(timestamp: Long): TT? =
+        repository.getENTemporaryTargetActiveAt(timestamp).blockingGet()?.fromDb()
 
     // TT
     override fun getTemporaryTargetActiveAt(timestamp: Long): TT? =
