@@ -235,17 +235,20 @@
     <string name="EatingNow_RespectISFIOB_summary">RespectISFIOB_summary</string>
     <string name="EatingNow_RespectISFIOB_title">RespectISFIOB_title</string>
     <!--    Breakfast Settings-->
-    <string name="Eatingnow_bkfast_enw_minutes_title">EN Window Duration</string>
-    <string name="Eatingnow_bkfast_enw_minutes_summary">Window in minutes for increased maxBolus with COB or UAM.\n0 will disable and allow AAPS maxBolus limit.</string>
-    <string name="Eatingnow_bkfast_enw_pct_title">Breakfast ISF Weighting</string>
-    <string name="Eatingnow_bkfast_enw_pct_summary">The breakfast ISF will be scaled during the breakfast eating window.\n100 will be no change.\n25 will use 25% of the current ISF/CR values.</string>
-    <string name="Eatingnow_bkfast_enw_cob_maxbolus_title">Breakfast COB maxBolus</string>
-    <string name="Eatingnow_bkfast_enw_cob_maxbolus_summary">Breakfast COB maxBolus for BGL rises within the EN Window.\nThis will use ISF/CR percentage scaling if enabled.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will use existing maxBolus limit</string>
-    <string name="Eatingnow_bkfast_enw_uam_maxbolus_title">Breakfast UAM maxBolus</string>
-    <string name="Eatingnow_bkfast_enw_uam_maxbolus_summary">Breakfast UAM maxBolus for BGL rises within the EN Window.\nThis will use ISF/CR percentage scaling if enabled.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will use existing maxBolus limit</string>
-    <string name="Eatingnow_bkfast_enw_maxiob_title">Breakfast ENW max units</string>
-    <string name="Eatingnow_bkfast_enw_maxiob_summary">Max insulin units received from treatments within breakfast eating window. Once reached insulin delivery will cease until the window ends.</string>
-    <string name="Eatingnow_bkfast_enw_prebolus_title">Breakfast PreBolus</string>
-    <string name="Eatingnow_bkfast_enw_prebolus_summary">PreBolus for breakfast within the EN-TT Window only.</string>
+    <string name="Eatingnow_enw_minutes_title">EN Window Duration</string>
+    <string name="Eatingnow_enw_minutes_summary">Window in minutes for increased maxBolus with COB or UAM.\n0 will disable and allow AAPS maxBolus limit.</string>
+    <string name="Eatingnow_enw_pct_title">ISF Weighting</string>
+    <string name="Eatingnow_enw_pct_summary">The ISF will be scaled during the breakfast eating window.\n100 will be no change.\n25 will use 25% of the current ISF/CR values.</string>
+    <string name="Eatingnow_enw_cob_maxbolus_title">COB maxBolus</string>
+    <string name="Eatingnow_enw_cob_maxbolus_summary">COB maxBolus for BGL rises within the EN Window.\nThis will use ISF/CR percentage scaling if enabled.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will use existing maxBolus limit</string>
+    <string name="Eatingnow_enw_uam_maxbolus_title">UAM maxBolus</string>
+    <string name="Eatingnow_enw_uam_maxbolus_summary">UAM maxBolus for BGL rises within the EN Window.\nThis will use ISF/CR percentage scaling if enabled.\nIf this value is larger than maxIOB it will be considered to be minutes of basal.\n0 will use existing maxBolus limit</string>
+    <string name="Eatingnow_enw_maxiob_title">ENW max units</string>
+    <string name="Eatingnow_enw_maxiob_summary">Max insulin units received from treatments within breakfast eating window. Once reached insulin delivery will cease until the window ends.</string>
+    <string name="Eatingnow_enw_prebolus_title">PreBolus</string>
+    <string name="Eatingnow_enw_prebolus_summary">PreBolus for within the EN Window only.</string>
+    <string name="Eatingnow_enw_uamplus_maxbolus_title">UAM+ maxBolus</string>
+    <string name="Eatingnow_enw_uamplus_maxbolus_summary">UAM+ maxBolus for accelerated BG rise within the EN Window only.</string>
+
 
 </resources>

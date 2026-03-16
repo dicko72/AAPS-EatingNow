@@ -490,13 +490,11 @@ open class ENPlugin @Inject constructor(
             else -> startMs to (endMs + oneDayMs)               // Crosses midnight, currently evening/daytime
         }
 
-        // Determine if EN is started yet
-        val ENStarted = (persistenceLayer.getENTemporaryTargetCountFromTime(EatingNowTimeStart).blockingGet() ?: 0) > 0 // true if there are any EN TTs today
-        val ENWfirstMeal = (persistenceLayer.getENTemporaryTargetCountFromTime(EatingNowTimeStart).blockingGet() ?: 0) == 1 // true if there is only one EN TT today
-        val ENActive = (!isTempTarget && ENStarted)
-
-        // Check to see if there is an EN TT and if PB
-        val ENWActive = persistenceLayer.getENTemporaryTargetActiveAt(dateUtil.now())?.reason
+        val ENStarted = (persistenceLayer.getENTemporaryTargetCountFromTime(EatingNowTimeStart).blockingGet() ?: 0) > 0 // Are there are any EN TTs today?
+        val ENWActive = persistenceLayer.getENTemporaryTargetActiveAt(dateUtil.now())?.reason // is there an active ENW or ENW prebolus?
+        val mealCount = persistenceLayer.getENTemporaryTargetCountFromTime(EatingNowTimeStart).blockingGet() // how many meals as ENW?
+        val ENWfirstMeal = mealCount == 1 && ENWActive != null // is this the firstmeal?
+        val ENActive = ENStarted && (!isTempTarget && ENWActive == null || ENWActive != null) // is EN activated?
 
         // Define the variables to be available to DetermineBasalEN.kt
         @Suppress("KotlinConstantConditions")
@@ -510,23 +508,15 @@ open class ENPlugin @Inject constructor(
             OvernightSMBRestrict = preferences.get(_root_ide_package_.app.aaps.core.keys.DoubleKey.Eatingnow_overnightSMB),
             RespectISFIOB = preferences.get(BooleanKey.EatingNow_RespectISFIOB),
 
-            // Breakfast
-            EN_bkfast_enw_minutes = preferences.get(IntKey.Eatingnow_bkfast_enw_minutes),
-            EN_bkfast_enw_pct = preferences.get(IntKey.Eatingnow_bkfast_enw_pct),
-            EN_bkfast_enw_cob_maxbolus = preferences.get(DoubleKey.Eatingnow_bkfast_enw_cob_maxbolus),
-            EN_bkfast_enw_uam_maxbolus = preferences.get(DoubleKey.Eatingnow_bkfast_enw_uam_maxbolus),
-            EN_bkfast_enw_maxiob = preferences.get(DoubleKey.Eatingnow_bkfast_enw_maxiob),
-            EN_bkfast_enw_prebolus = preferences.get(DoubleKey.Eatingnow_bkfast_enw_prebolus),
-
-            // ENW other Meals
-            EN_enw_minutes = preferences.get(IntKey.Eatingnow_enw_minutes),
-            EN_enw_pct = preferences.get(IntKey.Eatingnow_enw_pct),
-            EN_enw_smb_pct = preferences.get(IntKey.Eatingnow_enw_smb_pct),
-            EN_enw_cob_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus),
-            EN_enw_uam_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_uam_maxbolus),
-            EN_enw_maxiob = preferences.get(DoubleKey.Eatingnow_enw_maxiob),
-            EN_enw_prebolus = preferences.get(DoubleKey.Eatingnow_enw_prebolus),
-            EN_enw_uamplus_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus),
+            // ENW variables
+            ENW_minutes = preferences.get(IntKey.Eatingnow_enw_minutes),
+            ENW_pct = preferences.get(IntKey.Eatingnow_enw_pct),
+            ENW_smb_pct = preferences.get(IntKey.Eatingnow_enw_smb_pct),
+            ENW_cob_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus),
+            ENW_uam_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_uam_maxbolus),
+            ENW_maxiob = preferences.get(DoubleKey.Eatingnow_enw_maxiob),
+            ENW_prebolus = preferences.get(DoubleKey.Eatingnow_enw_prebolus),
+            ENW_uamplus_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus),
         )
 
         val microBolusAllowed = constraintsChecker.isSMBModeEnabled(ConstraintObject(tempBasalFallback.not(), aapsLogger)).also { inputConstraints.copyReasons(it) }.value()
@@ -751,19 +741,20 @@ open class ENPlugin @Inject constructor(
                 // Eating Now Window submenu options
                 addPreference(preferenceManager.createPreferenceScreen(context).apply {
                     key = "eating_now3a"
-                    title = "ENW Breakfast Settings"
-                    summary = "ENW Settings for the first meal of the day."
+                    title = "ENW Settings"
+                    summary = "ENW Settings for when there is an active ENW running."
                     addPreference(androidx.preference.Preference(context).apply {
-                        title = "ENW Breakfast Settings"
-                        summary = "ENW Settings for the first meal of the day."
+                        title = "ENW Settings"
+                        summary = "ENW Settings"
                         isSelectable = false
                     })
-                    addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_bkfast_enw_minutes, dialogMessage = R.string.Eatingnow_bkfast_enw_minutes_summary, title = R.string.Eatingnow_bkfast_enw_minutes_title))
-                    addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_bkfast_enw_pct, dialogMessage = R.string.Eatingnow_bkfast_enw_pct_summary, title = R.string.Eatingnow_bkfast_enw_pct_title))
-                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_bkfast_enw_cob_maxbolus, dialogMessage = R.string.Eatingnow_bkfast_enw_cob_maxbolus_summary, title = R.string.Eatingnow_bkfast_enw_cob_maxbolus_title))
-                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_bkfast_enw_uam_maxbolus, dialogMessage = R.string.Eatingnow_bkfast_enw_uam_maxbolus_summary, title = R.string.Eatingnow_bkfast_enw_uam_maxbolus_title))
-                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_bkfast_enw_maxiob, dialogMessage = R.string.Eatingnow_bkfast_enw_maxiob_summary, title = R.string.Eatingnow_bkfast_enw_maxiob_title))
-                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_bkfast_enw_prebolus, dialogMessage = R.string.Eatingnow_bkfast_enw_prebolus_summary, title = R.string.Eatingnow_bkfast_enw_prebolus_title))
+                    addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_enw_minutes, dialogMessage = R.string.Eatingnow_enw_minutes_summary, title = R.string.Eatingnow_enw_minutes_title))
+                    addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_enw_pct, dialogMessage = R.string.Eatingnow_enw_pct_summary, title = R.string.Eatingnow_enw_pct_title))
+                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_cob_maxbolus, dialogMessage = R.string.Eatingnow_enw_cob_maxbolus_summary, title = R.string.Eatingnow_enw_cob_maxbolus_title))
+                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_uam_maxbolus, dialogMessage = R.string.Eatingnow_enw_uam_maxbolus_summary, title = R.string.Eatingnow_enw_uam_maxbolus_title))
+                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_maxiob, dialogMessage = R.string.Eatingnow_enw_maxiob_summary, title = R.string.Eatingnow_enw_maxiob_title))
+                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_prebolus, dialogMessage = R.string.Eatingnow_enw_prebolus_summary, title = R.string.Eatingnow_enw_prebolus_title))
+                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_uamplus_maxbolus, dialogMessage = R.string.Eatingnow_enw_uamplus_maxbolus_summary, title = R.string.Eatingnow_enw_uamplus_maxbolus_title))
                 })
             })
 

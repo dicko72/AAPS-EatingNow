@@ -17,23 +17,15 @@ data class ENConfig(
     var OvernightSMBRestrict: Double,
     var RespectISFIOB: Boolean,
 
-    // ENW Breakfast
-    var EN_bkfast_enw_minutes: Int,
-    var EN_bkfast_enw_pct: Int,
-    var EN_bkfast_enw_cob_maxbolus: Double,
-    var EN_bkfast_enw_uam_maxbolus: Double,
-    var EN_bkfast_enw_maxiob: Double,
-    var EN_bkfast_enw_prebolus: Double,
-
-    // ENW other Meals
-    var EN_enw_minutes: Int,
-    var EN_enw_pct: Int,
-    var EN_enw_cob_maxbolus: Double,
-    var EN_enw_uam_maxbolus: Double,
-    var EN_enw_maxiob: Double,
-    var EN_enw_prebolus: Double,
-    var EN_enw_smb_pct: Int,
-    var EN_enw_uamplus_maxbolus: Double,
+    // ENW variables
+    var ENW_minutes: Int,
+    var ENW_pct: Int,
+    var ENW_cob_maxbolus: Double,
+    var ENW_uam_maxbolus: Double,
+    var ENW_maxiob: Double,
+    var ENW_prebolus: Double,
+    var ENW_smb_pct: Int,
+    var ENW_uamplus_maxbolus: Double,
 
     // Outside ENW
     // Outside ENW maxBolus
