@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.plugins.aps.EN
 
 import app.aaps.core.data.model.TT
@@ -64,7 +65,15 @@ class DetermineBasalEN @Inject constructor(
     //if (profile.out_units === "mmol/L") round(value / 18, 1).toFixed(1);
     //else Math.round(value);
 
-    fun enable_smb(profile: OapsProfile, microBolusAllowed: Boolean, meal_data: MealData, target_bg: Double): Boolean {
+    fun enable_smb(profile: OapsProfile, microBolusAllowed: Boolean, meal_data: MealData, target_bg: Double, enConfig: ENConfig, bg: Double): Boolean {
+
+        // Disable SMB overnight when option enabled and BG is too low
+        val restrictMgdl = profileUtil.convertToMgdlDetect(enConfig.OvernightSMBRestrict) + target_bg
+        if (!enConfig.ENActive && !profile.temptargetSet && bg <= restrictMgdl) {
+            consoleError.add("SMB disabled: EN inactive and BG ${convert_bg(bg)} <= overnight limit of ${convert_bg(restrictMgdl)}")
+            return false
+        }
+
         // disable SMB when a high temptarget is set
         if (!microBolusAllowed) {
             consoleError.add("SMB disabled (!microBolusAllowed)")
@@ -401,7 +410,7 @@ class DetermineBasalEN @Inject constructor(
         ZTpredBGs.add(bg)
         UAMpredBGs.add(bg)
 
-        var enableSMB = enable_smb(profile, microBolusAllowed, meal_data, target_bg)
+        var enableSMB = enable_smb(profile, microBolusAllowed, meal_data, target_bg, enConfig, bg)
 
         // enable UAM (if enabled in preferences)
         val enableUAM = profile.enableUAM
