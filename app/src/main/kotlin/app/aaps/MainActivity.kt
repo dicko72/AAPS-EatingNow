@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps
 
 import android.content.Context
@@ -290,23 +291,23 @@ class MainActivity : DaggerAppCompatActivityWithResult() {
         passwordResetCheck(this)
         exportPasswordResetCheck(this)
 
-        // check if identification is set
-        if (config.isDev() && preferences.get(StringKey.MaintenanceIdentification).isBlank())
-            uiInteraction.addNotificationWithAction(
-                id = Notification.IDENTIFICATION_NOT_SET,
-                text = rh.gs(R.string.identification_not_set),
-                level = Notification.INFO,
-                buttonText = R.string.set,
-                action = Runnable {
-                    preferences.put(BooleanKey.GeneralSimpleMode, false)
-                    startActivity(
-                        Intent(this@MainActivity, PreferencesActivity::class.java)
-                            .setAction("info.nightscout.androidaps.MainActivity")
-                            .putExtra(UiInteraction.PLUGIN_NAME, MaintenancePlugin::class.java.simpleName)
-                    )
-                },
-                validityCheck = { config.isDev() && preferences.get(StringKey.MaintenanceIdentification).isBlank() }
-            )
+        // // check if identification is set
+        // if (config.isDev() && preferences.get(StringKey.MaintenanceIdentification).isBlank())
+        //     uiInteraction.addNotificationWithAction(
+        //         id = Notification.IDENTIFICATION_NOT_SET,
+        //         text = rh.gs(R.string.identification_not_set),
+        //         level = Notification.INFO,
+        //         buttonText = R.string.set,
+        //         action = Runnable {
+        //             preferences.put(BooleanKey.GeneralSimpleMode, false)
+        //             startActivity(
+        //                 Intent(this@MainActivity, PreferencesActivity::class.java)
+        //                     .setAction("info.nightscout.androidaps.MainActivity")
+        //                     .putExtra(UiInteraction.PLUGIN_NAME, MaintenancePlugin::class.java.simpleName)
+        //             )
+        //         },
+        //         validityCheck = { config.isDev() && preferences.get(StringKey.MaintenanceIdentification).isBlank() }
+        //     )
 
         if (preferences.get(StringKey.ProtectionMasterPassword) == "")
             uiInteraction.addNotificationWithAction(
