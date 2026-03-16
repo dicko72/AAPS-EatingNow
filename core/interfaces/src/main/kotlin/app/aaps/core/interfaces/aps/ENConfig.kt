@@ -11,9 +11,9 @@ data class ENConfig(
     //General
     var ENTimeStart: Long,
     var ENTimeEnd: Long,
-    var ENStarted: Boolean,
+    var ENActive: Boolean,
     var ENWfirstMeal: Boolean,
-    var ENActiveTT: TT.Reason?,
+    var ENWActive: TT.Reason?,
     var OvernightSMBRestrict: Double,
     var RespectISFIOB: Boolean,
 

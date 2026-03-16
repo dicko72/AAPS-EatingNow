@@ -493,9 +493,10 @@ open class ENPlugin @Inject constructor(
         // Determine if EN is started yet
         val ENStarted = (persistenceLayer.getENTemporaryTargetCountFromTime(EatingNowTimeStart).blockingGet() ?: 0) > 0 // true if there are any EN TTs today
         val ENWfirstMeal = (persistenceLayer.getENTemporaryTargetCountFromTime(EatingNowTimeStart).blockingGet() ?: 0) == 1 // true if there is only one EN TT today
+        val ENActive = (!isTempTarget && ENStarted)
 
         // Check to see if there is an EN TT and if PB
-        val ENActiveTT = persistenceLayer.getENTemporaryTargetActiveAt(dateUtil.now())?.reason
+        val ENWActive = persistenceLayer.getENTemporaryTargetActiveAt(dateUtil.now())?.reason
 
         // Define the variables to be available to DetermineBasalEN.kt
         @Suppress("KotlinConstantConditions")
@@ -503,9 +504,9 @@ open class ENPlugin @Inject constructor(
             // General
             ENTimeStart = EatingNowTimeStart,
             ENTimeEnd = EatingNowTimeEnd,
-            ENStarted = ENStarted,
+            ENActive = ENActive,
             ENWfirstMeal = ENWfirstMeal,
-            ENActiveTT = ENActiveTT,
+            ENWActive = ENWActive,
             OvernightSMBRestrict = preferences.get(_root_ide_package_.app.aaps.core.keys.DoubleKey.Eatingnow_overnightSMB),
             RespectISFIOB = preferences.get(BooleanKey.EatingNow_RespectISFIOB),
 
