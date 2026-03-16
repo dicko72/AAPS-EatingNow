@@ -29,6 +29,7 @@ import app.aaps.core.interfaces.utils.DecimalFormatter
 import app.aaps.core.interfaces.utils.HardLimits
 import app.aaps.core.interfaces.utils.SafeParse
 import app.aaps.core.keys.BooleanNonKey
+import app.aaps.core.keys.DoubleKey
 import app.aaps.core.keys.IntKey
 import app.aaps.core.keys.UnitDoubleKey
 import app.aaps.core.objects.constraints.ConstraintObject
@@ -125,7 +126,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         val maxIOB = hardLimits.maxIobSMB()
         binding.enwIob.setParams(
             savedInstanceState?.getDouble("enw_iob")
-                ?: preferences.get(UnitDoubleKey.OverviewEatingNowIOB).toDouble(), 0.0, maxIOB, activePlugin.activePump.pumpDescription.bolusStep, decimalFormatter.pumpSupportedBolusFormat(activePlugin.activePump.pumpDescription.bolusStep), false, binding
+                ?: preferences.get(DoubleKey.Eatingnow_enw_maxiob), 0.0, maxIOB, activePlugin.activePump.pumpDescription.bolusStep, decimalFormatter.pumpSupportedBolusFormat(activePlugin.activePump.pumpDescription.bolusStep), false, binding
                 .okcancel.ok, textWatcher
         )
 
@@ -158,7 +159,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         }
 
         // reset to Eating Now defaults
-        binding.duration.value =  preferences.get(IntKey.OverviewEatingNowDuration).toDouble()
+        binding.duration.value =  preferences.get(IntKey.Eatingnow_enw_minutes).toDouble()
         binding.reasonList.setText(rh.gs(app.aaps.core.ui.R.string.eatingnow), false)
 
         // when the prebolus button is pressed
@@ -166,7 +167,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
             if (binding.prebolus.isChecked) {
                 binding.reasonList.setText(rh.gs(app.aaps.core.ui.R.string.eatingnow_prebolus), false)
                 binding.amount.visibility = View.VISIBLE // show prebolus amount when using PB is checked
-                binding.amount.value = preferences.get(UnitDoubleKey.OverviewEatingNowPreBolus).toDouble()
+                binding.amount.value = preferences.get(DoubleKey.Eatingnow_enw_prebolus)
             }
             else {
                 binding.reasonList.setText(rh.gs(app.aaps.core.ui.R.string.eatingnow), false)
@@ -196,8 +197,8 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         val unitResId = if (profileFunction.getUnits() == GlucoseUnit.MGDL) app.aaps.core.ui.R.string.mgdl else app.aaps.core.ui.R.string.mmol
         val target = binding.temptarget.value
         val duration = binding.duration.value.toInt()
-        sp.putDouble("ENdb_PreBolusUnits", binding.amount.value) // add the prebolus amount for DetermineBasalAdapterENJS.kt
-        sp.putDouble("ENdb_ENWIOBUnits", binding.enwIob.value) // add the ENWIOB amount for DetermineBasalAdapterENJS.kt
+        // sp.putDouble("ENdb_PreBolusUnits", binding.amount.value) // add the prebolus amount for DetermineBasalAdapterENJS.kt
+        // sp.putDouble("ENdb_ENWIOBUnits", binding.enwIob.value) // add the ENWIOB amount for DetermineBasalAdapterENJS.kt
         if (target != 0.0 && duration != 0) {
             actions.add(rh.gs(app.aaps.core.ui.R.string.target_label) + ": " + profileUtil.stringInCurrentUnitsDetect(target) + " " + rh.gs(unitResId))
             actions.add(rh.gs(app.aaps.core.ui.R.string.duration) + ": " + rh.gs(app.aaps.core.ui.R.string.format_mins, duration))
