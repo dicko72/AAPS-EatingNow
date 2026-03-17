@@ -83,6 +83,7 @@ import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
 import kotlin.math.floor
+import kotlin.math.min
 import kotlin.math.ln
 import app.aaps.plugins.aps.openAPSSMB.GlucoseStatusCalculatorSMB
 
@@ -535,15 +536,15 @@ open class ENPlugin @Inject constructor(
             ENWActive = ENWActive,
             ENWStartTime = ENWStartTime,
             ENWEndTime = ENWEndTime,
-            ENWNetIOB = ENWNetIOB,
-            ENW_minutes = preferences.get(IntKey.Eatingnow_enw_minutes),
-            ENW_pct = preferences.get(IntKey.Eatingnow_enw_pct),
-            ENW_smb_pct = preferences.get(IntKey.Eatingnow_enw_smb_pct),
-            ENW_cob_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus),
-            ENW_uam_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_uam_maxbolus),
+            ENWNetIOB =  min(Round.roundTo(ENWNetIOB,0.01),0.0),
+            ENWminutes = preferences.get(IntKey.Eatingnow_enw_minutes),
+            ENWpct = preferences.get(IntKey.Eatingnow_enw_pct),
+            ENWsmbPct = preferences.get(IntKey.Eatingnow_enw_smb_pct),
+            ENWcobMaxbolus = preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus),
+            ENWuamMaxbolus = preferences.get(DoubleKey.Eatingnow_enw_uam_maxbolus),
             ENWNetIOBMax = preferences.get(DoubleKey.Eatingnow_enw_maxiob),
-            ENW_prebolus = preferences.get(DoubleKey.Eatingnow_enw_prebolus),
-            ENW_uamplus_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus),
+            ENWprebolus = Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_prebolus), 0.01),
+            ENWuamPlusMaxbolus = preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus),
         )
 
         val microBolusAllowed = constraintsChecker.isSMBModeEnabled(ConstraintObject(tempBasalFallback.not(), aapsLogger)).also { inputConstraints.copyReasons(it) }.value()

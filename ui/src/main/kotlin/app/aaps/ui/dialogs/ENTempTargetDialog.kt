@@ -27,6 +27,7 @@ import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.sharedPreferences.SP
 import app.aaps.core.interfaces.utils.DecimalFormatter
 import app.aaps.core.interfaces.utils.HardLimits
+import app.aaps.core.interfaces.utils.Round
 import app.aaps.core.interfaces.utils.SafeParse
 import app.aaps.core.keys.BooleanNonKey
 import app.aaps.core.keys.DoubleKey
@@ -199,6 +200,8 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         val duration = binding.duration.value.toInt()
         // sp.putDouble("ENdb_PreBolusUnits", binding.amount.value) // add the prebolus amount for DetermineBasalAdapterENJS.kt
         // sp.putDouble("ENdb_ENWIOBUnits", binding.enwIob.value) // add the ENWIOB amount for DetermineBasalAdapterENJS.kt
+        val roundedPrebolus = Round.roundTo(binding.amount.value, 0.01)
+        preferences.put(DoubleKey.Eatingnow_enw_prebolus, roundedPrebolus) // update the prefs with the new rounded PB value
         if (target != 0.0 && duration != 0) {
             actions.add(rh.gs(app.aaps.core.ui.R.string.target_label) + ": " + profileUtil.stringInCurrentUnitsDetect(target) + " " + rh.gs(unitResId))
             actions.add(rh.gs(app.aaps.core.ui.R.string.duration) + ": " + rh.gs(app.aaps.core.ui.R.string.format_mins, duration))
