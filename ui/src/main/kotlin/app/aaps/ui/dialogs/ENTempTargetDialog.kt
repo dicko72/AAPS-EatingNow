@@ -191,6 +191,14 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
 
     override fun submit(): Boolean {
         if (_binding == null) return false
+
+        // Check prebolus is not larger than the ENW IOB limit
+        val roundedPrebolus = Round.roundTo(binding.amount.value, 0.01)
+        if (binding.prebolus.isChecked && roundedPrebolus > binding.enwIob.value) {
+            ToastUtils.warnToast(ctx, "Prebolus cannot exceed ENW-IOB limit")
+            return false
+        }
+
         val insulin = SafeParse.stringToDouble(binding.amount.text)
         val insulinAfterConstraints = constraintChecker.applyBolusConstraints(ConstraintObject(insulin, aapsLogger)).value()
         val actions: LinkedList<String> = LinkedList()
@@ -200,12 +208,13 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         val duration = binding.duration.value.toInt()
         // sp.putDouble("ENdb_PreBolusUnits", binding.amount.value) // add the prebolus amount for DetermineBasalAdapterENJS.kt
         // sp.putDouble("ENdb_ENWIOBUnits", binding.enwIob.value) // add the ENWIOB amount for DetermineBasalAdapterENJS.kt
-        val roundedPrebolus = Round.roundTo(binding.amount.value, 0.01)
-        preferences.put(DoubleKey.Eatingnow_enw_prebolus, roundedPrebolus) // update the prefs with the new rounded PB value
+
+        // preferences.put(DoubleKey.Eatingnow_enw_prebolus, roundedPrebolus) // update the prefs with the new rounded PB value
         if (target != 0.0 && duration != 0) {
             actions.add(rh.gs(app.aaps.core.ui.R.string.target_label) + ": " + profileUtil.stringInCurrentUnitsDetect(target) + " " + rh.gs(unitResId))
             actions.add(rh.gs(app.aaps.core.ui.R.string.duration) + ": " + rh.gs(app.aaps.core.ui.R.string.format_mins, duration))
-            actions.add("Pre-Bolus: " + decimalFormatter.toPumpSupportedBolus(insulinAfterConstraints, activePlugin.activePump.pumpDescription.bolusStep).formatColor(context, rh, app.aaps.core.ui.R.attr.bolusColor))
+            // actions.add("Pre-Bolus: " + decimalFormatter.toPumpSupportedBolus(insulinAfterConstraints, activePlugin.activePump.pumpDescription.bolusStep).formatColor(context, rh, app.aaps.core.ui.R.attr.bolusColor))
+            actions.add("Pre-Bolus: " + binding.amount.value)
             actions.add("ENW-IOB Limit: " + binding.enwIob.text)
         } else {
             actions.add(rh.gs(app.aaps.core.ui.R.string.stoptemptarget))
@@ -265,6 +274,9 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
                 }
 
                 if (duration == 10) preferences.put(BooleanNonKey.ObjectivesTempTargetUsed, true)
+                
+                // Only save the preferences if the user actually clicked "OK" in the confirmation dialog.
+                preferences.put(DoubleKey.Eatingnow_enw_prebolus, roundedPrebolus) // update the prefs with the new rounded PB value
             })
         }
         return true

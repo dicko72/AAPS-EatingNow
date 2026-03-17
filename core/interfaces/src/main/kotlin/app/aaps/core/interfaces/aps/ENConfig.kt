@@ -14,6 +14,7 @@ data class ENConfig(
     var ENActive: Boolean,
     var OvernightSMBRestrict: Double,
     var RespectISFIOB: Boolean,
+    var SafetyMaxBolus: Double,
 
     // ENW variables
     var ENWfirstMeal: Boolean,

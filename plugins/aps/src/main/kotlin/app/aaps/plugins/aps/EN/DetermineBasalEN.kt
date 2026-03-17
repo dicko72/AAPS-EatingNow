@@ -14,6 +14,7 @@ import app.aaps.core.interfaces.aps.Predictions
 import app.aaps.core.interfaces.aps.RT
 import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
+import app.aaps.core.keys.DoubleKey
 import java.text.DecimalFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -855,12 +856,17 @@ class DetermineBasalEN @Inject constructor(
             }
         }
 
-        if (enableSMB && minGuardBG < threshold) {
+        // --- EN PREBOLUS CHECK ---
+        val remainingPrebolus = (enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0)
+        val isPrebolusing = enConfig.ENWActive == TT.Reason.EATING_NOW_PB && remainingPrebolus > 0.0
+        // -------------------------
+
+        if (enableSMB && minGuardBG < threshold && !isPrebolusing) {
             consoleError.add("minGuardBG ${convert_bg(minGuardBG)} projected below ${convert_bg(threshold)} - disabling SMB")
             //rT.reason += "minGuardBG "+minGuardBG+"<"+threshold+": SMB disabled; ";
             enableSMB = false
         }
-        if (maxDelta > 0.20 * bg) {
+        if (maxDelta > 0.20 * bg && !isPrebolusing) {
             consoleError.add("maxDelta ${convert_bg(maxDelta)} > 20% of BG ${convert_bg(bg)} - disabling SMB")
             rT.reason.append("maxDelta " + convert_bg(maxDelta) + " > 20% of BG " + convert_bg(bg) + ": SMB disabled; ")
             enableSMB = false
@@ -891,7 +897,7 @@ class DetermineBasalEN @Inject constructor(
             rT.reason.append("IOB ${iob_data.iob} < ${round(-profile.current_basal * 20 / 60, 2)}")
             rT.reason.append(" and minDelta ${convert_bg(minDelta)} > expectedDelta ${convert_bg(expectedDelta)}; ")
             // predictive low glucose suspend mode: BG is / is projected to be < threshold
-        } else if (bg < threshold || minGuardBG < threshold) {
+        } else if ((bg < threshold || minGuardBG < threshold) && !isPrebolusing) {
             rT.reason.append("minGuardBG " + convert_bg(minGuardBG) + "<" + convert_bg(threshold))
             bgUndershoot = target_bg - minGuardBG
             val worstCaseInsulinReq = bgUndershoot / sens
@@ -909,11 +915,6 @@ class DetermineBasalEN @Inject constructor(
             rT.reason.append("; Canceling temp at " + minutes + "m past the hour. ")
             return setTempBasal(0.0, 0, profile, rT, currenttemp)
         }
-
-        // --- EN PREBOLUS CHECK ---
-        val remainingPrebolus = (enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0)
-        val isPrebolusing = enConfig.ENWActive == TT.Reason.EATING_NOW_PB && remainingPrebolus > 0.0
-        // -------------------------
 
         if (eventualBG < min_bg && !isPrebolusing) { // if eventual BG is below target:
             rT.reason.append("Eventual BG ${convert_bg(eventualBG)} < ${convert_bg(min_bg)}")
@@ -1049,7 +1050,7 @@ class DetermineBasalEN @Inject constructor(
             // insulinReq is the additional insulin required to get minPredBG down to target_bg
             //console.error(minPredBG,eventualBG);
             var insulinReq = if (isPrebolusing) {
-                rT.reason.append("Prebolus Active! Forcing $remainingPrebolus U; ")
+                // rT.reason.append("Prebolusing $remainingPrebolus U; ")
                 remainingPrebolus
             } else {
                 if (dynIsfMode) round((min(minPredBG, eventualBG) - target_bg) / future_sens, 2)
@@ -1073,14 +1074,6 @@ class DetermineBasalEN @Inject constructor(
                 // AllowZT = false;
             }
 
-            // // PreBolus using EN Button
-            // val remainingPrebolus = enConfig.ENWprebolus - enConfig.ENWNetIOB // Calculate how much prebolus is still needed
-            // if (enConfig.ENWActive == TT.Reason.EATING_NOW_PB && enConfig.ENWprebolus > 0 && enConfig.ENWprebolus > 0 && remainingPrebolus > 0) {
-            //     // Restrict the insulin requirement so it doesn't exceed the remaining prebolus
-            //     insulinReq = insulinReq.coerceAtMost(remainingPrebolus)
-            //     consoleError.add("Prebolus phase active. Limiting insulinReq to $insulinReq")
-            // }
-
             // rate required to deliver insulinReq more insulin over 30m:
             var rate = basal + (2 * insulinReq)
             rate = round_basal(rate)
@@ -1103,11 +1096,12 @@ class DetermineBasalEN @Inject constructor(
                 }
 
                 // EN PreBolus Override for maxBolus
-                if (isPrebolusing) maxBolus = round(remainingPrebolus,1)
-
+                if (isPrebolusing) {
+                    maxBolus = round(remainingPrebolus,1)
+                    maxBolus = min(maxBolus, enConfig.SafetyMaxBolus)
+                }
 
                 // bolus 1/2 the insulinReq, up to maxBolus, rounding down to nearest bolus increment
-
                 val roundSMBTo = 1 / profile.bolus_increment
                 val microBolus = if (isPrebolusing) {
                     Math.floor(Math.min(insulinReq, maxBolus) * roundSMBTo) / roundSMBTo // EN PreBolus Override for microBolus
@@ -1156,7 +1150,11 @@ class DetermineBasalEN @Inject constructor(
                 if (lastBolusAge > SMBInterval - 6.0) {   // 6s tolerance
                     if (microBolus > 0) {
                         rT.units = microBolus
-                        rT.reason.append("Microbolusing ${microBolus}U. ")
+                        if (isPrebolusing){
+                                rT.reason.append("Prebolusing ${microBolus}U. ")
+                        } else {
+                                rT.reason.append("Microbolusing ${microBolus}U. ")
+                        }
                     }
                 } else {
                     val nextBolusMins = (SMBInterval - lastBolusAge) / 60.0

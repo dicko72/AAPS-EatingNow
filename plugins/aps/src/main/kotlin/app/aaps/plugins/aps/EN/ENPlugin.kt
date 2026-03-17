@@ -86,6 +86,7 @@ import kotlin.math.floor
 import kotlin.math.min
 import kotlin.math.ln
 import app.aaps.plugins.aps.openAPSSMB.GlucoseStatusCalculatorSMB
+import kotlin.math.max
 
 @Singleton
 open class ENPlugin @Inject constructor(
@@ -520,7 +521,6 @@ open class ENPlugin @Inject constructor(
             tddCalculator.calculateIntervalNet(ENWStartTime, now, allowMissingData = true)?.totalAmount ?: 0.0
         } else 0.0
 
-
         // Define the variables to be available to DetermineBasalEN.kt
         @Suppress("KotlinConstantConditions")
         val enConfig = ENConfig(
@@ -530,13 +530,14 @@ open class ENPlugin @Inject constructor(
             ENActive = ENActive,
             OvernightSMBRestrict = preferences.get(_root_ide_package_.app.aaps.core.keys.DoubleKey.Eatingnow_overnightSMB),
             RespectISFIOB = preferences.get(BooleanKey.EatingNow_RespectISFIOB),
+            SafetyMaxBolus = preferences.get(DoubleKey.SafetyMaxBolus),
 
             // ENW variables
             ENWfirstMeal = ENWfirstMeal,
             ENWActive = ENWActive,
             ENWStartTime = ENWStartTime,
             ENWEndTime = ENWEndTime,
-            ENWNetIOB =  min(Round.roundTo(ENWNetIOB,0.01),0.0),
+            ENWNetIOB = max(Round.roundTo(ENWNetIOB, 0.01), 0.0),
             ENWminutes = preferences.get(IntKey.Eatingnow_enw_minutes),
             ENWpct = preferences.get(IntKey.Eatingnow_enw_pct),
             ENWsmbPct = preferences.get(IntKey.Eatingnow_enw_smb_pct),
