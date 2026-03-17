@@ -471,7 +471,7 @@ open class ENPlugin @Inject constructor(
             TDD = dynIsfResult.tdd ?: 0.0
         )
 
-        // Eating Now
+        // Eating Now Variables
 
         // Define the initial start time variables
         val startHour = preferences.get(IntKey.Eatingnow_timestart)
@@ -490,11 +490,35 @@ open class ENPlugin @Inject constructor(
             else -> startMs to (endMs + oneDayMs)               // Crosses midnight, currently evening/daytime
         }
 
-        val ENStarted = (persistenceLayer.getENTemporaryTargetCountFromTime(EatingNowTimeStart).blockingGet() ?: 0) > 0 // Are there are any EN TTs today?
-        val ENWActive = persistenceLayer.getENTemporaryTargetActiveAt(dateUtil.now())?.reason // is there an active ENW or ENW prebolus?
-        val mealCount = persistenceLayer.getENTemporaryTargetCountFromTime(EatingNowTimeStart).blockingGet() // how many meals as ENW?
-        val ENWfirstMeal = mealCount == 1 && ENWActive != null // is this the firstmeal?
+        // Fetch the list of ENW TTs ONCE from the database
+        val todaysENTargets = persistenceLayer.getENTemporaryTargetsFromTime(EatingNowTimeStart, true).blockingGet() ?: emptyList()
+
+        // Variables based on todays ENW TTs
+        val mealCount = todaysENTargets.size // how many meals as ENW
+        val ENStarted = todaysENTargets.isNotEmpty() // Are there are any EN TTs today?
+
+        // The most recent ENW TT
+        val lastENTT = todaysENTargets.maxByOrNull { it.timestamp }
+        val ENWStartTime = lastENTT?.timestamp
+        val ENWEndTime = lastENTT?.let { it.timestamp + (it.duration) }
+
+        // Are any ENW TTs in that list CURRENTLY active
+        val activeENTT = todaysENTargets.find {
+            val start = it.timestamp
+            val end = start + (it.duration)
+            now >= start && now < end // true if 'now' falls inside the target's time window
+        }
+
+        // Other ENW variables
+        val ENWActive = activeENTT?.reason // is there an active ENW or ENW prebolus?
+        val ENWfirstMeal = (mealCount == 1 && activeENTT != null) // is this the firstmeal?
         val ENActive = ENStarted && (!isTempTarget && ENWActive == null || ENWActive != null) // is EN activated?
+
+        // Calculate Net IOB (Using the start time of the most recent target)
+        val ENWNetIOB = if (ENWStartTime != null && ENWEndTime != null && now < ENWEndTime + T.hours(2).msecs()) {
+            tddCalculator.calculateIntervalNet(ENWStartTime, now, allowMissingData = true)?.totalAmount ?: 0.0
+        } else 0.0
+
 
         // Define the variables to be available to DetermineBasalEN.kt
         @Suppress("KotlinConstantConditions")
@@ -503,18 +527,21 @@ open class ENPlugin @Inject constructor(
             ENTimeStart = EatingNowTimeStart,
             ENTimeEnd = EatingNowTimeEnd,
             ENActive = ENActive,
-            ENWfirstMeal = ENWfirstMeal,
-            ENWActive = ENWActive,
             OvernightSMBRestrict = preferences.get(_root_ide_package_.app.aaps.core.keys.DoubleKey.Eatingnow_overnightSMB),
             RespectISFIOB = preferences.get(BooleanKey.EatingNow_RespectISFIOB),
 
             // ENW variables
+            ENWfirstMeal = ENWfirstMeal,
+            ENWActive = ENWActive,
+            ENWStartTime = ENWStartTime,
+            ENWEndTime = ENWEndTime,
+            ENWNetIOB = ENWNetIOB,
             ENW_minutes = preferences.get(IntKey.Eatingnow_enw_minutes),
             ENW_pct = preferences.get(IntKey.Eatingnow_enw_pct),
             ENW_smb_pct = preferences.get(IntKey.Eatingnow_enw_smb_pct),
             ENW_cob_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus),
             ENW_uam_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_uam_maxbolus),
-            ENW_maxiob = preferences.get(DoubleKey.Eatingnow_enw_maxiob),
+            ENWNetIOBMax = preferences.get(DoubleKey.Eatingnow_enw_maxiob),
             ENW_prebolus = preferences.get(DoubleKey.Eatingnow_enw_prebolus),
             ENW_uamplus_maxbolus = preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus),
         )

@@ -42,10 +42,9 @@ internal interface TemporaryTargetDao : TraceableDao<TemporaryTarget> {
     @Query("SELECT COUNT(*) FROM $TABLE_TEMPORARY_TARGETS WHERE timestamp >= :timestamp AND isValid = 1 AND referenceId IS NULL AND (reason = :reason1 OR reason = :reason2)")
     fun getENTemporaryTargetCountFromTime(timestamp: Long, reason1: TemporaryTarget.Reason, reason2: TemporaryTarget.Reason): Single<Int>
 
-    // // EATING NOW TT
-    // @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE timestamp >= :timestamp AND timestamp <= :to AND isValid = 1 AND referenceId IS NULL AND (reason = :reason1 OR reason = :reason2) ORDER BY timestamp ASC")
-    // fun getENTemporaryTargetDataFromTimetoTime(timestamp: Long, to: Long, reason1: TemporaryTarget.Reason, reason2: TemporaryTarget.Reason,): Single<List<TemporaryTarget>>
-    //
+    // EATING NOW TT from time
+    @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE timestamp >= :timestamp AND isValid = 1 AND referenceId IS NULL AND (reason = :reason1 OR reason = :reason2) ORDER BY timestamp ASC")
+    fun getENTemporaryTargetsFromTime(timestamp: Long, reason1: TemporaryTarget.Reason, reason2: TemporaryTarget.Reason,): Single<List<TemporaryTarget>>
 
     // EATING NOW TT at time
     @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE timestamp <= :timestamp AND (timestamp + duration) > :timestamp AND (reason = :reason1 OR reason = :reason2)  AND referenceId IS NULL AND isValid = 1 ORDER BY timestamp DESC LIMIT 1")

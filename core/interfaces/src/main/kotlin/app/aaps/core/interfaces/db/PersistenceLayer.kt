@@ -1053,6 +1053,7 @@ interface PersistenceLayer {
      */
     fun getENTemporaryTargetCountFromTime(timestamp: Long): Single<Int>
     fun getENTemporaryTargetActiveAt(timestamp: Long): TT?
+    fun getENTemporaryTargetsFromTime(timestamp: Long, ascending: Boolean): Single<List<TT>>
 
     /**
      *  Get temporary target by NS id
@@ -1447,5 +1448,4 @@ interface PersistenceLayer {
      * @return List of inserted records
      */
     fun insertOrUpdateApsResult(apsResult: APSResult): Single<TransactionResult<APSResult>>
-
 }

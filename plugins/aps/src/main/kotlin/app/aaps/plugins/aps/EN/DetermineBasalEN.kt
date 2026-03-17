@@ -809,6 +809,11 @@ class DetermineBasalEN @Inject constructor(
             rT.reason.append(", UAMpredBG " + convert_bg(lastUAMpredBG.toDouble()))
         }
         rT.reason.append("; ")
+
+        // Eating Now Reason
+        rT.reason.append("ENW-IOB " + enConfig.ENWNetIOB + "/" + enConfig.ENWNetIOBMax)
+        rT.reason.append("; ")
+
         // use naive_eventualBG if above 40, but switch to minGuardBG if both eventualBGs hit floor of 39
         var carbsReqBG = naive_eventualBG
         if (carbsReqBG < 40) {
@@ -1045,6 +1050,18 @@ class DetermineBasalEN @Inject constructor(
             if (insulinReq > max_iob - iob_data.iob) {
                 rT.reason.append("max_iob $max_iob, ")
                 insulinReq = max_iob - iob_data.iob
+            }
+
+
+            // ============== EATING NOW IOB RESTRICTION  ==============
+
+            // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
+            val ENWNetIOBRemaining = max(enConfig.ENWNetIOBMax - enConfig.ENWNetIOB, 0.0) // dont allow negative
+            if (enConfig.ENWNetIOBMax > 0 && insulinReq > ENWNetIOBRemaining) {
+                insulinReq = min(insulinReq,ENWNetIOBRemaining)
+                // rate = round_basal(profile.current_basal, profile);
+                //if (sens_predType == "UAM+") rate = whatever the rate is to get basal iob back to zero by the end of enw
+                // AllowZT = false;
             }
 
             // rate required to deliver insulinReq more insulin over 30m:

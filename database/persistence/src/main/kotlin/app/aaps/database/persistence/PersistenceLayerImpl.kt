@@ -1407,9 +1407,9 @@ class PersistenceLayerImpl @Inject constructor(
                 transactionResult
             }
 
-    // // Eating Now: Get the first EN TT since EN start time
-    // override fun getENTemporaryTargetDataFromTimetoTime(timestamp: Long, to: Long, ascending: Boolean): Single<List<TT>> =
-    //     repository.getENTemporaryTargetDataFromTimetoTime(timestamp, to, ascending).map { list -> list.asSequence().map { it.fromDb() }.toList() }
+    // Eating Now Get all the EN TT since time
+    override fun getENTemporaryTargetsFromTime(timestamp: Long, ascending: Boolean): Single<List<TT>> =
+        repository.getENTemporaryTargetsFromTime(timestamp, ascending).map { list -> list.asSequence().map { it.fromDb() }.toList() }
 
     // Eating Now Count EN TempTargets since EN start time
     override fun getENTemporaryTargetCountFromTime(timestamp: Long): Single<Int> =

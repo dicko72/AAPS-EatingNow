@@ -224,12 +224,11 @@ class AppRepository @Inject internal constructor(
         database.temporaryTargetDao.getENTemporaryTargetCountFromTime(from, TemporaryTarget.Reason.EATING_NOW, TemporaryTarget.Reason.EATING_NOW_PB)
             .subscribeOn(Schedulers.io())
 
-    // // Eating Now: Get the first EN TT since EN start time
-    // fun getENTemporaryTargetDataFromTimetoTime(timestamp: Long, to: Long, ascending: Boolean): Single<List<TemporaryTarget>> =
-    //     database.temporaryTargetDao.getENTemporaryTargetDataFromTimetoTime(timestamp, to, TemporaryTarget.Reason.EATING_NOW, TemporaryTarget.Reason.EATING_NOW_PB)
-    //         .map { if (!ascending) it.reversed() else it }
-    //         .subscribeOn(Schedulers.io())
-    //
+    // Eating Now: Get the first EN TT since EN start time
+    fun getENTemporaryTargetsFromTime(timestamp: Long, ascending: Boolean): Single<List<TemporaryTarget>> =
+        database.temporaryTargetDao.getENTemporaryTargetsFromTime(timestamp, TemporaryTarget.Reason.EATING_NOW, TemporaryTarget.Reason.EATING_NOW_PB)
+            .map { if (!ascending) it.reversed() else it }
+            .subscribeOn(Schedulers.io())
 
     // Eating Now: Get the EN TT at time
     fun getENTemporaryTargetActiveAt(timestamp: Long):Maybe<TemporaryTarget> =

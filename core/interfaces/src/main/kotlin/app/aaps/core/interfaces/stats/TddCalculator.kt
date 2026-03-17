@@ -61,6 +61,16 @@ interface TddCalculator {
     fun calculateInterval(startTime: Long, endTime: Long, allowMissingData: Boolean): TDD?
 
     /**
+     * Calculate interval in the past for Net Insulin
+     * @param startTime start
+     * @param endTime end
+     * @param allowMissingData if true intervals without data are allowed (no profile, bolus, TBR)
+     * @return Net insulin or null if data is not available
+     */
+    fun calculateIntervalNet(startTime: Long, endTime: Long, allowMissingData: Boolean): TDD?
+
+
+    /**
      * Calculate average TDD from list of daily TDDs
      * @param tdds list of precalculated data for days
      * @return [AverageTDD] or null if data is not available
