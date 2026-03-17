@@ -20,15 +20,15 @@ data class ENConfig(
     var ENWActive: TT.Reason?,
     var ENWStartTime: Long?,
     var ENWEndTime: Long?,
-    var ENW_minutes: Int,
-    var ENW_pct: Int,
-    var ENW_cob_maxbolus: Double,
-    var ENW_uam_maxbolus: Double,
+    var ENWminutes: Int,
+    var ENWpct: Int,
+    var ENWcobMaxbolus: Double,
+    var ENWuamMaxbolus: Double,
     var ENWNetIOB: Double,
     var ENWNetIOBMax: Double,
-    var ENW_prebolus: Double,
-    var ENW_smb_pct: Int,
-    var ENW_uamplus_maxbolus: Double,
+    var ENWprebolus: Double,
+    var ENWsmbPct: Int,
+    var ENWuamPlusMaxbolus: Double,
 
     // Outside ENW
     // Outside ENW maxBolus
