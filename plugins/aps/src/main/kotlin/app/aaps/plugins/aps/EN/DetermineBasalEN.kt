@@ -61,7 +61,7 @@ class DetermineBasalEN @Inject constructor(
     }
 
     fun convert_bg(value: Double): String =
-        profileUtil.fromMgdlToStringInUnits(value).replace("-0.0", "0.0")
+        profileUtil.stringInCurrentUnitsDetect(value).replace("-0.0", "0.0")
     //DecimalFormat("0.#").format(profileUtil.fromMgdlToUnits(value))
     //if (profile.out_units === "mmol/L") round(value / 18, 1).toFixed(1);
     //else Math.round(value);
