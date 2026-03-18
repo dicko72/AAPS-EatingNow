@@ -739,23 +739,23 @@ open class ENPlugin @Inject constructor(
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.EatingNow_RespectISFIOB, summary = R.string.EatingNow_RespectISFIOB_summary, title = R.string.EatingNow_RespectISFIOB_title))
             })
 
-            addPreference(preferenceManager.createPreferenceScreen(context).apply {
-                key = "eating_now2"
-                title = rh.gs(app.aaps.core.ui.R.string.en_pref_uam_plus_title)
-                addPreference(
-                    AdaptiveIntentPreference(
-                        ctx = context,
-                        intentKey = IntentKey.ApsLinkToDocs,
-                        intent = Intent().apply { action = Intent.ACTION_VIEW; data = Uri.parse(rh.gs(R.string.openapsama_link_to_preference_json_doc)) },
-                        summary = R.string.openapsama_link_to_preference_json_doc_txt
-                    )
-                )
-                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsAlwaysUseShortDeltas, summary = R.string.always_use_short_avg_summary, title = R.string.always_use_short_avg))
-                addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsMaxDailyMultiplier, dialogMessage = R.string.openapsama_max_daily_safety_multiplier_summary, title = R.string.openapsama_max_daily_safety_multiplier))
-                addPreference(
-                    AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsMaxCurrentBasalMultiplier, dialogMessage = R.string.openapsama_current_basal_safety_multiplier_summary, title = R.string.openapsama_current_basal_safety_multiplier)
-                )
-            })
+            // addPreference(preferenceManager.createPreferenceScreen(context).apply {
+            //     key = "eating_now2"
+            //     title = rh.gs(app.aaps.core.ui.R.string.en_pref_uam_plus_title)
+            //     addPreference(
+            //         AdaptiveIntentPreference(
+            //             ctx = context,
+            //             intentKey = IntentKey.ApsLinkToDocs,
+            //             intent = Intent().apply { action = Intent.ACTION_VIEW; data = Uri.parse(rh.gs(R.string.openapsama_link_to_preference_json_doc)) },
+            //             summary = R.string.openapsama_link_to_preference_json_doc_txt
+            //         )
+            //     )
+            //     addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsAlwaysUseShortDeltas, summary = R.string.always_use_short_avg_summary, title = R.string.always_use_short_avg))
+            //     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsMaxDailyMultiplier, dialogMessage = R.string.openapsama_max_daily_safety_multiplier_summary, title = R.string.openapsama_max_daily_safety_multiplier))
+            //     addPreference(
+            //         AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsMaxCurrentBasalMultiplier, dialogMessage = R.string.openapsama_current_basal_safety_multiplier_summary, title = R.string.openapsama_current_basal_safety_multiplier)
+            //     )
+            // })
 
             // Eating Now Window menu options
             addPreference(preferenceManager.createPreferenceScreen(context).apply {
