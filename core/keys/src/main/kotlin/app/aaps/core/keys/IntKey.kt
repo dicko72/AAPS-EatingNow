@@ -82,12 +82,8 @@ enum class IntKey(
     Eatingnow_timestart("eatingnow_timestart", 9, 0, 23, defaultedBySM = true),
     Eatingnow_timeend("eatingnow_timeend", 17, 0, 23, defaultedBySM = true),
 
-    // Breakfast
-    Eatingnow_bkfast_enw_minutes("Eatingnow_bkfast_enw_minutes", 0, 0, 120, defaultedBySM = true),
-    Eatingnow_bkfast_enw_pct("Eatingnow_bkfast_enw_pct", 100, 1, 100, defaultedBySM = true),
-
     // ENW other Meals
-    Eatingnow_enw_minutes("Eatingnow_enw_minutes", 0, 0, 120, defaultedBySM = true),
+    Eatingnow_enw_minutes("Eatingnow_enw_minutes", 15, 0, 120, defaultedBySM = true),
     Eatingnow_enw_pct("Eatingnow_enw_pct", 100, 1, 100, defaultedBySM = true),
     Eatingnow_enw_smb_pct("Eatingnow_enw_smb_pct", 100, 1, 100, defaultedBySM = true);
 }
