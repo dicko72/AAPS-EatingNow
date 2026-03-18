@@ -787,15 +787,15 @@ open class ENPlugin @Inject constructor(
                 })
             })
 
-            addPreference(preferenceManager.createPreferenceScreen(context).apply {
-                key = "eating_now4"
-                title = rh.gs(app.aaps.core.ui.R.string.en_pref_isf_title)
-                addPreference(androidx.preference.Preference(context).apply {
-                    summary = "These settings are for sensitivity within Eating Now only"
-                    isSelectable = false
-                })
-                // ISF Settings may not be as relevant with dynISF in the code
-            })
+            // addPreference(preferenceManager.createPreferenceScreen(context).apply {
+            //     key = "eating_now4"
+            //     title = rh.gs(app.aaps.core.ui.R.string.en_pref_isf_title)
+            //     addPreference(androidx.preference.Preference(context).apply {
+            //         summary = "These settings are for sensitivity within Eating Now only"
+            //         isSelectable = false
+            //     })
+            //     // ISF Settings may not be as relevant with dynISF in the code
+            // })
         }
     }
 }
