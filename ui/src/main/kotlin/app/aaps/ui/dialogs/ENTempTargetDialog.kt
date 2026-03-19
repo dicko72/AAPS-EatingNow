@@ -214,7 +214,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
             actions.add(rh.gs(app.aaps.core.ui.R.string.target_label) + ": " + profileUtil.stringInCurrentUnitsDetect(target) + " " + rh.gs(unitResId))
             actions.add(rh.gs(app.aaps.core.ui.R.string.duration) + ": " + rh.gs(app.aaps.core.ui.R.string.format_mins, duration))
             // actions.add("Pre-Bolus: " + decimalFormatter.toPumpSupportedBolus(insulinAfterConstraints, activePlugin.activePump.pumpDescription.bolusStep).formatColor(context, rh, app.aaps.core.ui.R.attr.bolusColor))
-            actions.add("Pre-Bolus: " + binding.amount.value)
+            actions.add("Pre-Bolus: $roundedPrebolus")
             actions.add("ENW-IOB Limit: " + binding.enwIob.text)
         } else {
             actions.add(rh.gs(app.aaps.core.ui.R.string.stoptemptarget))

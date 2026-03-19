@@ -515,6 +515,9 @@ open class ENPlugin @Inject constructor(
         val ENWActive = activeENTT?.reason // is there an active ENW or ENW prebolus?
         val ENWfirstMeal = (mealCount == 1 && activeENTT != null) // is this the firstmeal?
         val ENActive = ENStarted && (!isTempTarget && ENWActive == null || ENWActive != null) // is EN activated?
+        val ENWRunTime = if (ENWStartTime != null && now >= ENWStartTime) {
+            ((now - ENWStartTime) / 60_000L).toInt()
+        } else 0
 
         // Calculate Net IOB (Using the start time of the most recent target)
         val ENWNetIOB = if (ENWStartTime != null && ENWEndTime != null && now < ENWEndTime + T.hours(2).msecs()) {
@@ -537,8 +540,9 @@ open class ENPlugin @Inject constructor(
             ENWActive = ENWActive,
             ENWStartTime = ENWStartTime,
             ENWEndTime = ENWEndTime,
+            ENWRunTime = ENWRunTime,
             ENWNetIOB = max(Round.roundTo(ENWNetIOB, 0.01), 0.0),
-            ENWminutes = preferences.get(IntKey.Eatingnow_enw_minutes),
+            ENWDuration = preferences.get(IntKey.Eatingnow_enw_minutes),
             ENWpct = preferences.get(IntKey.Eatingnow_enw_pct),
             ENWsmbPct = preferences.get(IntKey.Eatingnow_enw_smb_pct),
             ENWcobMaxbolus = preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus),

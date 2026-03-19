@@ -812,7 +812,7 @@ class DetermineBasalEN @Inject constructor(
         rT.reason.append("; ")
 
         // Eating Now Reason
-        rT.reason.append("ENW-IOB " + enConfig.ENWNetIOB + "/" + enConfig.ENWNetIOBMax)
+        if (enConfig.ENWActive != null)  rT.reason.append("ENW " + enConfig.ENWRunTime + "/" + enConfig.ENWDuration + "m, " + "ENW-IOB " + enConfig.ENWNetIOB + "/" + enConfig.ENWNetIOBMax)
         rT.reason.append("; ")
 
         // use naive_eventualBG if above 40, but switch to minGuardBG if both eventualBGs hit floor of 39
