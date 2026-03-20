@@ -13,7 +13,7 @@ data class ENConfig(
     var ENTimeEnd: Long,
     var ENActive: Boolean,
     var OvernightSMBRestrict: Double,
-    var RespectISFIOB: Boolean,
+    var IgnoreCOB: Boolean,
     var SafetyMaxBolus: Double,
 
     // ENW variables

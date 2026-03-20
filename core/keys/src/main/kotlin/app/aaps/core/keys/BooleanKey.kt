@@ -131,5 +131,5 @@ enum class BooleanKey(
     ExportCsvCloudEnabled("export_csv_cloud_enabled", defaultValue = false),
 
     // Eating Now
-    EatingNow_RespectISFIOB("RespectISFIOB", false, defaultedBySM = true, hideParentScreenIfHidden = true),
+    EatingNow_IgnoreCOB("IgnoreCOB", false, defaultedBySM = true, hideParentScreenIfHidden = true),
 }

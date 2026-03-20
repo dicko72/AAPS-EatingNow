@@ -232,8 +232,8 @@
     <string name="eatingnow_timeend_summary">Enter Eating Now end time in 24h e.g. 5PM is 17</string>
     <string name="eatingnow_overnightSMB_title">Overnight SMB Restriction</string>
     <string name="eatingnow_overnightSMB_summary">There will be no SMB when below this BG offset at night unless COB or a TT lower or equal to normalTarget\ne.g. if normalTarget is 5.5 (99) and this setting is 1.5 (27) there will be no SMB below 7.0 (126)</string>
-    <string name="EatingNow_RespectISFIOB_summary">RespectISFIOB_summary</string>
-    <string name="EatingNow_RespectISFIOB_title">RespectISFIOB_title</string>
+    <string name="EatingNow_IgnoreCOB_title">Ignore COB</string>
+    <string name="EatingNow_IgnoreCOB_summary">Ignore COB predictions, useful when entering rescue carbs</string>
     <!--    Breakfast Settings-->
     <string name="Eatingnow_enw_minutes_title">EN Window Duration</string>
     <string name="Eatingnow_enw_minutes_summary">Window in minutes for increased maxBolus with COB or UAM.\n0 will disable and allow AAPS maxBolus limit.</string>

@@ -91,14 +91,14 @@ class DetermineBasalEN @Inject constructor(
         }
 
         // enable SMB/UAM (if enabled in preferences) while we have COB
-        if (profile.enableSMB_with_COB && meal_data.mealCOB != 0.0) {
+        if (profile.enableSMB_with_COB && meal_data.mealCOB != 0.0 && !enConfig.IgnoreCOB) {
             consoleError.add("SMB enabled for COB of ${meal_data.mealCOB}")
             return true
         }
 
         // enable SMB/UAM (if enabled in preferences) for a full 6 hours after any carb entry
         // (6 hours is defined in carbWindow in lib/meal/total.js)
-        if (profile.enableSMB_after_carbs && meal_data.carbs != 0.0) {
+        if (profile.enableSMB_after_carbs && meal_data.carbs != 0.0 && !enConfig.IgnoreCOB) {
             consoleError.add("SMB enabled for 6h after carb entry")
             return true
         }
@@ -166,6 +166,11 @@ class DetermineBasalEN @Inject constructor(
     ): RT {
         consoleError.clear()
         consoleLog.clear()
+
+        // Eating now IgnoreCOB
+        val activeCOB = if (enConfig.IgnoreCOB) 0.0 else meal_data.mealCOB
+        val activeCarbs = if (enConfig.IgnoreCOB) 0.0 else meal_data.carbs
+
         var rT = RT(
             algorithm = APSResult.Algorithm.SMB,
             runningDynamicIsf = dynIsfMode,
@@ -455,14 +460,14 @@ class DetermineBasalEN @Inject constructor(
         // when actual absorption ramps up it will take over from remainingCATime
         val assumedCarbAbsorptionRate = 20 // g/h; maximum rate to assume carbs will absorb if no CI observed
         var remainingCATime = remainingCATimeMin
-        if (meal_data.carbs != 0.0) {
+        if (activeCarbs != 0.0) {
             // if carbs * assumedCarbAbsorptionRate > remainingCATimeMin, raise it
             // so <= 90g is assumed to take 3h, and 120g=4h
-            remainingCATimeMin = Math.max(remainingCATimeMin, meal_data.mealCOB / assumedCarbAbsorptionRate)
+            remainingCATimeMin = Math.max(remainingCATimeMin, activeCOB / assumedCarbAbsorptionRate)
             val lastCarbAge = round((systemTime - meal_data.lastCarbTime) / 60000.0)
             //console.error(meal_data.lastCarbTime, lastCarbAge);
 
-            val fractionCOBAbsorbed = (meal_data.carbs - meal_data.mealCOB) / meal_data.carbs
+            val fractionCOBAbsorbed = (activeCarbs - activeCOB) / activeCarbs
             remainingCATime = remainingCATimeMin + 1.5 * lastCarbAge / 60
             remainingCATime = round(remainingCATime, 1)
             //console.error(fractionCOBAbsorbed, remainingCATimeAdjustment, remainingCATime)
@@ -476,7 +481,7 @@ class DetermineBasalEN @Inject constructor(
         val totalCA = totalCI / csf
         val remainingCarbsCap: Int // default to 90
         remainingCarbsCap = min(90, profile.remainingCarbsCap)
-        var remainingCarbs = max(0.0, meal_data.mealCOB - totalCA)
+        var remainingCarbs = max(0.0, activeCOB - totalCA)
         remainingCarbs = Math.min(remainingCarbsCap.toDouble(), remainingCarbs)
         // assume remainingCarbs will absorb in a /\ shaped bilinear curve
         // peaking at remainingCATime / 2 and ending at remainingCATime hours
@@ -501,9 +506,9 @@ class DetermineBasalEN @Inject constructor(
             // avoid divide by zero
             cid = 0.0
         } else {
-            cid = min(remainingCATime * 60 / 5 / 2, Math.max(0.0, meal_data.mealCOB * csf / ci))
+            cid = min(remainingCATime * 60 / 5 / 2, Math.max(0.0, activeCOB * csf / ci))
         }
-        val acid = max(0.0, meal_data.mealCOB * csf / aci)
+        val acid = max(0.0, activeCOB * csf / aci)
         // duration (hours) = duration (5m) * 5 / 60 * 2 (to account for linear decay)
         consoleError.add("Carb Impact: $ci mg/dL per 5m; CI Duration: ${round(cid * 5 / 60 * 2, 1)} hours; remaining CI (~2h peak): ${round(remainingCIpeak, 1)} mg/dL per 5m")
         //console.error("Accel. Carb Impact:",aci,"mg/dL per 5m; ACI Duration:",round(acid*5/60*2,1),"hours");
@@ -619,7 +624,7 @@ class DetermineBasalEN @Inject constructor(
         }
         // set eventualBG to include effect of carbs
         //console.error("PredBGs:",JSON.stringify(predBGs));
-        if (meal_data.mealCOB > 0) {
+        if (activeCOB > 0) {
             consoleError.add("predCIs (mg/dL/5m):" + predCIs.joinToString(separator = " "))
             consoleError.add("remainingCIs:      " + remainingCIs.joinToString(separator = " "))
         }
@@ -638,14 +643,14 @@ class DetermineBasalEN @Inject constructor(
             else ZTpredBGs.removeAt(ZTpredBGs.lastIndex)
         }
         rT.predBGs?.ZT = ZTpredBGs.map { it.toInt() }
-        if (meal_data.mealCOB > 0) {
+        if (activeCOB > 0) {
             aCOBpredBGs = aCOBpredBGs.map { round(min(401.0, max(39.0, it)), 0) }.toMutableList()
             for (i in aCOBpredBGs.size - 1 downTo 13) {
                 if (aCOBpredBGs[i - 1] != aCOBpredBGs[i]) break
                 else aCOBpredBGs.removeAt(aCOBpredBGs.lastIndex)
             }
         }
-        if (meal_data.mealCOB > 0 && (ci > 0 || remainingCIpeak > 0)) {
+        if (activeCOB > 0 && (ci > 0 || remainingCIpeak > 0)) {
             COBpredBGs = COBpredBGs.map { round(min(401.0, max(39.0, it)), 0) }.toMutableList()
             for (i in COBpredBGs.size - 1 downTo 13) {
                 if (COBpredBGs[i - 1] != COBpredBGs[i]) break
@@ -703,7 +708,7 @@ class DetermineBasalEN @Inject constructor(
             }
         }
 
-        val fractionCarbsLeft = meal_data.mealCOB / meal_data.carbs
+        val fractionCarbsLeft = activeCOB / activeCarbs
         // if we have COB and UAM is enabled, average both
         if (minUAMPredBG < 999 && minCOBPredBG < 999) {
             // weight COBpredBG vs. UAMpredBG based on how many carbs remain as COB
@@ -757,7 +762,7 @@ class DetermineBasalEN @Inject constructor(
         minZTUAMPredBG = round(minZTUAMPredBG, 0)
         //console.error("minUAMPredBG:",minUAMPredBG,"minZTGuardBG:",minZTGuardBG,"minZTUAMPredBG:",minZTUAMPredBG);
         // if any carbs have been entered recently
-        if (meal_data.carbs != 0.0) {
+        if (activeCarbs != 0.0) {
 
             // if UAM is disabled, use max of minIOBPredBG, minCOBPredBG
             if (!enableUAM && minCOBPredBG < 999) {
@@ -788,7 +793,7 @@ class DetermineBasalEN @Inject constructor(
         if (minUAMPredBG < 999) {
             consoleLog.add(" minUAMPredBG: $minUAMPredBG")
         }
-        consoleError.add(" avgPredBG: $avgPredBG COB: ${meal_data.mealCOB} / ${meal_data.carbs}")
+        consoleError.add(" avgPredBG: $avgPredBG COB: ${activeCOB} / ${activeCarbs}")
         // But if the COB line falls off a cliff, don't trust UAM too much:
         // use maxCOBPredBG if it's been set and lower than minPredBG
         if (maxCOBPredBG > bg) {
@@ -798,7 +803,7 @@ class DetermineBasalEN @Inject constructor(
         rT.COB = meal_data.mealCOB
         rT.IOB = iob_data.iob
         rT.reason.append(
-            "COB: ${round(meal_data.mealCOB, 1).withoutZeros()}, Dev: ${convert_bg(deviation.toDouble())}, BGI: ${convert_bg(bgi)}, ISF: ${convert_bg(sens)}, CR: ${
+            "COB: ${round(activeCOB, 1).withoutZeros()}, Dev: ${convert_bg(deviation.toDouble())}, BGI: ${convert_bg(bgi)}, ISF: ${convert_bg(sens)}, CR: ${
                 round(profile.carb_ratio, 2)
                     .withoutZeros()
             }, Target: ${convert_bg(target_bg)}, minPredBG ${convert_bg(minPredBG)}, minGuardBG ${convert_bg(minGuardBG)}, IOBpredBG ${convert_bg(lastIOBpredBG)}"
@@ -827,7 +832,7 @@ class DetermineBasalEN @Inject constructor(
         // calculate how long until COB (or IOB) predBGs drop below min_bg
         var minutesAboveMinBG = 240
         var minutesAboveThreshold = 240
-        if (meal_data.mealCOB > 0 && (ci > 0 || remainingCIpeak > 0)) {
+        if (activeCOB > 0 && (ci > 0 || remainingCIpeak > 0)) {
             for (i in COBpredBGs.indices) {
                 //console.error(COBpredBGs[i], min_bg);
                 if (COBpredBGs[i] < min_bg) {
@@ -885,7 +890,7 @@ class DetermineBasalEN @Inject constructor(
         // BG undershoot, minus effect of zero temps until hitting min_bg, converted to grams, minus COB
         val zeroTempEffectDouble = profile.current_basal * sens * zeroTempDuration / 60
         // don't count the last 25% of COB against carbsReq
-        val COBforCarbsReq = max(0.0, meal_data.mealCOB - 0.25 * meal_data.carbs)
+        val COBforCarbsReq = max(0.0, activeCOB - 0.25 * activeCarbs)
         val carbsReq = round(((bgUndershoot - zeroTempEffectDouble) / csf - COBforCarbsReq))
         val zeroTempEffect = round(zeroTempEffectDouble)
         consoleError.add("naive_eventualBG: $naive_eventualBG bgUndershoot: $bgUndershoot zeroTempDuration $zeroTempDuration zeroTempEffect: $zeroTempEffect carbsReq: $carbsReq")
@@ -1088,9 +1093,9 @@ class DetermineBasalEN @Inject constructor(
             var maxBolus: Double
             if (microBolusAllowed && enableSMB && bg > threshold) {
                 // never bolus more than maxSMBBasalMinutes worth of basal
-                val mealInsulinReq = round(meal_data.mealCOB / profile.carb_ratio, 3)
+                val mealInsulinReq = round(activeCOB / profile.carb_ratio, 3)
                 if (iob_data.iob > mealInsulinReq && iob_data.iob > 0) {
-                    consoleError.add("IOB ${iob_data.iob} > COB ${meal_data.mealCOB}; mealInsulinReq = $mealInsulinReq")
+                    consoleError.add("IOB ${iob_data.iob} > COB ${activeCOB}; mealInsulinReq = $mealInsulinReq")
                     consoleError.add("profile.maxUAMSMBBasalMinutes: ${profile.maxUAMSMBBasalMinutes} profile.current_basal: ${profile.current_basal}")
                     maxBolus = round(profile.current_basal * profile.maxUAMSMBBasalMinutes / 60, 1)
                 } else {
