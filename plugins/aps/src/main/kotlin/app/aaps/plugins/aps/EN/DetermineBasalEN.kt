@@ -824,7 +824,8 @@ class DetermineBasalEN @Inject constructor(
         val ENWActive = enConfig.ENWActive != null
 
         // Eating Now Reason
-        if (ENWActive)  rT.reason.append("ENW " + enConfig.ENWRunTime + "/" + enConfig.ENWDuration + "m, " + "ENW-IOB " + enConfig.ENWNetIOB + "/" + enConfig.ENWNetIOBMax)
+        rT.reason.append("EN ${if (enConfig.ENActive) "Active" else "Inactive"}, ")
+        if (ENWActive) rT.reason.append("ENW ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m, ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}")
         rT.reason.append("; ")
 
         // use naive_eventualBG if above 40, but switch to minGuardBG if both eventualBGs hit floor of 39

@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.collection.LongSparseArray
 import androidx.collection.forEach
-import android.net.Uri
+import androidx.core.net.toUri
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
