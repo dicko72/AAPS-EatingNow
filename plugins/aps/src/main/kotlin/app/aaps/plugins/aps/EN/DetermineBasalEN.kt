@@ -811,8 +811,11 @@ class DetermineBasalEN @Inject constructor(
         }
         rT.reason.append("; ")
 
+        // Eating Now Initial variables
+        val ENWActive = enConfig.ENWActive != null
+
         // Eating Now Reason
-        if (enConfig.ENWActive != null)  rT.reason.append("ENW " + enConfig.ENWRunTime + "/" + enConfig.ENWDuration + "m, " + "ENW-IOB " + enConfig.ENWNetIOB + "/" + enConfig.ENWNetIOBMax)
+        if (ENWActive)  rT.reason.append("ENW " + enConfig.ENWRunTime + "/" + enConfig.ENWDuration + "m, " + "ENW-IOB " + enConfig.ENWNetIOB + "/" + enConfig.ENWNetIOBMax)
         rT.reason.append("; ")
 
         // use naive_eventualBG if above 40, but switch to minGuardBG if both eventualBGs hit floor of 39
@@ -1095,15 +1098,24 @@ class DetermineBasalEN @Inject constructor(
                     maxBolus = round(profile.current_basal * profile.maxSMBBasalMinutes / 60, 1)
                 }
 
-                // EN PreBolus Override for maxBolus
-                if (isPrebolusing) {
-                    maxBolus = round(remainingPrebolus,1)
-                    maxBolus = min(maxBolus, enConfig.SafetyMaxBolus)
+                // Eating now maxBolus overrides
+                maxBolus = when {
+                    isPrebolusing -> {
+                        // Prioritize PreBolus requirements within safety limits
+                        min(round(remainingPrebolus, 1), enConfig.SafetyMaxBolus)
+                    }
+                    ENWActive && enConfig.ENWcobMaxbolus > 0 && eventualBG == lastCOBpredBG -> {
+                        enConfig.ENWcobMaxbolus
+                    }
+                    ENWActive && enConfig.ENWuamMaxbolus > 0 && eventualBG == lastUAMpredBG -> {
+                        enConfig.ENWuamMaxbolus
+                    }
+                    else -> maxBolus // Fallback to existing maxBolus
                 }
 
                 // bolus 1/2 the insulinReq, up to maxBolus, rounding down to nearest bolus increment
                 val roundSMBTo = 1 / profile.bolus_increment
-                val microBolus = if (isPrebolusing) {
+                val microBolus = if (ENWActive) {
                     Math.floor(Math.min(insulinReq, maxBolus) * roundSMBTo) / roundSMBTo // EN PreBolus Override for microBolus
                 } else {
                     // bolus 1/2 the insulinReq, up to maxBolus, rounding down to nearest bolus increment
