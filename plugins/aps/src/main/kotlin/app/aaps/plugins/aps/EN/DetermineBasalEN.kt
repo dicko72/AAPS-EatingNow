@@ -304,6 +304,32 @@ class DetermineBasalEN @Inject constructor(
         val minAvgDelta = min(glucose_status.shortAvgDelta, glucose_status.longAvgDelta)
         val maxDelta = max(glucose_status.delta, max(glucose_status.shortAvgDelta, glucose_status.longAvgDelta))
 
+        // Eating Now Initial variables
+        val ENWActive = enConfig.ENWActive != null
+        rT.reason.append ("EN ${if (enConfig.ENActive) "Active" else "Inactive"}, ")
+        if (ENWActive) rT.reason.append("ENW ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m, ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}")
+        // rT.reason.append(ENReason) // display the Eating Now Reason
+
+        // Eating Now Delta Acceleration for UAM+
+        var DeltaPctS = 1.0
+        var DeltaPctL = 1.0
+
+        if (glucose_status.shortAvgDelta != 0.0) {
+            DeltaPctS = round(1.0 + ((glucose_status.delta - glucose_status.shortAvgDelta) / kotlin.math.abs(glucose_status.shortAvgDelta)), 2)
+        }
+        if (glucose_status.longAvgDelta != 0.0) {
+            DeltaPctL = round(1.0 + ((glucose_status.delta - glucose_status.longAvgDelta) / kotlin.math.abs(glucose_status.longAvgDelta)), 2)
+        }
+
+        val DeltaFastUp = if (ENWActive) {
+            // UAM+ aggressive short average when ENW is running
+            glucose_status.delta > 0.0 && DeltaPctS >= 1.0
+        } else {
+            // Require both short & long average acceleration outside of ENW
+            glucose_status.delta > 0.0 && DeltaPctS >= 1.0 && DeltaPctL > 1.0
+        }
+        val DeltaAcceleratingDown = glucose_status.delta < 0.0 && DeltaPctS < 1.0 && DeltaPctL < 1.0
+
         val sens =
             if (dynIsfMode) profile.variable_sens
             else {
@@ -820,14 +846,6 @@ class DetermineBasalEN @Inject constructor(
         }
         rT.reason.append("; ")
 
-        // Eating Now Initial variables
-        val ENWActive = enConfig.ENWActive != null
-
-        // Eating Now Reason
-        rT.reason.append("EN ${if (enConfig.ENActive) "Active" else "Inactive"}, ")
-        if (ENWActive) rT.reason.append("ENW ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m, ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}")
-        rT.reason.append("; ")
-
         // use naive_eventualBG if above 40, but switch to minGuardBG if both eventualBGs hit floor of 39
         var carbsReqBG = naive_eventualBG
         if (carbsReqBG < 40) {
@@ -1107,20 +1125,26 @@ class DetermineBasalEN @Inject constructor(
                     consoleError.add("profile.maxSMBBasalMinutes: ${profile.maxSMBBasalMinutes} profile.current_basal: ${profile.current_basal}")
                     maxBolus = round(profile.current_basal * profile.maxSMBBasalMinutes / 60, 1)
                 }
+            var maxBolusAAPS = maxBolus
 
                 // Eating now maxBolus overrides
-                maxBolus = when {
+                val (ENmaxBolusType, maxBolus) = when {
                     isPrebolusing -> {
                         // Prioritize PreBolus requirements within safety limits
-                        min(round(remainingPrebolus, 1), enConfig.SafetyMaxBolus)
+                        "PB" to min(round(remainingPrebolus, 1), enConfig.SafetyMaxBolus)
+                    }
+                    ENWActive && DeltaFastUp && enConfig.ENWuamPlusMaxbolus > 0 && eventualBG != lastCOBpredBG -> {
+                        "UAM+" to enConfig.ENWuamPlusMaxbolus
                     }
                     ENWActive && enConfig.ENWcobMaxbolus > 0 && eventualBG == lastCOBpredBG -> {
-                        enConfig.ENWcobMaxbolus
+                        "COB" to enConfig.ENWcobMaxbolus
                     }
                     ENWActive && enConfig.ENWuamMaxbolus > 0 && eventualBG == lastUAMpredBG -> {
-                        enConfig.ENWuamMaxbolus
+                        "UAM" to enConfig.ENWuamMaxbolus
                     }
-                    else -> maxBolus // Fallback to existing maxBolus
+                    else -> {
+                        "" to maxBolus // Fallback to existing maxBolus
+                    }
                 }
 
                 // bolus 1/2 the insulinReq, up to maxBolus, rounding down to nearest bolus increment
@@ -1154,9 +1178,11 @@ class DetermineBasalEN @Inject constructor(
                     durationReq = 30
                 }
                 rT.reason.append(" insulinReq $insulinReq")
-                if (microBolus >= maxBolus) {
-                    rT.reason.append("; maxBolus $maxBolus")
+                if (microBolus >= maxBolus || maxBolus > maxBolusAAPS) { // if the maxBolus has increased due to EN
+                    rT.reason.append("; $ENmaxBolusType maxBolus $maxBolus")
                 }
+
+
                 if (durationReq > 0) {
                     rT.reason.append("; setting ${durationReq}m low temp of ${smbLowTempReq}U/h")
                 }
