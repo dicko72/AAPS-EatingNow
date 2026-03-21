@@ -15,6 +15,7 @@ data class ENConfig(
     var OvernightSMBRestrict: Double,
     var IgnoreCOB: Boolean,
     var SafetyMaxBolus: Double,
+    var useISFscaler: Boolean,
 
     // ENW variables
     var ENWfirstMeal: Boolean,
@@ -23,7 +24,7 @@ data class ENConfig(
     var ENWEndTime: Long?,
     var ENWRunTime: Int,
     var ENWDuration: Int,
-    var ENWpct: Int,
+    var ENWisfScalePct: Int,
     var ENWcobMaxbolus: Double,
     var ENWuamMaxbolus: Double,
     var ENWNetIOB: Double,

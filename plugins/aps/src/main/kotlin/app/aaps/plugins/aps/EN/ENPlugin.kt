@@ -530,6 +530,10 @@ open class ENPlugin @Inject constructor(
             tddCalculator.calculateIntervalNet(ENWStartTime, now, allowMissingData = true)?.totalAmount ?: 0.0
         } else 0.0
 
+        // using ISF scaling?
+        val useISFscaler = preferences.get(BooleanKey.EatingNow_UseISFscaler)
+        if (useISFscaler) preferences.put(BooleanKey.ApsUseDynamicSensitivity,false) // disable DynISF if using ISF scaler
+
         // Define the variables to be available to DetermineBasalEN.kt
         @Suppress("KotlinConstantConditions")
         val enConfig = ENConfig(
@@ -540,6 +544,7 @@ open class ENPlugin @Inject constructor(
             OvernightSMBRestrict = preferences.get(_root_ide_package_.app.aaps.core.keys.DoubleKey.Eatingnow_overnightSMB),
             IgnoreCOB = preferences.get(BooleanKey.EatingNow_IgnoreCOB),
             SafetyMaxBolus = preferences.get(DoubleKey.SafetyMaxBolus),
+            useISFscaler = useISFscaler,
 
             // ENW variables
             ENWfirstMeal = ENWfirstMeal,
@@ -549,7 +554,7 @@ open class ENPlugin @Inject constructor(
             ENWRunTime = ENWRunTime,
             ENWNetIOB = max(Round.roundTo(ENWNetIOB, 0.01), 0.0),
             ENWDuration = preferences.get(IntKey.Eatingnow_enw_minutes),
-            ENWpct = preferences.get(IntKey.Eatingnow_enw_pct),
+            ENWisfScalePct = preferences.get(IntKey.ENWisfScalePct),
             ENWsmbPct = preferences.get(IntKey.Eatingnow_enw_smb_pct),
             ENWcobMaxbolus = preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus),
             ENWuamMaxbolus = preferences.get(DoubleKey.Eatingnow_enw_uam_maxbolus),
@@ -747,6 +752,8 @@ open class ENPlugin @Inject constructor(
                 addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_timeend, dialogMessage = R.string.eatingnow_timeend_summary, title = R.string.eatingnow_timeend_title))
                 addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_overnightSMB, dialogMessage = R.string.eatingnow_overnightSMB_summary, title = R.string.eatingnow_overnightSMB_title))
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.EatingNow_IgnoreCOB, summary = R.string.EatingNow_IgnoreCOB_summary, title = R.string.EatingNow_IgnoreCOB_title))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.EatingNow_UseISFscaler, summary = R.string.EatingNow_useISFscaler_summary, title = R.string.EatingNow_useISFscaler_title))
+
             })
 
             // addPreference(preferenceManager.createPreferenceScreen(context).apply {
@@ -784,16 +791,16 @@ open class ENPlugin @Inject constructor(
                     summary = "ENW Settings for when there is an active ENW running."
                     addPreference(androidx.preference.Preference(context).apply {
                         title = "ENW Settings"
-                        summary = "ENW Settings"
+                        summary = "ENW Settings for when there is an active ENW running."
                         isSelectable = false
                     })
                     addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_enw_minutes, dialogMessage = R.string.Eatingnow_enw_minutes_summary, title = R.string.Eatingnow_enw_minutes_title))
-                    // addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_enw_pct, dialogMessage = R.string.Eatingnow_enw_pct_summary, title = R.string.Eatingnow_enw_pct_title))
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_cob_maxbolus, dialogMessage = R.string.Eatingnow_enw_cob_maxbolus_summary, title = R.string.Eatingnow_enw_cob_maxbolus_title))
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_uam_maxbolus, dialogMessage = R.string.Eatingnow_enw_uam_maxbolus_summary, title = R.string.Eatingnow_enw_uam_maxbolus_title))
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_uamplus_maxbolus, dialogMessage = R.string.Eatingnow_enw_uamplus_maxbolus_summary, title = R.string.Eatingnow_enw_uamplus_maxbolus_title))
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_maxiob, dialogMessage = R.string.Eatingnow_enw_maxiob_summary, title = R.string.Eatingnow_enw_maxiob_title))
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_prebolus, dialogMessage = R.string.Eatingnow_enw_prebolus_summary, title = R.string.Eatingnow_enw_prebolus_title))
+                    addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ENWisfScalePct, dialogMessage = R.string.ENWisfScalePct_summary, title = R.string.ENWisfScalePct_title))
                 })
             })
 

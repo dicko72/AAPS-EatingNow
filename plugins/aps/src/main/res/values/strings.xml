@@ -234,11 +234,14 @@
     <string name="eatingnow_overnightSMB_summary">There will be no SMB when below this BG offset at night unless COB or a TT lower or equal to normalTarget\ne.g. if normalTarget is 5.5 (99) and this setting is 1.5 (27) there will be no SMB below 7.0 (126)</string>
     <string name="EatingNow_IgnoreCOB_title">Ignore COB</string>
     <string name="EatingNow_IgnoreCOB_summary">Ignore COB predictions, useful when entering rescue carbs</string>
+    <string name="EatingNow_useISFscaler_title">ISF Scaling</string>
+    <string name="EatingNow_useISFscaler_summary">Similar to dynISF but uses profile ISF at target bg</string>
+
     <!--    Breakfast Settings-->
-    <string name="Eatingnow_enw_minutes_title">EN Window Duration</string>
+    <string name="Eatingnow_enw_minutes_title">EN Window Duration [0-120m]</string>
     <string name="Eatingnow_enw_minutes_summary">Window in minutes for increased maxBolus with COB or UAM.\n0 will disable and allow AAPS maxBolus limit.</string>
-    <string name="Eatingnow_enw_pct_title">ISF Weighting</string>
-    <string name="Eatingnow_enw_pct_summary">The ISF will be scaled during the breakfast eating window.\n100 will be no change.\n25 will use 25% of the current ISF/CR values.</string>
+    <string name="ENWisfScalePct_title">ISF Scaling [0-10]</string>
+    <string name="ENWisfScalePct_summary">The ISF scaling can be adjusted within the eating window.</string>
     <string name="Eatingnow_enw_cob_maxbolus_title">COB maxBolus [U]</string>
     <string name="Eatingnow_enw_cob_maxbolus_summary">COB maxBolus for BGL rises within the EN Window.\n0 will use existing maxBolus limit</string>
     <string name="Eatingnow_enw_uam_maxbolus_title">UAM maxBolus [U]</string>

@@ -132,4 +132,5 @@ enum class BooleanKey(
 
     // Eating Now
     EatingNow_IgnoreCOB("IgnoreCOB", false, defaultedBySM = true, hideParentScreenIfHidden = true),
+    EatingNow_UseISFscaler("UseISFscaler", false, defaultedBySM = true, hideParentScreenIfHidden = true),
 }

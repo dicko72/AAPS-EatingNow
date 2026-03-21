@@ -305,7 +305,9 @@ class DetermineBasalEN @Inject constructor(
         val maxDelta = max(glucose_status.delta, max(glucose_status.shortAvgDelta, glucose_status.longAvgDelta))
 
         // Eating Now Initial variables
+        val ENActive = enConfig.ENActive
         val ENWActive = enConfig.ENWActive != null
+
 
         // Eating Now Delta Acceleration for UAM+
         var DeltaPctS = 1.0
@@ -326,9 +328,10 @@ class DetermineBasalEN @Inject constructor(
             glucose_status.delta > 0.0 && DeltaPctS >= 1.0 && DeltaPctL > 1.0
         }
         val DeltaAcceleratingDown = glucose_status.delta < 0.0 && DeltaPctS < 1.0 && DeltaPctL < 1.0
+        val useISFscaler = (enConfig.useISFscaler) // using EN ISF Scaler
 
         val sens =
-            if (dynIsfMode) profile.variable_sens
+            if (dynIsfMode && !useISFscaler) profile.variable_sens
             else {
                 val profile_sens = round(profile.sens, 1)
                 val adjusted_sens = round(profile.sens / sensitivityRatio, 1)
@@ -357,7 +360,7 @@ class DetermineBasalEN @Inject constructor(
 
         // calculate the naive (bolus calculator math) eventual BG based on net IOB and sensitivity
         val naive_eventualBG =
-            if (dynIsfMode)
+            if (dynIsfMode || useISFscaler)
                 round(bg - (iob_data.iob * sens), 0)
             else {
                 if (iob_data.iob > 0) round(bg - (iob_data.iob * sens), 0)
@@ -570,17 +573,17 @@ class DetermineBasalEN @Inject constructor(
             //console.error(iobTick);
             val predBGI: Double = round((-iobTick.activity * sens * 5), 2)
             val IOBpredBGI: Double =
-                if (dynIsfMode) round((-iobTick.activity * (1800 / (profile.TDD * (ln((max(IOBpredBGs[IOBpredBGs.size - 1], 39.0) / profile.insulinDivisor) + 1)))) * 5), 2)
+                if (dynIsfMode || useISFscaler) round((-iobTick.activity * (1800 / (profile.TDD * (ln((max(IOBpredBGs[IOBpredBGs.size - 1], 39.0) / profile.insulinDivisor) + 1)))) * 5), 2)
                 else predBGI
             iobTick.iobWithZeroTemp ?: error("iobTick.iobWithZeroTemp missing")
             // try to find where is crashing https://console.firebase.google.com/u/0/project/androidaps-c34f8/crashlytics/app/android:info.nightscout.androidaps/issues/950cdbaf63d545afe6d680281bb141e5?versions=3.3.0-dev-d%20(1500)&time=last-thirty-days&types=crash&sessionEventKey=673BF7DD032300013D4704707A053273_2017608123846397475
             if (iobTick.iobWithZeroTemp!!.activity.isNaN() || sens.isNaN())
                 fabricPrivacy.logCustom("iobTick.iobWithZeroTemp!!.activity=${iobTick.iobWithZeroTemp!!.activity} sens=$sens")
             val predZTBGI =
-                if (dynIsfMode) round((-iobTick.iobWithZeroTemp!!.activity * (1800 / (profile.TDD * (ln((max(ZTpredBGs[ZTpredBGs.size - 1], 39.0) / profile.insulinDivisor) + 1)))) * 5), 2)
+                if (dynIsfMode || useISFscaler) round((-iobTick.iobWithZeroTemp!!.activity * (1800 / (profile.TDD * (ln((max(ZTpredBGs[ZTpredBGs.size - 1], 39.0) / profile.insulinDivisor) + 1)))) * 5), 2)
                 else round((-iobTick.iobWithZeroTemp!!.activity * sens * 5), 2)
             val predUAMBGI =
-                if (dynIsfMode) round((-iobTick.activity * (1800 / (profile.TDD * (ln((max(UAMpredBGs[UAMpredBGs.size - 1], 39.0) / profile.insulinDivisor) + 1)))) * 5), 2)
+                if (dynIsfMode || useISFscaler) round((-iobTick.activity * (1800 / (profile.TDD * (ln((max(UAMpredBGs[UAMpredBGs.size - 1], 39.0) / profile.insulinDivisor) + 1)))) * 5), 2)
                 else predBGI
             // for IOBpredBGs, predicted deviation impact drops linearly from current deviation down to zero
             // over 60 minutes (data points every 5m)
@@ -713,15 +716,13 @@ class DetermineBasalEN @Inject constructor(
 
         val fSensBG = min(minPredBG, bg)
 
-        var future_sens = 0.0
-        if (dynIsfMode) {
-            if (bg > target_bg && glucose_status.delta < 3 && glucose_status.delta > -3 && glucose_status.shortAvgDelta > -3 && glucose_status.shortAvgDelta < 3 && eventualBG > target_bg && eventualBG
-                < bg
-            ) {
+        var future_sens = profile.sens // start with profile ISF
+        if (dynIsfMode && !useISFscaler) {
+            if (bg > target_bg && glucose_status.delta < 3 && glucose_status.delta > -3 && glucose_status.shortAvgDelta > -3 && glucose_status.shortAvgDelta < 3 && eventualBG > target_bg && eventualBG < bg) {
                 future_sens = (1800 / (ln((((fSensBG * 0.5) + (bg * 0.5)) / profile.insulinDivisor) + 1) * profile.TDD))
                 future_sens = round(future_sens, 1)
                 consoleLog.add("Future state sensitivity is $future_sens based on eventual and current bg due to flat glucose level above target")
-                rT.reason.append("fSensBG: "+ convert_bg(eventualBG)+ ", ")
+                rT.reason.append("fSensBG: "+ convert_bg((fSensBG * 0.5) + (bg * 0.5))+ ", ")
                 // rT.reason.append("Dosing sensitivity: " + convert_bg(future_sens) + " using eventual BG;")
             } else if (glucose_status.delta > 0 && eventualBG > target_bg || eventualBG > bg) {
                 future_sens = (1800 / (ln((bg / profile.insulinDivisor) + 1) * profile.TDD))
@@ -734,12 +735,56 @@ class DetermineBasalEN @Inject constructor(
                 future_sens = (1800 / (ln((fSensBG / profile.insulinDivisor) + 1) * profile.TDD))
                 future_sens = round(future_sens, 1)
                 consoleLog.add("Future state sensitivity is $future_sens based on eventual bg due to -ve delta")
-                rT.reason.append("fSensBG: "+ convert_bg(eventualBG)+ ", ")
+                rT.reason.append("fSensBG: "+ convert_bg(fSensBG)+ ", ")
                 // rT.reason.append("Dosing sensitivity: " + convert_bg(future_sens) + " using eventual BG;")
             }
         }
 
-        val fractionCarbsLeft = activeCOB / activeCarbs
+        // Eating Now ISF Scaling when ENActive
+        val ENWisfScalePct = if (ENWActive) { 1.0 + (enConfig.ENWisfScalePct / 10.0) } else { 1.0 } // 1.0 = Standard curve, 1.5 = 50% Stronger, 2.0 = 100% Stronger only applies with ENW
+        if (useISFscaler && ENActive) {
+            // Decide which BG value to use based on the delta
+            val chosenBG = if (bg > target_bg && DeltaFastUp && ENWActive) {
+                // UAM+ Spiking
+                max(eventualBG, bg)
+            } else if (bg > target_bg && glucose_status.delta < 3 && glucose_status.delta > -3 && glucose_status.shortAvgDelta > -3 && glucose_status.shortAvgDelta < 3 && eventualBG > target_bg && eventualBG < bg) {
+                // Flat/Stubborn High
+                (fSensBG * 0.5) + (bg * 0.5)
+            } else if (glucose_status.delta > 0 && (eventualBG > target_bg || eventualBG > bg)) {
+                // Slow Rise
+                bg
+            } else {
+                // Dropping/Recovering
+                fSensBG
+            }
+
+            // Prevent divide-by-zero or math errors with extremely low BGs
+            val safeBG = max(40.0, chosenBG)
+            val insVal = profile.insulinDivisor
+
+            // Apply scaling
+            val sensBGScaler = ln((safeBG / insVal) + 1.0)
+            val sensNormalTargetScaler = ln((target_bg / insVal) + 1.0)
+
+            // Calculate the base ISF from the normal log curve
+            val baseAdaptiveISF = (profile.sens / sensBGScaler) * sensNormalTargetScaler
+
+            // Calculate how much the ISF was supposed to change, then multiply it
+            val isfChange = profile.sens - baseAdaptiveISF
+            future_sens = profile.sens - (isfChange * ENWisfScalePct)
+            // -----------------------------
+
+            // Prevent the algorithm from giving you too much or too little insulin
+            val minSafeIsf = profile.sens * 0.4
+            val maxSafeIsf = profile.sens * 1.5
+            future_sens = future_sens.coerceIn(minSafeIsf, maxSafeIsf)
+            future_sens = round(future_sens, 1)
+
+            consoleLog.add("ISF Scaler: $future_sens (Base: ${round(baseAdaptiveISF, 1)}, Aggression: ${ENWisfScalePct}x) based on BG of $chosenBG")
+            rT.reason.append("fSensBG: " + convert_bg(chosenBG) + ", ")
+        }
+
+            val fractionCarbsLeft = activeCOB / activeCarbs
         // if we have COB and UAM is enabled, average both
         if (minUAMPredBG < 999 && minCOBPredBG < 999) {
             // weight COBpredBG vs. UAMpredBG based on how many carbs remain as COB
@@ -834,7 +879,7 @@ class DetermineBasalEN @Inject constructor(
         rT.COB = meal_data.mealCOB
         rT.IOB = iob_data.iob
         rT.reason.append(
-            "COB: ${round(activeCOB, 1).withoutZeros()}, Dev: ${convert_bg(deviation.toDouble())}, BGI: ${convert_bg(bgi)}, ISF: ${convert_bg(sens)}, CR: ${
+            "COB: ${round(activeCOB, 1).withoutZeros()}, Dev: ${convert_bg(deviation.toDouble())}, BGI: ${convert_bg(bgi)}, ISF: ${convert_bg(sens)}${if (useISFscaler) "/" + convert_bg(future_sens) + " (" + ENWisfScalePct +"x)" else ""} , CR: ${
                 round(profile.carb_ratio, 2)
                     .withoutZeros()
             }, Target: ${convert_bg(target_bg)}, minPredBG ${convert_bg(minPredBG)}, minGuardBG ${convert_bg(minGuardBG)}, IOBpredBG ${convert_bg(lastIOBpredBG)}"
@@ -982,7 +1027,7 @@ class DetermineBasalEN @Inject constructor(
             // calculate 30m low-temp required to get projected BG up to target
             // multiply by 2 to low-temp faster for increased hypo safety
             var insulinReq =
-                if (dynIsfMode) 2 * min(0.0, (eventualBG - target_bg) / future_sens)
+                if (dynIsfMode || useISFscaler) 2 * min(0.0, (eventualBG - target_bg) / future_sens)
                 else 2 * min(0.0, (eventualBG - target_bg) / sens)
             insulinReq = round(insulinReq, 2)
             // calculate naiveInsulinReq based on naive_eventualBG
@@ -1093,7 +1138,7 @@ class DetermineBasalEN @Inject constructor(
                 // rT.reason.append("Prebolusing $remainingPrebolus U; ")
                 remainingPrebolus
             } else {
-                if (dynIsfMode) round((min(minPredBG, eventualBG) - target_bg) / future_sens, 2)
+                if (dynIsfMode || useISFscaler) round((min(minPredBG, eventualBG) - target_bg) / future_sens, 2)
                 else round((min(minPredBG, eventualBG) - target_bg) / sens, 2)
             }
             // if that would put us over max_iob, then reduce accordingly

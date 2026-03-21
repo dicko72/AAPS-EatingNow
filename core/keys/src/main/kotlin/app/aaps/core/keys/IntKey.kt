@@ -84,6 +84,6 @@ enum class IntKey(
 
     // ENW other Meals
     Eatingnow_enw_minutes("Eatingnow_enw_minutes", 15, 0, 120, defaultedBySM = true),
-    Eatingnow_enw_pct("Eatingnow_enw_pct", 100, 1, 100, defaultedBySM = true),
+    ENWisfScalePct("ENWisfScalePct", 0, 0, 10, defaultedBySM = true),
     Eatingnow_enw_smb_pct("Eatingnow_enw_smb_pct", 100, 1, 100, defaultedBySM = true);
 }
