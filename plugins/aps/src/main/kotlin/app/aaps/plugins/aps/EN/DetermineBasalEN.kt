@@ -306,9 +306,6 @@ class DetermineBasalEN @Inject constructor(
 
         // Eating Now Initial variables
         val ENWActive = enConfig.ENWActive != null
-        rT.reason.append ("EN ${if (enConfig.ENActive) "Active" else "Inactive"}, ")
-        if (ENWActive) rT.reason.append("ENW ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m, ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}")
-        // rT.reason.append(ENReason) // display the Eating Now Reason
 
         // Eating Now Delta Acceleration for UAM+
         var DeltaPctS = 1.0
@@ -705,7 +702,7 @@ class DetermineBasalEN @Inject constructor(
             // set eventualBG based on COB or UAM predBGs
             rT.eventualBG = eventualBG
         }
-
+        rT.reason.append("eBG: " + convert_bg(eventualBG) + ", ") // show eventualBG
         consoleError.add("UAM Impact: $uci mg/dL per 5m; UAM Duration: $UAMduration hours")
         consoleLog.add("EventualBG is $eventualBG ;")
 
@@ -724,17 +721,21 @@ class DetermineBasalEN @Inject constructor(
                 future_sens = (1800 / (ln((((fSensBG * 0.5) + (bg * 0.5)) / profile.insulinDivisor) + 1) * profile.TDD))
                 future_sens = round(future_sens, 1)
                 consoleLog.add("Future state sensitivity is $future_sens based on eventual and current bg due to flat glucose level above target")
-                rT.reason.append("Dosing sensitivity: " + convert_bg(future_sens) + " using eventual BG;")
+                rT.reason.append("fSensBG: "+ convert_bg(eventualBG)+ ", ")
+                // rT.reason.append("Dosing sensitivity: " + convert_bg(future_sens) + " using eventual BG;")
             } else if (glucose_status.delta > 0 && eventualBG > target_bg || eventualBG > bg) {
                 future_sens = (1800 / (ln((bg / profile.insulinDivisor) + 1) * profile.TDD))
                 future_sens = round(future_sens, 1)
                 consoleLog.add("Future state sensitivity is $future_sens using current bg due to small delta or variation")
-                rT.reason.append("Dosing sensitivity: " + convert_bg(future_sens) + " using current BG;")
+                rT.reason.append("fSensBG: "+ convert_bg(bg) + ", ")
+
+                // rT.reason.append("Dosing sensitivity: " + convert_bg(future_sens) + " using current BG;")
             } else {
                 future_sens = (1800 / (ln((fSensBG / profile.insulinDivisor) + 1) * profile.TDD))
                 future_sens = round(future_sens, 1)
                 consoleLog.add("Future state sensitivity is $future_sens based on eventual bg due to -ve delta")
-                rT.reason.append("Dosing sensitivity: " + convert_bg(future_sens) + " using eventual BG;")
+                rT.reason.append("fSensBG: "+ convert_bg(eventualBG)+ ", ")
+                // rT.reason.append("Dosing sensitivity: " + convert_bg(future_sens) + " using eventual BG;")
             }
         }
 
@@ -845,6 +846,14 @@ class DetermineBasalEN @Inject constructor(
             rT.reason.append(", UAMpredBG " + convert_bg(lastUAMpredBG.toDouble()))
         }
         rT.reason.append("; ")
+
+        // Eating Now Reason
+        rT.reason.append ("EN ${if (enConfig.ENActive) "On" else "Off"}, ")
+        rT.reason.append("ENW ${if (ENWActive) "On" else "Off"}, ")
+        if (enConfig.ENWNetIOB > 0 ) rT.reason.append(" ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m, ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
+
+        // rT.reason.append(ENReason) // display the Eating Now Reason
+
 
         // use naive_eventualBG if above 40, but switch to minGuardBG if both eventualBGs hit floor of 39
         var carbsReqBG = naive_eventualBG
