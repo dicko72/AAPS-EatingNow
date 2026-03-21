@@ -889,7 +889,7 @@ class DetermineBasalEN @Inject constructor(
 
         // --- EN PREBOLUS CHECK ---
         val remainingPrebolus = (enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0)
-        val isPrebolusing = enConfig.ENWActive == TT.Reason.EATING_NOW_PB && remainingPrebolus > 0.0
+        val isPrebolusing = enConfig.ENWActive == TT.Reason.EATING_NOW_PB && remainingPrebolus > 0.0 && enConfig.ENWRunTime < 20
         // -------------------------
 
         if (enableSMB && minGuardBG < threshold && !isPrebolusing) {
