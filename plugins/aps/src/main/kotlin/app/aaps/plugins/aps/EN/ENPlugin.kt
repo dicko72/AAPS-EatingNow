@@ -491,6 +491,7 @@ open class ENPlugin @Inject constructor(
             now < endMs -> (startMs - oneDayMs) to endMs        // Crosses midnight, currently early morning
             else -> startMs to (endMs + oneDayMs)               // Crosses midnight, currently evening/daytime
         }
+        val ENTimeOK = now >= EatingNowTimeStart && now < EatingNowTimeEnd
 
         // Fetch the list of ENW TTs ONCE from the database
         val todaysENTargets = persistenceLayer.getENTemporaryTargetsFromTime(EatingNowTimeStart, true).blockingGet() ?: emptyList()
@@ -514,7 +515,7 @@ open class ENPlugin @Inject constructor(
         // Other ENW variables
         val ENWActive = activeENTT?.reason // is there an active ENW or ENW prebolus?
         val ENWfirstMeal = (mealCount == 1 && activeENTT != null) // is this the firstmeal?
-        val ENActive = ENStarted && (!isTempTarget && ENWActive == null || ENWActive != null) // is EN activated?
+        val ENActive = ENTimeOK && ENStarted && (!isTempTarget && ENWActive == null || ENWActive != null) // is EN activated?
         val ENWRunTime = if (ENWStartTime != null && now >= ENWStartTime) {
             ((now - ENWStartTime) / 60_000L).toInt()
         } else 0
