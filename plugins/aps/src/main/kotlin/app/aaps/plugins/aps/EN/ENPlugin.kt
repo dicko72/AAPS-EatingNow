@@ -437,7 +437,9 @@ open class ENPlugin @Inject constructor(
             max_bg = maxBg,
             target_bg = targetBg,
             carb_ratio = profile.getIc(),
-            sens = profile.getIsfMgdl("OpenAPSSMBPlugin"),
+            // sens = profile.getIsfMgdl("ENPlugin"),
+            // OVERRIDE: Safety firewall to catch if the Profile leaked mmol/L (e.g. 8.0) instead of mg/dL
+            sens = profileUtil.convertToMgdlDetect(profile.getIsfMgdl("ENPlugin")),
             autosens_adjust_targets = false, // not used
             max_daily_safety_multiplier = preferences.get(DoubleKey.ApsMaxDailyMultiplier),
             current_basal_safety_multiplier = preferences.get(DoubleKey.ApsMaxCurrentBasalMultiplier),
