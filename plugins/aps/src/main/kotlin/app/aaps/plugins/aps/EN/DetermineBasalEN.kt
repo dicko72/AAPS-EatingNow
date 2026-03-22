@@ -895,7 +895,7 @@ class DetermineBasalEN @Inject constructor(
         // Eating Now Reason
         rT.reason.append ("EN ${if (enConfig.ENActive) "On" else "Off"}, ")
         rT.reason.append("ENW ${if (ENWActive) "On" else "Off"}, ")
-        if (enConfig.ENWNetIOB > 0 ) rT.reason.append(" ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m, ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
+        if (enConfig.ENWNetIOBMax > 0 ) rT.reason.append(" ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m, ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
 
         // rT.reason.append(ENReason) // display the Eating Now Reason
 
