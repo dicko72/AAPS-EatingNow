@@ -277,6 +277,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
                 
                 // Only save the preferences if the user actually clicked "OK" in the confirmation dialog.
                 preferences.put(DoubleKey.Eatingnow_enw_prebolus, roundedPrebolus) // update the prefs with the new rounded PB value
+                preferences.put(DoubleKey.Eatingnow_enw_maxiob, binding.enwIob.value) // update the prefs with the new rounded PB value
                 preferences.put(IntKey.Eatingnow_enw_minutes, duration) // update the prefs with the new duration
             })
         }
