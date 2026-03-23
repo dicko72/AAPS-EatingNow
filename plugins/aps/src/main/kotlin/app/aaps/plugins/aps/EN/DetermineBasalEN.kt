@@ -652,7 +652,7 @@ class DetermineBasalEN @Inject constructor(
             if ((cid != 0.0 || remainingCIpeak > 0) && COBpredBG > maxIOBPredBG) maxCOBPredBG = COBpredBG
             if (enableUAM && UAMpredBGs.size > 12 && (UAMpredBG < minUAMPredBG)) minUAMPredBG = round(UAMpredBG, 0)
             // if (enableUAM && UAMpredBG!! > maxIOBPredBG) maxUAMPredBG = UAMpredBG!!
-            if (enableUAM && UAMpredBG!! > UAMpredBG) maxUAMPredBG = UAMpredBG!! // set the max UAM prediction
+            if (enableUAM && UAMpredBG!! > maxUAMPredBG) maxUAMPredBG = UAMpredBG!! // set the max UAM prediction
         }
         // set eventualBG to include effect of carbs
         //console.error("PredBGs:",JSON.stringify(predBGs));
