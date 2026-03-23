@@ -879,6 +879,7 @@ class DetermineBasalEN @Inject constructor(
         rT.COB = meal_data.mealCOB
         rT.IOB = iob_data.iob
         rT.reason.append(
+            "Delta: ${convert_bg(glucose_status.delta)}/${convert_bg(glucose_status.shortAvgDelta)}/${convert_bg(glucose_status.longAvgDelta)}=${round(DeltaPctS * 100)}/${round(DeltaPctL * 100)}%, " +
             "COB: ${round(activeCOB, 1).withoutZeros()}, Dev: ${convert_bg(deviation.toDouble())}, BGI: ${convert_bg(bgi)}, ISF: ${convert_bg(sens)}${if (useISFscaler) "/" + convert_bg(future_sens) + " (" + ENWisfScalePct +"x)" else ""} , CR: ${
                 round(profile.carb_ratio, 2)
                     .withoutZeros()
@@ -895,7 +896,7 @@ class DetermineBasalEN @Inject constructor(
         // Eating Now Reason
         rT.reason.append ("EN ${if (enConfig.ENActive) "On" else "Off"}, ")
         rT.reason.append("ENW ${if (ENWActive) "On" else "Off"}, ")
-        if (enConfig.ENWNetIOBMax > 0 ) rT.reason.append(" ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m, ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
+        if (enConfig.ENWNetIOB > 0 && enConfig.ENWNetIOBMax > 0 ) rT.reason.append(" ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m, ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
 
         // rT.reason.append(ENReason) // display the Eating Now Reason
 
