@@ -327,6 +327,7 @@ class DetermineBasalEN @Inject constructor(
             // Require both short & long average acceleration outside of ENW
             glucose_status.delta > 0.0 && DeltaPctS >= 1.0 && DeltaPctL > 1.0
         }
+        val UAMplusEnabled = enConfig.ENWuamPlusMaxbolus > 0.0
         val DeltaAcceleratingDown = glucose_status.delta < 0.0 && DeltaPctS < 1.0 && DeltaPctL < 1.0
         val useISFscaler = (enConfig.useISFscaler) // using EN ISF Scaler
 
@@ -555,7 +556,7 @@ class DetermineBasalEN @Inject constructor(
         var IOBpredBG: Double = eventualBG
         var maxIOBPredBG = bg
         var maxCOBPredBG = bg
-        //var maxUAMPredBG = bg
+        var maxUAMPredBG = bg
         //var maxPredBG = bg;
         //var eventualPredBG = bg
         val lastIOBpredBG: Double
@@ -650,7 +651,8 @@ class DetermineBasalEN @Inject constructor(
             if ((cid != 0.0 || remainingCIpeak > 0) && COBpredBGs.size > insulinPeak5m && (COBpredBG < minCOBPredBG)) minCOBPredBG = round(COBpredBG, 0)
             if ((cid != 0.0 || remainingCIpeak > 0) && COBpredBG > maxIOBPredBG) maxCOBPredBG = COBpredBG
             if (enableUAM && UAMpredBGs.size > 12 && (UAMpredBG < minUAMPredBG)) minUAMPredBG = round(UAMpredBG, 0)
-            //if (enableUAM && UAMpredBG!! > maxIOBPredBG) maxUAMPredBG = UAMpredBG!!
+            // if (enableUAM && UAMpredBG!! > maxIOBPredBG) maxUAMPredBG = UAMpredBG!!
+            if (enableUAM && UAMpredBG!! > UAMpredBG) maxUAMPredBG = UAMpredBG!! // set the max UAM prediction
         }
         // set eventualBG to include effect of carbs
         //console.error("PredBGs:",JSON.stringify(predBGs));
@@ -744,9 +746,9 @@ class DetermineBasalEN @Inject constructor(
         val ENWisfScalePct = if (ENWActive) { 1.0 + (enConfig.ENWisfScalePct / 10.0) } else { 1.0 } // 1.0 = Standard curve, 1.5 = 50% Stronger, 2.0 = 100% Stronger only applies with ENW
         if (useISFscaler && ENActive) {
             // Decide which BG value to use based on the delta
-            val chosenBG = if (bg > target_bg && DeltaFastUp && ENWActive) {
+            val chosenBG = if (bg > target_bg && DeltaFastUp) {
                 // UAM+ Spiking
-                max(eventualBG, bg)
+                max(maxUAMPredBG, bg)
             } else if (bg > target_bg && glucose_status.delta < 3 && glucose_status.delta > -3 && glucose_status.shortAvgDelta > -3 && glucose_status.shortAvgDelta < 3 && eventualBG > target_bg && eventualBG < bg) {
                 // Flat/Stubborn High
                 (fSensBG * 0.5) + (bg * 0.5)
@@ -893,6 +895,9 @@ class DetermineBasalEN @Inject constructor(
         }
         if (lastUAMpredBG != null) {
             rT.reason.append(", UAMpredBG " + convert_bg(lastUAMpredBG.toDouble()))
+        }
+        if (maxUAMPredBG != null) {
+            rT.reason.append(", maxUAMpredBG " + convert_bg(maxUAMPredBG.toDouble()))
         }
         rT.reason.append("; ")
 
@@ -1142,8 +1147,13 @@ class DetermineBasalEN @Inject constructor(
                 // rT.reason.append("Prebolusing $remainingPrebolus U; ")
                 remainingPrebolus
             } else {
-                if (dynIsfMode || useISFscaler) round((min(minPredBG, eventualBG) - target_bg) / future_sens, 2)
-                else round((min(minPredBG, eventualBG) - target_bg) / sens, 2)
+                var insulinReqBG = min(minPredBG, eventualBG) // AAPS safety
+                if (DeltaFastUp && UAMplusEnabled) insulinReqBG = max(maxUAMPredBG,eventualBG) // UAM+
+
+                if (dynIsfMode || useISFscaler) round((insulinReqBG - target_bg) / future_sens, 2)
+                else round((insulinReqBG - target_bg) / sens, 2)
+                // if (dynIsfMode || useISFscaler) round((min(minPredBG, eventualBG) - target_bg) / future_sens, 2)
+                // else round((min(minPredBG, eventualBG) - target_bg) / sens, 2)
             }
             // if that would put us over max_iob, then reduce accordingly
             if (insulinReq > max_iob - iob_data.iob) {
