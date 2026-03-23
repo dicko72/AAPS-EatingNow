@@ -748,7 +748,7 @@ class DetermineBasalEN @Inject constructor(
             // Decide which BG value to use based on the delta
             val chosenBG = if (bg > target_bg && DeltaFastUp) {
                 // UAM+ Spiking
-                max(maxUAMPredBG, bg)
+                max(eventualBG, bg)
             } else if (bg > target_bg && glucose_status.delta < 3 && glucose_status.delta > -3 && glucose_status.shortAvgDelta > -3 && glucose_status.shortAvgDelta < 3 && eventualBG > target_bg && eventualBG < bg) {
                 // Flat/Stubborn High
                 (fSensBG * 0.5) + (bg * 0.5)
