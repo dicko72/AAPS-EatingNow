@@ -556,11 +556,11 @@ open class ENPlugin @Inject constructor(
             ENWDuration = preferences.get(IntKey.Eatingnow_enw_minutes),
             ENWisfScalePct = preferences.get(IntKey.ENWisfScalePct),
             ENWsmbPct = preferences.get(IntKey.Eatingnow_enw_smb_pct),
-            ENWcobMaxbolus = preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus),
-            ENWuamMaxbolus = preferences.get(DoubleKey.Eatingnow_enw_uam_maxbolus),
-            ENWNetIOBMax = preferences.get(DoubleKey.Eatingnow_enw_maxiob),
-            ENWprebolus = Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_prebolus), 0.01),
-            ENWuamPlusMaxbolus = preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus),
+            ENWcobMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus), 0.01), 0.0),
+            ENWuamMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_uam_maxbolus), 0.01), 0.0),
+            ENWNetIOBMax = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_maxiob), 0.01), 0.0),
+            ENWprebolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_prebolus), 0.01), 0.0),
+            ENWuamPlusMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus), 0.01), 0.0),
         )
 
         val microBolusAllowed = constraintsChecker.isSMBModeEnabled(ConstraintObject(tempBasalFallback.not(), aapsLogger)).also { inputConstraints.copyReasons(it) }.value()
