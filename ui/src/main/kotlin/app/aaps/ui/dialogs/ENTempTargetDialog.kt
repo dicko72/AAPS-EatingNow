@@ -192,8 +192,11 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
     override fun submit(): Boolean {
         if (_binding == null) return false
 
-        // Check prebolus is not larger than the ENW IOB limit
+
+        val isPrebolusChecked = binding.prebolus.isChecked
         val roundedPrebolus = Round.roundTo(binding.amount.value, 0.01)
+        val enwMaxIobValue = binding.enwIob.value
+        // Check prebolus is not larger than the ENW IOB limit
         if (binding.prebolus.isChecked && roundedPrebolus > binding.enwIob.value) {
             ToastUtils.warnToast(ctx, "Prebolus cannot exceed ENW-IOB limit")
             return false
@@ -206,10 +209,7 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
         val unitResId = if (profileFunction.getUnits() == GlucoseUnit.MGDL) app.aaps.core.ui.R.string.mgdl else app.aaps.core.ui.R.string.mmol
         val target = binding.temptarget.value
         val duration = binding.duration.value.toInt()
-        // sp.putDouble("ENdb_PreBolusUnits", binding.amount.value) // add the prebolus amount for DetermineBasalAdapterENJS.kt
-        // sp.putDouble("ENdb_ENWIOBUnits", binding.enwIob.value) // add the ENWIOB amount for DetermineBasalAdapterENJS.kt
 
-        // preferences.put(DoubleKey.Eatingnow_enw_prebolus, roundedPrebolus) // update the prefs with the new rounded PB value
         if (target != 0.0 && duration != 0) {
             actions.add(rh.gs(app.aaps.core.ui.R.string.target_label) + ": " + profileUtil.stringInCurrentUnitsDetect(target) + " " + rh.gs(unitResId))
             actions.add(rh.gs(app.aaps.core.ui.R.string.duration) + ": " + rh.gs(app.aaps.core.ui.R.string.format_mins, duration))
@@ -276,8 +276,8 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
                 if (duration == 10) preferences.put(BooleanNonKey.ObjectivesTempTargetUsed, true)
                 
                 // Only save the preferences if the user actually clicked "OK" in the confirmation dialog.
-                preferences.put(DoubleKey.Eatingnow_enw_prebolus, roundedPrebolus) // update the prefs with the new rounded PB value
-                preferences.put(DoubleKey.Eatingnow_enw_maxiob, binding.enwIob.value) // update the prefs with the new rounded PB value
+                if (isPrebolusChecked) preferences.put(DoubleKey.Eatingnow_enw_prebolus, roundedPrebolus) // update the prefs with the new rounded PB value
+                preferences.put(DoubleKey.Eatingnow_enw_maxiob, enwMaxIobValue) // update the prefs with the new rounded PB value
                 preferences.put(IntKey.Eatingnow_enw_minutes, duration) // update the prefs with the new duration
             })
         }
