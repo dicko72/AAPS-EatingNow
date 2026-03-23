@@ -1201,8 +1201,11 @@ class DetermineBasalEN @Inject constructor(
                         // Prioritize PreBolus requirements within safety limits
                         "PB" to min(round(remainingPrebolus, 1), enConfig.SafetyMaxBolus)
                     }
-                    ENWActive && DeltaFastUp && enConfig.ENWuamPlusMaxbolus > 0 && eventualBG != lastCOBpredBG -> {
+                    ENWActive && DeltaFastUp && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
                         "UAM+" to enConfig.ENWuamPlusMaxbolus
+                    }
+                    ENActive && DeltaFastUp && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
+                        "UAM+" to maxBolus
                     }
                     ENWActive && enConfig.ENWcobMaxbolus > 0 && eventualBG == lastCOBpredBG -> {
                         "COB" to enConfig.ENWcobMaxbolus
