@@ -76,10 +76,16 @@ class ProcessedDeviceStatusDataImpl @Inject constructor(
             val string = StringBuilder()
             val enacted = openAPSData.enacted
             val suggested = openAPSData.suggested
+            val clockEnacted = openAPSData.clockEnacted
+            val clockSuggested = openAPSData.clockSuggested
 
-            // Always show the Enacted result (or Suggested if Enacted doesn't exist yet)
-            val mainResult = enacted ?: suggested
-            val mainClock = if (enacted != null) openAPSData.clockEnacted else openAPSData.clockSuggested
+            // Check if Enacted and Suggested happened at the same time (within 60 seconds of each other)
+            val isEnactedFresh = clockEnacted != 0L && clockSuggested != 0L &&
+                Math.abs(clockEnacted - clockSuggested) < 60000L
+
+            // If Enacted is fresh, show it. Otherwise, show Suggested because it's the latest
+            val mainResult = if (isEnactedFresh) enacted else (suggested ?: enacted)
+            val mainClock = if (isEnactedFresh) clockEnacted else (clockSuggested ?: clockEnacted)
 
             if (mainResult != null) {
                 string.append("<b>")
@@ -88,23 +94,30 @@ class ProcessedDeviceStatusDataImpl @Inject constructor(
                     .append(mainResult.reason)
             }
 
-            // If BOTH exist, check if the Constraints Checker changed the delivery
-            if (enacted != null && suggested != null) {
-                // Check if the delivery math was modified
-                val isDifferent = enacted.rate != suggested.rate ||
-                    enacted.duration != suggested.duration ||
-                    enacted.units != suggested.units
-                if (isDifferent) {
-                    string.append("<br><br><small><i><b>Suggested:</b> ")
-                    if (enacted.rate != suggested.rate || enacted.duration != suggested.duration) {
+            // Handle the differences cleanly
+            if (isEnactedFresh && enacted != null && suggested != null) {
+
+                // Check if the actual physical insulin delivery changed
+                val rateChanged = suggested.rate != enacted.rate
+                val durationChanged = suggested.duration != enacted.duration
+                val smbChanged = suggested.units != enacted.units
+
+                // ONLY print the label if the pump was actually given a different command
+                if (rateChanged || durationChanged || smbChanged) {
+                    string.append("<br><br><small><i><b>Suggested Difference:</b> ")
+                    if (rateChanged || durationChanged) {
                         string.append("Temp: ${suggested.rate} U/h for ${suggested.duration}m. ")
                     }
-                    if (enacted.units != suggested.units) {
-                        string.append("SMB: ${suggested.units ?: 0.0} U. ")
+                    if (smbChanged && suggested.units != null) {
+                        string.append("SMB: ${suggested.units} U.")
                     }
                     string.append("</i></small>")
                 }
+            } else if (!isEnactedFresh && suggested != null && enacted != null) {
+                // The loop ran recently, but the pump didn't enact anything new
+                string.append("<br><br><small><i>(No new enactment sent to pump)</i></small>")
             }
+
             string.append("<br>")
             return HtmlHelper.fromHtml(string.toString())
         }
