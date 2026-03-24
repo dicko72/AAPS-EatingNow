@@ -903,11 +903,8 @@ class DetermineBasalEN @Inject constructor(
 
         // Eating Now Reason
         rT.reason.append ("EN ${if (enConfig.ENActive) "On" else "Off"}, ")
-        rT.reason.append("ENW ${if (ENWActive) "On" else "Off"}, ")
-        if (enConfig.ENWNetIOB > 0 && enConfig.ENWNetIOBMax > 0 ) rT.reason.append(" ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m, ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
-
-        // rT.reason.append(ENReason) // display the Eating Now Reason
-
+        rT.reason.append("ENW ${if (ENWActive) "On ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m" else "Off ${enConfig.ENWDuration}m"}, ")
+        if (enConfig.ENWNetIOB > 0 && enConfig.ENWNetIOBMax > 0 ) rT.reason.append("ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
 
         // use naive_eventualBG if above 40, but switch to minGuardBG if both eventualBGs hit floor of 39
         var carbsReqBG = naive_eventualBG
