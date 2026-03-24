@@ -757,7 +757,7 @@ class DetermineBasalEN @Inject constructor(
                 bg
             } else if (glucose_status.delta < 6 || DeltaAcceleratingDown) {
                 // Dropping
-                target_bg
+                min(target_bg,eventualBG)
             } else {
                 // Dropping/Recovering
                 fSensBG
