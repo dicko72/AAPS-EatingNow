@@ -76,20 +76,36 @@ class ProcessedDeviceStatusDataImpl @Inject constructor(
             val string = StringBuilder()
             val enacted = openAPSData.enacted
             val suggested = openAPSData.suggested
-            if (enacted != null && openAPSData.clockEnacted != openAPSData.clockSuggested) string
-                .append("<b>")
-                .append("Enacted: </br>")
-                .append(dateUtil.minAgo(rh, openAPSData.clockEnacted))
-                .append("</b> ")
-                .append(enacted.reason)
-                .append("<br>")
-            if (suggested != null) string
-                .append("<b>")
-                .append("Suggested: </br>")
-                .append(dateUtil.minAgo(rh, openAPSData.clockSuggested))
-                .append("</b> ")
-                .append(suggested.reason)
-                .append("<br>")
+
+            // Always show the Enacted result (or Suggested if Enacted doesn't exist yet)
+            val mainResult = enacted ?: suggested
+            val mainClock = if (enacted != null) openAPSData.clockEnacted else openAPSData.clockSuggested
+
+            if (mainResult != null) {
+                string.append("<b>")
+                    .append(dateUtil.minAgo(rh, mainClock))
+                    .append("</b> ")
+                    .append(mainResult.reason)
+            }
+
+            // If BOTH exist, check if the Constraints Checker changed the delivery
+            if (enacted != null && suggested != null) {
+                // Check if the delivery math was modified
+                val isDifferent = enacted.rate != suggested.rate ||
+                    enacted.duration != suggested.duration ||
+                    enacted.units != suggested.units
+                if (isDifferent) {
+                    string.append("<br><br><small><i><b>Suggested:</b> ")
+                    if (enacted.rate != suggested.rate || enacted.duration != suggested.duration) {
+                        string.append("Temp: ${suggested.rate} U/h for ${suggested.duration}m. ")
+                    }
+                    if (enacted.units != suggested.units) {
+                        string.append("SMB: ${suggested.units ?: 0.0} U. ")
+                    }
+                    string.append("</i></small>")
+                }
+            }
+            string.append("<br>")
             return HtmlHelper.fromHtml(string.toString())
         }
 
