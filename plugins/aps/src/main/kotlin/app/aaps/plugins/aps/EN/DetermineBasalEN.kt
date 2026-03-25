@@ -325,7 +325,7 @@ class DetermineBasalEN @Inject constructor(
             glucose_status.delta > 0.0 && DeltaPctS >= 1.0
         } else {
             // Require both short & long average acceleration outside of ENW
-            glucose_status.delta > 0.0 && DeltaPctS >= 1.0 && DeltaPctL > 1.0
+            glucose_status.delta > 5.0 && DeltaPctS >= 1.0 && DeltaPctL > 1.0
         }
         val UAMplusEnabled = enConfig.ENWuamPlusMaxbolus > 0.0
         val DeltaAcceleratingDown = glucose_status.delta < 0.0 && DeltaPctS < 1.0 && DeltaPctL < 1.0
