@@ -97,25 +97,42 @@ class ProcessedDeviceStatusDataImpl @Inject constructor(
             // Handle the differences cleanly
             if (isEnactedFresh && enacted != null && suggested != null) {
 
-                // Check if the actual physical insulin delivery changed
-                val rateChanged = suggested.rate != enacted.rate
-                val durationChanged = suggested.duration != enacted.duration
-                val smbChanged = suggested.units != enacted.units
+                // 1. Safely unwrap the nullable values (defaulting to 0 if null)
+                val safeSuggestedRate = suggested.rate ?: 0.0
+                val safeEnactedRate = enacted.rate ?: 0.0
 
-                // ONLY print the label if the pump was actually given a different command
+                val safeSuggestedUnits = suggested.units ?: 0.0
+                val safeEnactedUnits = enacted.units ?: 0.0
+
+                // 2. Round them both to 2 decimal places using AAPS utilities
+                val sRate = Round.roundTo(safeSuggestedRate, 0.01)
+                val eRate = Round.roundTo(safeEnactedRate, 0.01)
+
+                val sUnits = Round.roundTo(safeSuggestedUnits, 0.01)
+                val eUnits = Round.roundTo(safeEnactedUnits, 0.01)
+
+                // 3. Compare the clean, rounded numbers!
+                val rateChanged = sRate != eRate
+                val smbChanged = sUnits != eUnits
+                // Duration is an Int (minutes), so it's safe to just compare with 0
+                val durationChanged = (suggested.duration ?: 0) != (enacted.duration ?: 0)
+
+                // ONLY print the label if the hardware was actually given a different command
                 if (rateChanged || durationChanged || smbChanged) {
                     string.append("<br><br><small><i><b>Suggested Difference:</b> ")
+
                     if (rateChanged || durationChanged) {
-                        string.append("Temp: ${suggested.rate} U/h for ${suggested.duration}m. ")
+                        string.append("Temp: $sRate U/h for ${suggested.duration ?: 0}m. ")
                     }
-                    if (smbChanged && suggested.units != null) {
-                        string.append("SMB: ${suggested.units} U.")
+                    if (smbChanged) {
+                        string.append("SMB: $sUnits U.")
                     }
+
                     string.append("</i></small>")
                 }
-            } else if (!isEnactedFresh && suggested != null && enacted != null) {
+            } else if (false) {
                 // The loop ran recently, but the pump didn't enact anything new
-                string.append("<br><br><small><i>(No new enactment sent to pump)</i></small>")
+                // string.append("<br><br><small><i>(No new enactment sent to pump)</i></small>")
             }
 
             string.append("<br>")
