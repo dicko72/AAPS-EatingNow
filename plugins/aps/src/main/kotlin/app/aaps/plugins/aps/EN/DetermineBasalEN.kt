@@ -1163,7 +1163,7 @@ class DetermineBasalEN @Inject constructor(
 
             // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
             val ENWNetIOBRemaining = max(enConfig.ENWNetIOBMax - enConfig.ENWNetIOB, 0.0) // dont allow negative
-            if (enConfig.ENWNetIOBMax > 0 && insulinReq > ENWNetIOBRemaining) {
+            if (ENWActive && enConfig.ENWNetIOBMax > 0 && insulinReq > ENWNetIOBRemaining) {
                 insulinReq = min(insulinReq,ENWNetIOBRemaining)
                 // rate = round_basal(profile.current_basal, profile);
                 //if (sens_predType == "UAM+") rate = whatever the rate is to get basal iob back to zero by the end of enw
