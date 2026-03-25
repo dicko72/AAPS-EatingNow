@@ -724,21 +724,17 @@ class DetermineBasalEN @Inject constructor(
                 future_sens = (1800 / (ln((((fSensBG * 0.5) + (bg * 0.5)) / profile.insulinDivisor) + 1) * profile.TDD))
                 future_sens = round(future_sens, 1)
                 consoleLog.add("Future state sensitivity is $future_sens based on eventual and current bg due to flat glucose level above target")
-                rT.reason.append("fSensBG: "+ convert_bg((fSensBG * 0.5) + (bg * 0.5))+ ", ")
-                // rT.reason.append("Dosing sensitivity: " + convert_bg(future_sens) + " using eventual BG;")
+                rT.reason.append("Dosing sensitivity: " + convert_bg(future_sens) + " using eventual BG;")
             } else if (glucose_status.delta > 0 && eventualBG > target_bg || eventualBG > bg) {
                 future_sens = (1800 / (ln((bg / profile.insulinDivisor) + 1) * profile.TDD))
                 future_sens = round(future_sens, 1)
                 consoleLog.add("Future state sensitivity is $future_sens using current bg due to small delta or variation")
-                rT.reason.append("fSensBG: "+ convert_bg(bg) + ", ")
-
-                // rT.reason.append("Dosing sensitivity: " + convert_bg(future_sens) + " using current BG;")
+                rT.reason.append("Dosing sensitivity: " + convert_bg(future_sens) + " using current BG;")
             } else {
                 future_sens = (1800 / (ln((fSensBG / profile.insulinDivisor) + 1) * profile.TDD))
                 future_sens = round(future_sens, 1)
                 consoleLog.add("Future state sensitivity is $future_sens based on eventual bg due to -ve delta")
-                rT.reason.append("fSensBG: "+ convert_bg(fSensBG)+ ", ")
-                // rT.reason.append("Dosing sensitivity: " + convert_bg(future_sens) + " using eventual BG;")
+                rT.reason.append("Dosing sensitivity: " + convert_bg(future_sens) + " using eventual BG;")
             }
         }
 
@@ -897,7 +893,7 @@ class DetermineBasalEN @Inject constructor(
             rT.reason.append(", UAMpredBG " + convert_bg(lastUAMpredBG.toDouble()))
         }
         if (maxUAMPredBG != null) {
-            rT.reason.append(", maxUAMpredBG " + convert_bg(maxUAMPredBG.toDouble()))
+            rT.reason.append("^" + convert_bg(maxUAMPredBG.toDouble()))
         }
         rT.reason.append("; ")
 
