@@ -738,20 +738,22 @@ class DetermineBasalEN @Inject constructor(
             }
         }
 
-        // Eating Now ISF Scaling when ENActive
+        // Eating Now ISF Scaling
         val ENWisfScalePct = if (ENWActive) { 1.0 + (enConfig.ENWisfScalePct / 10.0) } else { 1.0 } // 1.0 = Standard curve, 1.5 = 50% Stronger, 2.0 = 100% Stronger only applies with ENW
-        if (useISFscaler && ENActive) {
+        // if stuck above 8mmol stubborn high
+        val isStubbornHigh = bg > 144 && glucose_status.delta < 3 && glucose_status.delta > -3 && glucose_status.shortAvgDelta > -3 && glucose_status.shortAvgDelta < 3 &&eventualBG > target_bg && eventualBG < bg
+        if (useISFscaler) {
             // Decide which BG value to use based on the delta
             val chosenBG = if (bg > target_bg && DeltaFastUp) {
                 // UAM+ Spiking
                 max(eventualBG, bg)
-            } else if (bg > target_bg && glucose_status.delta < 3 && glucose_status.delta > -3 && glucose_status.shortAvgDelta > -3 && glucose_status.shortAvgDelta < 3 && eventualBG > target_bg && eventualBG < bg) {
+            } else if (isStubbornHigh) {
                 // Flat/Stubborn High
                 (fSensBG * 0.5) + (bg * 0.5)
             } else if (glucose_status.delta > 0 && (eventualBG > target_bg || eventualBG > bg)) {
                 // Slow Rise
                 bg
-            } else if (glucose_status.delta < 6 || DeltaAcceleratingDown) {
+            } else if (glucose_status.delta < -6 || DeltaAcceleratingDown) {
                 // Dropping
                 min(target_bg,eventualBG)
             } else {
