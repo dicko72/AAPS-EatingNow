@@ -1140,18 +1140,19 @@ class DetermineBasalEN @Inject constructor(
         } else { // otherwise, calculate 30m high-temp required to get projected BG down to target
             // insulinReq is the additional insulin required to get minPredBG down to target_bg
             //console.error(minPredBG,eventualBG);
-            var insulinReq = if (isPrebolusing) { // when prebolusing allow remainingPrebolus insulin to be used
-                // rT.reason.append("Prebolusing $remainingPrebolus U; ")
-                remainingPrebolus
-            } else {
-                var insulinReqBG = min(minPredBG, eventualBG) // AAPS safety
-                if (DeltaFastUp && UAMplusEnabled) insulinReqBG = max(maxUAMPredBG,eventualBG) // UAM+
+            var insulinReqBG = min(minPredBG, eventualBG) // AAPS safety
+            if (DeltaFastUp && UAMplusEnabled) insulinReqBG = max(maxUAMPredBG, eventualBG) // UAM+
 
-                if (dynIsfMode || useISFscaler) round((insulinReqBG - target_bg) / future_sens, 2)
-                else round((insulinReqBG - target_bg) / sens, 2)
-                // if (dynIsfMode || useISFscaler) round((min(minPredBG, eventualBG) - target_bg) / future_sens, 2)
-                // else round((min(minPredBG, eventualBG) - target_bg) / sens, 2)
+            var insulinReq = if (dynIsfMode || useISFscaler) {
+                round((insulinReqBG - target_bg) / future_sens, 2)
+            } else {
+                round((insulinReqBG - target_bg) / sens, 2)
             }
+            // if (dynIsfMode || useISFscaler) round((min(minPredBG, eventualBG) - target_bg) / future_sens, 2)
+            // else round((min(minPredBG, eventualBG) - target_bg) / sens, 2)
+
+            if (isPrebolusing) insulinReq = max(remainingPrebolus, insulinReq) // Give the minimum in the prebolus
+
             // if that would put us over max_iob, then reduce accordingly
             if (insulinReq > max_iob - iob_data.iob) {
                 rT.reason.append("max_iob $max_iob, ")
