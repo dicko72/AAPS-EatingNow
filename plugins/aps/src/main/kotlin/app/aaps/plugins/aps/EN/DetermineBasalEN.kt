@@ -308,7 +308,6 @@ class DetermineBasalEN @Inject constructor(
         val ENActive = enConfig.ENActive
         val ENWActive = enConfig.ENWActive != null
 
-
         // Eating Now Delta Acceleration for UAM+
         var DeltaPctS = 1.0
         var DeltaPctL = 1.0
@@ -327,6 +326,11 @@ class DetermineBasalEN @Inject constructor(
             // Require both short & long average acceleration outside of ENW
             glucose_status.delta > 5.0 && DeltaPctS >= 1.0 && DeltaPctL > 1.0
         }
+        val ENWNetIOBRemaining = max(enConfig.ENWNetIOBMax - enConfig.ENWNetIOB, 0.0) // remaining ENW IOB
+        val remainingPrebolus = (enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0) // remaining prebolus
+        val isPrebolusing = enConfig.ENWActive == TT.Reason.EATING_NOW_PB && remainingPrebolus > 0.0 // if prebolusing
+        val expectedBGrise = (DeltaFastUp && ENWActive && ENWNetIOBRemaining > 0 || isPrebolusing)
+
         val UAMplusEnabled = enConfig.ENWuamPlusMaxbolus > 0.0
         val DeltaAcceleratingDown = glucose_status.delta < 0.0 && DeltaPctS < 1.0 && DeltaPctL < 1.0
         val useISFscaler = (enConfig.useISFscaler) // using EN ISF Scaler
@@ -945,17 +949,12 @@ class DetermineBasalEN @Inject constructor(
             }
         }
 
-        // --- EN PREBOLUS CHECK ---
-        val remainingPrebolus = (enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0)
-        val isPrebolusing = enConfig.ENWActive == TT.Reason.EATING_NOW_PB && remainingPrebolus > 0.0 && enConfig.ENWRunTime < 20
-        // -------------------------
-
-        if (enableSMB && minGuardBG < threshold && !isPrebolusing) { // when prebolusing allow SMB
+        if (enableSMB && minGuardBG < threshold && !expectedBGrise) { // when prebolusing allow SMB
             consoleError.add("minGuardBG ${convert_bg(minGuardBG)} projected below ${convert_bg(threshold)} - disabling SMB")
             //rT.reason += "minGuardBG "+minGuardBG+"<"+threshold+": SMB disabled; ";
             enableSMB = false
         }
-        if (maxDelta > 0.20 * bg && !isPrebolusing) { // when prebolusing allow SMB
+        if (maxDelta > 0.20 * bg && !expectedBGrise) { // when prebolusing allow SMB
             consoleError.add("maxDelta ${convert_bg(maxDelta)} > 20% of BG ${convert_bg(bg)} - disabling SMB")
             rT.reason.append("maxDelta " + convert_bg(maxDelta) + " > 20% of BG " + convert_bg(bg) + ": SMB disabled; ")
             enableSMB = false
@@ -986,7 +985,7 @@ class DetermineBasalEN @Inject constructor(
             rT.reason.append("IOB ${iob_data.iob} < ${round(-profile.current_basal * 20 / 60, 2)}")
             rT.reason.append(" and minDelta ${convert_bg(minDelta)} > expectedDelta ${convert_bg(expectedDelta)}; ")
             // predictive low glucose suspend mode: BG is / is projected to be < threshold
-        } else if ((bg < threshold || minGuardBG < threshold) && !isPrebolusing) { // when prebolusing allow insulin
+        } else if ((bg < threshold || minGuardBG < threshold) && !expectedBGrise) { // when prebolusing allow insulin
             rT.reason.append("minGuardBG " + convert_bg(minGuardBG) + " < " + convert_bg(threshold))
             bgUndershoot = target_bg - minGuardBG
             val worstCaseInsulinReq = bgUndershoot / sens
@@ -1005,7 +1004,7 @@ class DetermineBasalEN @Inject constructor(
             return setTempBasal(0.0, 0, profile, rT, currenttemp)
         }
 
-        if (eventualBG < min_bg && !isPrebolusing) { // if eventual BG is below target, but not prebolusing
+        if (eventualBG < min_bg && !expectedBGrise) { // if eventual BG is below target, but not prebolusing
             rT.reason.append("Eventual BG ${convert_bg(eventualBG)} < ${convert_bg(min_bg)}")
             // if 5m or 30m avg BG is rising faster than expected delta
             if (minDelta > expectedDelta && minDelta > 0 && carbsReq == 0) {
@@ -1085,7 +1084,7 @@ class DetermineBasalEN @Inject constructor(
         }
 
         // if eventual BG is above min but BG is falling faster than expected Delta
-        if (minDelta < expectedDelta && !isPrebolusing) { // when prebolusing allow insulin
+        if (minDelta < expectedDelta && !expectedBGrise) { // when prebolusing allow insulin
             // if in SMB mode, don't cancel SMB zero temp
             if (!(microBolusAllowed && enableSMB)) {
                 if (glucose_status.delta < minDelta) {
@@ -1107,7 +1106,7 @@ class DetermineBasalEN @Inject constructor(
             }
         }
         // eventualBG or minPredBG is below max_bg
-        if (min(eventualBG, minPredBG) < max_bg && !isPrebolusing) { // when prebolusing allow insulin
+        if (min(eventualBG, minPredBG) < max_bg && !expectedBGrise) { // when prebolusing allow insulin
             // if in SMB mode, don't cancel SMB zero temp
             if (!(microBolusAllowed && enableSMB)) {
                 rT.reason.append("${convert_bg(eventualBG)}-${convert_bg(minPredBG)} in range: no temp required")
@@ -1161,7 +1160,6 @@ class DetermineBasalEN @Inject constructor(
             // ============== EATING NOW IOB RESTRICTION  ==============
 
             // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
-            val ENWNetIOBRemaining = max(enConfig.ENWNetIOBMax - enConfig.ENWNetIOB, 0.0) // dont allow negative
             if (ENWActive && enConfig.ENWNetIOBMax > 0 && insulinReq > ENWNetIOBRemaining) {
                 insulinReq = min(insulinReq,ENWNetIOBRemaining)
                 // rate = round_basal(profile.current_basal, profile);
@@ -1178,7 +1176,7 @@ class DetermineBasalEN @Inject constructor(
             //console.error(profile.temptargetSet, target_bg, rT.COB);
             // only allow microboluses with COB or low temp targets, or within DIA hours of a bolus
             var maxBolus: Double
-            if (microBolusAllowed && enableSMB && (bg > threshold || isPrebolusing)) { // when prebolusing allow insulin
+            if (microBolusAllowed && enableSMB && (bg > threshold || expectedBGrise)) { // when prebolusing allow insulin
                 // never bolus more than maxSMBBasalMinutes worth of basal
                 val mealInsulinReq = round(activeCOB / profile.carb_ratio, 3)
                 if (iob_data.iob > mealInsulinReq && iob_data.iob > 0) {
