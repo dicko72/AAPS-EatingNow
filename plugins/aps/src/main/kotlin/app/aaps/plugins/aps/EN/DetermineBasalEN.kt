@@ -328,7 +328,7 @@ class DetermineBasalEN @Inject constructor(
         }
         val ENWNetIOBRemaining = max(enConfig.ENWNetIOBMax - enConfig.ENWNetIOB, 0.0) // remaining ENW IOB
         val remainingPrebolus = (enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0) // remaining prebolus
-        val isPrebolusing = enConfig.ENWActive == TT.Reason.EATING_NOW_PB && remainingPrebolus > 0.0 // if prebolusing
+        val isPrebolusing = enConfig.ENWActive == TT.Reason.EATING_NOW_PB && remainingPrebolus > 0.0 && enConfig.ENWRunTime < 15 // if prebolusing
         val expectedBGrise = (DeltaFastUp && ENWActive && ENWNetIOBRemaining > 0 || isPrebolusing)
 
         val UAMplusEnabled = enConfig.ENWuamPlusMaxbolus > 0.0
