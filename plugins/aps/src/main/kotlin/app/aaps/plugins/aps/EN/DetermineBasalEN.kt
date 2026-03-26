@@ -890,7 +890,7 @@ class DetermineBasalEN @Inject constructor(
             "COB: ${round(activeCOB, 1).withoutZeros()}, Dev: ${convert_bg(deviation.toDouble())}, BGI: ${convert_bg(bgi)}, ISF: ${convert_bg(sens)}${if (useISFscaler) "/" + convert_bg(future_sens) + " (" + ENWisfScalePct +"x)" else ""} , CR: ${
                 round(profile.carb_ratio, 2)
                     .withoutZeros()
-            }, Target: ${convert_bg(target_bg)}, minPredBG ${convert_bg(minPredBG)}, minGuardBG ${convert_bg(minGuardBG)}, IOBpredBG ${convert_bg(lastIOBpredBG)}"
+            }, Target: ${convert_bg(target_bg)}, minPredBG ${convert_bg(minPredBG)}, minGuardBG${if (!expectedBGrise) "*" else ""} ${convert_bg(minGuardBG)}, IOBpredBG ${convert_bg(lastIOBpredBG)}"
         )
         if (lastCOBpredBG != null) {
             rT.reason.append(", COBpredBG " + convert_bg(lastCOBpredBG.toDouble()))
@@ -986,7 +986,7 @@ class DetermineBasalEN @Inject constructor(
             rT.reason.append(" and minDelta ${convert_bg(minDelta)} > expectedDelta ${convert_bg(expectedDelta)}; ")
             // predictive low glucose suspend mode: BG is / is projected to be < threshold
         } else if ((bg < threshold || minGuardBG < threshold) && !expectedBGrise) { // when prebolusing allow insulin
-            rT.reason.append("minGuardBG " + convert_bg(minGuardBG) + " < " + convert_bg(threshold))
+            rT.reason.append("minGuardBG" + convert_bg(minGuardBG) + " < " + convert_bg(threshold))
             bgUndershoot = target_bg - minGuardBG
             val worstCaseInsulinReq = bgUndershoot / sens
             var durationReq = round(60 * worstCaseInsulinReq / profile.current_basal)
