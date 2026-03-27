@@ -1136,7 +1136,7 @@ class DetermineBasalEN @Inject constructor(
             // insulinReq is the additional insulin required to get minPredBG down to target_bg
             //console.error(minPredBG,eventualBG);
             var insulinReqBG = min(minPredBG, eventualBG) // AAPS safety
-            if (DeltaFastUp && UAMplusEnabled) insulinReqBG = max(maxUAMPredBG, eventualBG) // UAM+
+            if (DeltaFastUp && UAMplusEnabled && minPredBG < target_bg) insulinReqBG = max(maxUAMPredBG, eventualBG) // UAM+
 
             var insulinReq = if (dynIsfMode || useISFscaler) {
                 round((insulinReqBG - target_bg) / future_sens, 2)
