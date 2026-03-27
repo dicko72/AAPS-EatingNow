@@ -711,7 +711,7 @@ class DetermineBasalEN @Inject constructor(
             // set eventualBG based on COB or UAM predBGs
             rT.eventualBG = eventualBG
         }
-        rT.reason.append("eBG: " + convert_bg(eventualBG) + ", ") // show eventualBG
+        // rT.reason.append("eBG: " + convert_bg(eventualBG) + ", ") // show eventualBG
         consoleError.add("UAM Impact: $uci mg/dL per 5m; UAM Duration: $UAMduration hours")
         consoleLog.add("EventualBG is $eventualBG ;")
 
@@ -1240,7 +1240,7 @@ class DetermineBasalEN @Inject constructor(
                     smbLowTempReq = round(basal * durationReq / 30.0, 2)
                     durationReq = 30
                 }
-                rT.reason.append(" insulinReq $insulinReq")
+                rT.reason.append(" insulinReqBG ${convert_bg(insulinReqBG)} = $insulinReq")
                 if (microBolus >= maxBolus || maxBolus > maxBolusAAPS) { // if the maxBolus has increased due to EN
                     rT.reason.append("; $ENmaxBolusType maxBolus $maxBolus")
                 }
