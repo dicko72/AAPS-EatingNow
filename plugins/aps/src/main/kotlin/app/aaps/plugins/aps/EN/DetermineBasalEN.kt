@@ -1240,7 +1240,8 @@ class DetermineBasalEN @Inject constructor(
                     smbLowTempReq = round(basal * durationReq / 30.0, 2)
                     durationReq = 30
                 }
-                rT.reason.append(" insulinReqBG ${convert_bg(insulinReqBG)} = $insulinReq")
+                rT.reason.append(" insulinReq {$insulinReq}U")
+                if (insulinReqBG != bg) rT.reason.append(", iReqBG: ${convert_bg(insulinReqBG)}")
                 if (microBolus >= maxBolus || maxBolus > maxBolusAAPS) { // if the maxBolus has increased due to EN
                     rT.reason.append("; $ENmaxBolusType maxBolus $maxBolus")
                 }
