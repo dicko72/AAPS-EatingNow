@@ -16,6 +16,7 @@ data class ENConfig(
     var IgnoreCOB: Boolean,
     var SafetyMaxBolus: Double,
     var useISFscaler: Boolean,
+    var highBGthreshold: Double,
 
     // ENW variables
     var ENWfirstMeal: Boolean,

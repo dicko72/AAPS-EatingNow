@@ -57,6 +57,7 @@ enum class DoubleKey(
 
     // General
     Eatingnow_overnightSMB("overnightSMB", 0.0, 0.0, 270.0, defaultedBySM = true),
+    highBGthreshold("highBGthreshold", 0.0, 0.0, 100.0, defaultedBySM = true),
 
     // ENW variable limits
     Eatingnow_enw_cob_maxbolus("Eatingnow_enw_cob_maxbolus", 0.0, 0.0, 5.0, defaultedBySM = true),
