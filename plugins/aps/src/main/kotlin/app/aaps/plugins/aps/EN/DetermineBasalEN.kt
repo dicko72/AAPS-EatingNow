@@ -748,7 +748,7 @@ class DetermineBasalEN @Inject constructor(
         val isStubbornHigh = bg > 144 && glucose_status.delta < 3 && glucose_status.delta > -3 && glucose_status.shortAvgDelta > -3 && glucose_status.shortAvgDelta < 3 &&eventualBG > target_bg && eventualBG < bg
         if (useISFscaler) {
             // Decide which BG value to use based on the delta
-            val chosenBG = if (bg > target_bg && DeltaFastUp) {
+            val chosenBG = if (DeltaFastUp) {
                 // UAM+ Spiking
                 max(eventualBG, bg)
             } else if (isStubbornHigh) {
