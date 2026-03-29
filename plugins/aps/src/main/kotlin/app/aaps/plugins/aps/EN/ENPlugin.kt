@@ -755,7 +755,7 @@ open class ENPlugin @Inject constructor(
                 addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_timestart, dialogMessage = R.string.eatingnow_timestart_summary, title = R.string.eatingnow_timestart_title))
                 addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_timeend, dialogMessage = R.string.eatingnow_timeend_summary, title = R.string.eatingnow_timeend_title))
                 addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_overnightSMB, dialogMessage = R.string.eatingnow_overnightSMB_summary, title = R.string.eatingnow_overnightSMB_title))
-                addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.highBGthreshold, dialogMessage = R.string.eatingnow_overnightSMB_summary, title = R.string.eatingnow_overnightSMB_title))
+                addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.highBGthreshold, dialogMessage = R.string.eatingnow_highBGthreshold_summary, title = R.string.eatingnow_highBGthreshold_title))
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.EatingNow_IgnoreCOB, summary = R.string.EatingNow_IgnoreCOB_summary, title = R.string.EatingNow_IgnoreCOB_title))
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.EatingNow_UseISFscaler, summary = R.string.EatingNow_useISFscaler_summary, title = R.string.EatingNow_useISFscaler_title))
 
