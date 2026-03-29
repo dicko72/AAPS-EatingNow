@@ -503,12 +503,29 @@ open class ENPlugin @Inject constructor(
 
         // Variables based on todays ENW TTs
         val mealCount = todaysENTargets.size // how many meals as ENW
-        val ENStarted = todaysENTargets.isNotEmpty() || todaysCarbs.isNotEmpty() && !ignoreCOB // Are there are any EN TTs today or carbs entered
+        val ENStarted = todaysENTargets.isNotEmpty() || (todaysCarbs.isNotEmpty() && !ignoreCOB) // Are there are any EN TTs today or carbs entered
 
-        // The most recent ENW TT
+        // The most recent treatment for ENW - ENTT or carbs
         val lastENTT = todaysENTargets.maxByOrNull { it.timestamp }
-        val ENWStartTime = lastENTT?.timestamp
-        val ENWEndTime = lastENTT?.let { it.timestamp + (it.duration) }
+        val lastENTTTime = lastENTT?.timestamp
+        val lastCarb = if (ignoreCOB) null else todaysCarbs.maxByOrNull { it.timestamp }
+        val lastCarbTime = lastCarb?.timestamp
+
+        // ENW Start Time is the latest treatment
+        val ENWStartTime = if (lastENTTTime != null && lastCarbTime != null) {
+            max(lastENTTTime, lastCarbTime)
+        } else {
+            lastENTTTime ?: lastCarbTime
+        }
+
+        // ENW End Time is the TT end or prefs for carbs
+        val ENWDurationMs = preferences.get(IntKey.Eatingnow_enw_minutes) * 60_000L
+        // Calculate the End Time based on whichever treatment actually started the window
+        val ENWEndTime = when (ENWStartTime) {
+            lastENTTTime -> lastENTT?.let { it.timestamp + it.duration }
+            lastCarbTime -> lastCarbTime?.let { it + ENWDurationMs }
+            else -> null
+        }
 
         // Are any ENW TTs in that list CURRENTLY active
         val activeENTT = todaysENTargets.find {
@@ -516,9 +533,15 @@ open class ENPlugin @Inject constructor(
             val end = start + (it.duration)
             now >= start && now < end // true if 'now' falls inside the target's time window
         }
+        val ENWStarted = ENWStartTime != null && ENWEndTime != null && now >= ENWStartTime && now < ENWEndTime // check to see if TT or COB would mean the ENW is started
 
         // Other ENW variables
-        val ENWActive = activeENTT?.reason // is there an active ENW or ENW prebolus?
+        val ENWActive = if (ENWStarted) {
+            activeENTT?.reason ?: TT.Reason.EATING_NOW // is there an active ENW or ENW prebolus or carbs?
+        } else {
+            null
+        }
+
         val ENWfirstMeal = (mealCount == 1 && activeENTT != null) // is this the firstmeal?
         val ENActive = ENTimeOK && ENStarted && (!isTempTarget && ENWActive == null || ENWActive != null) // is EN activated?
         // Calculate the amount of time ENW has been running
