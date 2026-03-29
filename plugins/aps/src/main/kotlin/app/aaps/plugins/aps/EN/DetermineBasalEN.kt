@@ -796,9 +796,7 @@ class DetermineBasalEN @Inject constructor(
             val baseAdaptiveISF = (profile.sens / sensBGScaler) * sensNormalTargetScaler
 
             // Calculate how much the ISF was supposed to change, then multiply it
-            val isfChange = profile.sens - baseAdaptiveISF
-            future_sens = profile.sens - (isfChange * ENWisfScalePct)
-            // -----------------------------
+            future_sens = baseAdaptiveISF / ENWisfScalePct
 
             // Prevent the algorithm from giving you too much or too little insulin
             val minSafeIsf = profile.sens * 0.4
