@@ -497,10 +497,13 @@ open class ENPlugin @Inject constructor(
 
         // Fetch the list of ENW TTs ONCE from the database
         val todaysENTargets = persistenceLayer.getENTemporaryTargetsFromTime(EatingNowTimeStart, true).blockingGet() ?: emptyList()
+        // Check if ANY carbs were entered between EatingNowTimeStart and now
+        val todaysCarbs = persistenceLayer.getCarbsFromTime(EatingNowTimeStart, true).blockingGet() ?: emptyList()
+        val ignoreCOB = preferences.get(BooleanKey.EatingNow_IgnoreCOB)
 
         // Variables based on todays ENW TTs
         val mealCount = todaysENTargets.size // how many meals as ENW
-        val ENStarted = todaysENTargets.isNotEmpty() // Are there are any EN TTs today?
+        val ENStarted = todaysENTargets.isNotEmpty() || todaysCarbs.isNotEmpty() && !ignoreCOB // Are there are any EN TTs today or carbs entered
 
         // The most recent ENW TT
         val lastENTT = todaysENTargets.maxByOrNull { it.timestamp }
@@ -542,7 +545,7 @@ open class ENPlugin @Inject constructor(
             ENTimeEnd = EatingNowTimeEnd,
             ENActive = ENActive,
             OvernightSMBRestrict = preferences.get(DoubleKey.Eatingnow_overnightSMB),
-            IgnoreCOB = preferences.get(BooleanKey.EatingNow_IgnoreCOB),
+            IgnoreCOB = ignoreCOB,
             SafetyMaxBolus = preferences.get(DoubleKey.SafetyMaxBolus),
             useISFscaler = useISFscaler,
             highBGthreshold = profileUtil.convertToMgdlDetect(preferences.get(DoubleKey.highBGthreshold)),
