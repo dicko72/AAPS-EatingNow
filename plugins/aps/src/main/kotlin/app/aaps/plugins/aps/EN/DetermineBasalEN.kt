@@ -1260,7 +1260,7 @@ class DetermineBasalEN @Inject constructor(
 
                 // bolus 1/2 the insulinReq, up to maxBolus, rounding down to nearest bolus increment
                 val roundSMBTo = 1 / profile.bolus_increment
-                val microBolus = if (ENWActive) {
+                val microBolus = if (ENWActive || ENmaxBolusType == "UAM+") {
                     Math.floor(Math.min(insulinReq, maxBolus) * roundSMBTo) / roundSMBTo // EN PreBolus Override for microBolus
                 } else {
                     // bolus 1/2 the insulinReq, up to maxBolus, rounding down to nearest bolus increment
