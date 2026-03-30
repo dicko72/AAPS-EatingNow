@@ -552,7 +552,7 @@ open class ENPlugin @Inject constructor(
         } else 0
 
         // Calculate Net IOB (Using the start time of the most recent target)
-        val ENWNetIOB = if (ENWStartTime != null && ENWEndTime != null && now < ENWEndTime + T.hours(2).msecs()) {
+        val ENWNetIOB = if (ENWStartTime != null && ENWEndTime != null && now < ENWEndTime + T.hours(3).msecs()) {
             tddCalculator.calculateIntervalNet(ENWStartTime, now, allowMissingData = true)?.totalAmount ?: 0.0
         } else 0.0
 
