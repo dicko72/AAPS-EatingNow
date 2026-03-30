@@ -33,6 +33,8 @@ data class ENConfig(
     var ENWprebolus: Double,
     var ENWsmbPct: Int,
     var ENWuamPlusMaxbolus: Double,
+    var AllowUAMplusNoENW: Boolean,
+
 
     // Outside ENW
     // Outside ENW maxBolus

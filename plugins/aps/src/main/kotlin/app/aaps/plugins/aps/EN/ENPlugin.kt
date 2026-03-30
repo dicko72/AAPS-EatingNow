@@ -588,6 +588,7 @@ open class ENPlugin @Inject constructor(
             ENWNetIOBMax = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_maxiob), 0.01), 0.0),
             ENWprebolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_prebolus), 0.01), 0.0),
             ENWuamPlusMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus), 0.01), 0.0),
+            AllowUAMplusNoENW =  preferences.get(BooleanKey.EatingNow_AllowUAMplusNoENW)
         )
 
         val microBolusAllowed = constraintsChecker.isSMBModeEnabled(ConstraintObject(tempBasalFallback.not(), aapsLogger)).also { inputConstraints.copyReasons(it) }.value()
@@ -826,6 +827,7 @@ open class ENPlugin @Inject constructor(
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_cob_maxbolus, dialogMessage = R.string.Eatingnow_enw_cob_maxbolus_summary, title = R.string.Eatingnow_enw_cob_maxbolus_title))
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_uam_maxbolus, dialogMessage = R.string.Eatingnow_enw_uam_maxbolus_summary, title = R.string.Eatingnow_enw_uam_maxbolus_title))
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_uamplus_maxbolus, dialogMessage = R.string.Eatingnow_enw_uamplus_maxbolus_summary, title = R.string.Eatingnow_enw_uamplus_maxbolus_title))
+                    addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.EatingNow_AllowUAMplusNoENW, summary = R.string.EatingNow_AllowUAMplusNoENW_summary, title = R.string.EatingNow_AllowUAMplusNoENW_title))
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_maxiob, dialogMessage = R.string.Eatingnow_enw_maxiob_summary, title = R.string.Eatingnow_enw_maxiob_title))
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_prebolus, dialogMessage = R.string.Eatingnow_enw_prebolus_summary, title = R.string.Eatingnow_enw_prebolus_title))
                     addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ENWisfScalePct, dialogMessage = R.string.ENWisfScalePct_summary, title = R.string.ENWisfScalePct_title))

@@ -307,6 +307,7 @@ class DetermineBasalEN @Inject constructor(
         // Eating Now Initial variables
         val ENActive = enConfig.ENActive
         val ENWActive = enConfig.ENWActive != null
+        val AllowUAMplusNoENW = ENActive && enConfig.AllowUAMplusNoENW
 
         // Eating Now Delta Acceleration for UAM+
         var DeltaPctS = 1.0
@@ -1240,7 +1241,7 @@ class DetermineBasalEN @Inject constructor(
                         // Prioritize PreBolus requirements within safety limits
                         "PB" to min(round(remainingPrebolus, 1), enConfig.SafetyMaxBolus)
                     }
-                    ENWActive && DeltaFastUp && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
+                    (ENWActive || AllowUAMplusNoENW) && DeltaFastUp && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
                         "UAM+" to enConfig.ENWuamPlusMaxbolus
                     }
                     ENActive && DeltaFastUp && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {

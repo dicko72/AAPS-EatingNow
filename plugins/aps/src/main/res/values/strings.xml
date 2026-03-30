@@ -254,6 +254,8 @@
     <string name="Eatingnow_enw_prebolus_summary">PreBolus for within the EN Window only.</string>
     <string name="Eatingnow_enw_uamplus_maxbolus_title">UAM+ maxBolus [U]</string>
     <string name="Eatingnow_enw_uamplus_maxbolus_summary">UAM+ maxBolus for accelerated BG rise within the EN Window only.</string>
+    <string name="EatingNow_AllowUAMplusNoENW_title">Allow UAM+ without ENW</string>
+    <string name="EatingNow_AllowUAMplusNoENW_summary">UAM+ maxBolus for accelerated BG rise allowed without active ENW\nDisabled outside EN active hours</string>
 
 
 </resources>
