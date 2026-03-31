@@ -12,6 +12,7 @@ import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceScreen
 import androidx.preference.SwitchPreference
 import app.aaps.core.data.aps.SMBDefaults
+import app.aaps.core.data.model.BS
 import app.aaps.core.data.model.GlucoseUnit
 import app.aaps.core.data.model.TT
 import app.aaps.core.data.plugin.PluginType
@@ -445,27 +446,40 @@ open class ENPlugin @Inject constructor(
         }
         val ENTimeOK = now >= EatingNowTimeStart && now < EatingNowTimeEnd
 
-        // Fetch the list of ENW TTs ONCE from the database
+        // Eating Now Treatments to trigger ENW and Start EN
         val todaysENTargets = persistenceLayer.getENTemporaryTargetsFromTime(EatingNowTimeStart, true).blockingGet() ?: emptyList()
-        // Check if ANY carbs were entered between EatingNowTimeStart and now
         val todaysCarbs = persistenceLayer.getCarbsFromTime(EatingNowTimeStart, true).blockingGet() ?: emptyList()
         val ignoreCOB = preferences.get(BooleanKey.EatingNow_IgnoreCOB)
 
+        // Filter immediately without storing the intermediate list
+        val todaysLargeBoluses = persistenceLayer.getBolusesFromTime(EatingNowTimeStart, true)
+            .blockingGet()
+            ?.filter { it.amount > profile.getMaxDailyBasal()*2 && it.type == BS.Type.NORMAL }
+            ?: emptyList()
+
         // Variables based on todays ENW TTs
-        val mealCount = todaysENTargets.size // how many meals as ENW
-        val ENStarted = todaysENTargets.isNotEmpty() || (todaysCarbs.isNotEmpty() && !ignoreCOB) // Are there are any EN TTs today or carbs entered
+        val mealCount = todaysENTargets.size
+        val ENStarted = todaysENTargets.isNotEmpty() || (todaysCarbs.isNotEmpty() && !ignoreCOB) || todaysLargeBoluses.isNotEmpty()
 
-        // The most recent treatment for ENW - ENTT or carbs
+        // 3. Directly extract the timestamps rather than the events, avoiding list concatenations
         val lastENTT = todaysENTargets.maxByOrNull { it.timestamp }
-        val lastENTTTime = lastENTT?.timestamp
-        val lastCarb = if (ignoreCOB) null else todaysCarbs.maxByOrNull { it.timestamp }
-        val lastCarbTime = lastCarb?.timestamp
+        val lastENTTTime = todaysENTargets.maxOfOrNull { it.timestamp }
 
-        // ENW Start Time is the latest treatment
-        val ENWStartTime = if (lastENTTTime != null && lastCarbTime != null) {
-            max(lastENTTTime, lastCarbTime)
+
+        // Find maximums independently to avoid allocating a combined list
+        val lastBolusTime = todaysLargeBoluses.maxOfOrNull { it.timestamp } ?: 0L
+        val lastCarbTime = todaysCarbs.maxOfOrNull { it.timestamp } ?: 0L // Assuming Carb also has a timestamp
+
+        val lastMealTime: Long? = if (ignoreCOB) {
+            lastBolusTime.takeIf { it > 0L }
         } else {
-            lastENTTTime ?: lastCarbTime
+            maxOf(lastCarbTime, lastBolusTime).takeIf { it > 0L }
+        }
+
+        val ENWStartTime = if (lastENTTTime != null && lastMealTime != null) {
+            max(lastENTTTime, lastMealTime)
+        } else {
+            lastENTTTime ?: lastMealTime
         }
 
         // ENW End Time is the TT end or prefs for carbs
@@ -473,7 +487,7 @@ open class ENPlugin @Inject constructor(
         // Calculate the End Time based on whichever treatment actually started the window
         val ENWEndTime = when (ENWStartTime) {
             lastENTTTime -> lastENTT?.let { it.timestamp + it.duration }
-            lastCarbTime -> lastCarbTime?.let { it + ENWDurationMs }
+            lastMealTime -> lastMealTime?.let { it + ENWDurationMs }
             else -> null
         }
 
