@@ -781,7 +781,7 @@ class DetermineBasalEN @Inject constructor(
 
         // ISF Scaling baed on prefs or high BG
         val ENWisfScalePct = if (ENWActive) {
-            1.0 + (enConfig.ENWisfScalePct / 10.0) // 1.0 = Standard curve, 1.5 = 50% Stronger, 2.0 = 100% Stronger only applies with ENW
+            1.0 // 1.0 = Standard curve
         } else if (isHigh40m) {
             1.25 // Stuck for 40+ minutes: Profile 125%
         } else if (isHigh15m) {

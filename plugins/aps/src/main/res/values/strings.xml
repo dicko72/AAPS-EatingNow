@@ -242,8 +242,8 @@
     <!--    Breakfast Settings-->
     <string name="Eatingnow_enw_minutes_title">EN Window Duration [0-120m]</string>
     <string name="Eatingnow_enw_minutes_summary">Window in minutes for increased maxBolus with COB or UAM.\n0 will disable and allow AAPS maxBolus limit.</string>
-    <string name="ENWisfScalePct_title">ISF Scaling [0-10]</string>
-    <string name="ENWisfScalePct_summary">The ISF scaling can be adjusted within the eating window.</string>
+    <string name="enwProfileScalePct_title">Profile Scaling During ENW [100-200%]</string>
+    <string name="enwProfileScalePct_summary">The CR and ISF can be scaled during the eating window similar to a profile switch.</string>
     <string name="Eatingnow_enw_cob_maxbolus_title">COB maxBolus [U]</string>
     <string name="Eatingnow_enw_cob_maxbolus_summary">COB maxBolus for BGL rises within the EN Window.\n0 will use existing maxBolus limit</string>
     <string name="Eatingnow_enw_uam_maxbolus_title">UAM maxBolus [U]</string>

@@ -83,7 +83,6 @@ import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
 import kotlin.math.floor
-import kotlin.math.min
 import kotlin.math.ln
 import app.aaps.plugins.aps.openAPSSMB.GlucoseStatusCalculatorSMB
 import kotlin.math.max
@@ -426,55 +425,6 @@ open class ENPlugin @Inject constructor(
         val iobArray = iobCobCalculator.calculateIobArrayForSMB(autosensResult, SMBDefaults.exercise_mode, SMBDefaults.half_basal_exercise_target, isTempTarget)
         val mealData = iobCobCalculator.getMealDataWithWaitingForCalculationFinish()
 
-        @Suppress("KotlinConstantConditions")
-        val oapsProfile = OapsProfile(
-            dia = 0.0, // not used
-            min_5m_carbimpact = 0.0, // not used
-            max_iob = constraintsChecker.getMaxIOBAllowed().also { inputConstraints.copyReasons(it) }.value(),
-            max_daily_basal = profile.getMaxDailyBasal(),
-            max_basal = constraintsChecker.getMaxBasalAllowed(profile).also { inputConstraints.copyReasons(it) }.value(),
-            min_bg = minBg,
-            max_bg = maxBg,
-            target_bg = targetBg,
-            carb_ratio = profile.getIc(),
-            // sens = profile.getIsfMgdl("ENPlugin"),
-            // OVERRIDE: Safety firewall to catch if the Profile leaked mmol/L (e.g. 8.0) instead of mg/dL
-            sens = profileUtil.convertToMgdlDetect(profile.getIsfMgdl("ENPlugin")),
-            autosens_adjust_targets = false, // not used
-            max_daily_safety_multiplier = preferences.get(DoubleKey.ApsMaxDailyMultiplier),
-            current_basal_safety_multiplier = preferences.get(DoubleKey.ApsMaxCurrentBasalMultiplier),
-            lgsThreshold = profileUtil.convertToMgdlDetect(preferences.get(UnitDoubleKey.ApsLgsThreshold)).toInt(),
-            high_temptarget_raises_sensitivity = false,
-            low_temptarget_lowers_sensitivity = false,
-            sensitivity_raises_target = preferences.get(BooleanKey.ApsSensitivityRaisesTarget),
-            resistance_lowers_target = preferences.get(BooleanKey.ApsResistanceLowersTarget),
-            adv_target_adjustments = SMBDefaults.adv_target_adjustments,
-            exercise_mode = SMBDefaults.exercise_mode,
-            half_basal_exercise_target = SMBDefaults.half_basal_exercise_target,
-            maxCOB = SMBDefaults.maxCOB,
-            skip_neutral_temps = pump.setNeutralTempAtFullHour(),
-            remainingCarbsCap = SMBDefaults.remainingCarbsCap,
-            enableUAM = constraintsChecker.isUAMEnabled().also { inputConstraints.copyReasons(it) }.value(),
-            A52_risk_enable = SMBDefaults.A52_risk_enable,
-            SMBInterval = preferences.get(IntKey.ApsMaxSmbFrequency),
-            enableSMB_with_COB = smbEnabled && preferences.get(BooleanKey.ApsUseSmbWithCob),
-            enableSMB_with_temptarget = smbEnabled && preferences.get(BooleanKey.ApsUseSmbWithLowTt),
-            allowSMB_with_high_temptarget = smbEnabled && preferences.get(BooleanKey.ApsUseSmbWithHighTt),
-            enableSMB_always = smbEnabled && preferences.get(BooleanKey.ApsUseSmbAlways) && advancedFiltering,
-            enableSMB_after_carbs = smbEnabled && preferences.get(BooleanKey.ApsUseSmbAfterCarbs) && advancedFiltering,
-            maxSMBBasalMinutes = preferences.get(IntKey.ApsMaxMinutesOfBasalToLimitSmb),
-            maxUAMSMBBasalMinutes = preferences.get(IntKey.ApsUamMaxMinutesOfBasalToLimitSmb),
-            bolus_increment = pump.pumpDescription.bolusStep,
-            carbsReqThreshold = preferences.get(IntKey.ApsCarbsRequestThreshold),
-            current_basal = activePlugin.activePump.baseBasalRate,
-            temptargetSet = isTempTarget,
-            autosens_max = preferences.get(DoubleKey.AutosensMax),
-            out_units = if (profileFunction.getUnits() == GlucoseUnit.MMOL) "mmol/L" else "mg/dl",
-            variable_sens = if (dynIsfMode) dynIsfResult.variableSensitivity ?: 0.0 else 0.0,
-            insulinDivisor = dynIsfResult.insulinDivisor,
-            TDD = dynIsfResult.tdd ?: 0.0
-        )
-
         // Eating Now Variables
 
         // Define the initial start time variables
@@ -560,6 +510,68 @@ open class ENPlugin @Inject constructor(
         val useISFscaler = preferences.get(BooleanKey.EatingNow_UseISFscaler)
         if (useISFscaler) preferences.put(BooleanKey.ApsUseDynamicSensitivity,false) // disable DynISF if using ISF scaler
 
+        // EN profile scaling within ENW
+        val profileCarbRatio = profile.getIc()
+        val profileIsf = profileUtil.convertToMgdlDetect(profile.getIsfMgdl("ENPlugin"))
+
+        val enwScaleSetting = preferences.get(IntKey.enwProfileScalePct)
+        val scaleMultiplier = if (ENWActive != null && enwScaleSetting > 100) {
+            enwScaleSetting / 100.0 // e.g., 130 becomes 1.3
+        } else {
+            1.0 // Standard 100% profile
+        }
+        val scaledCarbRatio = profileCarbRatio / scaleMultiplier
+        val scaledIsf = profileIsf / scaleMultiplier
+
+        @Suppress("KotlinConstantConditions")
+        val oapsProfile = OapsProfile(
+            dia = 0.0, // not used
+            min_5m_carbimpact = 0.0, // not used
+            max_iob = constraintsChecker.getMaxIOBAllowed().also { inputConstraints.copyReasons(it) }.value(),
+            max_daily_basal = profile.getMaxDailyBasal(),
+            max_basal = constraintsChecker.getMaxBasalAllowed(profile).also { inputConstraints.copyReasons(it) }.value(),
+            min_bg = minBg,
+            max_bg = maxBg,
+            target_bg = targetBg,
+            carb_ratio = scaledCarbRatio,
+            // sens = profile.getIsfMgdl("ENPlugin"),
+            // OVERRIDE: Safety firewall to catch if the Profile leaked mmol/L (e.g. 8.0) instead of mg/dL
+            sens = scaledIsf,
+            autosens_adjust_targets = false, // not used
+            max_daily_safety_multiplier = preferences.get(DoubleKey.ApsMaxDailyMultiplier),
+            current_basal_safety_multiplier = preferences.get(DoubleKey.ApsMaxCurrentBasalMultiplier),
+            lgsThreshold = profileUtil.convertToMgdlDetect(preferences.get(UnitDoubleKey.ApsLgsThreshold)).toInt(),
+            high_temptarget_raises_sensitivity = false,
+            low_temptarget_lowers_sensitivity = false,
+            sensitivity_raises_target = preferences.get(BooleanKey.ApsSensitivityRaisesTarget),
+            resistance_lowers_target = preferences.get(BooleanKey.ApsResistanceLowersTarget),
+            adv_target_adjustments = SMBDefaults.adv_target_adjustments,
+            exercise_mode = SMBDefaults.exercise_mode,
+            half_basal_exercise_target = SMBDefaults.half_basal_exercise_target,
+            maxCOB = SMBDefaults.maxCOB,
+            skip_neutral_temps = pump.setNeutralTempAtFullHour(),
+            remainingCarbsCap = SMBDefaults.remainingCarbsCap,
+            enableUAM = constraintsChecker.isUAMEnabled().also { inputConstraints.copyReasons(it) }.value(),
+            A52_risk_enable = SMBDefaults.A52_risk_enable,
+            SMBInterval = preferences.get(IntKey.ApsMaxSmbFrequency),
+            enableSMB_with_COB = smbEnabled && preferences.get(BooleanKey.ApsUseSmbWithCob),
+            enableSMB_with_temptarget = smbEnabled && preferences.get(BooleanKey.ApsUseSmbWithLowTt),
+            allowSMB_with_high_temptarget = smbEnabled && preferences.get(BooleanKey.ApsUseSmbWithHighTt),
+            enableSMB_always = smbEnabled && preferences.get(BooleanKey.ApsUseSmbAlways) && advancedFiltering,
+            enableSMB_after_carbs = smbEnabled && preferences.get(BooleanKey.ApsUseSmbAfterCarbs) && advancedFiltering,
+            maxSMBBasalMinutes = preferences.get(IntKey.ApsMaxMinutesOfBasalToLimitSmb),
+            maxUAMSMBBasalMinutes = preferences.get(IntKey.ApsUamMaxMinutesOfBasalToLimitSmb),
+            bolus_increment = pump.pumpDescription.bolusStep,
+            carbsReqThreshold = preferences.get(IntKey.ApsCarbsRequestThreshold),
+            current_basal = activePlugin.activePump.baseBasalRate,
+            temptargetSet = isTempTarget,
+            autosens_max = preferences.get(DoubleKey.AutosensMax),
+            out_units = if (profileFunction.getUnits() == GlucoseUnit.MMOL) "mmol/L" else "mg/dl",
+            variable_sens = if (dynIsfMode) dynIsfResult.variableSensitivity ?: 0.0 else 0.0,
+            insulinDivisor = dynIsfResult.insulinDivisor,
+            TDD = dynIsfResult.tdd ?: 0.0
+        )
+
         // Define the variables to be available to DetermineBasalEN.kt
         @Suppress("KotlinConstantConditions")
         val enConfig = ENConfig(
@@ -581,7 +593,7 @@ open class ENPlugin @Inject constructor(
             ENWRunTime = ENWRunTime,
             ENWNetIOB = max(Round.roundTo(ENWNetIOB, 0.01), 0.0),
             ENWDuration = preferences.get(IntKey.Eatingnow_enw_minutes),
-            ENWisfScalePct = preferences.get(IntKey.ENWisfScalePct),
+            enwProfileScalePct = preferences.get(IntKey.enwProfileScalePct),
             ENWsmbPct = preferences.get(IntKey.Eatingnow_enw_smb_pct),
             ENWcobMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus), 0.01), 0.0),
             ENWuamMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_uam_maxbolus), 0.01), 0.0),
@@ -830,7 +842,7 @@ open class ENPlugin @Inject constructor(
                     addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.EatingNow_AllowUAMplusNoENW, summary = R.string.EatingNow_AllowUAMplusNoENW_summary, title = R.string.EatingNow_AllowUAMplusNoENW_title))
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_maxiob, dialogMessage = R.string.Eatingnow_enw_maxiob_summary, title = R.string.Eatingnow_enw_maxiob_title))
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_prebolus, dialogMessage = R.string.Eatingnow_enw_prebolus_summary, title = R.string.Eatingnow_enw_prebolus_title))
-                    addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ENWisfScalePct, dialogMessage = R.string.ENWisfScalePct_summary, title = R.string.ENWisfScalePct_title))
+                    addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.enwProfileScalePct, dialogMessage = R.string.enwProfileScalePct_summary, title = R.string.enwProfileScalePct_title))
                 })
             })
 
