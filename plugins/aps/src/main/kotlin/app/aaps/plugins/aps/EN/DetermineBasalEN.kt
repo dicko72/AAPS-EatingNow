@@ -779,13 +779,13 @@ class DetermineBasalEN @Inject constructor(
         val isHigh40m = isHigh15m &&
             glucose_status.longAvgDelta > -3.0 && glucose_status.longAvgDelta < 3.0
 
-        // ISF Scaling baed on prefs or high BG
+        // ISF Scaling based on prefs or high BG
         val ENWisfScalePct = if (ENWActive) {
             1.0 // 1.0 = Standard curve
         } else if (isHigh40m) {
-            1.25 // Stuck for 40+ minutes: Profile 125%
+            enConfig.enwProfileScalePct + 1.50 // Stuck for 40+ minutes: Profile 150%
         } else if (isHigh15m) {
-            1.15 // Stuck for 15+ minutes: Profile 115%
+            enConfig.enwProfileScalePct + 1.25 // Stuck for 15+ minutes: Profile 125%
         } else {
             1.0  // Normal background looping
         }

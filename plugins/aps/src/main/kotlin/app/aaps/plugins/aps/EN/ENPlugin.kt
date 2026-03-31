@@ -514,9 +514,9 @@ open class ENPlugin @Inject constructor(
         val profileCarbRatio = profile.getIc()
         val profileIsf = profileUtil.convertToMgdlDetect(profile.getIsfMgdl("ENPlugin"))
 
-        val enwScaleSetting = preferences.get(IntKey.enwProfileScalePct)
-        val scaleMultiplier = if (ENWActive != null && enwScaleSetting > 100) {
-            enwScaleSetting / 100.0 // e.g., 130 becomes 1.3
+        val enwProfileScalePct = preferences.get(IntKey.enwProfileScalePct)
+        val scaleMultiplier = if (ENWActive != null && enwProfileScalePct > 100) {
+            enwProfileScalePct / 100.0 // e.g., 130 becomes 1.3
         } else {
             1.0 // Standard 100% profile
         }
@@ -593,7 +593,7 @@ open class ENPlugin @Inject constructor(
             ENWRunTime = ENWRunTime,
             ENWNetIOB = max(Round.roundTo(ENWNetIOB, 0.01), 0.0),
             ENWDuration = preferences.get(IntKey.Eatingnow_enw_minutes),
-            enwProfileScalePct = preferences.get(IntKey.enwProfileScalePct),
+            enwProfileScalePct = enwProfileScalePct,
             ENWsmbPct = preferences.get(IntKey.Eatingnow_enw_smb_pct),
             ENWcobMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus), 0.01), 0.0),
             ENWuamMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_uam_maxbolus), 0.01), 0.0),
