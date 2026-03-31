@@ -1194,6 +1194,8 @@ class DetermineBasalEN @Inject constructor(
             // if (dynIsfMode || useISFscaler) round((min(minPredBG, eventualBG) - target_bg) / future_sens, 2)
             // else round((min(minPredBG, eventualBG) - target_bg) / sens, 2)
 
+            var insulinReqOrig = round(insulinReq, 2) // original insulinReq for transparency
+
             if (isPrebolusing) insulinReq = max(remainingPrebolus, insulinReq) // Give the minimum in the prebolus
 
             // if that would put us over max_iob, then reduce accordingly
@@ -1206,11 +1208,9 @@ class DetermineBasalEN @Inject constructor(
             // ============== EATING NOW IOB RESTRICTION  ==============
 
             // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
+
             if (ENWActive && enConfig.ENWNetIOBMax > 0 && insulinReq > ENWNetIOBRemaining) {
                 insulinReq = min(insulinReq,ENWNetIOBRemaining)
-                // rate = round_basal(profile.current_basal, profile);
-                //if (sens_predType == "UAM+") rate = whatever the rate is to get basal iob back to zero by the end of enw
-                // AllowZT = false;
             }
 
             // rate required to deliver insulinReq more insulin over 30m:
@@ -1288,7 +1288,12 @@ class DetermineBasalEN @Inject constructor(
                     smbLowTempReq = round(basal * durationReq / 30.0, 2)
                     durationReq = 30
                 }
-                rT.reason.append(" insulinReq ${insulinReq}U")
+                // show insulinReq original value with actual restricted
+                rT.reason.apply {
+                    append(" insulinReq ")
+                    if (insulinReqOrig != insulinReq) append(insulinReqOrig).append("U=")
+                    append(insulinReq).append('U')
+                }
                 if (insulinReqBG != bg) rT.reason.append(", iReqBG: ${convert_bg(insulinReqBG)}")
                 if (microBolus >= maxBolus || maxBolus > maxBolusAAPS) { // if the maxBolus has increased due to EN
                     rT.reason.append("; $ENmaxBolusType maxBolus $maxBolus")
