@@ -520,8 +520,8 @@ open class ENPlugin @Inject constructor(
         } else {
             1.0 // Standard 100% profile
         }
-        val scaledCarbRatio = profileCarbRatio / scaleMultiplier
-        val scaledIsf = profileIsf / scaleMultiplier
+        val scaledCarbRatio = Round.roundTo(profileCarbRatio / scaleMultiplier, 0.01)
+        val scaledIsf = Round.roundTo(profileIsf / scaleMultiplier, 0.1)
 
         @Suppress("KotlinConstantConditions")
         val oapsProfile = OapsProfile(
