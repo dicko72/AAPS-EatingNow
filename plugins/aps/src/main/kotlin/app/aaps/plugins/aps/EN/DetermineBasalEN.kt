@@ -351,7 +351,7 @@ class DetermineBasalEN @Inject constructor(
             glucose_status.delta > 5.0 && DeltaPctS >= 1.0 && DeltaPctL > 1.0
         }
         val ENWNetIOBRemaining = max(enConfig.ENWNetIOBMax - enConfig.ENWNetIOB, 0.0) // remaining ENW IOB
-        val remainingPrebolus = (enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0) // remaining prebolus
+        val remainingPrebolus = round((enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0) ,1)// remaining prebolus
         val isPrebolusing = enConfig.ENWActive == TT.Reason.EATING_NOW_PB && remainingPrebolus > 0.0 && enConfig.ENWRunTime < 15 // if prebolusing
         val overrideMealSafety = (DeltaFastUp && ENWActive && ENWNetIOBRemaining > 0 || isPrebolusing)
 
@@ -1196,8 +1196,6 @@ class DetermineBasalEN @Inject constructor(
 
             var insulinReqOrig = round(insulinReq, 2) // original insulinReq for transparency
 
-            if (isPrebolusing) insulinReq = max(remainingPrebolus, insulinReq) // Give the minimum in the prebolus
-
             // if that would put us over max_iob, then reduce accordingly
             if (insulinReq > max_iob - iob_data.iob) {
                 rT.reason.append("max_iob $max_iob, ")
@@ -1238,8 +1236,8 @@ class DetermineBasalEN @Inject constructor(
                 // Eating now maxBolus overrides
                 val (ENmaxBolusType, maxBolus) = when {
                     isPrebolusing -> {
-                        // Prioritize PreBolus requirements within safety limits
-                        "PB" to min(round(remainingPrebolus, 1), enConfig.SafetyMaxBolus)
+                        // Prioritize PreBolus requirements within safety limits but allow more if insulinReq is greater
+                        "PB" to min(max(remainingPrebolus,insulinReq), enConfig.SafetyMaxBolus)
                     }
                     (ENWActive || AllowUAMplusNoENW) && DeltaFastUp && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
                         "UAM+" to enConfig.ENWuamPlusMaxbolus
