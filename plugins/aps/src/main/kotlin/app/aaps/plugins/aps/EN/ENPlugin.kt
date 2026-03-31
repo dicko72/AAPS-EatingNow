@@ -528,11 +528,11 @@ open class ENPlugin @Inject constructor(
         val profileCarbRatio = profile.getIc()
         val profileIsf = profileUtil.convertToMgdlDetect(profile.getIsfMgdl("ENPlugin"))
 
-        val enwProfileScalePct = preferences.get(IntKey.enwProfileScalePct)
-        val scaleMultiplier = if (ENWActive != null && enwProfileScalePct > 100) {
-            enwProfileScalePct / 100.0 // e.g., 130 becomes 1.3
+        val enwProfileScalePct = preferences.get(IntKey.enwProfileScalePct)/100.0
+        val scaleMultiplier = if (ENWActive != null) {
+            enwProfileScalePct // use prefs 125 1.25
         } else {
-            1.0 // Standard 100% profile
+            1.0 // Standard 100% profile 1.0
         }
         val scaledCarbRatio = Round.roundTo(profileCarbRatio / scaleMultiplier, 0.01)
         val scaledIsf = Round.roundTo(profileIsf / scaleMultiplier, 0.1)

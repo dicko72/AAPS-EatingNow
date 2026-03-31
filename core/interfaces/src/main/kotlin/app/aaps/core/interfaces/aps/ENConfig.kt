@@ -25,7 +25,7 @@ data class ENConfig(
     var ENWEndTime: Long?,
     var ENWRunTime: Int,
     var ENWDuration: Int,
-    var enwProfileScalePct: Int,
+    var enwProfileScalePct: Double,
     var ENWcobMaxbolus: Double,
     var ENWuamMaxbolus: Double,
     var ENWNetIOB: Double,

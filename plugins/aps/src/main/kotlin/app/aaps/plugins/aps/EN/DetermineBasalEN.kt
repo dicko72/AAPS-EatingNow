@@ -783,9 +783,9 @@ class DetermineBasalEN @Inject constructor(
         val ENWisfScalePct = if (ENWActive) {
             1.0 // 1.0 = Standard curve
         } else if (isHigh40m) {
-            enConfig.enwProfileScalePct + 1.50 // Stuck for 40+ minutes: Profile 150%
+            enConfig.enwProfileScalePct + 0.50 // Stuck for 40+ minutes: Profile 150%
         } else if (isHigh15m) {
-            enConfig.enwProfileScalePct + 1.25 // Stuck for 15+ minutes: Profile 125%
+            enConfig.enwProfileScalePct + 0.25 // Stuck for 15+ minutes: Profile 125%
         } else {
             1.0  // Normal background looping
         }
@@ -946,7 +946,9 @@ class DetermineBasalEN @Inject constructor(
 
         // Eating Now Reason
         rT.reason.append ("EN ${if (enConfig.ENActive) "On" else "Off"}, ")
-        rT.reason.append("ENW ${if (ENWActive) "On ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m" else "Off ${enConfig.ENWDuration}m"}, ")
+        rT.reason.append("ENW ${if (ENWActive) "On ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m" else "Off ${enConfig.ENWDuration}m"}")
+        rT.reason.append(" @ ${enConfig.enwProfileScalePct}, ")
+        // rT.reason.append("${if (ENWActive) " @ ${enConfig.enwProfileScalePct}, " else ", "}")
         if (enConfig.ENWNetIOB > 0 && enConfig.ENWNetIOBMax > 0 ) rT.reason.append("ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
         rT.reason.append("InsPeak: ${minsToPeak}m, ")
 
