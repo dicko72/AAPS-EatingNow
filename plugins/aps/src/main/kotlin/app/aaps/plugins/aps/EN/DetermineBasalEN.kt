@@ -780,15 +780,16 @@ class DetermineBasalEN @Inject constructor(
             glucose_status.longAvgDelta > -3.0 && glucose_status.longAvgDelta < 3.0
 
         // ISF Scaling based on prefs or high BG
-        val ENWisfScalePct = if (ENWActive) {
-            1.0 // 1.0 = Standard curve
-        } else if (isHigh40m) {
-            enConfig.enwProfileScalePct + 0.50 // Stuck for 40+ minutes: Profile 150%
-        } else if (isHigh15m) {
-            enConfig.enwProfileScalePct + 0.25 // Stuck for 15+ minutes: Profile 125%
+        val isHighScaledPct =
+        if (!ENWActive && isHigh40m) {
+            enConfig.enwProfileScalePct + 0.50 // Stuck for 40+ minutes extra 50%
+        } else if (!ENWActive && isHigh15m) {
+            enConfig.enwProfileScalePct + 0.25 // Stuck for 15+ minutes extra 25%
         } else {
-            1.0  // Normal background looping
+            1.0  // not high
         }
+
+        var profileScaled = if (ENWActive) enConfig.enwProfileScalePct else isHighScaledPct
 
         // ISF Scaling similar to dynIDF but using profile BG at target
         if (useISFscaler) {
@@ -822,16 +823,13 @@ class DetermineBasalEN @Inject constructor(
             val baseAdaptiveISF = (profile.sens / sensBGScaler) * sensNormalTargetScaler
 
             // Calculate how much the ISF was supposed to change, then multiply it
-            future_sens = baseAdaptiveISF / ENWisfScalePct
+            future_sens = baseAdaptiveISF / isHighScaledPct
 
             // Prevent the algorithm from giving you too much or too little insulin
             val minSafeIsf = profile.sens * 0.4
             val maxSafeIsf = profile.sens * 1.5
             future_sens = future_sens.coerceIn(minSafeIsf, maxSafeIsf)
             future_sens = round(future_sens, 1)
-
-            consoleLog.add("ISF Scaler: $future_sens (Base: ${round(baseAdaptiveISF, 1)}, Aggression: ${ENWisfScalePct}x) based on BG of $chosenBG")
-            // rT.reason.append("fSensBG: " + convert_bg(chosenBG) + ", ")
         }
 
             val fractionCarbsLeft = activeCOB / activeCarbs
@@ -930,7 +928,7 @@ class DetermineBasalEN @Inject constructor(
         rT.IOB = iob_data.iob
         rT.reason.append(
             "Delta: ${convert_bg(glucose_status.delta)}/${convert_bg(glucose_status.shortAvgDelta)}/${convert_bg(glucose_status.longAvgDelta)}=${round(DeltaPctS * 100)}/${round(DeltaPctL * 100)}%, " +
-            "COB: ${round(activeCOB, 1).withoutZeros()}, Dev: ${convert_bg(deviation.toDouble())}, BGI: ${convert_bg(bgi)}, ISF: ${convert_bg(sens)}${if (useISFscaler) "/" + convert_bg(future_sens) + " (" + ENWisfScalePct +"x)" else ""} , CR: ${
+            "COB: ${round(activeCOB, 1).withoutZeros()}, Dev: ${convert_bg(deviation.toDouble())}, BGI: ${convert_bg(bgi)}, ISF: ${convert_bg(sens)}${if (useISFscaler) "/" + convert_bg(future_sens) + " (" + profileScaled +"x)" else ""} , CR: ${
                 round(profile.carb_ratio, 2)
                     .withoutZeros()
             }, Target: ${convert_bg(target_bg)}, minPredBG ${convert_bg(minPredBG)}, minGuardBG${if (overrideMealSafety) "*" else ""} ${convert_bg(minGuardBG)}, IOBpredBG ${convert_bg(lastIOBpredBG)}"
@@ -946,9 +944,7 @@ class DetermineBasalEN @Inject constructor(
 
         // Eating Now Reason
         rT.reason.append ("EN ${if (enConfig.ENActive) "On" else "Off"}, ")
-        rT.reason.append("ENW ${if (ENWActive) "On ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m" else "Off ${enConfig.ENWDuration}m"}")
-        rT.reason.append(" @ ${enConfig.enwProfileScalePct}, ")
-        // rT.reason.append("${if (ENWActive) " @ ${enConfig.enwProfileScalePct}, " else ", "}")
+        rT.reason.append("ENW ${if (ENWActive) "On ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m, " else "Off ${enConfig.ENWDuration}m, "}")
         if (enConfig.ENWNetIOB > 0 && enConfig.ENWNetIOBMax > 0 ) rT.reason.append("ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
         rT.reason.append("InsPeak: ${minsToPeak}m, ")
 
