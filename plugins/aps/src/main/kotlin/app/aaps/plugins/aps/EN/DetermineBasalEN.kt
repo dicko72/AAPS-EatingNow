@@ -290,7 +290,14 @@ class DetermineBasalEN @Inject constructor(
             }
         }
 
-        val iobArray = iob_data_array
+        // val iobArray = iob_data_array
+        // val iob_data = iobArray[0]
+        val iobArray = iob_data_array        // Safety check: Return early if there is no IOB data to prevent crash
+        if (iobArray.isEmpty()) {
+            rT.reason.append("No IOB data found; ")
+            return rT
+        }
+
         val iob_data = iobArray[0]
 
         val tick: String
@@ -585,6 +592,7 @@ class DetermineBasalEN @Inject constructor(
         var maxIOBPredBG = bg
         var maxCOBPredBG = bg
         var maxUAMPredBG = bg
+        var maxUAMPredBGMins = 0
         //var maxPredBG = bg;
         //var eventualPredBG = bg
         val lastIOBpredBG: Double
@@ -680,7 +688,10 @@ class DetermineBasalEN @Inject constructor(
             if ((cid != 0.0 || remainingCIpeak > 0) && COBpredBG > maxIOBPredBG) maxCOBPredBG = COBpredBG
             if (enableUAM && UAMpredBGs.size > 12 && (UAMpredBG < minUAMPredBG)) minUAMPredBG = round(UAMpredBG, 0)
             // if (enableUAM && UAMpredBG!! > maxIOBPredBG) maxUAMPredBG = UAMpredBG!!
-            if (enableUAM && UAMpredBG!! > maxUAMPredBG) maxUAMPredBG = UAMpredBG!! // set the max UAM prediction
+            if (enableUAM && UAMpredBG !=null && UAMpredBG > maxUAMPredBG) {
+                maxUAMPredBG = UAMpredBG // set the max UAM prediction
+                maxUAMPredBGMins = UAMpredBGs.size * 5 // set the max UAM prediction time
+            }
         }
         // set eventualBG to include effect of carbs
         //console.error("PredBGs:",JSON.stringify(predBGs));
@@ -789,12 +800,17 @@ class DetermineBasalEN @Inject constructor(
             1.0  // not high
         }
 
-        var profileScaled = if (ENWActive) enConfig.enwProfileScalePct else isHighScaledPct
+        val profileScaled = if (ENWActive) enConfig.enwProfileScalePct else isHighScaledPct
+        val UAMplusConfidence = maxUAMPredBGMins > minsToPeak && maxUAMPredBG > target_bg // UAM+ fastup and peak is in the future
 
         // ISF Scaling similar to dynIDF but using profile BG at target
         if (useISFscaler) {
             // Decide which BG value to use based on the delta
-            val chosenBG = if (DeltaFastUp) {
+            val chosenBG = if (UAMplusConfidence && DeltaFastUp){
+                // UAM+ Spiking
+                max(eventualBG, bg)
+                // max(maxUAMPredBG, bg) // confidence high
+            } else if (DeltaFastUp) {
                 // UAM+ Spiking
                 max(eventualBG, bg)
             } else if (isHigh15m || isHigh40m) {
@@ -938,7 +954,9 @@ class DetermineBasalEN @Inject constructor(
         }
         if (lastUAMpredBG != null) {
             rT.reason.append(", UAMpredBG " + convert_bg(lastUAMpredBG.toDouble()))
-            if (maxUAMPredBG != null) rT.reason.append("^" + convert_bg(maxUAMPredBG.toDouble()))
+            maxUAMPredBG?.let { bgValue ->
+                rT.reason.append("^${convert_bg(bgValue)}@${maxUAMPredBGMins}m${if (UAMplusConfidence) "✓" else ""}")
+            }
         }
         rT.reason.append("; ")
 
