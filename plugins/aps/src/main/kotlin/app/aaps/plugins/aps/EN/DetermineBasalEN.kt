@@ -808,8 +808,8 @@ class DetermineBasalEN @Inject constructor(
             // Decide which BG value to use based on the delta
             val chosenBG = if (UAMplusConfidence && DeltaFastUp){
                 // UAM+ Spiking
-                max(eventualBG, bg)
-                // max(maxUAMPredBG, bg) // confidence high
+                // max(eventualBG, bg)
+                max(maxUAMPredBG, bg) // confidence high
             } else if (DeltaFastUp) {
                 // UAM+ Spiking
                 max(eventualBG, bg)
@@ -823,8 +823,9 @@ class DetermineBasalEN @Inject constructor(
                 // Dropping
                 min(target_bg,eventualBG)
             } else {
-                // Dropping/Recovering
-                fSensBG
+                // Recovering safety
+                // fSensBG
+                min (target_bg, eventualBG)
             }
 
             // Prevent divide-by-zero or math errors with extremely low BGs
@@ -1249,7 +1250,7 @@ class DetermineBasalEN @Inject constructor(
                     consoleError.add("profile.maxSMBBasalMinutes: ${profile.maxSMBBasalMinutes} profile.current_basal: ${profile.current_basal}")
                     maxBolus = round(profile.current_basal * profile.maxSMBBasalMinutes / 60, 1)
                 }
-            var maxBolusAAPS = maxBolus
+            val maxBolusAAPS = maxBolus
 
                 // Eating now maxBolus overrides
                 val (ENmaxBolusType, maxBolus) = when {
@@ -1260,8 +1261,8 @@ class DetermineBasalEN @Inject constructor(
                     ENWActive && DeltaFastUp && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
                         "UAM+" to enConfig.ENWuamPlusMaxbolus
                     }
-                    AllowUAMplusNoENW && DeltaFastUp && activeCarbs == 0.0 && bg > target_bg-> {
-                        "UAM+" to maxBolus
+                    AllowUAMplusNoENW && DeltaFastUp && activeCarbs == 0.0 && bg > target_bg-> { // keep this to AAPS maxBolus for outside ENW
+                        "UAM+" to maxBolusAAPS
                     }
                     ENWActive && enConfig.ENWcobMaxbolus > 0 && eventualBG == lastCOBpredBG -> {
                         "COB" to enConfig.ENWcobMaxbolus
@@ -1270,7 +1271,7 @@ class DetermineBasalEN @Inject constructor(
                         "UAM" to enConfig.ENWuamMaxbolus
                     }
                     else -> {
-                        "" to maxBolus // Fallback to existing maxBolus
+                        "" to maxBolusAAPS // Fallback to existing maxBolus
                     }
                 }
 
