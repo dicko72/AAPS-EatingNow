@@ -21,6 +21,7 @@ import java.time.Instant
 import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.absoluteValue
 import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.min
@@ -315,6 +316,8 @@ class DetermineBasalEN @Inject constructor(
         val ENActive = enConfig.ENActive
         val ENWActive = enConfig.ENWActive != null
         val AllowUAMplusNoENW = ENActive && !ENWActive && enConfig.AllowUAMplusNoENW
+        val highBGthresholdActive = enConfig.highBGthreshold > 0 && bg > (enConfig.highBGthreshold + target_bg) // used for isHighLogic and hasInsulinPeaked
+
 
         // Eating Now Delta Acceleration for UAM+
         var DeltaPctS = 1.0
@@ -340,7 +343,7 @@ class DetermineBasalEN @Inject constructor(
         // Multiply the index by 5 minutes to get the actual time!
         var minsToPeak = peakIndex * 5
 
-        if (iob_data.iob < profile.current_basal / 4.0) { // consider low IOB as noise and peak has passed
+        if (!highBGthresholdActive && iob_data.iob < profile.current_basal / 4.0) { // consider low IOB as noise and peak has passed
             minsToPeak = 0
         }
 
@@ -777,27 +780,35 @@ class DetermineBasalEN @Inject constructor(
             }
         }
 
-        //  BG High for ~15 minutes (short average is flat)
-        val highBGthreshold = enConfig.highBGthreshold
+        //  Calculate stubborn high logic BG High for ~15 minutes (short average is flat)
+        // Helper function to check if a delta is "flat"
+        val stableBGthreshold = 3.0
+        fun Double.isFlat() = this.absoluteValue < stableBGthreshold
+        val isGlucoseFlat = glucose_status.delta.isFlat() && glucose_status.shortAvgDelta.isFlat()
+        val isLongTermFlat = glucose_status.longAvgDelta.isFlat()
 
-        val isHigh15m = highBGthreshold > 0 && bg > (highBGthreshold + target_bg) &&
+        // Stubborn high logic: BG is high and stable for ~15 minutes (short average is flat)
+        val isHigh15m = highBGthresholdActive &&
             eventualBG > threshold &&
             hasInsulinPeaked &&
-            glucose_status.delta > -3.0 && glucose_status.delta < 3.0 &&
-            glucose_status.shortAvgDelta > -3.0 && glucose_status.shortAvgDelta < 3.0
+            isGlucoseFlat
 
-        // BG High for ~40 minutes (both short AND long averages are flat)
-        val isHigh40m = isHigh15m &&
-            glucose_status.longAvgDelta > -3.0 && glucose_status.longAvgDelta < 3.0
+        // Persistent stubborn high: BG is high and stable for ~40 minutes (both short AND long averages are flat)
+        val isHigh40m = isHigh15m && isLongTermFlat
 
         // ISF Scaling based on prefs or high BG
-        val isHighScaledPct =
-        if (!ENWActive && isHigh40m) {
-            enConfig.enwProfileScalePct + 0.50 // Stuck for 40+ minutes extra 50%
-        } else if (!ENWActive && isHigh15m) {
-            enConfig.enwProfileScalePct + 0.25 // Stuck for 15+ minutes extra 25%
-        } else {
-            1.0  // not high
+        val isHighScaledPct = when {
+            ENWActive -> 1.0 // no scaling during ENW
+            isHigh40m -> enConfig.enwProfileScalePct + 0.50 // Stuck for 40+ minutes extra 50%
+            isHigh15m -> enConfig.enwProfileScalePct + 0.25 // Stuck for 15+ minutes extra 25%
+            else -> 1.0
+        }
+
+        // reason if BG is high
+        if (isHigh40m) {
+            rT.reason.append("BG^40m: ${isHigh40m},")
+        } else if (isHigh15m) {
+            rT.reason.append("BG^15m: ${isHigh15m}, ")
         }
 
         val profileScaled = if (ENWActive) enConfig.enwProfileScalePct else isHighScaledPct
