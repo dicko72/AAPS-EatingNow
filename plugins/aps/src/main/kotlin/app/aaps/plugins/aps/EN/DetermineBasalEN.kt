@@ -71,9 +71,8 @@ class DetermineBasalEN @Inject constructor(
     fun enable_smb(profile: OapsProfile, microBolusAllowed: Boolean, meal_data: MealData, target_bg: Double, enConfig: ENConfig, bg: Double): Boolean {
 
         // Disable SMB overnight when option enabled and BG is too low
-        val restrictMgdl = profileUtil.convertToMgdlDetect(enConfig.OvernightSMBRestrict) + target_bg
-        if (!enConfig.ENActive && !profile.temptargetSet && bg <= restrictMgdl) {
-            consoleError.add("SMB disabled: EN inactive and BG ${convert_bg(bg)} <= overnight limit of ${convert_bg(restrictMgdl)}")
+        if (!enConfig.ENActive && !profile.temptargetSet && bg <= enConfig.OvernightSMBRestrict) {
+            consoleError.add("SMB disabled: EN inactive and BG ${convert_bg(bg)} <= overnight limit of ${convert_bg(enConfig.OvernightSMBRestrict)}")
             return false
         }
 
@@ -316,7 +315,7 @@ class DetermineBasalEN @Inject constructor(
         val ENActive = enConfig.ENActive
         val ENWActive = enConfig.ENWActive != null
         val AllowUAMplusNoENW = ENActive && !ENWActive && enConfig.AllowUAMplusNoENW
-        val highBGthresholdActive = enConfig.highBGthreshold > 0 && bg > (enConfig.highBGthreshold + target_bg) // used for isHighLogic and hasInsulinPeaked
+        val highBGthresholdActive = enConfig.highBGthreshold > 0 && bg > enConfig.highBGthreshold  // used for isHighLogic and hasInsulinPeaked
 
 
         // Eating Now Delta Acceleration for UAM+

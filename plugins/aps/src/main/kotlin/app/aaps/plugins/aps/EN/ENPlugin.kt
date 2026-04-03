@@ -454,6 +454,7 @@ open class ENPlugin @Inject constructor(
         val todaysENTargets = persistenceLayer.getENTemporaryTargetsFromTime(EatingNowTimeStart, true).blockingGet() ?: emptyList()
         val todaysCarbs = persistenceLayer.getCarbsFromTime(EatingNowTimeStart, true).blockingGet() ?: emptyList()
         val ignoreCOB = preferences.get(BooleanKey.EatingNow_IgnoreCOB)
+        val units = profileFunction.getUnits()
 
         // Filter immediately without storing the intermediate list
         val todaysLargeBoluses = persistenceLayer.getBolusesFromTime(EatingNowTimeStart, true)
@@ -605,11 +606,11 @@ open class ENPlugin @Inject constructor(
             ENTimeStart = EatingNowTimeStart,
             ENTimeEnd = EatingNowTimeEnd,
             ENActive = ENActive,
-            OvernightSMBRestrict = preferences.get(DoubleKey.Eatingnow_overnightSMB),
+            OvernightSMBRestrict = profileUtil.convertToMgdl(preferences.get(DoubleKey.Eatingnow_overnightSMB), units) + targetBg,
             IgnoreCOB = ignoreCOB,
             SafetyMaxBolus = preferences.get(DoubleKey.SafetyMaxBolus),
             useISFscaler = useISFscaler,
-            highBGthreshold = profileUtil.convertToMgdlDetect(preferences.get(DoubleKey.highBGthreshold)),
+            highBGthreshold = profileUtil.convertToMgdl(preferences.get(DoubleKey.highBGthreshold), units) + targetBg,
 
             // ENW variables
             ENWfirstMeal = ENWfirstMeal,
