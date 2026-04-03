@@ -366,12 +366,8 @@ open class ENPlugin @Inject constructor(
         var maxBg = hardLimits.verifyHardLimits(Round.roundTo(profile.getTargetHighMgdl(), 0.1), app.aaps.core.ui.R.string.profile_high_target, HardLimits.LIMIT_MAX_BG[0], HardLimits.LIMIT_MAX_BG[1])
         var targetBg = hardLimits.verifyHardLimits(profile.getTargetMgdl(), app.aaps.core.ui.R.string.temp_target_value, HardLimits.LIMIT_TARGET_BG[0], HardLimits.LIMIT_TARGET_BG[1])
         var isTempTarget = false
-        var tempTargetDuration = 0L
-        var tempTargettimestamp = 0L
         persistenceLayer.getTemporaryTargetActiveAt(dateUtil.now())?.let { tempTarget ->
             isTempTarget = true
-            tempTargetDuration = tempTarget.duration / 60_000L.toInt()// Capture duration in minutes
-            tempTargettimestamp = tempTarget.timestamp
             minBg = hardLimits.verifyHardLimits(tempTarget.lowTarget, app.aaps.core.ui.R.string.temp_target_low_target, HardLimits.LIMIT_TEMP_MIN_BG[0], HardLimits.LIMIT_TEMP_MIN_BG[1])
             maxBg = hardLimits.verifyHardLimits(tempTarget.highTarget, app.aaps.core.ui.R.string.temp_target_high_target, HardLimits.LIMIT_TEMP_MAX_BG[0], HardLimits.LIMIT_TEMP_MAX_BG[1])
             targetBg = hardLimits.verifyHardLimits(tempTarget.target(), app.aaps.core.ui.R.string.temp_target_value, HardLimits.LIMIT_TEMP_TARGET_BG[0], HardLimits.LIMIT_TEMP_TARGET_BG[1])
@@ -471,8 +467,12 @@ open class ENPlugin @Inject constructor(
         val lastENTTTime = todaysENTargets.maxOfOrNull { it.timestamp }
 
         // Temp ENWTT is when TT is at target
-        val manualENTT = isTempTarget && targetBg == profile.getTargetMgdl()
-        val manualENTTDuration = if (manualENTT) tempTargetDuration else 0
+        val activeTT = persistenceLayer.getTemporaryTargetActiveAt(now)
+        val manualENTT = isTempTarget &&
+            targetBg == profile.getTargetMgdl() &&
+            activeTT?.reason !in listOf(TT.Reason.EATING_NOW, TT.Reason.EATING_NOW_PB)
+        val manualENTTDuration = activeTT?.duration?.div(60_000L.toInt()) ?: 0
+        val manualENTTtimestamp = activeTT?.timestamp ?: 0L
 
         // Find maximums independently to avoid allocating a combined list
         val lastBolusTime = todaysLargeBoluses.maxOfOrNull { it.timestamp } ?: 0L
@@ -485,7 +485,7 @@ open class ENPlugin @Inject constructor(
         }
 
         val ENWStartTime = when {
-            manualENTT -> tempTargettimestamp
+            manualENTT -> manualENTTtimestamp
             else -> listOfNotNull(lastENTTTime, lastMealTime).maxOrNull()
         }
 
@@ -493,7 +493,7 @@ open class ENPlugin @Inject constructor(
         val ENWDurationMs = preferences.get(IntKey.Eatingnow_enw_minutes) * 60_000L
         // Calculate the End Time based on whichever treatment actually started the window
         val ENWEndTime = when {
-            manualENTT -> tempTargettimestamp + (manualENTTDuration * 60_000L)
+            manualENTT -> manualENTTtimestamp + (manualENTTDuration * 60_000L)
             ENWStartTime == lastENTTTime -> lastENTT?.let { it.timestamp + it.duration }
             ENWStartTime == lastMealTime -> lastMealTime?.let { it + ENWDurationMs }
             else -> null
