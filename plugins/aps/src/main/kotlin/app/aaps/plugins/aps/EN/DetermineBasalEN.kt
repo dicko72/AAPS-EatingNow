@@ -811,7 +811,6 @@ class DetermineBasalEN @Inject constructor(
             rT.reason.append("BG^15m: ${isHigh15m}, ")
         }
 
-        val profileScaled = if (ENWActive) enConfig.enwProfileScalePct else isHighScaledPct
         val UAMplusConfidence = maxUAMPredBGMins > minsToPeak && maxUAMPredBG > target_bg // UAM+ fastup and peak is in the future
 
         // ISF Scaling similar to dynIDF but using profile BG at target
@@ -956,7 +955,7 @@ class DetermineBasalEN @Inject constructor(
         rT.IOB = iob_data.iob
         rT.reason.append(
             "Delta: ${convert_bg(glucose_status.delta)}/${convert_bg(glucose_status.shortAvgDelta)}/${convert_bg(glucose_status.longAvgDelta)}=${round(DeltaPctS * 100)}/${round(DeltaPctL * 100)}%, " +
-            "COB: ${round(activeCOB, 1).withoutZeros()}, Dev: ${convert_bg(deviation.toDouble())}, BGI: ${convert_bg(bgi)}, ISF: ${convert_bg(sens)}${if (useISFscaler) "/" + convert_bg(future_sens) + " (" + profileScaled +"x)" else ""} , CR: ${
+            "COB: ${round(activeCOB, 1).withoutZeros()}, Dev: ${convert_bg(deviation.toDouble())}, BGI: ${convert_bg(bgi)}, ISF: ${convert_bg(sens)}/${convert_bg(future_sens)}, CR: ${
                 round(profile.carb_ratio, 2)
                     .withoutZeros()
             }, Target: ${convert_bg(target_bg)}, minPredBG ${convert_bg(minPredBG)}, minGuardBG${if (overrideMealSafety) "*" else ""} ${convert_bg(minGuardBG)}, IOBpredBG ${convert_bg(lastIOBpredBG)}"
@@ -974,7 +973,7 @@ class DetermineBasalEN @Inject constructor(
 
         // Eating Now Reason
         rT.reason.append ("EN ${if (enConfig.ENActive) "On" else "Off"}, ")
-        rT.reason.append("ENW ${if (ENWActive) "On ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m, " else "Off ${enConfig.ENWDuration}m, "}")
+        rT.reason.append("ENW ${if (ENWActive) "On ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m @ ${enConfig.enwProfileScalePct}x, " else "Off ${enConfig.ENWDuration}m, "}")
         if (enConfig.ENWNetIOB > 0 && enConfig.ENWNetIOBMax > 0 ) rT.reason.append("ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
         rT.reason.append("InsPeak: ${minsToPeak}m, ")
 
