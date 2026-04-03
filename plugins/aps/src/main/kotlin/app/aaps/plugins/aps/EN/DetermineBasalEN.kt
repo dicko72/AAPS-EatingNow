@@ -811,31 +811,31 @@ class DetermineBasalEN @Inject constructor(
             rT.reason.append("BG^15m: ${isHigh15m}, ")
         }
 
-        val UAMplusConfidence = maxUAMPredBGMins > minsToPeak && maxUAMPredBG > target_bg // UAM+ fastup and peak is in the future
+        val UAMplusConfidence = DeltaFastUp && maxUAMPredBGMins > minsToPeak && maxUAMPredBG > target_bg // UAM+ fastup and peak is in the future
 
         // ISF Scaling similar to dynIDF but using profile BG at target
         if (useISFscaler) {
             // Decide which BG value to use based on the delta
-            val chosenBG = if (UAMplusConfidence && DeltaFastUp){
-                // UAM+ Spiking
-                // max(eventualBG, bg)
-                max(maxUAMPredBG, bg) // confidence high
-            } else if (DeltaFastUp) {
-                // UAM+ Spiking
-                max(eventualBG, bg)
-            } else if (isHigh15m || isHigh40m) {
-                // Flat/Stubborn High
-                (fSensBG * 0.5) + (bg * 0.5)
-            } else if (glucose_status.delta > 0 && (eventualBG > target_bg || eventualBG > bg)) {
-                // Slow Rise
-                bg
-            } else if (glucose_status.delta < -6 || DeltaAcceleratingDown) {
-                // Dropping
-                min(target_bg,eventualBG)
-            } else {
-                // Recovering safety
-                // fSensBG
-                min (target_bg, eventualBG)
+            val chosenBG = when {
+                UAMplusConfidence ->
+                    // UAM+ Spiking with high confidence: use the predicted peak BG
+                    max(maxUAMPredBG, bg)
+
+                DeltaFastUp ->
+                    // UAM+ Spiking: use eventual BG if it's higher than current
+                    max(eventualBG, bg)
+
+                isHigh15m ->
+                    // Flat/Stubborn High: blend current BG with safety-adjusted BG
+                    (fSensBG + bg) * 0.5
+
+                glucose_status.delta > 0 && (eventualBG > target_bg || eventualBG > bg) ->
+                    // Slow Rise: stick to current BG for scaling
+                    bg
+
+                else ->
+                    // Dropping or Recovering safety: cap the BG at target to avoid aggressive scaling
+                    min(target_bg, eventualBG)
             }
 
             // Prevent divide-by-zero or math errors with extremely low BGs
