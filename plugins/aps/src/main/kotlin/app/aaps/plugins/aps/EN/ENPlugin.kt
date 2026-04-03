@@ -605,11 +605,11 @@ open class ENPlugin @Inject constructor(
             ENTimeStart = EatingNowTimeStart,
             ENTimeEnd = EatingNowTimeEnd,
             ENActive = ENActive,
-            OvernightSMBRestrict = preferences.get(DoubleKey.Eatingnow_overnightSMB),
+            OvernightSMBRestrict = profileUtil.convertToMgdlDetect(preferences.get(DoubleKey.Eatingnow_overnightSMB)) + targetBg,
             IgnoreCOB = ignoreCOB,
             SafetyMaxBolus = preferences.get(DoubleKey.SafetyMaxBolus),
             useISFscaler = useISFscaler,
-            highBGthreshold = profileUtil.convertToMgdlDetect(preferences.get(DoubleKey.highBGthreshold)),
+            highBGthreshold = profileUtil.convertToMgdlDetect(preferences.get(DoubleKey.highBGthreshold)) + targetBg,
 
             // ENW variables
             ENWfirstMeal = ENWfirstMeal,
