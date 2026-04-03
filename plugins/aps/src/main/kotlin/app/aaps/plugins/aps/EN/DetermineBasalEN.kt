@@ -3,6 +3,7 @@ package app.aaps.plugins.aps.EN
 
 import app.aaps.core.data.model.TT
 import app.aaps.core.data.configuration.Constants
+import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.aps.APSResult
 import app.aaps.core.interfaces.aps.AutosensResult
 import app.aaps.core.interfaces.aps.CurrentTemp
@@ -340,14 +341,14 @@ class DetermineBasalEN @Inject constructor(
             }
         }
         // Multiply the index by 5 minutes to get the actual time!
-        var minsToPeak = peakIndex * 5
+        var activeInsulinPeakMins = peakIndex * 5
 
         if (!highBGthresholdActive && iob_data.iob < profile.current_basal / 4.0) { // consider low IOB as noise and peak has passed
-            minsToPeak = 0
+            activeInsulinPeakMins = 0
         }
 
         // Is the peak reached or passed?
-        val hasInsulinPeaked = minsToPeak == 0
+        val hasInsulinPeaked = activeInsulinPeakMins == 0
 
         // when delta is rising fast for UAM+
         val DeltaFastUp = if (ENWActive) {
@@ -752,10 +753,36 @@ class DetermineBasalEN @Inject constructor(
         consoleError.add("UAM Impact: $uci mg/dL per 5m; UAM Duration: $UAMduration hours")
         consoleLog.add("EventualBG is $eventualBG ;")
 
+        // UAM+ CONFIDENCE: This high-confidence check authorizes the algorithm to use maxUAMPredBG for insulinReq
+        val UAMplusConfidenceWindow = enConfig.ENWEndTime?.let { endTime -> currentTime < endTime + T.hours(1).msecs() } ?: false
+        val UAMplusConfidence =
+            // Context: Eating Now must have been activated today
+            ENActive &&
+            // Momentum: BG must be accelerating upwards (3-tier acceleration check)
+            DeltaFastUp &&
+            // Current State: BG must already be above target to avoid aggressive firing during hypo recovery
+            bg > target_bg &&
+            // Magnitude: The predicted spike must be at least 20% above target to justify aggressive intervention
+            maxUAMPredBG > (target_bg * 1.2) &&
+            // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak.
+            maxUAMPredBGMins > (activeInsulinPeakMins + 15) &&
+            // Up to 1 hour after the eating window has finished
+            UAMplusConfidenceWindow
+
         minIOBPredBG = max(39.0, minIOBPredBG)
         minCOBPredBG = max(39.0, minCOBPredBG)
         minUAMPredBG = max(39.0, minUAMPredBG)
-        minPredBG = round(minIOBPredBG, 0)
+        // minPredBG = round(minIOBPredBG, 0)
+
+        minPredBG = if (UAMplusConfidence) {
+            // We use the UAM floor because we are confident food is absorbing.
+            // This is higher than the IOB-trap, but still lower than the
+            // mountain peak, providing a safe middle-ground.
+            round(max(minIOBPredBG, minUAMPredBG), 0)
+        } else {
+            // Standard AAPS safety when not confident in a meal spike
+            round(minIOBPredBG, 0)
+        }
 
         val fSensBG = min(minPredBG, bg)
 
@@ -810,7 +837,18 @@ class DetermineBasalEN @Inject constructor(
             rT.reason.append("BG^15m: ${isHighScaledPct}, ")
         }
 
-        val UAMplusConfidence = DeltaFastUp && maxUAMPredBGMins > minsToPeak && maxUAMPredBG > target_bg // UAM+ fastup and peak is in the future
+        // // UAM+ CONFIDENCE: This high-confidence check authorizes the algorithm to use maxUAMPredBG for insulinReq
+        // val UAMplusConfidence =
+        //     // Context: Eating Now must have been activated today
+        //     ENActive &&
+        //     // Momentum: BG must be accelerating upwards (3-tier acceleration check)
+        //     DeltaFastUp &&
+        //     // Current State: BG must already be above target to avoid aggressive firing during hypo recovery
+        //     bg > target_bg &&
+        //     // Magnitude: The predicted spike must be at least 20% above target to justify aggressive intervention
+        //     maxUAMPredBG > (target_bg * 1.2) &&
+        //     // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak.
+        //     maxUAMPredBGMins > (activeInsulinPeakMins + 15)
 
         // ISF Scaling similar to dynIDF but using profile BG at target
         if (useISFscaler) {
@@ -974,7 +1012,7 @@ class DetermineBasalEN @Inject constructor(
         rT.reason.append ("EN ${if (enConfig.ENActive) "On" else "Off"}, ")
         rT.reason.append("ENW ${if (ENWActive) "On ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m @ ${enConfig.enwProfileScalePct}x, " else "Off ${enConfig.ENWDuration}m, "}")
         if (enConfig.ENWNetIOB > 0 && enConfig.ENWNetIOBMax > 0 ) rT.reason.append("ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
-        rT.reason.append("InsPeak: ${minsToPeak}m, ")
+        rT.reason.append("InsPeak: ${activeInsulinPeakMins}m, ")
 
         // use naive_eventualBG if above 40, but switch to minGuardBG if both eventualBGs hit floor of 39
         var carbsReqBG = naive_eventualBG
