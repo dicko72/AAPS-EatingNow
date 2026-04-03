@@ -805,9 +805,9 @@ class DetermineBasalEN @Inject constructor(
 
         // reason if BG is high
         if (isHigh40m) {
-            rT.reason.append("BG^40m: ${isHigh40m},")
+            rT.reason.append("BG^40m: ${isHighScaledPct},")
         } else if (isHigh15m) {
-            rT.reason.append("BG^15m: ${isHigh15m}, ")
+            rT.reason.append("BG^15m: ${isHighScaledPct}, ")
         }
 
         val UAMplusConfidence = DeltaFastUp && maxUAMPredBGMins > minsToPeak && maxUAMPredBG > target_bg // UAM+ fastup and peak is in the future
