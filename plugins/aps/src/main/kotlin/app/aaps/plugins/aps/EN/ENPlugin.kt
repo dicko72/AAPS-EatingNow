@@ -366,8 +366,12 @@ open class ENPlugin @Inject constructor(
         var maxBg = hardLimits.verifyHardLimits(Round.roundTo(profile.getTargetHighMgdl(), 0.1), app.aaps.core.ui.R.string.profile_high_target, HardLimits.LIMIT_MAX_BG[0], HardLimits.LIMIT_MAX_BG[1])
         var targetBg = hardLimits.verifyHardLimits(profile.getTargetMgdl(), app.aaps.core.ui.R.string.temp_target_value, HardLimits.LIMIT_TARGET_BG[0], HardLimits.LIMIT_TARGET_BG[1])
         var isTempTarget = false
+        var tempTargetDuration = 0L
+        var tempTargettimestamp = 0L
         persistenceLayer.getTemporaryTargetActiveAt(dateUtil.now())?.let { tempTarget ->
             isTempTarget = true
+            tempTargetDuration = tempTarget.duration / 60_000L.toInt()// Capture duration in minutes
+            tempTargettimestamp = tempTarget.timestamp
             minBg = hardLimits.verifyHardLimits(tempTarget.lowTarget, app.aaps.core.ui.R.string.temp_target_low_target, HardLimits.LIMIT_TEMP_MIN_BG[0], HardLimits.LIMIT_TEMP_MIN_BG[1])
             maxBg = hardLimits.verifyHardLimits(tempTarget.highTarget, app.aaps.core.ui.R.string.temp_target_high_target, HardLimits.LIMIT_TEMP_MAX_BG[0], HardLimits.LIMIT_TEMP_MAX_BG[1])
             targetBg = hardLimits.verifyHardLimits(tempTarget.target(), app.aaps.core.ui.R.string.temp_target_value, HardLimits.LIMIT_TEMP_TARGET_BG[0], HardLimits.LIMIT_TEMP_TARGET_BG[1])
@@ -465,6 +469,9 @@ open class ENPlugin @Inject constructor(
         val lastENTT = todaysENTargets.maxByOrNull { it.timestamp }
         val lastENTTTime = todaysENTargets.maxOfOrNull { it.timestamp }
 
+        // Temp ENWTT is when TT is at target
+        val manualENTT = isTempTarget && targetBg == profile.getTargetMgdl()
+        val manualENTTDuration = if (manualENTT) tempTargetDuration else 0
 
         // Find maximums independently to avoid allocating a combined list
         val lastBolusTime = todaysLargeBoluses.maxOfOrNull { it.timestamp } ?: 0L
@@ -476,18 +483,18 @@ open class ENPlugin @Inject constructor(
             maxOf(lastCarbTime, lastBolusTime).takeIf { it > 0L }
         }
 
-        val ENWStartTime = if (lastENTTTime != null && lastMealTime != null) {
-            max(lastENTTTime, lastMealTime)
-        } else {
-            lastENTTTime ?: lastMealTime
+        val ENWStartTime = when {
+            manualENTT -> tempTargettimestamp
+            else -> listOfNotNull(lastENTTTime, lastMealTime).maxOrNull()
         }
 
         // ENW End Time is the TT end or prefs for carbs
         val ENWDurationMs = preferences.get(IntKey.Eatingnow_enw_minutes) * 60_000L
         // Calculate the End Time based on whichever treatment actually started the window
-        val ENWEndTime = when (ENWStartTime) {
-            lastENTTTime -> lastENTT?.let { it.timestamp + it.duration }
-            lastMealTime -> lastMealTime?.let { it + ENWDurationMs }
+        val ENWEndTime = when {
+            manualENTT -> tempTargettimestamp + (manualENTTDuration * 60_000L)
+            ENWStartTime == lastENTTTime -> lastENTT?.let { it.timestamp + it.duration }
+            ENWStartTime == lastMealTime -> lastMealTime?.let { it + ENWDurationMs }
             else -> null
         }
 
@@ -497,17 +504,18 @@ open class ENPlugin @Inject constructor(
             val end = start + (it.duration)
             now >= start && now < end // true if 'now' falls inside the target's time window
         }
+
         val ENWStarted = ENWStartTime != null && ENWEndTime != null && now >= ENWStartTime && now < ENWEndTime // check to see if TT or COB would mean the ENW is started
 
         // Other ENW variables
-        val ENWActive = if (ENWStarted) {
-            activeENTT?.reason ?: TT.Reason.EATING_NOW // is there an active ENW or ENW prebolus or carbs?
-        } else {
-            null
+        val ENWActive = when {
+            manualENTT -> TT.Reason.EATING_NOW
+            ENWStarted -> activeENTT?.reason ?: TT.Reason.EATING_NOW
+            else -> null
         }
 
         val ENWfirstMeal = (mealCount == 1 && activeENTT != null) // is this the firstmeal?
-        val ENActive = ENTimeOK && ENStarted && (!isTempTarget && ENWActive == null || ENWActive != null) // is EN activated?
+        val ENActive = ENTimeOK && ENStarted && (!isTempTarget && ENWActive == null || ENWActive != null || manualENTT) // is EN activated?
         // Calculate the amount of time ENW has been running
         val ENWRunTime = if (ENWStartTime != null && now >= ENWStartTime) {
             // If ENWEndTime exists, don't let the calculation go past it!
@@ -519,6 +527,10 @@ open class ENPlugin @Inject constructor(
         val ENWNetIOB = if (ENWStartTime != null && ENWEndTime != null && now < ENWEndTime + T.hours(3).msecs()) {
             tddCalculator.calculateIntervalNet(ENWStartTime, now, allowMissingData = true)?.totalAmount ?: 0.0
         } else 0.0
+
+        // Calculate vars using the prefs or manualENTT
+        val ENWNetIOBMax = if (manualENTT) manualENTTDuration/10.0 else preferences.get(DoubleKey.Eatingnow_enw_maxiob)
+        val ENWDuration = if (manualENTT) manualENTTDuration.toInt() else preferences.get(IntKey.Eatingnow_enw_minutes)
 
         // using ISF scaling?
         val useISFscaler = preferences.get(BooleanKey.EatingNow_UseISFscaler)
@@ -606,12 +618,12 @@ open class ENPlugin @Inject constructor(
             ENWEndTime = ENWEndTime,
             ENWRunTime = ENWRunTime,
             ENWNetIOB = max(Round.roundTo(ENWNetIOB, 0.01), 0.0),
-            ENWDuration = preferences.get(IntKey.Eatingnow_enw_minutes),
+            ENWDuration = ENWDuration,
             enwProfileScalePct = enwProfileScalePct,
             ENWsmbPct = preferences.get(IntKey.Eatingnow_enw_smb_pct),
             ENWcobMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus), 0.01), 0.0),
             ENWuamMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_uam_maxbolus), 0.01), 0.0),
-            ENWNetIOBMax = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_maxiob), 0.01), 0.0),
+            ENWNetIOBMax = max(Round.roundTo(ENWNetIOBMax, 0.01), 0.0),
             ENWprebolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_prebolus), 0.01), 0.0),
             ENWuamPlusMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus), 0.01), 0.0),
             AllowUAMplusNoENW =  preferences.get(BooleanKey.EatingNow_AllowUAMplusNoENW)
