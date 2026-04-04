@@ -754,7 +754,8 @@ class DetermineBasalEN @Inject constructor(
         consoleLog.add("EventualBG is $eventualBG ;")
 
         // UAM+ CONFIDENCE: This high-confidence check authorizes the algorithm to use maxUAMPredBG for insulinReq
-        val UAMplusConfidenceWindow = enConfig.ENWEndTime?.let { endTime -> currentTime < endTime + T.hours(1).msecs() } ?: false // Up to 1 hour after the eating window has finished
+        val ENWEndedAgoMins = (currentTime - (enConfig.ENWEndTime ?: currentTime)) / 60_000L
+        val UAMplusConfidenceWindow = ENWEndedAgoMins < 60 // Up to 1 hour after the eating window has finished
         val UAMplusConfidence =
             // Context: Eating Now must have been activated today
             ENActive &&
@@ -811,7 +812,7 @@ class DetermineBasalEN @Inject constructor(
 
         // Stubborn high logic: BG is high and stable for ~15 minutes (short average is flat)
         val isHigh15m = highBGthresholdActive &&
-            eventualBG > threshold &&
+            // eventualBG > threshold &&
             hasInsulinPeaked &&
             isGlucoseFlat
 
@@ -892,7 +893,7 @@ class DetermineBasalEN @Inject constructor(
             future_sens = round(future_sens, 1)
         }
 
-            val fractionCarbsLeft = activeCOB / activeCarbs
+        val fractionCarbsLeft = activeCOB / activeCarbs
         // if we have COB and UAM is enabled, average both
         if (minUAMPredBG < 999 && minCOBPredBG < 999) {
             // weight COBpredBG vs. UAMpredBG based on how many carbs remain as COB
@@ -1006,7 +1007,7 @@ class DetermineBasalEN @Inject constructor(
 
         // Eating Now Reason
         rT.reason.append ("EN ${if (enConfig.ENActive) "On" else "Off"}, ")
-        rT.reason.append("ENW ${if (ENWActive) "On ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m @ ${enConfig.enwProfileScalePct}x, " else "Off ${enConfig.ENWDuration}m, "}")
+        rT.reason.append("ENW ${if (ENWActive) "On ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m @ ${enConfig.enwProfileScalePct}x, " else "Off ${enConfig.ENWDuration}m ${ENWEndedAgoMins}m ago, "}")
         if (enConfig.ENWNetIOB > 0 && enConfig.ENWNetIOBMax > 0 ) rT.reason.append("ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
         rT.reason.append("InsPeak: ${activeInsulinPeakMins}m, ")
 
@@ -1254,7 +1255,7 @@ class DetermineBasalEN @Inject constructor(
             // if (dynIsfMode || useISFscaler) round((min(minPredBG, eventualBG) - target_bg) / future_sens, 2)
             // else round((min(minPredBG, eventualBG) - target_bg) / sens, 2)
 
-            var insulinReqOrig = round(insulinReq, 2) // original insulinReq for transparency
+            val insulinReqOrig = round(insulinReq, 2) // original insulinReq for transparency
 
             if (isPrebolusing) insulinReq = max(remainingPrebolus, insulinReq) // Give the minimum in the prebolus
 
