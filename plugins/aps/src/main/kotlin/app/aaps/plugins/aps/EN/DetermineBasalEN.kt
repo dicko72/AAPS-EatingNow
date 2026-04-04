@@ -3,7 +3,6 @@ package app.aaps.plugins.aps.EN
 
 import app.aaps.core.data.model.TT
 import app.aaps.core.data.configuration.Constants
-import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.aps.APSResult
 import app.aaps.core.interfaces.aps.AutosensResult
 import app.aaps.core.interfaces.aps.CurrentTemp
@@ -16,7 +15,6 @@ import app.aaps.core.interfaces.aps.Predictions
 import app.aaps.core.interfaces.aps.RT
 import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
-import app.aaps.core.keys.DoubleKey
 import java.text.DecimalFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -81,7 +79,7 @@ class DetermineBasalEN @Inject constructor(
         if (!microBolusAllowed) {
             consoleError.add("SMB disabled (!microBolusAllowed)")
             return false
-        } else if (!profile.allowSMB_with_high_temptarget && profile.temptargetSet && target_bg > 100) {
+        } else if (!profile.allowSMB_with_high_temptarget && profile.temptargetSet && target_bg > Constants.NORMAL_TARGET_MGDL) {
             consoleError.add("SMB disabled due to high temptarget of $target_bg")
             return false
         }
@@ -316,57 +314,53 @@ class DetermineBasalEN @Inject constructor(
         val ENActive = enConfig.ENActive
         val ENWActive = enConfig.ENWActive != null
         val AllowUAMplusNoENW = ENActive && !ENWActive && enConfig.AllowUAMplusNoENW
-        val highBGthresholdActive = enConfig.highBGthreshold > 0 && bg > enConfig.highBGthreshold  // used for isHighLogic and hasInsulinPeaked
+        val highBGthresholdActive = enConfig.highBGthreshold > 0 && bg > enConfig.highBGthreshold  // used for isHighLogic and peakIOBmins
 
 
         // Eating Now Delta Acceleration for UAM+
-        var DeltaPctS = 1.0
-        var DeltaPctL = 1.0
+        var deltaPctS = 1.0
+        var deltaPctL = 1.0
 
         if (glucose_status.shortAvgDelta != 0.0) {
-            DeltaPctS = round(1.0 + ((glucose_status.delta - glucose_status.shortAvgDelta) / kotlin.math.abs(glucose_status.shortAvgDelta)), 2)
+            deltaPctS = round(1.0 + ((glucose_status.delta - glucose_status.shortAvgDelta) / kotlin.math.abs(glucose_status.shortAvgDelta)), 2)
         }
         if (glucose_status.longAvgDelta != 0.0) {
-            DeltaPctL = round(1.0 + ((glucose_status.delta - glucose_status.longAvgDelta) / kotlin.math.abs(glucose_status.longAvgDelta)), 2)
+            deltaPctL = round(1.0 + ((glucose_status.delta - glucose_status.longAvgDelta) / kotlin.math.abs(glucose_status.longAvgDelta)), 2)
         }
 
         // Upcoming insulin activity peak using position (index) of the maximum future insulin activity
         var maxActivity = iob_data_array[0].activity
         var peakIndex = 0
-
         for (i in iob_data_array.indices) {
             if (iob_data_array[i].activity > maxActivity) {
                 maxActivity = iob_data_array[i].activity
                 peakIndex = i
             }
         }
-        // Multiply the index by 5 minutes to get the actual time!
-        var activeInsulinPeakMins = peakIndex * 5
-
-        if (!highBGthresholdActive && iob_data.iob < profile.current_basal / 4.0) { // consider low IOB as noise and peak has passed
-            activeInsulinPeakMins = 0
+        // peakIOBmins null = no peak found, 0 peak is now, >0 peak in future mins
+        var peakIOBmins: Int? = peakIndex * 5
+        // Set to null if it's noise or has passed
+        if (!highBGthresholdActive && iob_data.iob < (profile.current_basal / 4.0)) {
+            peakIOBmins = null
         }
-
-        // Is the peak reached or passed?
-        val hasInsulinPeaked = activeInsulinPeakMins == 0
 
         // when delta is rising fast for UAM+
-        val DeltaFastUp = if (ENWActive) {
+        val deltaFastUp = (deltaPctS >= 1.0) && when {
             // UAM+ aggressive short average when ENW is running
-            glucose_status.delta > 0.0 && DeltaPctS >= 1.0
-        } else if (hasInsulinPeaked) { // The insulin peak has passed, no need for DeltaPctL
-            glucose_status.delta > 3.0 && DeltaPctS >= 1.0
-        } else {
+            ENWActive -> glucose_status.delta > 0.0
+            // Checks if it is 0 OR null in one clean line
+            (peakIOBmins ?: 0) == 0 -> glucose_status.delta > 3.0
             // Require both short & long average acceleration outside of ENW
-            glucose_status.delta > 5.0 && DeltaPctS >= 1.0 && DeltaPctL > 1.0
+            else -> glucose_status.delta > 5.0 && deltaPctL > 1.0
         }
+
         val ENWNetIOBRemaining = max(enConfig.ENWNetIOBMax - enConfig.ENWNetIOB, 0.0) // remaining ENW IOB
         val remainingPrebolus = round((enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0) ,1)// remaining prebolus
         val isPrebolusing = enConfig.ENWActive == TT.Reason.EATING_NOW_PB && remainingPrebolus > 0.0 && enConfig.ENWRunTime < 10 // if prebolusing
-        val overrideMealSafety = (DeltaFastUp && ENWActive && ENWNetIOBRemaining > 0 || isPrebolusing)
+        val overrideMealSafety = (deltaFastUp && ENWActive && ENWNetIOBRemaining > 0 || isPrebolusing)
 
         val UAMplusEnabled = enConfig.ENWuamPlusMaxbolus > 0.0
-        val DeltaAcceleratingDown = glucose_status.delta < 0.0 && DeltaPctS < 1.0 && DeltaPctL < 1.0
+        val DeltaAcceleratingDown = glucose_status.delta < 0.0 && deltaPctS < 1.0 && deltaPctL < 1.0
         val useISFscaler = (enConfig.useISFscaler) // using EN ISF Scaler
 
         val sens =
@@ -749,41 +743,39 @@ class DetermineBasalEN @Inject constructor(
             // set eventualBG based on COB or UAM predBGs
             rT.eventualBG = eventualBG
         }
-        // rT.reason.append("eBG: " + convert_bg(eventualBG) + ", ") // show eventualBG
+
         consoleError.add("UAM Impact: $uci mg/dL per 5m; UAM Duration: $UAMduration hours")
         consoleLog.add("EventualBG is $eventualBG ;")
 
         // UAM+ CONFIDENCE: This high-confidence check authorizes the algorithm to use maxUAMPredBG for insulinReq
         val ENWEndedAgoMins = (currentTime - (enConfig.ENWEndTime ?: currentTime)) / 60_000L
-        val UAMplusConfidenceWindow = ENWEndedAgoMins < 60 // Up to 1 hour after the eating window has finished
+        val recentFood = ENWEndedAgoMins < 60 // Up to 1 hour after the eating window has finished
         val UAMplusConfidence =
             // Context: Eating Now must have been activated today
             ENActive &&
             // Momentum: BG must be accelerating upwards (3-tier acceleration check)
-            DeltaFastUp &&
+            deltaFastUp &&
             // Current State: BG must already be above target to avoid aggressive firing during hypo recovery
             bg > target_bg &&
             // Magnitude: The predicted spike must be at least 20% above target to justify aggressive intervention
             maxUAMPredBG > (target_bg * 1.2) &&
             // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak.
-            maxUAMPredBGMins > (activeInsulinPeakMins + 15)
+            maxUAMPredBGMins > ((peakIOBmins ?: 0) + 15)
 
         minIOBPredBG = max(39.0, minIOBPredBG)
         minCOBPredBG = max(39.0, minCOBPredBG)
         minUAMPredBG = max(39.0, minUAMPredBG)
         // minPredBG = round(minIOBPredBG, 0)
 
-        minPredBG = if (UAMplusConfidence && UAMplusConfidenceWindow) {
-            // reasonable confidence that food is absorbing still
-            round(max(minIOBPredBG, minUAMPredBG), 0)
-        } else {
-            // Standard AAPS safety when not confident in a meal spike
-            round(minIOBPredBG, 0)
-        }
+        minPredBG = round(
+            if (UAMplusConfidence && recentFood) max(minIOBPredBG, minUAMPredBG)
+            else minIOBPredBG,
+            0
+        )
 
-        val fSensBG = min(minPredBG, bg)
-
+        // Dynamic ISF
         var future_sens = profile.sens // start with profile ISF
+        val fSensBG = min(minPredBG, bg)
         if (dynIsfMode && !useISFscaler) {
             if (bg > target_bg && glucose_status.delta < 3 && glucose_status.delta > -3 && glucose_status.shortAvgDelta > -3 && glucose_status.shortAvgDelta < 3 && eventualBG > target_bg && eventualBG < bg) {
                 future_sens = (1800 / (ln((((fSensBG * 0.5) + (bg * 0.5)) / profile.insulinDivisor) + 1) * profile.TDD))
@@ -810,10 +802,10 @@ class DetermineBasalEN @Inject constructor(
         val isGlucoseFlat = glucose_status.delta.isFlat() && glucose_status.shortAvgDelta.isFlat()
         val isLongTermFlat = glucose_status.longAvgDelta.isFlat()
 
-        // Stubborn high logic: BG is high and stable for ~15 minutes (short average is flat)
+        // Stubborn high logic: BG is high and stable for ~15 minutes (short average is flat) and no insulin peak is coming
         val isHigh15m = highBGthresholdActive &&
             // eventualBG > threshold &&
-            hasInsulinPeaked &&
+            (peakIOBmins == 0 || peakIOBmins == null) &&
             isGlucoseFlat
 
         // Persistent stubborn high: BG is high and stable for ~40 minutes (both short AND long averages are flat)
@@ -827,46 +819,28 @@ class DetermineBasalEN @Inject constructor(
             else -> 1.0
         }
 
-        // reason if BG is high
-        if (isHigh40m) {
-            rT.reason.append("BG^40m: ${isHighScaledPct},")
-        } else if (isHigh15m) {
-            rT.reason.append("BG^15m: ${isHighScaledPct}, ")
+        // reason if BG is stuck high using isHigh logic
+        when {
+            isHigh40m -> rT.reason.append("BG⤒40m: $isHighScaledPct, ")
+            isHigh15m -> rT.reason.append("BG⤒15m: $isHighScaledPct, ")
         }
 
-        // // UAM+ CONFIDENCE: This high-confidence check authorizes the algorithm to use maxUAMPredBG for insulinReq
-        // val UAMplusConfidence =
-        //     // Context: Eating Now must have been activated today
-        //     ENActive &&
-        //     // Momentum: BG must be accelerating upwards (3-tier acceleration check)
-        //     DeltaFastUp &&
-        //     // Current State: BG must already be above target to avoid aggressive firing during hypo recovery
-        //     bg > target_bg &&
-        //     // Magnitude: The predicted spike must be at least 20% above target to justify aggressive intervention
-        //     maxUAMPredBG > (target_bg * 1.2) &&
-        //     // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak.
-        //     maxUAMPredBGMins > (activeInsulinPeakMins + 15)
-
-        // ISF Scaling similar to dynIDF but using profile BG at target
+        // ISF Scaling similar to dynamic ISF but using profile target BG ISF as the anchor
         if (useISFscaler) {
             // Decide which BG value to use based on the delta
             val chosenBG = when {
                 UAMplusConfidence ->
                     // UAM+ Spiking with high confidence: use the predicted peak BG
                     max(maxUAMPredBG, bg)
-
-                DeltaFastUp ->
+                deltaFastUp ->
                     // UAM+ Spiking: use eventual BG if it's higher than current
                     max(eventualBG, bg)
-
                 isHigh15m ->
                     // Flat/Stubborn High: blend current BG with safety-adjusted BG
                     (fSensBG + bg) * 0.5
-
                 glucose_status.delta > 0 && (eventualBG > target_bg || eventualBG > bg) ->
                     // Slow Rise: stick to current BG for scaling
                     bg
-
                 else ->
                     // Dropping or Recovering safety: cap the BG at target to avoid aggressive scaling
                     min(target_bg, eventualBG)
@@ -988,8 +962,8 @@ class DetermineBasalEN @Inject constructor(
         rT.COB = meal_data.mealCOB
         rT.IOB = iob_data.iob
         rT.reason.append(
-            "Delta: ${convert_bg(glucose_status.delta)}/${convert_bg(glucose_status.shortAvgDelta)}/${convert_bg(glucose_status.longAvgDelta)}=${round(DeltaPctS * 100)}/${round(DeltaPctL * 100)}%, " +
-            "COB: ${round(activeCOB, 1).withoutZeros()}, Dev: ${convert_bg(deviation.toDouble())}, BGI: ${convert_bg(bgi)}, ISF: ${convert_bg(sens)}/${convert_bg(future_sens)}, CR: ${
+            "Delta: ${convert_bg(glucose_status.delta)}/${convert_bg(glucose_status.shortAvgDelta)}/${convert_bg(glucose_status.longAvgDelta)}=${round(deltaPctS * 100)}/${round(deltaPctL * 100)}%, " +
+            "COB: ${round(activeCOB, 1).withoutZeros()}, Dev: ${convert_bg(deviation.toDouble())}, BGI: ${convert_bg(bgi)}, ISF: ${convert_bg(sens)}=${convert_bg(future_sens)}, CR: ${
                 round(profile.carb_ratio, 2)
                     .withoutZeros()
             }, Target: ${convert_bg(target_bg)}, minPredBG ${convert_bg(minPredBG)}, minGuardBG${if (overrideMealSafety) "*" else ""} ${convert_bg(minGuardBG)}, IOBpredBG ${convert_bg(lastIOBpredBG)}"
@@ -1006,10 +980,28 @@ class DetermineBasalEN @Inject constructor(
         rT.reason.append("; ")
 
         // Eating Now Reason
-        rT.reason.append ("EN ${if (enConfig.ENActive) "On" else "Off"}, ")
-        rT.reason.append("ENW ${if (ENWActive) "On ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m @ ${enConfig.enwProfileScalePct}x, " else "Off ${enConfig.ENWDuration}m ${ENWEndedAgoMins}m ago, "}")
-        if (enConfig.ENWNetIOB > 0 && enConfig.ENWNetIOBMax > 0 ) rT.reason.append("ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
-        rT.reason.append("InsPeak: ${activeInsulinPeakMins}m, ")
+        rT.reason.append("EN ${if (enConfig.ENActive) "On" else "Off"}, ") // Base EN state
+
+        // Determine the ENW status string
+        val enwStatus = when {
+            ENWActive -> "On ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m @ ${enConfig.enwProfileScalePct}x"
+            ENWEndedAgoMins > 0 -> "Off ${enConfig.ENWDuration}m ${ENWEndedAgoMins}m ago"
+            else -> "Off"
+        }
+        // append the total ENW status
+        rT.reason.append("ENW $enwStatus, ")
+
+        // show ENWIOB if it meets the threshold
+        if (enConfig.ENWNetIOB > 0 && enConfig.ENWNetIOBMax > 0) {
+            rT.reason.append("ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
+        }
+
+        // show peakIOBmins
+        rT.reason.append(when (peakIOBmins) {
+            null -> "PeakIOB: None, "
+            0 -> "PeakIOB: Now, "
+            else -> "PeakIOB: ${peakIOBmins}m, "
+        })
 
         // use naive_eventualBG if above 40, but switch to minGuardBG if both eventualBGs hit floor of 39
         var carbsReqBG = naive_eventualBG
@@ -1241,7 +1233,7 @@ class DetermineBasalEN @Inject constructor(
             // insulinReq is the additional insulin required to get minPredBG down to target_bg
             //console.error(minPredBG,eventualBG);
             var insulinReqBG = min(minPredBG, eventualBG) // AAPS safety
-            if (DeltaFastUp && UAMplusEnabled && minPredBG < target_bg) {
+            if (deltaFastUp && UAMplusEnabled && minPredBG < target_bg) {
                 insulinReqBG = max(maxUAMPredBG, eventualBG) // Escape the UAM trap!
             } else if (isHigh15m || isHigh40m) {
                 insulinReqBG = (fSensBG * 0.5) + (bg * 0.5) // Stuck high
@@ -1302,10 +1294,10 @@ class DetermineBasalEN @Inject constructor(
                         // Prioritize PreBolus requirements within safety limits but allow more if insulinReq is greater
                         "PB" to min(enConfig.ENWprebolus, enConfig.SafetyMaxBolus)
                     }
-                    ENWActive && DeltaFastUp && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
+                    ENWActive && deltaFastUp && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
                         "UAM+" to enConfig.ENWuamPlusMaxbolus
                     }
-                    AllowUAMplusNoENW && DeltaFastUp && activeCarbs == 0.0 && bg > target_bg-> { // keep this to AAPS maxBolus for outside ENW
+                    AllowUAMplusNoENW && deltaFastUp && activeCarbs == 0.0 && bg > target_bg-> { // keep this to AAPS maxBolus for outside ENW
                         "UAM+" to maxBolusAAPS
                     }
                     ENWActive && enConfig.ENWcobMaxbolus > 0 && eventualBG == lastCOBpredBG -> {
