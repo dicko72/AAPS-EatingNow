@@ -754,7 +754,7 @@ class DetermineBasalEN @Inject constructor(
         consoleLog.add("EventualBG is $eventualBG ;")
 
         // UAM+ CONFIDENCE: This high-confidence check authorizes the algorithm to use maxUAMPredBG for insulinReq
-        val UAMplusConfidenceWindow = enConfig.ENWEndTime?.let { endTime -> currentTime < endTime + T.hours(1).msecs() } ?: false
+        val UAMplusConfidenceWindow = enConfig.ENWEndTime?.let { endTime -> currentTime < endTime + T.hours(1).msecs() } ?: false // Up to 1 hour after the eating window has finished
         val UAMplusConfidence =
             // Context: Eating Now must have been activated today
             ENActive &&
@@ -765,19 +765,15 @@ class DetermineBasalEN @Inject constructor(
             // Magnitude: The predicted spike must be at least 20% above target to justify aggressive intervention
             maxUAMPredBG > (target_bg * 1.2) &&
             // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak.
-            maxUAMPredBGMins > (activeInsulinPeakMins + 15) &&
-            // Up to 1 hour after the eating window has finished
-            UAMplusConfidenceWindow
+            maxUAMPredBGMins > (activeInsulinPeakMins + 15)
 
         minIOBPredBG = max(39.0, minIOBPredBG)
         minCOBPredBG = max(39.0, minCOBPredBG)
         minUAMPredBG = max(39.0, minUAMPredBG)
         // minPredBG = round(minIOBPredBG, 0)
 
-        minPredBG = if (UAMplusConfidence) {
-            // We use the UAM floor because we are confident food is absorbing.
-            // This is higher than the IOB-trap, but still lower than the
-            // mountain peak, providing a safe middle-ground.
+        minPredBG = if (UAMplusConfidence && UAMplusConfidenceWindow) {
+            // reasonable confidence that food is absorbing still
             round(max(minIOBPredBG, minUAMPredBG), 0)
         } else {
             // Standard AAPS safety when not confident in a meal spike
