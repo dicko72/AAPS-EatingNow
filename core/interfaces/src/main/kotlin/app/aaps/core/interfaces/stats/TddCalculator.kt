@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.core.interfaces.stats
 
 import android.content.Context

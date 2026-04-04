@@ -263,6 +263,7 @@ class EquilManager @Inject constructor(
                 }
                 // constraint percent.
                 percent = min(percent, 100.0f)
+                rxBus.send(EventOverviewBolusProgress(rh, percent = 100, id = detailedBolusInfo.id))
                 result.comment = rh.gs(app.aaps.core.ui.R.string.virtualpump_resultok)
             } else {
                 result.success = false
@@ -526,6 +527,24 @@ class EquilManager @Inject constructor(
 
     fun getSerialNumber(): String = equilState?.serialNumber ?: "UNKNOWN"
 
+    fun getFirmwareVersion(): String? = equilState?.firmwareVersion
+
+    fun getResistanceThreshold(): Int = getResistanceThreshold(getSerialNumber(), getFirmwareVersion())
+
+    fun getResistanceThreshold(serialNumber: String?, firmwareVersion: String?): Int {
+        val firstChar = serialNumber?.firstOrNull()?.uppercaseChar() ?: return LEGACY_RESISTANCE_THRESHOLD
+        if (firstChar !in VERSION_CHECK_SERIAL_PREFIXES) {
+            return LEGACY_RESISTANCE_THRESHOLD
+        }
+
+        val version = firmwareVersion?.toFloatOrNull() ?: return LEGACY_RESISTANCE_THRESHOLD
+        return if (version >= EquilConst.EQUIL_SUPPORT_LEVEL) {
+            HIGH_RESISTANCE_THRESHOLD
+        } else {
+            LEGACY_RESISTANCE_THRESHOLD
+        }
+    }
+
     fun setBolusRecord(bolusRecord: EquilBolusRecord?) {
         equilState?.bolusRecord = bolusRecord
         storePodState()
@@ -651,6 +670,7 @@ class EquilManager @Inject constructor(
         var basalSchedule: BasalSchedule? = null
     }
 
+
     fun setRunMode(mode: Int) {
         when (mode) {
             0    -> setRunMode(RunMode.SUSPEND)
@@ -774,6 +794,10 @@ class EquilManager @Inject constructor(
     }
 
     companion object {
+
+        const val HIGH_RESISTANCE_THRESHOLD = 500
+        const val LEGACY_RESISTANCE_THRESHOLD = 220
+        val VERSION_CHECK_SERIAL_PREFIXES = setOf('0', '1', '3', 'A', 'D')
 
         private fun createGson(): Gson {
             val gsonBuilder = GsonBuilder()

@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.core.interfaces.db
 
 import app.aaps.core.data.model.BCR
@@ -1061,7 +1062,8 @@ interface PersistenceLayer {
      */
     fun getTemporaryTargetByNSId(nsId: String): TT?
 
-    fun getTemporaryTargetDataFromTime(timestamp: Long, ascending: Boolean): Single<List<TT>>    fun getTemporaryTargetDataIncludingInvalidFromTime(timestamp: Long, ascending: Boolean): Single<List<TT>>
+    fun getTemporaryTargetDataFromTime(timestamp: Long, ascending: Boolean): Single<List<TT>>
+    fun getTemporaryTargetDataIncludingInvalidFromTime(timestamp: Long, ascending: Boolean): Single<List<TT>>
 
     /**
      * Get next changed record after id
@@ -1448,4 +1450,5 @@ interface PersistenceLayer {
      * @return List of inserted records
      */
     fun insertOrUpdateApsResult(apsResult: APSResult): Single<TransactionResult<APSResult>>
+
 }

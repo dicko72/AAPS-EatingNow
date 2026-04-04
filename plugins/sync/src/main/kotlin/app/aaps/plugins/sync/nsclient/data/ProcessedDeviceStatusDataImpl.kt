@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.plugins.sync.nsclient.data
 
 import android.text.Spanned
