@@ -961,13 +961,21 @@ class DetermineBasalEN @Inject constructor(
 
         rT.COB = meal_data.mealCOB
         rT.IOB = iob_data.iob
-        rT.reason.append(
-            "Delta: ${convert_bg(glucose_status.delta)}/${convert_bg(glucose_status.shortAvgDelta)}/${convert_bg(glucose_status.longAvgDelta)}=${round(deltaPctS * 100)}/${round(deltaPctL * 100)}%, " +
-            "COB: ${round(activeCOB, 1).withoutZeros()}, Dev: ${convert_bg(deviation.toDouble())}, BGI: ${convert_bg(bgi)}, ISF: ${convert_bg(sens)}=${convert_bg(future_sens)}, CR: ${
-                round(profile.carb_ratio, 2)
-                    .withoutZeros()
-            }, Target: ${convert_bg(target_bg)}, minPredBG ${convert_bg(minPredBG)}, minGuardBG${if (overrideMealSafety) "*" else ""} ${convert_bg(minGuardBG)}, IOBpredBG ${convert_bg(lastIOBpredBG)}"
-        )
+        rT.reason.apply {
+            append("Delta: ${convert_bg(glucose_status.delta)}/${convert_bg(glucose_status.shortAvgDelta)}/${convert_bg(glucose_status.longAvgDelta)}=${round(deltaPctS * 100)}/${round(deltaPctL * 100)}%, ")
+            append("COB: ${round(activeCOB, 1).withoutZeros()}, ")
+            append("Dev: ${convert_bg(deviation.toDouble())}, ")
+            append("BGI: ${convert_bg(bgi)}, ")
+            append("ISF: ${convert_bg(sens)}=${convert_bg(future_sens)}, ")
+            append("CR: ${round(profile.carb_ratio, 2).withoutZeros()}, ")
+            append("Target: ${convert_bg(target_bg)}, ")
+            append("minPredBG: ${convert_bg(minPredBG)}, ")
+
+            val safetyStar = if (overrideMealSafety) "*" else ""
+            append("minGuardBG$safetyStar: ${convert_bg(minGuardBG)}, ")
+
+            append("IOBpredBG: ${convert_bg(lastIOBpredBG)}")
+        }
         if (lastCOBpredBG != null) {
             rT.reason.append(", COBpredBG " + convert_bg(lastCOBpredBG.toDouble()))
         }
