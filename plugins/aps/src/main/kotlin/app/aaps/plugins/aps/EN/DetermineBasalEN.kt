@@ -345,14 +345,19 @@ class DetermineBasalEN @Inject constructor(
         }
 
         // when delta is rising fast for UAM+
-        val deltaFastUp = (deltaPctS >= 1.0) && when {
+        val deltaFastUp = (glucose_status.delta >= glucose_status.shortAvgDelta) && when {
             // UAM+ aggressive short average when ENW is running
             ENWActive -> glucose_status.delta > 0.0
             // Checks if it is 0 OR null in one clean line
             (peakIOBmins ?: 0) == 0 -> glucose_status.delta > 3.0
             // Require both short & long average acceleration outside of ENW
-            else -> glucose_status.delta > 5.0 && deltaPctL > 1.0
+            else -> glucose_status.delta > 5.0 && glucose_status.delta >= glucose_status.longAvgDelta
         }
+
+        val deltaFastDown =
+            glucose_status.delta < 0.0 &&
+            glucose_status.delta < glucose_status.shortAvgDelta &&
+            glucose_status.delta < glucose_status.longAvgDelta
 
         val ENWNetIOBRemaining = max(enConfig.ENWNetIOBMax - enConfig.ENWNetIOB, 0.0) // remaining ENW IOB
         val remainingPrebolus = round((enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0) ,1)// remaining prebolus
@@ -360,7 +365,6 @@ class DetermineBasalEN @Inject constructor(
         val overrideMealSafety = (deltaFastUp && ENWActive && ENWNetIOBRemaining > 0 || isPrebolusing)
 
         val UAMplusEnabled = enConfig.ENWuamPlusMaxbolus > 0.0
-        val DeltaAcceleratingDown = glucose_status.delta < 0.0 && deltaPctS < 1.0 && deltaPctL < 1.0
         val useISFscaler = (enConfig.useISFscaler) // using EN ISF Scaler
 
         val sens =
@@ -819,12 +823,6 @@ class DetermineBasalEN @Inject constructor(
             else -> 1.0
         }
 
-        // reason if BG is stuck high using isHigh logic
-        when {
-            isHigh40m -> rT.reason.append("BG⤒40m: $isHighScaledPct, ")
-            isHigh15m -> rT.reason.append("BG⤒15m: $isHighScaledPct, ")
-        }
-
         // ISF Scaling similar to dynamic ISF but using profile target BG ISF as the anchor
         if (useISFscaler) {
             // Decide which BG value to use based on the delta
@@ -961,8 +959,20 @@ class DetermineBasalEN @Inject constructor(
 
         rT.COB = meal_data.mealCOB
         rT.IOB = iob_data.iob
+
+        val deltaText = when {
+            UAMplusConfidence -> "⇈ ✓"  // FastUp AND UAM+ is active!
+            deltaFastUp -> "⇈"            // FastUp, but UAM+ is not confident yet
+            deltaFastDown -> "⇊"
+            isHigh40m -> "⎺⎺→ 40m ${isHighScaledPct}x"
+            isHigh15m -> "⎺⎺→ 15m ${isHighScaledPct}x"
+            glucose_status.delta > 1.5 -> "↗"
+            glucose_status.delta < -1.5 -> "↘"
+            else -> "→"
+        }
+
         rT.reason.apply {
-            append("Delta: ${convert_bg(glucose_status.delta)}/${convert_bg(glucose_status.shortAvgDelta)}/${convert_bg(glucose_status.longAvgDelta)}=${round(deltaPctS * 100)}/${round(deltaPctL * 100)}%, ")
+            append("Delta: $deltaText, ")
             append("COB: ${round(activeCOB, 1).withoutZeros()}, ")
             append("Dev: ${convert_bg(deviation.toDouble())}, ")
             append("BGI: ${convert_bg(bgi)}, ")
@@ -982,7 +992,7 @@ class DetermineBasalEN @Inject constructor(
         if (lastUAMpredBG != null) {
             rT.reason.append(", UAMpredBG " + convert_bg(lastUAMpredBG.toDouble()))
             maxUAMPredBG?.let { bgValue ->
-                rT.reason.append("^${convert_bg(bgValue)}@${maxUAMPredBGMins}m${if (UAMplusConfidence) "✓" else ""}")
+                rT.reason.append("^${convert_bg(bgValue)}@${maxUAMPredBGMins}m")
             }
         }
         rT.reason.append("; ")
@@ -1001,7 +1011,7 @@ class DetermineBasalEN @Inject constructor(
 
         // show ENWIOB if it meets the threshold
         if (enConfig.ENWNetIOB > 0 && enConfig.ENWNetIOBMax > 0) {
-            rT.reason.append("ENW-IOB ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
+            rT.reason.append("ENW-IOB: ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
         }
 
         // show peakIOBmins
