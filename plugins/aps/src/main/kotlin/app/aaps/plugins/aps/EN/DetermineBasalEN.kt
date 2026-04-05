@@ -755,6 +755,8 @@ class DetermineBasalEN @Inject constructor(
         val ENWEndedAgoMins = (currentTime - (enConfig.ENWEndTime ?: currentTime)) / 60_000L
         val recentFood = ENWEndedAgoMins < 60 // Up to 1 hour after the eating window has finished
         val UAMplusConfidence =
+            // ensure initialised
+            minUAMPredBG < 999 &&
             // Context: Eating Now must have been activated today
             ENActive &&
             // Momentum: BG must be accelerating upwards (3-tier acceleration check)
@@ -1250,11 +1252,11 @@ class DetermineBasalEN @Inject constructor(
         } else { // otherwise, calculate 30m high-temp required to get projected BG down to target
             // insulinReq is the additional insulin required to get minPredBG down to target_bg
             //console.error(minPredBG,eventualBG);
-            var insulinReqBG = min(minPredBG, eventualBG) // AAPS safety
-            if (deltaFastUp && UAMplusEnabled && minPredBG < target_bg) {
-                insulinReqBG = max(maxUAMPredBG, eventualBG) // Escape the UAM trap!
-            } else if (isHigh15m || isHigh40m) {
-                insulinReqBG = (fSensBG * 0.5) + (bg * 0.5) // Stuck high
+            val insulinReqBG = when {
+                UAMplusConfidence -> max(minUAMPredBG, eventualBG) // UAM++
+                deltaFastUp && UAMplusEnabled && minPredBG < target_bg -> max(maxUAMPredBG, eventualBG) // UAM+
+                isHigh15m || isHigh40m -> (fSensBG * 0.5) + (bg * 0.5) // Stuck high
+                else -> min(minPredBG, eventualBG) // Standard AAPS safety
             }
 
             var insulinReq = if (dynIsfMode || useISFscaler) {
@@ -1285,7 +1287,9 @@ class DetermineBasalEN @Inject constructor(
             }
 
             // rate required to deliver insulinReq more insulin over 30m:
-            var rate = basal + (2 * insulinReq)
+            // UAMplusConfidence allows the rate to deliver insulinReq more insulin over 15m
+            var basalRateMultiplier = if (UAMplusConfidence) 4.0 else 2.0
+            var rate = basal + (basalRateMultiplier * insulinReq)
             rate = round_basal(rate)
             insulinReq = round(insulinReq, 3)
             rT.insulinReq = insulinReq
