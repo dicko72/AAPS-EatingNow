@@ -359,9 +359,34 @@ class DetermineBasalEN @Inject constructor(
             glucose_status.delta < glucose_status.shortAvgDelta &&
             glucose_status.delta < glucose_status.longAvgDelta
 
+        //  Calculate stubborn high logic BG High for ~15 minutes (short average is flat)
+        // Helper function to check if a delta is "flat"
+        val stableBGthreshold = 3.0
+        fun Double.isFlat() = this.absoluteValue < stableBGthreshold
+        val isGlucoseFlat = glucose_status.delta.isFlat() && glucose_status.shortAvgDelta.isFlat()
+        val isLongTermFlat = glucose_status.longAvgDelta.isFlat()
+
+        // Stubborn high logic: BG is high and stable for ~15 minutes (short average is flat) and no insulin peak is coming
+        val isHigh15m = highBGthresholdActive &&
+            // eventualBG > threshold &&
+            (peakIOBmins == 0 || peakIOBmins == null) &&
+            isGlucoseFlat
+
+        // Persistent stubborn high: BG is high and stable for ~40 minutes (both short AND long averages are flat)
+        val isHigh40m = isHigh15m && isLongTermFlat
+
+        // ISF Scaling based on prefs or high BG
+        val isHighScaledPct = when {
+            ENWActive -> 1.0 // no scaling during ENW
+            isHigh40m -> enConfig.enwProfileScalePct + 0.50 // Stuck for 40+ minutes extra 50%
+            isHigh15m -> enConfig.enwProfileScalePct + 0.25 // Stuck for 15+ minutes extra 25%
+            else -> 1.0
+        }
+
         val ENWNetIOBRemaining = max(enConfig.ENWNetIOBMax - enConfig.ENWNetIOB, 0.0) // remaining ENW IOB
         val remainingPrebolus = round((enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0) ,1)// remaining prebolus
         val isPrebolusing = enConfig.ENWActive == TT.Reason.EATING_NOW_PB && remainingPrebolus > 0.0 && enConfig.ENWRunTime < 10 // if prebolusing
+        // val overrideMealSafety = (deltaFastUp && ENWActive && ENWNetIOBRemaining > 0 || isPrebolusing || isHigh15m || isHigh40m)
         val overrideMealSafety = (deltaFastUp && ENWActive && ENWNetIOBRemaining > 0 || isPrebolusing)
 
         val UAMplusEnabled = enConfig.ENWuamPlusMaxbolus > 0.0
@@ -801,30 +826,6 @@ class DetermineBasalEN @Inject constructor(
             }
         }
 
-        //  Calculate stubborn high logic BG High for ~15 minutes (short average is flat)
-        // Helper function to check if a delta is "flat"
-        val stableBGthreshold = 3.0
-        fun Double.isFlat() = this.absoluteValue < stableBGthreshold
-        val isGlucoseFlat = glucose_status.delta.isFlat() && glucose_status.shortAvgDelta.isFlat()
-        val isLongTermFlat = glucose_status.longAvgDelta.isFlat()
-
-        // Stubborn high logic: BG is high and stable for ~15 minutes (short average is flat) and no insulin peak is coming
-        val isHigh15m = highBGthresholdActive &&
-            // eventualBG > threshold &&
-            (peakIOBmins == 0 || peakIOBmins == null) &&
-            isGlucoseFlat
-
-        // Persistent stubborn high: BG is high and stable for ~40 minutes (both short AND long averages are flat)
-        val isHigh40m = isHigh15m && isLongTermFlat
-
-        // ISF Scaling based on prefs or high BG
-        val isHighScaledPct = when {
-            ENWActive -> 1.0 // no scaling during ENW
-            isHigh40m -> enConfig.enwProfileScalePct + 0.50 // Stuck for 40+ minutes extra 50%
-            isHigh15m -> enConfig.enwProfileScalePct + 0.25 // Stuck for 15+ minutes extra 25%
-            else -> 1.0
-        }
-
         // ISF Scaling similar to dynamic ISF but using profile target BG ISF as the anchor
         if (useISFscaler) {
             // Decide which BG value to use based on the delta
@@ -964,10 +965,10 @@ class DetermineBasalEN @Inject constructor(
 
         val deltaText = when {
             UAMplusConfidence -> "⇈ ✓"  // FastUp AND UAM+ is active!
-            deltaFastUp -> "⇈"            // FastUp, but UAM+ is not confident yet
-            deltaFastDown -> "⇊"
+            deltaFastUp -> "⇈"          // FastUp, but UAM+ is not confident yet
             isHigh40m -> "⎺⎺→ 40m ${isHighScaledPct}x"
             isHigh15m -> "⎺⎺→ 15m ${isHighScaledPct}x"
+            deltaFastDown -> "⇊"
             glucose_status.delta > 1.5 -> "↗"
             glucose_status.delta < -1.5 -> "↘"
             else -> "→"
