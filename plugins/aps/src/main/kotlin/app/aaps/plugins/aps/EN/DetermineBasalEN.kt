@@ -988,7 +988,7 @@ class DetermineBasalEN @Inject constructor(
         rT.reason.append("; ")
 
         // Eating Now Reason
-        rT.reason.append("EN ${if (enConfig.ENActive) "On" else "Off"}, ") // Base EN state
+        rT.reason.append("EN: ${if (enConfig.ENActive) "On" else "Off"}, ") // Base EN state
 
         // Determine the ENW status string
         val enwStatus = when {
@@ -997,7 +997,7 @@ class DetermineBasalEN @Inject constructor(
             else -> "Off"
         }
         // append the total ENW status
-        rT.reason.append("ENW $enwStatus, ")
+        rT.reason.append("ENW: $enwStatus, ")
 
         // show ENWIOB if it meets the threshold
         if (enConfig.ENWNetIOB > 0 && enConfig.ENWNetIOBMax > 0) {
