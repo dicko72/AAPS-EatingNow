@@ -87,6 +87,7 @@ import kotlin.math.floor
 import kotlin.math.ln
 import app.aaps.plugins.aps.openAPSSMB.GlucoseStatusCalculatorSMB
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 @Singleton
 open class ENPlugin @Inject constructor(
@@ -550,6 +551,8 @@ open class ENPlugin @Inject constructor(
         val scaledCarbRatio = Round.roundTo(profileCarbRatio / scaleMultiplier, 0.01)
         val scaledIsf = Round.roundTo(profileIsf / scaleMultiplier, 0.1)
 
+        val normalTargetBG = profile.getTargetMgdl() // profile target bg at this time
+
         @Suppress("KotlinConstantConditions")
         val oapsProfile = OapsProfile(
             dia = 0.0, // not used
@@ -606,11 +609,12 @@ open class ENPlugin @Inject constructor(
             ENTimeStart = EatingNowTimeStart,
             ENTimeEnd = EatingNowTimeEnd,
             ENActive = ENActive,
-            OvernightSMBRestrict = profileUtil.convertToMgdl(preferences.get(DoubleKey.Eatingnow_overnightSMB), units) + targetBg,
+            OvernightSMBRestrict = profileUtil.convertToMgdl(preferences.get(DoubleKey.Eatingnow_overnightSMB), units) + normalTargetBG,
             IgnoreCOB = ignoreCOB,
             SafetyMaxBolus = preferences.get(DoubleKey.SafetyMaxBolus),
             useISFscaler = useISFscaler,
-            highBGthreshold = profileUtil.convertToMgdl(preferences.get(DoubleKey.highBGthreshold), units) + targetBg,
+            highBGthreshold = profileUtil.convertToMgdl(preferences.get(DoubleKey.highBGthreshold), units) + normalTargetBG,
+            normalTargetBG = normalTargetBG,
 
             // ENW variables
             ENWfirstMeal = ENWfirstMeal,
