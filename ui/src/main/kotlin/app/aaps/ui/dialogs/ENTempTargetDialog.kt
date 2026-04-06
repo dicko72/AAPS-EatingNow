@@ -276,9 +276,12 @@ class ENTempTargetDialog : DialogFragmentWithDate() {
                 if (duration == 10) preferences.put(BooleanNonKey.ObjectivesTempTargetUsed, true)
                 
                 // Only save the preferences if the user actually clicked "OK" in the confirmation dialog.
-                if (isPrebolusChecked) preferences.put(DoubleKey.Eatingnow_enw_prebolus, roundedPrebolus) // update the prefs with the new rounded PB value
-                preferences.put(DoubleKey.Eatingnow_enw_maxiob, enwMaxIobValue) // update the prefs with the new rounded PB value
-                preferences.put(IntKey.Eatingnow_enw_minutes, duration) // update the prefs with the new duration
+                // Added check: Only update preferences if we are setting a target, not cancelling one.
+                if (duration > 0) {
+                    if (isPrebolusChecked) preferences.put(DoubleKey.Eatingnow_enw_prebolus, roundedPrebolus) // update the prefs with the new rounded PB value
+                    preferences.put(DoubleKey.Eatingnow_enw_maxiob, enwMaxIobValue) // update the prefs with the new rounded PB value
+                    preferences.put(IntKey.Eatingnow_enw_minutes, duration) // update the prefs with the new duration
+                }
             })
         }
         return true
