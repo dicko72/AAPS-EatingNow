@@ -351,7 +351,7 @@ class DetermineBasalEN @Inject constructor(
             // Checks if it is 0 OR null in one clean line
             (peakIOBmins ?: 0) == 0 -> glucose_status.delta > 3.0
             // Require both short & long average acceleration outside of ENW
-            else -> glucose_status.delta > 5.0 && glucose_status.delta >= glucose_status.longAvgDelta
+            else -> glucose_status.delta > 7.0 && glucose_status.delta >= glucose_status.longAvgDelta
         }
 
         val deltaFastDown =
@@ -840,11 +840,19 @@ class DetermineBasalEN @Inject constructor(
             isAuthorisedMealRise -> max(maxUAMPredBG, eventualBG)
             // Flat/Stubborn High: blend current BG with safety-adjusted BG ⎺⎺→ 15m
             isAuthorisedResistance -> (fSensBG + bg) * 0.5
-            // any other rise stick to current BG for scaling
-            glucose_status.delta > 0 && (eventualBG > target_bg || eventualBG > bg) -> bg
-            // Standard AAPS safety: Includes dropping or recovering safety
+            // any other rise stick to current BG for scaling ↗
+            glucose_status.delta > 4 && (eventualBG > target_bg || eventualBG > bg) -> bg
+            // Standard AAPS safety: Includes dropping or recovering safety ↘ → ⇊
             else -> min(minPredBG, eventualBG)
         }
+
+
+        // val insulinReqBG = when {
+        //     UAMplusConfidence -> max(minUAMPredBG, eventualBG) // UAM++
+        //     deltaFastUp && UAMplusEnabled && minPredBG < target_bg -> max(maxUAMPredBG, eventualBG) // UAM+
+        //     isHigh15m || isHigh40m -> (fSensBG * 0.5) + (bg * 0.5) // Stuck high
+        //     else -> min(minPredBG, eventualBG) // Standard AAPS safety
+        // }
 
         // ISF Scaling similar to dynamic ISF but using profile target BG ISF as the anchor
         if (useISFscaler) {
@@ -1261,8 +1269,6 @@ class DetermineBasalEN @Inject constructor(
             } else {
                 round((insulinReqBG - target_bg) / sens, 2)
             }
-            // if (dynIsfMode || useISFscaler) round((min(minPredBG, eventualBG) - target_bg) / future_sens, 2)
-            // else round((min(minPredBG, eventualBG) - target_bg) / sens, 2)
 
             val insulinReqOrig = round(insulinReq, 2) // original insulinReq for transparency
 
