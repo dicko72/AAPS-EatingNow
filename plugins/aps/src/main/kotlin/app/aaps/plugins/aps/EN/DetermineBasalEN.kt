@@ -789,7 +789,7 @@ class DetermineBasalEN @Inject constructor(
             // Current State: BG must already be above target or in active ENW to avoid aggressive firing during hypo recovery
             bg > target_bg || ENWActive &&
             // Magnitude: The predicted spike must be at least 20% above target to justify aggressive intervention
-            maxUAMPredBG > (target_bg * 1.2) &&
+            maxUAMPredBG > (bg * 1.15) &&
             // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak.
             maxUAMPredBGMins > ((peakIOBmins ?: 0) + 15)
 
