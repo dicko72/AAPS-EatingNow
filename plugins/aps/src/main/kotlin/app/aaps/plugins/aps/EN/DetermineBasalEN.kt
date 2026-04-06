@@ -386,8 +386,6 @@ class DetermineBasalEN @Inject constructor(
         val ENWNetIOBRemaining = max(enConfig.ENWNetIOBMax - enConfig.ENWNetIOB, 0.0) // remaining ENW IOB
         val remainingPrebolus = round((enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0) ,1)// remaining prebolus
         val isPrebolusing = enConfig.ENWActive == TT.Reason.EATING_NOW_PB && remainingPrebolus > 0.0 && enConfig.ENWRunTime < 10 // if prebolusing
-        // val overrideMealSafety = (deltaFastUp && ENWActive && ENWNetIOBRemaining > 0 || isPrebolusing || isHigh15m || isHigh40m)
-        val overrideMealSafety = (deltaFastUp && ENWActive && ENWNetIOBRemaining > 0 || isPrebolusing)
 
         val UAMplusEnabled = enConfig.ENWuamPlusMaxbolus > 0.0
         val useISFscaler = (enConfig.useISFscaler) // using EN ISF Scaler
@@ -780,14 +778,16 @@ class DetermineBasalEN @Inject constructor(
         val ENWEndedAgoMins = (currentTime - (enConfig.ENWEndTime ?: currentTime)) / 60_000L
         val recentFood = ENWEndedAgoMins < 60 // Up to 1 hour after the eating window has finished
         val UAMplusConfidence =
-            // ensure initialised
+            // UAM+ has a maxBolus configured for use intent
+            UAMplusEnabled &&
+            // ensure initialised vars
             minUAMPredBG < 999 &&
             // Context: Eating Now must have been activated today
             ENActive &&
             // Momentum: BG must be accelerating upwards (3-tier acceleration check)
             deltaFastUp &&
-            // Current State: BG must already be above target to avoid aggressive firing during hypo recovery
-            bg > target_bg &&
+            // Current State: BG must already be above target or in active ENW to avoid aggressive firing during hypo recovery
+            bg > target_bg || ENWActive &&
             // Magnitude: The predicted spike must be at least 20% above target to justify aggressive intervention
             maxUAMPredBG > (target_bg * 1.2) &&
             // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak.
@@ -803,6 +803,10 @@ class DetermineBasalEN @Inject constructor(
             else minIOBPredBG,
             0
         )
+
+        // variables for allowing some overrides
+        val isAuthorisedMealRise = (UAMplusConfidence && ENWNetIOBRemaining > 0 || isPrebolusing)
+        val isAuthorisedResistance = (isHigh15m || isHigh40m)
 
         // Dynamic ISF
         var future_sens = profile.sens // start with profile ISF
@@ -826,29 +830,26 @@ class DetermineBasalEN @Inject constructor(
             }
         }
 
+        // Decide which BG value to use based on the delta for the insulinReq later
+        val insulinReqBG = when {
+            // UAM++ accelerating BG rise with UAM peaking after IOB peak ⇈✓
+            UAMplusConfidence -> max(maxUAMPredBG, bg)
+            // UAM+ accelerating BG rise without prediction factors ⇈
+            deltaFastUp -> max(eventualBG, bg)
+            // Rising fast in with confidence and ENW IOB remaining
+            isAuthorisedMealRise -> max(maxUAMPredBG, eventualBG)
+            // Flat/Stubborn High: blend current BG with safety-adjusted BG ⎺⎺→ 15m
+            isAuthorisedResistance -> (fSensBG + bg) * 0.5
+            // any other rise stick to current BG for scaling
+            glucose_status.delta > 0 && (eventualBG > target_bg || eventualBG > bg) -> bg
+            // Standard AAPS safety: Includes dropping or recovering safety
+            else -> min(minPredBG, eventualBG)
+        }
+
         // ISF Scaling similar to dynamic ISF but using profile target BG ISF as the anchor
         if (useISFscaler) {
-            // Decide which BG value to use based on the delta
-            val chosenBG = when {
-                UAMplusConfidence ->
-                    // UAM+ Spiking with high confidence: use the predicted peak BG
-                    max(maxUAMPredBG, bg)
-                deltaFastUp ->
-                    // UAM+ Spiking: use eventual BG if it's higher than current
-                    max(eventualBG, bg)
-                isHigh15m ->
-                    // Flat/Stubborn High: blend current BG with safety-adjusted BG
-                    (fSensBG + bg) * 0.5
-                glucose_status.delta > 0 && (eventualBG > target_bg || eventualBG > bg) ->
-                    // Slow Rise: stick to current BG for scaling
-                    bg
-                else ->
-                    // Dropping or Recovering safety: cap the BG at target to avoid aggressive scaling
-                    min(target_bg, eventualBG)
-            }
-
             // Prevent divide-by-zero or math errors with extremely low BGs
-            val safeBG = max(40.0, chosenBG)
+            val safeBG = max(40.0, insulinReqBG)
             val insVal = profile.insulinDivisor
 
             // Apply scaling
@@ -964,7 +965,7 @@ class DetermineBasalEN @Inject constructor(
         rT.IOB = iob_data.iob
 
         val deltaText = when {
-            UAMplusConfidence -> "⇈ ✓"  // FastUp AND UAM+ is active!
+            UAMplusConfidence -> "⇈✓"  // FastUp AND UAM+ is active!
             deltaFastUp -> "⇈"          // FastUp, but UAM+ is not confident yet
             isHigh40m -> "⎺⎺→ 40m ${isHighScaledPct}x"
             isHigh15m -> "⎺⎺→ 15m ${isHighScaledPct}x"
@@ -984,7 +985,7 @@ class DetermineBasalEN @Inject constructor(
             append("Target: ${convert_bg(target_bg)}, ")
             append("minPredBG: ${convert_bg(minPredBG)}, ")
 
-            val safetyStar = if (overrideMealSafety) "*" else ""
+            val safetyStar = if (isAuthorisedMealRise) "*" else ""
             append("minGuardBG$safetyStar: ${convert_bg(minGuardBG)}, ")
 
             append("IOBpredBG: ${convert_bg(lastIOBpredBG)}")
@@ -1065,12 +1066,12 @@ class DetermineBasalEN @Inject constructor(
             }
         }
 
-        if (enableSMB && minGuardBG < threshold && !overrideMealSafety) { // when prebolusing allow SMB
+        if (enableSMB && minGuardBG < threshold && !isAuthorisedMealRise) { // when prebolusing allow SMB
             consoleError.add("minGuardBG ${convert_bg(minGuardBG)} projected below ${convert_bg(threshold)} - disabling SMB")
             //rT.reason += "minGuardBG "+minGuardBG+"<"+threshold+": SMB disabled; ";
             enableSMB = false
         }
-        if (maxDelta > 0.20 * bg && !overrideMealSafety) { // when prebolusing allow SMB
+        if (maxDelta > 0.20 * bg && !isAuthorisedMealRise) { // when prebolusing allow SMB
             consoleError.add("maxDelta ${convert_bg(maxDelta)} > 20% of BG ${convert_bg(bg)} - disabling SMB")
             rT.reason.append("maxDelta " + convert_bg(maxDelta) + " > 20% of BG " + convert_bg(bg) + ": SMB disabled; ")
             enableSMB = false
@@ -1101,7 +1102,8 @@ class DetermineBasalEN @Inject constructor(
             rT.reason.append("IOB ${iob_data.iob} < ${round(-profile.current_basal * 20 / 60, 2)}")
             rT.reason.append(" and minDelta ${convert_bg(minDelta)} > expectedDelta ${convert_bg(expectedDelta)}; ")
             // predictive low glucose suspend mode: BG is / is projected to be < threshold
-        } else if ((bg < threshold || minGuardBG < threshold) && !overrideMealSafety) { // when prebolusing allow insulin
+            // Standard LGS logic only runs if NO authorisation is active
+        } else if ((bg < threshold || minGuardBG < threshold) && !isAuthorisedMealRise && !isAuthorisedResistance) {
             rT.reason.append("minGuardBG " + convert_bg(minGuardBG) + " < " + convert_bg(threshold))
             bgUndershoot = target_bg - minGuardBG
             val worstCaseInsulinReq = bgUndershoot / sens
@@ -1120,7 +1122,7 @@ class DetermineBasalEN @Inject constructor(
             return setTempBasal(0.0, 0, profile, rT, currenttemp)
         }
 
-        if (eventualBG < min_bg && !overrideMealSafety) { // if eventual BG is below target, but not prebolusing
+        if (eventualBG < min_bg && !isAuthorisedMealRise) { // if eventual BG is below target, but not prebolusing
             rT.reason.append("Eventual BG ${convert_bg(eventualBG)} < ${convert_bg(min_bg)}")
             // if 5m or 30m avg BG is rising faster than expected delta
             if (minDelta > expectedDelta && minDelta > 0 && carbsReq == 0) {
@@ -1200,7 +1202,7 @@ class DetermineBasalEN @Inject constructor(
         }
 
         // if eventual BG is above min but BG is falling faster than expected Delta
-        if (minDelta < expectedDelta && !overrideMealSafety) { // when prebolusing allow insulin
+        if (minDelta < expectedDelta && !isAuthorisedMealRise) { // when prebolusing allow insulin
             // if in SMB mode, don't cancel SMB zero temp
             if (!(microBolusAllowed && enableSMB)) {
                 if (glucose_status.delta < minDelta) {
@@ -1222,7 +1224,7 @@ class DetermineBasalEN @Inject constructor(
             }
         }
         // eventualBG or minPredBG is below max_bg
-        if (min(eventualBG, minPredBG) < max_bg && !overrideMealSafety) { // when prebolusing allow insulin
+        if (min(eventualBG, minPredBG) < max_bg && !isAuthorisedMealRise) { // when prebolusing allow insulin
             // if in SMB mode, don't cancel SMB zero temp
             if (!(microBolusAllowed && enableSMB)) {
                 rT.reason.append("${convert_bg(eventualBG)}-${convert_bg(minPredBG)} in range: no temp required")
@@ -1253,12 +1255,6 @@ class DetermineBasalEN @Inject constructor(
         } else { // otherwise, calculate 30m high-temp required to get projected BG down to target
             // insulinReq is the additional insulin required to get minPredBG down to target_bg
             //console.error(minPredBG,eventualBG);
-            val insulinReqBG = when {
-                UAMplusConfidence -> max(minUAMPredBG, eventualBG) // UAM++
-                deltaFastUp && UAMplusEnabled && minPredBG < target_bg -> max(maxUAMPredBG, eventualBG) // UAM+
-                isHigh15m || isHigh40m -> (fSensBG * 0.5) + (bg * 0.5) // Stuck high
-                else -> min(minPredBG, eventualBG) // Standard AAPS safety
-            }
 
             var insulinReq = if (dynIsfMode || useISFscaler) {
                 round((insulinReqBG - target_bg) / future_sens, 2)
@@ -1298,7 +1294,8 @@ class DetermineBasalEN @Inject constructor(
             //console.error(profile.temptargetSet, target_bg, rT.COB);
             // only allow microboluses with COB or low temp targets, or within DIA hours of a bolus
             var maxBolus: Double
-            if (microBolusAllowed && enableSMB && (bg > threshold || overrideMealSafety)) { // when prebolusing allow insulin
+            if (microBolusAllowed && enableSMB && (bg > threshold || isAuthorisedMealRise || isAuthorisedResistance)) {
+                // Allow the correction to fire because the rise and resistance is "Authorised"
                 // never bolus more than maxSMBBasalMinutes worth of basal
                 val mealInsulinReq = round(activeCOB / profile.carb_ratio, 3)
                 if (iob_data.iob > mealInsulinReq && iob_data.iob > 0) {
@@ -1370,7 +1367,7 @@ class DetermineBasalEN @Inject constructor(
                     if (insulinReqOrig != insulinReq) append(insulinReqOrig).append("U=")
                     append(insulinReq).append('U')
                 }
-                if (insulinReqBG != bg) rT.reason.append(", iReqBG: ${convert_bg(insulinReqBG)}")
+                rT.reason.append(", iReqBG: ${convert_bg(insulinReqBG)}")
                 if (microBolus >= maxBolus || maxBolus > maxBolusAAPS) { // if the maxBolus has increased due to EN
                     rT.reason.append("; $ENmaxBolusType maxBolus $maxBolus")
                 }
