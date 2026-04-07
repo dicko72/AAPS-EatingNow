@@ -788,8 +788,8 @@ class DetermineBasalEN @Inject constructor(
             bg > target_bg || ENWActive &&
             // Magnitude: The predicted spike must be at least 20% above target to justify aggressive intervention
             maxUAMPredBG > (bg * 1.15) &&
-            // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak.
-            maxUAMPredBGMins > ((peakIOBmins ?: 0) + 15)
+            // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak and not too far out
+            maxUAMPredBGMins in ((peakIOBmins ?: 0) + 16) until 90
 
         // variables for allowing some overrides
         val isAuthorisedMealRise = (UAMplusConfidence && enConfig.ENWNetIOBRemaining > 0 || isPrebolusing)
