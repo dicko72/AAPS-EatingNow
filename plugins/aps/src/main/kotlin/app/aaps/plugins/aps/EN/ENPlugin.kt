@@ -526,12 +526,15 @@ open class ENPlugin @Inject constructor(
         } else 0
 
         // Calculate Net IOB (Using the start time of the most recent target)
-        val ENWNetIOB = if (ENWStartTime != null && ENWEndTime != null && now < ENWEndTime + T.hours(3).msecs()) {
-            tddCalculator.calculateIntervalNet(ENWStartTime, now, allowMissingData = true)?.totalAmount ?: 0.0
-        } else 0.0
+        val (ENWNetIOB, ENWNetIOBMax) = if (ENWStartTime != null && ENWEndTime != null && now < ENWEndTime + T.hours(3).msecs()) {
+            val iob = tddCalculator.calculateIntervalNet(ENWStartTime, now, allowMissingData = true)?.totalAmount ?: 0.0
+            val max = if (manualENTT) manualENTTDuration / 10.0 else preferences.get(DoubleKey.Eatingnow_enw_maxiob)
+            iob to max
+        } else {
+            0.0 to 0.0
+        }
 
         // Calculate vars using the prefs or manualENTT
-        val ENWNetIOBMax = if (manualENTT) manualENTTDuration/10.0 else preferences.get(DoubleKey.Eatingnow_enw_maxiob)
         val ENWDuration = if (manualENTT) manualENTTDuration.toInt() else preferences.get(IntKey.Eatingnow_enw_minutes)
 
         // using ISF scaling?

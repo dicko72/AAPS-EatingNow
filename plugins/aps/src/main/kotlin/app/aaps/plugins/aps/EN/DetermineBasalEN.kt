@@ -776,7 +776,6 @@ class DetermineBasalEN @Inject constructor(
 
         // UAM+ CONFIDENCE: This high-confidence check authorizes the algorithm to use maxUAMPredBG for insulinReq
         val ENWEndedAgoMins = (currentTime - (enConfig.ENWEndTime ?: currentTime)) / 60_000L
-        val recentFood = ENWEndedAgoMins < 60 // Up to 1 hour after the eating window has finished
         val UAMplusConfidence =
             // UAM+ has a maxBolus configured for use intent
             UAMplusEnabled &&
@@ -793,20 +792,14 @@ class DetermineBasalEN @Inject constructor(
             // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak.
             maxUAMPredBGMins > ((peakIOBmins ?: 0) + 15)
 
-        minIOBPredBG = max(39.0, minIOBPredBG)
-        minCOBPredBG = max(39.0, minCOBPredBG)
-        minUAMPredBG = max(39.0, minUAMPredBG)
-        // minPredBG = round(minIOBPredBG, 0)
-
-        minPredBG = round(
-            if (UAMplusConfidence && recentFood) max(minIOBPredBG, minUAMPredBG)
-            else minIOBPredBG,
-            0
-        )
-
         // variables for allowing some overrides
         val isAuthorisedMealRise = (UAMplusConfidence && ENWNetIOBRemaining > 0 || isPrebolusing)
         val isAuthorisedResistance = (isHigh15m || isHigh40m)
+        minIOBPredBG = max(39.0, minIOBPredBG)
+        minCOBPredBG = max(39.0, minCOBPredBG)
+        minUAMPredBG = max(39.0, minUAMPredBG)
+        // Allow higher minPredBG when authorised
+        minPredBG = round(if (isAuthorisedMealRise) max(minIOBPredBG, minUAMPredBG) else minIOBPredBG,  0)
 
         // Dynamic ISF
         var future_sens = profile.sens // start with profile ISF
@@ -1339,7 +1332,7 @@ class DetermineBasalEN @Inject constructor(
 
                 // bolus 1/2 the insulinReq, up to maxBolus, rounding down to nearest bolus increment
                 val roundSMBTo = 1 / profile.bolus_increment
-                val microBolus = if (ENWActive || ENmaxBolusType == "UAM+") {
+                val microBolus = if (ENWActive || isAuthorisedMealRise) {
                     Math.floor(Math.min(insulinReq, maxBolus) * roundSMBTo) / roundSMBTo // EN PreBolus Override for microBolus
                 } else {
                     // bolus 1/2 the insulinReq, up to maxBolus, rounding down to nearest bolus increment
