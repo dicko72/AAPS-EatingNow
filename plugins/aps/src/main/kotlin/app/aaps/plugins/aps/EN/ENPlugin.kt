@@ -525,19 +525,14 @@ open class ENPlugin @Inject constructor(
             ((calcEndTime - ENWStartTime) / 60_000L).toInt()
         } else 0
 
+            // Calculate vars using the prefs or manualENTT
+        val ENWNetIOBMax = if (manualENTT) manualENTTDuration/10.0 else preferences.get(DoubleKey.Eatingnow_enw_maxiob)
+        val ENWDuration = if (manualENTT) manualENTTDuration.toInt() else preferences.get(IntKey.Eatingnow_enw_minutes)
+
         // Calculate Net IOB (Using the start time of the most recent target)
         val isENWIOBActive = ENWStartTime != null && ENWEndTime != null && now < ENWEndTime + T.hours(3).msecs()
-
-        val ENWNetIOB = if (isENWIOBActive) {
-            tddCalculator.calculateIntervalNet(ENWStartTime, now, allowMissingData = true)?.totalAmount ?: 0.0
-        } else 0.0
-
-        val ENWNetIOBMax = if (isENWIOBActive) {
-            if (manualENTT) manualENTTDuration / 10.0 else preferences.get(DoubleKey.Eatingnow_enw_maxiob)
-        } else 0.0
-
-        // Calculate vars using the prefs or manualENTT
-        val ENWDuration = if (manualENTT) manualENTTDuration.toInt() else preferences.get(IntKey.Eatingnow_enw_minutes)
+        val ENWNetIOB = if (isENWIOBActive) tddCalculator.calculateIntervalNet(ENWStartTime, now, allowMissingData = true)?.totalAmount ?: 0.0  else 0.0
+        val ENWNetIOBRemaining = if (isENWIOBActive) max(ENWNetIOBMax - ENWNetIOB, 0.0) else 0.0
 
         // using ISF scaling?
         val useISFscaler = preferences.get(BooleanKey.EatingNow_UseISFscaler)
@@ -634,6 +629,7 @@ open class ENPlugin @Inject constructor(
             ENWcobMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_cob_maxbolus), 0.01), 0.0),
             ENWuamMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_uam_maxbolus), 0.01), 0.0),
             ENWNetIOBMax = max(Round.roundTo(ENWNetIOBMax, 0.01), 0.0),
+            ENWNetIOBRemaining = max(Round.roundTo(ENWNetIOBRemaining, 0.01), 0.0),
             ENWprebolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_prebolus), 0.01), 0.0),
             ENWuamPlusMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus), 0.01), 0.0),
             AllowUAMplusNoENW =  preferences.get(BooleanKey.EatingNow_AllowUAMplusNoENW)

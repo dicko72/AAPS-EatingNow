@@ -383,7 +383,6 @@ class DetermineBasalEN @Inject constructor(
             else -> 1.0
         }
 
-        val ENWNetIOBRemaining = max(enConfig.ENWNetIOBMax - enConfig.ENWNetIOB, 0.0) // remaining ENW IOB
         val remainingPrebolus = round((enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0) ,1)// remaining prebolus
         val isPrebolusing = enConfig.ENWActive == TT.Reason.EATING_NOW_PB && remainingPrebolus > 0.0 && enConfig.ENWRunTime < 10 // if prebolusing
 
@@ -793,7 +792,7 @@ class DetermineBasalEN @Inject constructor(
             maxUAMPredBGMins > ((peakIOBmins ?: 0) + 15)
 
         // variables for allowing some overrides
-        val isAuthorisedMealRise = (UAMplusConfidence && ENWNetIOBRemaining > 0 || isPrebolusing)
+        val isAuthorisedMealRise = (UAMplusConfidence && enConfig.ENWNetIOBRemaining > 0 || isPrebolusing)
         val isAuthorisedResistance = (isHigh15m || isHigh40m)
         minIOBPredBG = max(39.0, minIOBPredBG)
         minCOBPredBG = max(39.0, minCOBPredBG)
@@ -1278,8 +1277,8 @@ class DetermineBasalEN @Inject constructor(
 
             // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
 
-            if (ENWActive && enConfig.ENWNetIOBMax > 0 && insulinReq > ENWNetIOBRemaining) {
-                insulinReq = min(insulinReq,ENWNetIOBRemaining)
+            if (ENWActive && enConfig.ENWNetIOBMax > 0 && insulinReq > enConfig.ENWNetIOBRemaining) {
+                insulinReq = min(insulinReq,enConfig.ENWNetIOBRemaining)
             }
 
             // rate required to deliver insulinReq more insulin over 30m:

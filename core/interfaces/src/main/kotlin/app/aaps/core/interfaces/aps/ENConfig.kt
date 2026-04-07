@@ -31,6 +31,7 @@ data class ENConfig(
     var ENWuamMaxbolus: Double,
     var ENWNetIOB: Double,
     var ENWNetIOBMax: Double,
+    var ENWNetIOBRemaining: Double,
     var ENWprebolus: Double,
     var ENWsmbPct: Int,
     var ENWuamPlusMaxbolus: Double,
