@@ -345,13 +345,13 @@ class DetermineBasalEN @Inject constructor(
         }
 
         // when delta is rising fast for UAM+
-        val deltaFastUp = (glucose_status.delta >= glucose_status.shortAvgDelta) && when {
+        val deltaFastUp = when {
             // UAM+ aggressive short average when ENW is running
             ENWActive -> glucose_status.delta > 0.0
             // Checks if it is 0 OR null in one clean line
-            (peakIOBmins ?: 0) == 0 -> glucose_status.delta > 3.0
+            (peakIOBmins ?: 0) == 0 -> glucose_status.delta > 6.0 && glucose_status.delta >= glucose_status.shortAvgDelta
             // Require both short & long average acceleration outside of ENW
-            else -> glucose_status.delta > 7.0 && glucose_status.delta >= glucose_status.longAvgDelta
+            else -> glucose_status.delta >= glucose_status.shortAvgDelta && glucose_status.delta > 7.0 && glucose_status.delta >= glucose_status.longAvgDelta
         }
 
         val deltaFastDown =
@@ -827,7 +827,7 @@ class DetermineBasalEN @Inject constructor(
             // UAM++ accelerating BG rise with UAM peaking after IOB peak ⇈✓
             UAMplusConfidence -> max(maxUAMPredBG, bg)
             // UAM+ accelerating BG rise without prediction factors ⇈
-            deltaFastUp -> max(eventualBG, bg)
+            deltaFastUp -> bg
             // Rising fast in with confidence and ENW IOB remaining
             isAuthorisedMealRise -> max(maxUAMPredBG, eventualBG)
             // Flat/Stubborn High: blend current BG with safety-adjusted BG ⎺⎺→ 15m
