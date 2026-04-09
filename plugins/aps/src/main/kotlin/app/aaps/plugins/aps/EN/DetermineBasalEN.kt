@@ -785,7 +785,7 @@ class DetermineBasalEN @Inject constructor(
             // Momentum: BG must be accelerating upwards (3-tier acceleration check)
             deltaFastUp &&
             // Current State: BG must already be above target or in active ENW to avoid aggressive firing during hypo recovery
-            bg > target_bg || ENWActive &&
+            (bg > target_bg || ENWActive) &&
             // Magnitude: The predicted spike must be at least 20% above target to justify aggressive intervention
             maxUAMPredBG > (bg * 1.15) &&
             // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak and not too far out
