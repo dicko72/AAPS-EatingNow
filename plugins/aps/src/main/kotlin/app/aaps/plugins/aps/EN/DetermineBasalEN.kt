@@ -838,16 +838,8 @@ class DetermineBasalEN @Inject constructor(
             else -> min(minPredBG, eventualBG)
         }
 
-
-        // val insulinReqBG = when {
-        //     UAMplusConfidence -> max(minUAMPredBG, eventualBG) // UAM++
-        //     deltaFastUp && UAMplusEnabled && minPredBG < target_bg -> max(maxUAMPredBG, eventualBG) // UAM+
-        //     isHigh15m || isHigh40m -> (fSensBG * 0.5) + (bg * 0.5) // Stuck high
-        //     else -> min(minPredBG, eventualBG) // Standard AAPS safety
-        // }
-
         // ISF Scaling similar to dynamic ISF but using profile target BG ISF as the anchor
-        if (useISFscaler) {
+        if (useISFscaler && (UAMplusConfidence || isHigh15m || isHigh40m || ENWActive)) {
             // Prevent divide-by-zero or math errors with extremely low BGs
             val safeBG = max(40.0, insulinReqBG)
             val insVal = profile.insulinDivisor
@@ -865,6 +857,7 @@ class DetermineBasalEN @Inject constructor(
             // Prevent the algorithm from giving you too much or too little insulin
             val minSafeIsf = profile.sens * 0.4
             val maxSafeIsf = profile.sens * 1.5
+
             future_sens = future_sens.coerceIn(minSafeIsf, maxSafeIsf)
             future_sens = round(future_sens, 1)
         }
