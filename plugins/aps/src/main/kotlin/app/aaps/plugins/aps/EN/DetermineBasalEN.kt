@@ -826,20 +826,20 @@ class DetermineBasalEN @Inject constructor(
         val insulinReqBG = when {
             // UAM++ accelerating BG rise with UAM peaking after IOB peak ⇈✓
             UAMplusConfidence -> max(maxUAMPredBG, bg)
-            // UAM+ accelerating BG rise without prediction factors ⇈
-            deltaFastUp -> bg
-            // Rising fast in with confidence and ENW IOB remaining
+            // Rising fast in with confidence and ENW IOB remaining ⇈✓
             isAuthorisedMealRise -> max(maxUAMPredBG, eventualBG)
+            // // UAM+ accelerating BG rise without prediction factors ⇈
+            deltaFastUp -> (minPredBG + bg) * 0.5
             // Flat/Stubborn High: blend current BG with safety-adjusted BG ⎺⎺→ 15m
             isAuthorisedResistance -> (fSensBG + bg) * 0.5
             // any other rise stick to current BG for scaling ↗
-            glucose_status.delta > 4 && (eventualBG > target_bg || eventualBG > bg) -> bg
+            glucose_status.delta > 4 && (eventualBG > target_bg) -> (minPredBG + bg) * 0.5
             // Standard AAPS safety: Includes dropping or recovering safety ↘ → ⇊
             else -> min(minPredBG, eventualBG)
         }
 
         // ISF Scaling similar to dynamic ISF but using profile target BG ISF as the anchor
-        if (useISFscaler && (UAMplusConfidence || isHigh15m || isHigh40m || ENWActive)) {
+        if (useISFscaler) {
             // Prevent divide-by-zero or math errors with extremely low BGs
             val safeBG = max(40.0, insulinReqBG)
             val insVal = profile.insulinDivisor
