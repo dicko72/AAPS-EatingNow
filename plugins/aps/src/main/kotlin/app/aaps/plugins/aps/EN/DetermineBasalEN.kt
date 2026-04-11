@@ -817,51 +817,6 @@ class DetermineBasalEN @Inject constructor(
             }
         }
 
-// Decide which BG value to use based on the delta for the insulinReq later
-        val insulinReqBG = when {
-            // UAM++ accelerating BG rise with UAM peaking after IOB peak ⇈✓
-            UAMplusConfidence -> max(maxUAMPredBG, bg)
-
-            // Rising fast in with confidence and ENW IOB remaining ⇈✓
-            isAuthorisedMealRise -> max(maxUAMPredBG, eventualBG)
-
-            // Flat/Stubborn High: blend current BG with safety-adjusted BG ⎺⎺→ 15m
-            isAuthorisedResistance -> (fSensBG + bg) * 0.5
-
-            // UAM+ accelerating BG rise without prediction factors ⇈
-            deltaFastUp -> (minPredBG + bg) * 0.5
-
-            // any other rise stick to current BG for scaling ↗
-            glucose_status.delta > 4 && eventualBG > target_bg -> (minPredBG + bg) * 0.5
-
-            // Standard AAPS safety: Includes dropping or recovering safety ↘ → ⇊
-            else -> min(minPredBG, eventualBG)
-        }
-
-        // ISF Scaling similar to dynamic ISF but using profile target BG ISF as the anchor
-        if (useISFscaler) {
-            // Prevent divide-by-zero or math errors with extremely low BGs
-            val safeBG = max(40.0, insulinReqBG)
-            val insVal = profile.insulinDivisor
-
-            // Apply scaling
-            val sensBGScaler = ln((safeBG / insVal) + 1.0)
-            val sensNormalTargetScaler = ln((target_bg / insVal) + 1.0)
-
-            // Calculate the base ISF from the normal log curve
-            val baseAdaptiveISF = (profile.sens / sensBGScaler) * sensNormalTargetScaler
-
-            // Calculate how much the ISF was supposed to change, then multiply it
-            future_sens = baseAdaptiveISF / isHighScaledPct
-
-            // Prevent the algorithm from giving you too much or too little insulin
-            val minSafeIsf = profile.sens * 0.4
-            val maxSafeIsf = profile.sens * 1.5
-
-            future_sens = future_sens.coerceIn(minSafeIsf, maxSafeIsf)
-            future_sens = round(future_sens, 1)
-        }
-
         val fractionCarbsLeft = activeCOB / activeCarbs
         // if we have COB and UAM is enabled, average both
         if (minUAMPredBG < 999 && minCOBPredBG < 999) {
@@ -939,6 +894,51 @@ class DetermineBasalEN @Inject constructor(
         }
         // make sure minPredBG isn't higher than avgPredBG
         minPredBG = min(minPredBG, avgPredBG)
+
+        // Decide which BG value to use based on the delta for the insulinReq later
+        val insulinReqBG = when {
+            // UAM++ accelerating BG rise with UAM peaking after IOB peak ⇈✓
+            UAMplusConfidence -> max(maxUAMPredBG, bg)
+
+            // Rising fast in with confidence and ENW IOB remaining ⇈✓
+            isAuthorisedMealRise -> max(maxUAMPredBG, eventualBG)
+
+            // Flat/Stubborn High: blend current BG with safety-adjusted BG ⎺⎺→ 15m
+            isAuthorisedResistance ->  (min(minPredBG, bg) + bg) * 0.5
+
+            // UAM+ accelerating BG rise without prediction factors ⇈
+            deltaFastUp -> (minPredBG + bg) * 0.5
+
+            // any other rise stick to current BG for scaling ↗
+            glucose_status.delta > 4 && eventualBG > target_bg -> (minPredBG + bg) * 0.5
+
+            // Standard AAPS safety: Includes dropping or recovering safety ↘ → ⇊
+            else -> min(minPredBG, eventualBG)
+        }
+
+        // ISF Scaling similar to dynamic ISF but using profile target BG ISF as the anchor
+        if (useISFscaler) {
+            // Prevent divide-by-zero or math errors with extremely low BGs
+            val safeBG = max(40.0, insulinReqBG)
+            val insVal = profile.insulinDivisor
+
+            // Apply scaling
+            val sensBGScaler = ln((safeBG / insVal) + 1.0)
+            val sensNormalTargetScaler = ln((target_bg / insVal) + 1.0)
+
+            // Calculate the base ISF from the normal log curve
+            val baseAdaptiveISF = (profile.sens / sensBGScaler) * sensNormalTargetScaler
+
+            // Calculate how much the ISF was supposed to change, then multiply it
+            future_sens = baseAdaptiveISF / isHighScaledPct
+
+            // Prevent the algorithm from giving you too much or too little insulin
+            val minSafeIsf = profile.sens * 0.4
+            val maxSafeIsf = profile.sens * 1.5
+
+            future_sens = future_sens.coerceIn(minSafeIsf, maxSafeIsf)
+            future_sens = round(future_sens, 1)
+        }
 
         consoleLog.add("minPredBG: $minPredBG minIOBPredBG: $minIOBPredBG minZTGuardBG: $minZTGuardBG")
         if (minCOBPredBG < 999) {
