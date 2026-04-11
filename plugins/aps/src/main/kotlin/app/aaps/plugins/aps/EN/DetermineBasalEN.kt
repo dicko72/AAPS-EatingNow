@@ -356,8 +356,6 @@ class DetermineBasalEN @Inject constructor(
         //  Calculate stubborn high logic BG High for ~15 minutes (short average is flat)
         // Constants for stubborn high logic tuning
         val STABLE_BG_THRESHOLD = 3.0
-        val SCALING_BONUS_15M = 0.25
-        val SCALING_BONUS_40M = 0.50
 
         // Helper to check if a delta is within the stability threshold
         fun Double.isStable() = this.absoluteValue < STABLE_BG_THRESHOLD
@@ -374,8 +372,8 @@ class DetermineBasalEN @Inject constructor(
         // ISF Scaling based on prefs or high BG
         val isHighScaledPct = when {
             ENWActive -> 1.0 // no scaling during ENW
-            isHigh40m -> enConfig.enwProfileScalePct + SCALING_BONUS_15M // Stuck for 40+ minutes extra 50%
-            isHigh15m -> enConfig.enwProfileScalePct + SCALING_BONUS_40M // Stuck for 15+ minutes extra 25%
+            isHigh40m -> enConfig.enwProfileScalePct + 0.50 // Stuck for 40+ minutes extra 50%
+            isHigh15m -> enConfig.enwProfileScalePct + 0.25 // Stuck for 15+ minutes extra 25%
             else -> 1.0
         }
 
@@ -782,13 +780,14 @@ class DetermineBasalEN @Inject constructor(
             deltaFastUp &&
             // Current State: BG must already be above target or in active ENW to avoid aggressive firing during hypo recovery
             (bg > target_bg || ENWActive) &&
-            // Magnitude: The predicted spike must be at least 20% above target to justify aggressive intervention
-            maxUAMPredBG > (bg * 1.15) &&
+            // Magnitude: The predicted spike must be at least 15% above current BG
+            // OR if already well above target, any predicted rise is sufficient for confidence
+            (maxUAMPredBG > (bg * 1.15) || (bg > target_bg * 1.3 && maxUAMPredBG > bg)) &&
             // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak and not too far out
             maxUAMPredBGMins in ((peakIOBmins ?: 0) + 16) until 90
 
         // variables for allowing some overrides
-        val isAuthorisedMealRise = (UAMplusConfidence && enConfig.ENWNetIOBRemaining > 0 || isPrebolusing)
+        val isAuthorisedMealRise = (UAMplusConfidence && enConfig.ENWNetIOBRemaining > 0 || isPrebolusing || (ENWActive && deltaFastUp))
         val isAuthorisedResistance = (isHigh15m || isHigh40m)
         minIOBPredBG = max(39.0, minIOBPredBG)
         minCOBPredBG = max(39.0, minCOBPredBG)
@@ -818,18 +817,23 @@ class DetermineBasalEN @Inject constructor(
             }
         }
 
-        // Decide which BG value to use based on the delta for the insulinReq later
+// Decide which BG value to use based on the delta for the insulinReq later
         val insulinReqBG = when {
             // UAM++ accelerating BG rise with UAM peaking after IOB peak ⇈✓
             UAMplusConfidence -> max(maxUAMPredBG, bg)
+
             // Rising fast in with confidence and ENW IOB remaining ⇈✓
             isAuthorisedMealRise -> max(maxUAMPredBG, eventualBG)
-            // // UAM+ accelerating BG rise without prediction factors ⇈
-            deltaFastUp -> (minPredBG + bg) * 0.5
+
             // Flat/Stubborn High: blend current BG with safety-adjusted BG ⎺⎺→ 15m
-            isAuthorisedResistance -> (fSensBG + bg) * 0.5
+            isAuthorisedResistance -> max(target_bg, (fSensBG + bg) * 0.5)
+
+            // UAM+ accelerating BG rise without prediction factors ⇈
+            deltaFastUp -> if (ENWActive) bg else max(target_bg, (minPredBG + bg) * 0.5)
+
             // any other rise stick to current BG for scaling ↗
-            glucose_status.delta > 4 && (eventualBG > target_bg) -> (minPredBG + bg) * 0.5
+            glucose_status.delta > 4 && eventualBG > target_bg -> (minPredBG + bg) * 0.5
+
             // Standard AAPS safety: Includes dropping or recovering safety ↘ → ⇊
             else -> min(minPredBG, eventualBG)
         }
