@@ -787,7 +787,7 @@ class DetermineBasalEN @Inject constructor(
             maxUAMPredBGMins in ((peakIOBmins ?: 0) + 16) until 90
 
         // variables for allowing some overrides
-        val isAuthorisedMealRise = (UAMplusConfidence && enConfig.ENWNetIOBRemaining > 0 || isPrebolusing || (ENWActive && deltaFastUp))
+        val isAuthorisedMealRise =(enConfig.ENWNetIOBRemaining > 0 && (UAMplusConfidence || isPrebolusing || (ENWActive && deltaFastUp)))
         val isAuthorisedResistance = (isHigh15m || isHigh40m)
         minIOBPredBG = max(39.0, minIOBPredBG)
         minCOBPredBG = max(39.0, minCOBPredBG)
@@ -826,10 +826,10 @@ class DetermineBasalEN @Inject constructor(
             isAuthorisedMealRise -> max(maxUAMPredBG, eventualBG)
 
             // Flat/Stubborn High: blend current BG with safety-adjusted BG ⎺⎺→ 15m
-            isAuthorisedResistance -> max(target_bg, (fSensBG + bg) * 0.5)
+            isAuthorisedResistance -> (fSensBG + bg) * 0.5
 
             // UAM+ accelerating BG rise without prediction factors ⇈
-            deltaFastUp -> if (ENWActive) bg else max(target_bg, (minPredBG + bg) * 0.5)
+            deltaFastUp -> (minPredBG + bg) * 0.5
 
             // any other rise stick to current BG for scaling ↗
             glucose_status.delta > 4 && eventualBG > target_bg -> (minPredBG + bg) * 0.5
