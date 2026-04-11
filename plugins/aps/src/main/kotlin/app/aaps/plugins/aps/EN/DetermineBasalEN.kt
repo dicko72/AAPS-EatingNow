@@ -1249,13 +1249,13 @@ class DetermineBasalEN @Inject constructor(
             // insulinReq is the additional insulin required to get minPredBG down to target_bg
             //console.error(minPredBG,eventualBG);
 
+            val insulinReqOrig = round((min(minPredBG, eventualBG) - target_bg) / sens, 2) // original insulinReq for transparency
+
             var insulinReq = if (dynIsfMode || useISFscaler) {
                 round((insulinReqBG - target_bg) / future_sens, 2)
             } else {
                 round((insulinReqBG - target_bg) / sens, 2)
             }
-
-            val insulinReqOrig = round(insulinReq, 2) // original insulinReq for transparency
 
             if (isPrebolusing) insulinReq = max(remainingPrebolus, insulinReq) // Give the minimum in the prebolus
 
