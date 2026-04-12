@@ -454,14 +454,19 @@ open class ENPlugin @Inject constructor(
         val units = profileFunction.getUnits()
 
         // Filter immediately without storing the intermediate list
-        val todaysLargeBoluses = persistenceLayer.getBolusesFromTime(EatingNowTimeStart, true)
-            .blockingGet()
-            ?.filter { it.amount > profile.getMaxDailyBasal()*2 && it.type == BS.Type.NORMAL }
-            ?: emptyList()
+        val ENWBolusTrigger = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_triggerbolus), 0.01), 0.0)
+        val todaysTriggerBoluses = if (ENWBolusTrigger > 0.0) {
+            persistenceLayer.getBolusesFromTime(EatingNowTimeStart, true)
+                .blockingGet()
+                ?.filter { it.amount >= ENWBolusTrigger && it.type == BS.Type.NORMAL }
+                ?: emptyList()
+        } else {
+            emptyList() // Instantly return nothing if the trigger is disabled
+        }
 
         // Variables based on todays ENW TTs
         val mealCount = todaysENTargets.size
-        val ENStarted = todaysENTargets.isNotEmpty() || (todaysCarbs.isNotEmpty() && !ignoreCOB) || todaysLargeBoluses.isNotEmpty()
+        val ENStarted = todaysENTargets.isNotEmpty() || (todaysCarbs.isNotEmpty() && !ignoreCOB) || todaysTriggerBoluses.isNotEmpty()
 
         // 3. Directly extract the timestamps rather than the events, avoiding list concatenations
         val lastENTT = todaysENTargets.maxByOrNull { it.timestamp }
@@ -476,7 +481,7 @@ open class ENPlugin @Inject constructor(
         val manualENTTtimestamp = activeTT?.timestamp ?: 0L
 
         // Find maximums independently to avoid allocating a combined list
-        val lastBolusTime = todaysLargeBoluses.maxOfOrNull { it.timestamp } ?: 0L
+        val lastBolusTime = todaysTriggerBoluses.maxOfOrNull { it.timestamp } ?: 0L
         val lastCarbTime = todaysCarbs.maxOfOrNull { it.timestamp } ?: 0L // Assuming Carb also has a timestamp
 
         val lastMealTime: Long? = if (ignoreCOB) {
@@ -632,7 +637,8 @@ open class ENPlugin @Inject constructor(
             ENWNetIOBRemaining = max(Round.roundTo(ENWNetIOBRemaining, 0.01), 0.0),
             ENWprebolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_prebolus), 0.01), 0.0),
             ENWuamPlusMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus), 0.01), 0.0),
-            AllowUAMplusNoENW =  preferences.get(BooleanKey.EatingNow_AllowUAMplusNoENW)
+            AllowUAMplusNoENW =  preferences.get(BooleanKey.EatingNow_AllowUAMplusNoENW),
+            ENWBolusTrigger = ENWBolusTrigger
         )
 
         val microBolusAllowed = constraintsChecker.isSMBModeEnabled(ConstraintObject(tempBasalFallback.not(), aapsLogger)).also { inputConstraints.copyReasons(it) }.value()
@@ -875,6 +881,8 @@ open class ENPlugin @Inject constructor(
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_maxiob, dialogMessage = R.string.Eatingnow_enw_maxiob_summary, title = R.string.Eatingnow_enw_maxiob_title))
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_prebolus, dialogMessage = R.string.Eatingnow_enw_prebolus_summary, title = R.string.Eatingnow_enw_prebolus_title))
                     addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.enwProfileScalePct, dialogMessage = R.string.enwProfileScalePct_summary, title = R.string.enwProfileScalePct_title))
+                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_triggerbolus, dialogMessage = R.string.Eatingnow_enw_triggerbolus_summary, title = R.string.Eatingnow_enw_triggerbolus_title))
+                    
                 })
             })
 

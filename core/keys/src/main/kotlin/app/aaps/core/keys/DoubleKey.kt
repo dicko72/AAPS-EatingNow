@@ -65,5 +65,5 @@ enum class DoubleKey(
     Eatingnow_enw_maxiob("Eatingnow_enw_maxiob", 0.0, 0.0, 15.0, defaultedBySM = true),
     Eatingnow_enw_prebolus("Eatingnow_enw_prebolus", 0.0, 0.0, 15.0, defaultedBySM = true),
     Eatingnow_enw_uamplus_maxbolus("Eatingnow_enw_uamplus_maxbolus", 0.0, 0.0, 5.0, defaultedBySM = true),
-
+    Eatingnow_enw_triggerbolus("Eatingnow_enw_triggerbolus", 0.0, 0.0, 15.0, defaultedBySM = true)
 }
