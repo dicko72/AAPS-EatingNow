@@ -1275,8 +1275,8 @@ class DetermineBasalEN @Inject constructor(
             }
 
             // rate required to deliver insulinReq more insulin over 30m:
-            // UAMplusConfidence allows the rate to deliver insulinReq more insulin over 15m
-            var basalRateMultiplier = if (UAMplusConfidence) 4.0 else 2.0
+            // isAuthorisedMealRise or isAuthorisedResistance allows the rate to deliver insulinReq more insulin over 15m
+            var basalRateMultiplier = if (isAuthorisedMealRise || isAuthorisedResistance) 4.0 else 2.0
             var rate = basal + (basalRateMultiplier * insulinReq)
             rate = round_basal(rate)
             insulinReq = round(insulinReq, 3)
