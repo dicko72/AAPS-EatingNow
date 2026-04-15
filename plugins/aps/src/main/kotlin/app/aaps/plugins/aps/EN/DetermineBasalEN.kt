@@ -784,7 +784,7 @@ class DetermineBasalEN @Inject constructor(
             // OR if already well above target, any predicted rise is sufficient for confidence
             (maxUAMPredBG > (bg * 1.15) || (bg > target_bg * 1.3 && maxUAMPredBG > bg)) &&
             // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak and not too far out
-            maxUAMPredBGMins in ((peakIOBmins ?: 0) + 16) until 90
+            maxUAMPredBGMins in ((peakIOBmins ?: 0) + 16) until (if (ENWActive) 180 else 90)
 
         // variables for allowing some overrides
         val isAuthorisedMealRise =(enConfig.ENWNetIOBRemaining > 0 && (UAMplusConfidence || isPrebolusing || (ENWActive && deltaFastUp)))
