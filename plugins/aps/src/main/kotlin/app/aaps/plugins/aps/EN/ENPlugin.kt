@@ -354,7 +354,7 @@ open class ENPlugin @Inject constructor(
                 IntKey.ApsDynIsfAdjustmentFactor.max.toDouble()
             )
         val smbEnabled = preferences.get(BooleanKey.ApsUseSmb)
-        val advancedFiltering = constraintsChecker.isAdvancedFilteringEnabled().also { inputConstraints.copyReasons(it) }.value()
+        // val advancedFiltering = if (ENActive) true else constraintsChecker.isAdvancedFilteringEnabled().also { inputConstraints.copyReasons(it) }.value()
 
         val now = dateUtil.now()
         val tb = processedTbrEbData.getTempBasalIncludingConvertedExtended(now)
@@ -523,6 +523,8 @@ open class ENPlugin @Inject constructor(
 
         val ENWfirstMeal = (mealCount == 1 && activeENTT != null) // is this the firstmeal?
         val ENActive = ENTimeOK && ENStarted && (!isTempTarget && ENWActive == null || ENWActive != null || manualENTT) // is EN activated?
+        val advancedFiltering = if (ENWActive != null) true else constraintsChecker.isAdvancedFilteringEnabled().also { inputConstraints.copyReasons(it) }.value()
+
         // Calculate the amount of time ENW has been running
         val ENWRunTime = if (ENWStartTime != null && now >= ENWStartTime) {
             // If ENWEndTime exists, don't let the calculation go past it!
