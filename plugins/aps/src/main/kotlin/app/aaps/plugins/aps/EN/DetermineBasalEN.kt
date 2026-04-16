@@ -366,6 +366,7 @@ class DetermineBasalEN @Inject constructor(
 
         // logic: BG is high, no insulin peak is imminent, and glucose has plateaued
         val noPeakComing = (peakIOBmins ?: 0) == 0
+        val isFootToFloor = highBGthresholdActive && !ENActive && systemTime > enConfig.ENTimeStart && deltaFastUp
         val isHigh15m = highBGthresholdActive && noPeakComing && isShortTermStable
         val isHigh40m = isHigh15m && isLongTermStable
 
@@ -1277,7 +1278,7 @@ class DetermineBasalEN @Inject constructor(
 
             // rate required to deliver insulinReq more insulin over 30m:
             // isAuthorisedMealRise or isAuthorisedResistance allows the rate to deliver insulinReq more insulin over 15m
-            var basalRateMultiplier = if (isAuthorisedMealRise || isAuthorisedResistance) 4.0 else 2.0
+            var basalRateMultiplier = if (isAuthorisedMealRise || isAuthorisedResistance || isFootToFloor) 4.0 else 2.0
             var rate = basal + (basalRateMultiplier * insulinReq)
             rate = round_basal(rate)
             insulinReq = round(insulinReq, 3)
@@ -1325,7 +1326,7 @@ class DetermineBasalEN @Inject constructor(
 
                 // bolus 1/2 the insulinReq, up to maxBolus, rounding down to nearest bolus increment
                 val roundSMBTo = 1 / profile.bolus_increment
-                val microBolus = if (ENWActive || isAuthorisedMealRise) {
+                val microBolus = if (ENWActive || isAuthorisedMealRise || isFootToFloor) {
                     Math.floor(Math.min(insulinReq, maxBolus) * roundSMBTo) / roundSMBTo // EN PreBolus Override for microBolus
                 } else {
                     // bolus 1/2 the insulinReq, up to maxBolus, rounding down to nearest bolus increment
