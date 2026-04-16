@@ -1256,6 +1256,7 @@ class DetermineBasalEN @Inject constructor(
             } else {
                 round((insulinReqBG - target_bg) / sens, 2)
             }
+            val insulinReqENW = insulinReq
 
             if (isPrebolusing) insulinReq = max(remainingPrebolus, insulinReq) // Give the minimum in the prebolus
 
@@ -1356,6 +1357,7 @@ class DetermineBasalEN @Inject constructor(
                 rT.reason.apply {
                     append(" insulinReq ")
                     if (insulinReqOrig != insulinReq) append(insulinReqOrig).append("U=")
+                    if (insulinReqENW != insulinReq) append(insulinReqENW).append("U=")
                     append(insulinReq).append('U')
                 }
                 rT.reason.append(", iReqBG: ${convert_bg(insulinReqBG)}")
