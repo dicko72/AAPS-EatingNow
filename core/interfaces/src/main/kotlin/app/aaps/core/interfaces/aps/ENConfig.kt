@@ -17,6 +17,7 @@ data class ENConfig(
     var SafetyMaxBolus: Double,
     var useISFscaler: Boolean,
     var highBGthreshold: Double,
+    var lastHrNetIOB: Double,
     var normalTargetBG: Double,
 
     // ENW variables

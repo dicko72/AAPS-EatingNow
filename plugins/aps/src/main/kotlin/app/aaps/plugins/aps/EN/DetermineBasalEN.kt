@@ -788,8 +788,10 @@ class DetermineBasalEN @Inject constructor(
             maxUAMPredBGMins in (if (ENWActive) 15 else (peakIOBmins ?: 0) + 16) until (if (ENWActive) 180 else 90)
 
         // variables for allowing some overrides
+        val isBasalDeficit = enConfig.lastHrNetIOB < profile.current_basal
         val isAuthorisedMealRise =(enConfig.ENWNetIOBRemaining > 0 && (UAMplusConfidence || isPrebolusing || (ENWActive && deltaFastUp)))
-        val isAuthorisedResistance = (isHigh15m || isHigh40m)
+        val isAuthorisedResistance = (isHigh15m || isHigh40m) && isBasalDeficit
+
         minIOBPredBG = max(39.0, minIOBPredBG)
         minCOBPredBG = max(39.0, minCOBPredBG)
         minUAMPredBG = max(39.0, minUAMPredBG)
@@ -904,8 +906,9 @@ class DetermineBasalEN @Inject constructor(
             // Rising fast in with confidence and ENW IOB remaining ⇈✓
             isAuthorisedMealRise -> max(maxUAMPredBG, eventualBG)
 
-            // Flat/Stubborn High: blend current BG with safety-adjusted BG ⎺⎺→ 15m
-            isAuthorisedResistance ->  (min(minPredBG, bg) + bg) * 0.5
+            // Flat/Stubborn High: Use current BG or eventualBG for  ⎺⎺→ 15m and ⎺⎺→ 40m
+            isAuthorisedResistance ->  max(bg, eventualBG)
+            isHigh15m || isHigh40m ->  (min(minPredBG, bg) + bg) * 0.5
 
             // UAM+ accelerating BG rise without prediction factors ⇈
             deltaFastUp -> (minPredBG + bg) * 0.5
@@ -961,8 +964,8 @@ class DetermineBasalEN @Inject constructor(
         val deltaText = when {
             UAMplusConfidence -> "⇈✓"  // FastUp AND UAM+ is active!
             deltaFastUp -> "⇈"          // FastUp, but UAM+ is not confident yet
-            isHigh40m -> "⎺⎺→ 40m ${isHighScaledPct}x"
-            isHigh15m -> "⎺⎺→ 15m ${isHighScaledPct}x"
+            isHigh40m -> "⎺⎺→→ ${isHighScaledPct}x"
+            isHigh15m -> "⎺⎺→ ${isHighScaledPct}x"
             deltaFastDown -> "⇊"
             glucose_status.delta > 1.5 -> "↗"
             glucose_status.delta < -1.5 -> "↘"

@@ -541,6 +541,8 @@ open class ENPlugin @Inject constructor(
         val ENWNetIOB = if (isENWIOBActive) tddCalculator.calculateIntervalNet(ENWStartTime, now, allowMissingData = true)?.totalAmount ?: 0.0  else 0.0
         val ENWNetIOBRemaining = if (isENWIOBActive) max(ENWNetIOBMax - ENWNetIOB, 0.0) else 0.0
 
+        val lastHrNetIOB = tddCalculator.calculateIntervalNet(now - T.hours(1).msecs(), now, allowMissingData = true)?.totalAmount ?: 0.0
+
         // using ISF scaling?
         val useISFscaler = preferences.get(BooleanKey.EatingNow_UseISFscaler)
         if (useISFscaler) preferences.put(BooleanKey.ApsUseDynamicSensitivity,false) // disable DynISF if using ISF scaler
@@ -621,6 +623,7 @@ open class ENPlugin @Inject constructor(
             SafetyMaxBolus = preferences.get(DoubleKey.SafetyMaxBolus),
             useISFscaler = useISFscaler,
             highBGthreshold = profileUtil.convertToMgdl(preferences.get(DoubleKey.highBGthreshold), units) + normalTargetBG,
+            lastHrNetIOB = max(Round.roundTo(lastHrNetIOB, 0.01), 0.0),
             normalTargetBG = normalTargetBG,
 
             // ENW variables
