@@ -706,7 +706,7 @@ class DetermineBasalEN @Inject constructor(
             if ((cid != 0.0 || remainingCIpeak > 0) && COBpredBG > maxIOBPredBG) maxCOBPredBG = COBpredBG
             if (enableUAM && UAMpredBGs.size > 12 && (UAMpredBG < minUAMPredBG)) minUAMPredBG = round(UAMpredBG, 0)
             // if (enableUAM && UAMpredBG!! > maxIOBPredBG) maxUAMPredBG = UAMpredBG!!
-            if (enableUAM && UAMpredBG !=null && UAMpredBG > maxUAMPredBG) {
+            if (enableUAM && UAMpredBG > maxUAMPredBG) {
                 maxUAMPredBG = UAMpredBG // set the max UAM prediction
                 maxUAMPredBGMins = UAMpredBGs.size * 5 // set the max UAM prediction time
             }
@@ -962,14 +962,16 @@ class DetermineBasalEN @Inject constructor(
         rT.IOB = iob_data.iob
 
         val deltaText = when {
-            UAMplusConfidence -> "⇈✓"  // FastUp AND UAM+ is active!
-            deltaFastUp -> "⇈"          // FastUp, but UAM+ is not confident yet
-            isHigh40m -> "⎺⎺→→ ${isHighScaledPct}x"
-            isHigh15m -> "⎺⎺→ ${isHighScaledPct}x"
+            UAMplusConfidence -> "⇈" // FastUp AND UAM+ is active!
+            deltaFastUp -> "⇈"       // FastUp, but UAM+ is not confident yet
+            isHigh40m -> "⎺⎺→→"
+            isHigh15m -> "⎺⎺→"
             deltaFastDown -> "⇊"
             glucose_status.delta > 1.5 -> "↗"
             glucose_status.delta < -1.5 -> "↘"
             else -> "→"
+        }.let { base ->
+            if (isAuthorisedMealRise || isAuthorisedResistance) "$base✓" else base
         }
 
         rT.reason.apply {
