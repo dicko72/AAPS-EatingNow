@@ -971,7 +971,7 @@ class DetermineBasalEN @Inject constructor(
             glucose_status.delta < -1.5 -> "↘"
             else -> "→"
         }.let { base ->
-            if (isAuthorisedMealRise || isAuthorisedResistance) "$base✓" else base
+            if (isAuthorisedMealRise || isAuthorisedResistance || isFootToFloor) "$base✓" else base
         }
 
         rT.reason.apply {
