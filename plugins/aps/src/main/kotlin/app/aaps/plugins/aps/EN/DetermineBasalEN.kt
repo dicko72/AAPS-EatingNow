@@ -355,7 +355,7 @@ class DetermineBasalEN @Inject constructor(
 
         //  Calculate stubborn high logic BG High for ~15 minutes (short average is flat)
         // Constants for stubborn high logic tuning
-        val STABLE_BG_THRESHOLD = 3.0
+        val STABLE_BG_THRESHOLD = 4.0
 
         // Helper to check if a delta is within the stability threshold
         fun Double.isStable() = this.absoluteValue < STABLE_BG_THRESHOLD
