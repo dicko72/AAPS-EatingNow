@@ -623,7 +623,7 @@ open class ENPlugin @Inject constructor(
             SafetyMaxBolus = preferences.get(DoubleKey.SafetyMaxBolus),
             useISFscaler = useISFscaler,
             highBGthreshold = profileUtil.convertToMgdl(preferences.get(DoubleKey.highBGthreshold), units) + normalTargetBG,
-            lastHrNetIOB = max(Round.roundTo(lastHrNetIOB, 0.01), 0.0),
+            lastHrNetIOB = Round.roundTo(lastHrNetIOB, 0.01),
             normalTargetBG = normalTargetBG,
 
             // ENW variables
@@ -632,7 +632,7 @@ open class ENPlugin @Inject constructor(
             ENWStartTime = ENWStartTime,
             ENWEndTime = ENWEndTime,
             ENWRunTime = ENWRunTime,
-            ENWNetIOB = max(Round.roundTo(ENWNetIOB, 0.01), 0.0),
+            ENWNetIOB = Round.roundTo(ENWNetIOB, 0.01),
             ENWDuration = ENWDuration,
             enwProfileScalePct = enwProfileScalePct,
             ENWsmbPct = preferences.get(IntKey.Eatingnow_enw_smb_pct),

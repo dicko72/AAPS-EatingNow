@@ -1013,7 +1013,7 @@ class DetermineBasalEN @Inject constructor(
         rT.reason.append("ENW: $enwStatus, ")
 
         // show ENWIOB if it meets the threshold
-        if (enConfig.ENWNetIOB > 0 && enConfig.ENWNetIOBMax > 0) {
+        if (enConfig.ENWNetIOB > 0 || ENWActive && enConfig.ENWNetIOBMax > 0) {
             rT.reason.append("ENW-IOB: ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
         }
 
