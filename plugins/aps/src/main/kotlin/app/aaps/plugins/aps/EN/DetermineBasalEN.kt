@@ -964,8 +964,8 @@ class DetermineBasalEN @Inject constructor(
         val deltaText = when {
             UAMplusConfidence -> "⇈" // FastUp AND UAM+ is active!
             deltaFastUp -> "⇈"       // FastUp, but UAM+ is not confident yet
-            isHigh40m -> "⎺⎺→→"
-            isHigh15m -> "⎺⎺→"
+            isHigh40m -> "⎺→→"
+            isHigh15m -> "⎺→"
             deltaFastDown -> "⇊"
             glucose_status.delta > 1.5 -> "↗"
             glucose_status.delta < -1.5 -> "↘"
