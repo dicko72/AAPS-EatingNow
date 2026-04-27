@@ -770,6 +770,12 @@ class DetermineBasalEN @Inject constructor(
 
         // UAM+ CONFIDENCE: This high-confidence check authorizes the algorithm to use maxUAMPredBG for insulinReq
         val ENWEndedAgoMins = (currentTime - (enConfig.ENWEndTime ?: currentTime)) / 60_000L
+        // Determine the allowed UAM prediction window based on the Eating Now state
+        val allowedUAMRange = if (ENWActive) {
+            15 until 180
+        } else {
+            ((peakIOBmins ?: 0) + 16) until 90
+        }
         val UAMplusConfidence =
             // UAM+ has a maxBolus configured for use intent
             UAMplusEnabled &&
@@ -785,7 +791,7 @@ class DetermineBasalEN @Inject constructor(
             // OR if already well above target, any predicted rise is sufficient for confidence
             (maxUAMPredBG > (bg * 1.15) || (bg > target_bg * 1.3 && maxUAMPredBG > bg)) &&
             // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak and not too far out
-            maxUAMPredBGMins in (if (ENWActive) 15 else (peakIOBmins ?: 0) + 16) until (if (ENWActive) 180 else 90)
+            maxUAMPredBGMins in allowedUAMRange
 
         // variables for allowing some overrides
         val isBasalDeficit = enConfig.lastHrNetIOB < profile.current_basal
@@ -1344,6 +1350,11 @@ class DetermineBasalEN @Inject constructor(
 
                 // if insulinReq > 0 but not enough for a microBolus, don't set an SMB zero temp
                 if (insulinReq > 0 && microBolus < profile.bolus_increment) {
+                    durationReq = 0
+                }
+
+                // If in an authorised rise/high, do NOT set a low/zero temp.
+                if (isAuthorisedMealRise || isAuthorisedResistance) {
                     durationReq = 0
                 }
 
