@@ -238,6 +238,9 @@
     <string name="EatingNow_IgnoreCOB_summary">Ignore COB predictions, useful when entering rescue carbs</string>
     <string name="EatingNow_useISFscaler_title">ISF Scaling</string>
     <string name="EatingNow_useISFscaler_summary">Similar to dynISF but uses profile ISF at target bg</string>
+    <string name="EatingNow_AutoStart_title">Autostart EN</string>
+    <string name="EatingNow_AutoStart_summary">Disable sleep mode and activate Eating Now after the start time</string>
+
 
     <!--    Breakfast Settings-->
     <string name="Eatingnow_enw_minutes_title">EN Window Duration [0-120m]</string>

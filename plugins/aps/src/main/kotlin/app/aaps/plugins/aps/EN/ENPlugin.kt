@@ -446,6 +446,7 @@ open class ENPlugin @Inject constructor(
             else -> startMs to (endMs + oneDayMs)               // Crosses midnight, currently evening/daytime
         }
         val ENTimeOK = now >= EatingNowTimeStart && now < EatingNowTimeEnd
+        val AutoStartEN = preferences.get(BooleanKey.EatingNow_AutoStart)
 
         // Eating Now Treatments to trigger ENW and Start EN
         val todaysENTargets = persistenceLayer.getENTemporaryTargetsFromTime(EatingNowTimeStart, true).blockingGet() ?: emptyList()
@@ -466,7 +467,7 @@ open class ENPlugin @Inject constructor(
 
         // Variables based on todays ENW TTs
         val mealCount = todaysENTargets.size
-        val ENStarted = todaysENTargets.isNotEmpty() || (todaysCarbs.isNotEmpty() && !ignoreCOB) || todaysTriggerBoluses.isNotEmpty()
+        val ENStarted = todaysENTargets.isNotEmpty() || (todaysCarbs.isNotEmpty() && !ignoreCOB) || todaysTriggerBoluses.isNotEmpty() || (ENTimeOK && AutoStartEN)
 
         // 3. Directly extract the timestamps rather than the events, avoiding list concatenations
         val lastENTT = todaysENTargets.maxByOrNull { it.timestamp }
@@ -618,6 +619,7 @@ open class ENPlugin @Inject constructor(
             ENTimeStart = EatingNowTimeStart,
             ENTimeEnd = EatingNowTimeEnd,
             ENActive = ENActive,
+            AutoStartEN = preferences.get(BooleanKey.EatingNow_AutoStart),
             OvernightSMBRestrict = profileUtil.convertToMgdl(preferences.get(DoubleKey.Eatingnow_overnightSMB), units) + normalTargetBG,
             IgnoreCOB = ignoreCOB,
             SafetyMaxBolus = preferences.get(DoubleKey.SafetyMaxBolus),
@@ -833,6 +835,7 @@ open class ENPlugin @Inject constructor(
                 })
                 addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_timestart, dialogMessage = R.string.eatingnow_timestart_summary, title = R.string.eatingnow_timestart_title))
                 addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_timeend, dialogMessage = R.string.eatingnow_timeend_summary, title = R.string.eatingnow_timeend_title))
+                addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.EatingNow_AutoStart, summary = R.string.EatingNow_AutoStart_summary, title = R.string.EatingNow_AutoStart_title))
                 addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_overnightSMB, dialogMessage = R.string.eatingnow_overnightSMB_summary, title = R.string.eatingnow_overnightSMB_title))
                 addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.highBGthreshold, dialogMessage = R.string.eatingnow_highBGthreshold_summary, title = R.string.eatingnow_highBGthreshold_title))
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.EatingNow_IgnoreCOB, summary = R.string.EatingNow_IgnoreCOB_summary, title = R.string.EatingNow_IgnoreCOB_title))

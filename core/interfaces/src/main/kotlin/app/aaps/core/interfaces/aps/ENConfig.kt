@@ -12,6 +12,7 @@ data class ENConfig(
     var ENTimeStart: Long,
     var ENTimeEnd: Long,
     var ENActive: Boolean,
+    var AutoStartEN: Boolean,
     var OvernightSMBRestrict: Double,
     var IgnoreCOB: Boolean,
     var SafetyMaxBolus: Double,
