@@ -769,7 +769,7 @@ class DetermineBasalEN @Inject constructor(
         consoleLog.add("EventualBG is $eventualBG ;")
 
         // UAM+ CONFIDENCE: This high-confidence check authorizes the algorithm to use maxUAMPredBG for insulinReq
-        val ENWEndedAgoMins = (currentTime - (enConfig.ENWEndTime ?: currentTime)) / 60_000L
+        val ENWEndedAgoMins = max(0L,(currentTime - (enConfig.ENWEndTime ?: currentTime)) / 60_000L)
         // Determine the allowed UAM prediction window based on the Eating Now state
         val allowedUAMRange = if (ENWActive) {
             15 until 180
@@ -795,14 +795,15 @@ class DetermineBasalEN @Inject constructor(
 
         // variables for allowing some overrides
         val isBasalDeficit = enConfig.lastHrNetIOB < profile.current_basal
-        val isAuthorisedMealRise =(enConfig.ENWNetIOBRemaining > 0 && (UAMplusConfidence || isPrebolusing || (ENWActive && deltaFastUp)))
+        val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 120) && (UAMplusConfidence || isPrebolusing || deltaFastUp)
+        // val isAuthorisedMealRise =(enConfig.ENWNetIOBRemaining > 0 && (UAMplusConfidence || isPrebolusing || (ENWActive && deltaFastUp)))
         val isAuthorisedResistance = (isHigh15m || isHigh40m) && isBasalDeficit
 
         minIOBPredBG = max(39.0, minIOBPredBG)
         minCOBPredBG = max(39.0, minCOBPredBG)
         minUAMPredBG = max(39.0, minUAMPredBG)
         // Allow higher minPredBG when authorised
-        minPredBG = round(if (isAuthorisedMealRise) max(minIOBPredBG, minUAMPredBG) else minIOBPredBG,  0)
+        minPredBG = round(if (isAuthorisedMealRise || isAuthorisedResistance) max(minIOBPredBG, minUAMPredBG) else minIOBPredBG,  0)
 
         // Dynamic ISF
         var future_sens = profile.sens // start with profile ISF
