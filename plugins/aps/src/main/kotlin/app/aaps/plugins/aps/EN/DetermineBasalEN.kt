@@ -1355,7 +1355,8 @@ class DetermineBasalEN @Inject constructor(
                 }
 
                 // If in an authorised rise/high, do NOT set a low/zero temp.
-                if (isAuthorisedMealRise || isAuthorisedResistance) {
+                // if (isAuthorisedMealRise || isAuthorisedResistance) {
+                if (isAuthorisedMealRise) {
                     durationReq = 0
                 }
 
