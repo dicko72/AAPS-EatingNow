@@ -771,11 +771,12 @@ class DetermineBasalEN @Inject constructor(
         // UAM+ CONFIDENCE: This high-confidence check authorizes the algorithm to use maxUAMPredBG for insulinReq
         val ENWEndedAgoMins = max(0L,(currentTime - (enConfig.ENWEndTime ?: currentTime)) / 60_000L)
         // Determine the allowed UAM prediction window based on the Eating Now state
-        val allowedUAMRange = if (ENWActive) {
-            15 until 180
-        } else {
-            ((peakIOBmins ?: 0) + 16) until 90
+
+        val allowedUAMRange = when {
+            ENWActive -> 15 until 180 // Deep look-ahead while eating
+            else -> ((peakIOBmins ?: 0) + 16) until 90 // Conservative look-ahead for pure UAM
         }
+
         val UAMplusConfidence =
             // UAM+ has a maxBolus configured for use intent
             UAMplusEnabled &&
@@ -796,8 +797,7 @@ class DetermineBasalEN @Inject constructor(
         // variables for allowing some overrides
         val isBasalDeficit = enConfig.lastHrNetIOB < profile.current_basal
         val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
-        val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 120) && !isHighTempSet && (UAMplusConfidence || isPrebolusing || deltaFastUp)
-        // val isAuthorisedMealRise =(enConfig.ENWNetIOBRemaining > 0 && (UAMplusConfidence || isPrebolusing || (ENWActive && deltaFastUp)))
+        val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 120) && !isHighTempSet && (UAMplusConfidence || isPrebolusing)
         val isAuthorisedResistance = (isHigh15m || isHigh40m) && isBasalDeficit && !isHighTempSet
 
         minIOBPredBG = max(39.0, minIOBPredBG)
@@ -971,7 +971,7 @@ class DetermineBasalEN @Inject constructor(
         rT.IOB = iob_data.iob
 
         val deltaText = when {
-            UAMplusConfidence -> "⇈" // FastUp AND UAM+ is active!
+            UAMplusConfidence -> "⇈+" // FastUp AND UAM+ is active!
             deltaFastUp -> "⇈"       // FastUp, but UAM+ is not confident yet
             isHigh40m -> "⎺→→"
             isHigh15m -> "⎺→"
