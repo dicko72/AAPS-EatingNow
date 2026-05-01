@@ -795,15 +795,17 @@ class DetermineBasalEN @Inject constructor(
 
         // variables for allowing some overrides
         val isBasalDeficit = enConfig.lastHrNetIOB < profile.current_basal
-        val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 120) && (UAMplusConfidence || isPrebolusing || deltaFastUp)
+        val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
+        val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 120) && !isHighTempSet && (UAMplusConfidence || isPrebolusing || deltaFastUp)
         // val isAuthorisedMealRise =(enConfig.ENWNetIOBRemaining > 0 && (UAMplusConfidence || isPrebolusing || (ENWActive && deltaFastUp)))
-        val isAuthorisedResistance = (isHigh15m || isHigh40m) && isBasalDeficit
+        val isAuthorisedResistance = (isHigh15m || isHigh40m) && isBasalDeficit && !isHighTempSet
 
         minIOBPredBG = max(39.0, minIOBPredBG)
         minCOBPredBG = max(39.0, minCOBPredBG)
         minUAMPredBG = max(39.0, minUAMPredBG)
         // Allow higher minPredBG when authorised
         minPredBG = round(if (isAuthorisedMealRise || isAuthorisedResistance) max(minIOBPredBG, minUAMPredBG) else minIOBPredBG,  0)
+        val safetyStar = if (isAuthorisedMealRise && minPredBG > minIOBPredBG) "*" else ""
 
         // Dynamic ISF
         var future_sens = profile.sens // start with profile ISF
@@ -928,7 +930,7 @@ class DetermineBasalEN @Inject constructor(
         }
 
         // ISF Scaling similar to dynamic ISF but using profile target BG ISF as the anchor
-        if (useISFscaler) {
+        if (useISFscaler && !isHighTempSet) {
             // Prevent divide-by-zero or math errors with extremely low BGs
             val safeBG = max(40.0, insulinReqBG)
             val insVal = profile.insulinDivisor
@@ -989,11 +991,8 @@ class DetermineBasalEN @Inject constructor(
             append("ISF: ${convert_bg(sens)}=${convert_bg(future_sens)}, ")
             append("CR: ${round(profile.carb_ratio, 2).withoutZeros()}, ")
             append("Target: ${convert_bg(target_bg)}, ")
-            append("minPredBG: ${convert_bg(minPredBG)}, ")
-
-            val safetyStar = if (isAuthorisedMealRise) "*" else ""
-            append("minGuardBG$safetyStar: ${convert_bg(minGuardBG)}, ")
-
+            append("minPredBG$safetyStar: ${convert_bg(minPredBG)}, ")
+            append("minGuardBG: ${convert_bg(minGuardBG)}, ")
             append("IOBpredBG: ${convert_bg(lastIOBpredBG)}")
         }
         if (lastCOBpredBG != null) {
@@ -1355,7 +1354,6 @@ class DetermineBasalEN @Inject constructor(
                 }
 
                 // If in an authorised rise/high, do NOT set a low/zero temp.
-                // if (isAuthorisedMealRise || isAuthorisedResistance) {
                 if (isAuthorisedMealRise) {
                     durationReq = 0
                 }
