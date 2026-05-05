@@ -920,7 +920,9 @@ class DetermineBasalEN @Inject constructor(
             isHigh15m || isHigh40m ->  (min(minPredBG, bg) + bg) * 0.5
 
             // UAM+ accelerating BG rise without prediction factors ⇈
-            deltaFastUp -> (minPredBG + bg) * 0.5
+            // deltaFastUp -> (minPredBG + bg) * 0.5
+            // deltaFastUp -> if (ENWActive) max(bg, eventualBG) else max(bg, min(minPredBG, eventualBG))
+            deltaFastUp -> max(bg, min(minPredBG, eventualBG))
 
             // any other rise stick to current BG for scaling ↗
             glucose_status.delta > 4 && eventualBG > target_bg -> (minPredBG + bg) * 0.5
