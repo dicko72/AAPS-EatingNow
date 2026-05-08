@@ -15,6 +15,7 @@ import app.aaps.core.interfaces.aps.Predictions
 import app.aaps.core.interfaces.aps.RT
 import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
+import kotlinx.coroutines.Delay
 import java.text.DecimalFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -797,7 +798,7 @@ class DetermineBasalEN @Inject constructor(
         // variables for allowing some overrides
         val isBasalDeficit = enConfig.lastHrNetIOB < profile.current_basal
         val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
-        val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 120) && !isHighTempSet && (UAMplusConfidence || isPrebolusing)
+        val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 60) && !isHighTempSet && (UAMplusConfidence || isPrebolusing || deltaFastUp)
         val isAuthorisedResistance = (isHigh15m || isHigh40m) && isBasalDeficit && !isHighTempSet
 
         minIOBPredBG = max(39.0, minIOBPredBG)
