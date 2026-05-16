@@ -797,7 +797,7 @@ class DetermineBasalEN @Inject constructor(
 
         // variables for allowing some overrides
         val isBasalDeficit = enConfig.lastHrNetIOB < profile.current_basal
-        rT.reason.append("* debug: ${enConfig.lastHrNetIOB} | ${profile.current_basal} = $isBasalDeficit *,")
+        // rT.reason.append("* debug: ${enConfig.lastHrNetIOB} | ${profile.current_basal} = $isBasalDeficit *,")
         val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
         val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 60) && !isHighTempSet && (UAMplusConfidence || isPrebolusing || deltaFastUp)
         val isAuthorisedResistance = (isHigh15m || isHigh40m) && isBasalDeficit && !isHighTempSet
