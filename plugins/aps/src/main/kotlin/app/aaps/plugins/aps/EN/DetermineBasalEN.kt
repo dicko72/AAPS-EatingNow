@@ -791,7 +791,8 @@ class DetermineBasalEN @Inject constructor(
             (bg > target_bg || ENWActive) &&
             // Magnitude: The predicted spike must be at least 15% above current BG
             // OR if already well above target, any predicted rise is sufficient for confidence
-            (maxUAMPredBG > (bg * 1.15) || (bg > target_bg * 1.3 && maxUAMPredBG > bg)) &&
+            // (maxUAMPredBG > (bg * 1.15) || (bg > target_bg * 1.3 && maxUAMPredBG > bg)) &&
+            (if (ENWActive) maxUAMPredBG > bg else (maxUAMPredBG > (bg * 1.15) || (bg > target_bg * 1.3 && maxUAMPredBG > bg))) &&
             // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak and not too far out
             maxUAMPredBGMins in allowedUAMRange
 
