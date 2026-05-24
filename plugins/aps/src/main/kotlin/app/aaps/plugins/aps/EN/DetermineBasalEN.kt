@@ -909,20 +909,28 @@ class DetermineBasalEN @Inject constructor(
         // make sure minPredBG isn't higher than avgPredBG
         minPredBG = min(minPredBG, avgPredBG)
 
+        // Extrapolated BG calculation
+        val extrapolatedDelta = if (ENWActive && enConfig.ENWDuration > 0 && enConfig.ENWNetIOBRemaining > 0 && glucose_status.delta > 0.0) {
+            val remainingMins = max(0, enConfig.ENWDuration - enConfig.ENWRunTime).toDouble()
+            val forecastMultiplier = min(1.0, 120.0 / enConfig.ENWDuration)
+            (remainingMins / 5.0) * forecastMultiplier * glucose_status.delta
+        } else 0.0
+        val extrapolatedBG = bg + extrapolatedDelta
+
         // Decide which BG value to use based on the delta for the insulinReq later
         val insulinReqBG = when {
             // UAM++ accelerating BG rise with UAM peaking after IOB peak ⇈✓
-            UAMplusConfidence -> max(maxUAMPredBG, bg)
+            UAMplusConfidence -> max(maxUAMPredBG, extrapolatedBG)
 
             // Rising fast in with confidence and ENW IOB remaining ⇈✓
-            isAuthorisedMealRise -> max(maxUAMPredBG, eventualBG)
+            isAuthorisedMealRise -> maxOf(maxUAMPredBG, eventualBG, extrapolatedBG)
 
             // Flat/Stubborn High: Use current BG or eventualBG for  ⎺⎺→ 15m and ⎺⎺→ 40m
             isAuthorisedResistance ->  max(bg, eventualBG)
             isHigh15m || isHigh40m ->  (min(minPredBG, bg) + bg) * 0.5
 
             // UAM+ accelerating BG rise without prediction factors ⇈
-            deltaFastUp -> (minPredBG + bg + eventualBG) / 3
+            deltaFastUp -> (minPredBG + extrapolatedBG + eventualBG) / 3
 
             // any other rise stick to current BG for scaling ↗
             glucose_status.delta > 4 && eventualBG > target_bg -> (minPredBG + bg) * 0.5
