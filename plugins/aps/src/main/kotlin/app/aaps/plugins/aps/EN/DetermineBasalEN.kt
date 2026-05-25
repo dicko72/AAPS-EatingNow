@@ -1329,16 +1329,16 @@ class DetermineBasalEN @Inject constructor(
                         // Prioritize PreBolus requirements within safety limits but allow more if insulinReq is greater
                         "PB" to min(enConfig.ENWprebolus, enConfig.SafetyMaxBolus)
                     }
-                    ENWActive && deltaFastUp && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
+                    ENWActive && UAMplusConfidence && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
                         "UAM+" to enConfig.ENWuamPlusMaxbolus
                     }
-                    AllowUAMplusNoENW && deltaFastUp && activeCarbs == 0.0 && bg > target_bg-> { // keep this to AAPS maxBolus for outside ENW
-                        "UAM+" to maxBolusAAPS
+                    AllowUAMplusNoENW && UAMplusConfidence && activeCarbs == 0.0 && bg > target_bg-> { // keep this to AAPS maxBolus for outside ENW
+                        "UAM+" to enConfig.ENWuamMaxbolus
                     }
                     ENWActive && enConfig.ENWcobMaxbolus > 0 && eventualBG == lastCOBpredBG -> {
                         "COB" to enConfig.ENWcobMaxbolus
                     }
-                    ENWActive && enConfig.ENWuamMaxbolus > 0 && eventualBG == lastUAMpredBG -> {
+                    (ENWActive || AllowUAMplusNoENW) && enConfig.ENWuamMaxbolus > 0 && eventualBG == lastUAMpredBG -> {
                         "UAM" to enConfig.ENWuamMaxbolus
                     }
                     else -> {
