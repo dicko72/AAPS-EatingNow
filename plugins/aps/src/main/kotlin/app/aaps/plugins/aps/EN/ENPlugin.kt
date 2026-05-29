@@ -470,7 +470,7 @@ open class ENPlugin @Inject constructor(
         val mealCount = todaysENTargets.size
         val ENStarted = todaysENTargets.isNotEmpty() || (todaysCarbs.isNotEmpty() && !ignoreCOB) || todaysTriggerBoluses.isNotEmpty() || (ENTimeOK && AutoStartEN)
 
-        // 3. Directly extract the timestamps rather than the events, avoiding list concatenations
+        // Directly extract the timestamps rather than the events, avoiding list concatenations
         val lastENTT = todaysENTargets.maxByOrNull { it.timestamp }
         val lastENTTTime = todaysENTargets.maxOfOrNull { it.timestamp }
 
@@ -482,29 +482,41 @@ open class ENPlugin @Inject constructor(
         val manualENTTDuration = activeTT?.duration?.div(60_000L.toInt()) ?: 0
         val manualENTTtimestamp = activeTT?.timestamp ?: 0L
 
-        // Find maximums independently to avoid allocating a combined list
-        val lastBolusTime = todaysTriggerBoluses.maxOfOrNull { it.timestamp } ?: 0L
-        val lastCarbTime = todaysCarbs.maxOfOrNull { it.timestamp } ?: 0L // Assuming Carb also has a timestamp
+        val ENWDurationMs = preferences.get(IntKey.Eatingnow_enw_minutes) * 60_000L
 
-        val lastMealTime: Long? = if (ignoreCOB) {
-            lastBolusTime.takeIf { it > 0L }
-        } else {
-            maxOf(lastCarbTime, lastBolusTime).takeIf { it > 0L }
+        // Gather all valid trigger windows as pairs of (startTime, endTime)
+        val allTriggerWindows = mutableListOf<Pair<Long, Long>>()
+        if (!ignoreCOB) todaysCarbs.forEach { allTriggerWindows.add(it.timestamp to (it.timestamp + ENWDurationMs)) }
+        todaysTriggerBoluses.forEach { allTriggerWindows.add(it.timestamp to (it.timestamp + ENWDurationMs)) }
+        todaysENTargets.forEach { allTriggerWindows.add(it.timestamp to (it.timestamp + it.duration)) }
+
+        // Sort chronologically to build continuous overlapping windows
+        val sortedWindows = allTriggerWindows.filter { it.first <= now }.sortedBy { it.first }
+
+        var calculatedStartTime: Long? = null
+        var calculatedEndTime: Long? = null
+
+        for (window in sortedWindows) {
+            val start = window.first
+            val end = window.second
+            if (calculatedEndTime == null || start > calculatedEndTime) {
+                // No overlap detected, start a brand new window block
+                calculatedStartTime = start
+                calculatedEndTime = end
+            } else {
+                // Overlap detected! Keep the original start time, extend the end time if needed
+                calculatedEndTime = max(calculatedEndTime, end)
+            }
         }
 
         val ENWStartTime = when {
             manualENTT -> manualENTTtimestamp
-            else -> listOfNotNull(lastENTTTime, lastMealTime).maxOrNull()
+            else -> calculatedStartTime
         }
 
-        // ENW End Time is the TT end or prefs for carbs
-        val ENWDurationMs = preferences.get(IntKey.Eatingnow_enw_minutes) * 60_000L
-        // Calculate the End Time based on whichever treatment actually started the window
         val ENWEndTime = when {
             manualENTT -> manualENTTtimestamp + (manualENTTDuration * 60_000L)
-            ENWStartTime == lastENTTTime -> lastENTT?.let { it.timestamp + it.duration }
-            ENWStartTime == lastMealTime -> lastMealTime?.let { it + ENWDurationMs }
-            else -> null
+            else -> calculatedEndTime
         }
 
         // Are any ENW TTs in that list CURRENTLY active
