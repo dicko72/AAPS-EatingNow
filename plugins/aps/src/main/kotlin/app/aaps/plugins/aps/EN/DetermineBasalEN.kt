@@ -911,7 +911,7 @@ class DetermineBasalEN @Inject constructor(
         minPredBG = min(minPredBG, avgPredBG)
 
         // Extrapolated BG calculation
-        val extrapolatedDelta = if (ENWActive && enConfig.ENWDuration > 0 && enConfig.ENWNetIOBRemaining > 0 && glucose_status.delta > 0.0) {
+        val extrapolatedDelta = if (ENWActive && enConfig.ENWDuration > 0 && enConfig.ENWNetIOBRemaining > 0 && glucose_status.delta > 0.0 && max(activeCOB, activeCarbs) == 0.0) {
             val remainingMins = max(0, enConfig.ENWDuration - enConfig.ENWRunTime).toDouble()
             val forecastMultiplier = min(1.0, 120.0 / enConfig.ENWDuration)
             (remainingMins / 5.0) * forecastMultiplier * glucose_status.delta
