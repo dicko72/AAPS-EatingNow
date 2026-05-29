@@ -450,7 +450,8 @@ open class ENPlugin @Inject constructor(
 
         // Eating Now Treatments to trigger ENW and Start EN
         val todaysENTargets = persistenceLayer.getENTemporaryTargetsFromTime(EatingNowTimeStart, true).blockingGet() ?: emptyList()
-        val todaysCarbs = persistenceLayer.getCarbsFromTime(EatingNowTimeStart, true).blockingGet() ?: emptyList()
+        val todaysCarbs = persistenceLayer.getCarbsFromTime(EatingNowTimeStart, true).blockingGet()
+            ?.filter { it.duration == 0L } ?: emptyList()
         val ignoreCOB = preferences.get(BooleanKey.EatingNow_IgnoreCOB)
         val units = profileFunction.getUnits()
 
