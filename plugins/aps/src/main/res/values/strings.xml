@@ -260,6 +260,8 @@
     <string name="EatingNow_AllowUAMplusNoENW_title">Allow UAM maxBolus without ENW</string>
     <string name="EatingNow_AllowUAMplusNoENW_summary">UAM maxBolus for accelerated BG rise allowed without active ENW\nDisabled outside EN active hours</string>
     <string name="Eatingnow_enw_triggerbolus_title">Start ENW with manual bolus [U]</string>
-    <string name="Eatingnow_enw_triggerbolus_summary">Start an Eating Window with a bolus of this size or above</string>
+    <string name="Eatingnow_enw_triggerbolus_summary">Start an Eating Window with a bolus of this size or above, zero disables</string>
+    <string name="Eatingnow_enw_triggercob_title">Start ENW with COB [g]</string>
+    <string name="Eatingnow_enw_triggercob_summary">Start an Eating Window with COB of this amount or above, zero disables</string>
 
 </resources>

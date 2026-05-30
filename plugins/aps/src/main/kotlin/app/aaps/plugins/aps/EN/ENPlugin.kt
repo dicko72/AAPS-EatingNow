@@ -450,10 +450,21 @@ open class ENPlugin @Inject constructor(
 
         // Eating Now Treatments to trigger ENW and Start EN
         val todaysENTargets = persistenceLayer.getENTemporaryTargetsFromTime(EatingNowTimeStart, true).blockingGet() ?: emptyList()
-        val todaysCarbs = persistenceLayer.getCarbsFromTime(EatingNowTimeStart, true).blockingGet()
-            ?.filter { it.duration == 0L } ?: emptyList()
+
+        // COB Trigger
         val ignoreCOB = preferences.get(BooleanKey.EatingNow_IgnoreCOB)
         val units = profileFunction.getUnits()
+        val ENWCOBTrigger = preferences.get(DoubleKey.Eatingnow_enw_triggercob)
+        val todaysCarbs = if (ENWCOBTrigger > 0.0 && !ignoreCOB) {
+            persistenceLayer.getCarbsFromTime(EatingNowTimeStart, true)
+                .blockingGet()
+                ?.filter { it.amount >= ENWCOBTrigger && it.duration == 0L }
+                ?: emptyList()
+        } else {
+            emptyList()
+        }
+
+
 
         // Filter immediately without storing the intermediate list
         val ENWBolusTrigger = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_triggerbolus), 0.01), 0.0)
@@ -658,7 +669,8 @@ open class ENPlugin @Inject constructor(
             ENWprebolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_prebolus), 0.01), 0.0),
             ENWuamPlusMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus), 0.01), 0.0),
             AllowUAMplusNoENW =  preferences.get(BooleanKey.EatingNow_AllowUAMplusNoENW),
-            ENWBolusTrigger = ENWBolusTrigger
+            ENWBolusTrigger = ENWBolusTrigger,
+            ENWCOBTrigger = ENWCOBTrigger
         )
 
         val microBolusAllowed = constraintsChecker.isSMBModeEnabled(ConstraintObject(tempBasalFallback.not(), aapsLogger)).also { inputConstraints.copyReasons(it) }.value()
@@ -903,7 +915,8 @@ open class ENPlugin @Inject constructor(
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_prebolus, dialogMessage = R.string.Eatingnow_enw_prebolus_summary, title = R.string.Eatingnow_enw_prebolus_title))
                     addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.enwProfileScalePct, dialogMessage = R.string.enwProfileScalePct_summary, title = R.string.enwProfileScalePct_title))
                     addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_triggerbolus, dialogMessage = R.string.Eatingnow_enw_triggerbolus_summary, title = R.string.Eatingnow_enw_triggerbolus_title))
-                    
+                    addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_enw_triggercob, dialogMessage = R.string.Eatingnow_enw_triggercob_summary, title = R.string.Eatingnow_enw_triggercob_title))
+
                 })
             })
 
