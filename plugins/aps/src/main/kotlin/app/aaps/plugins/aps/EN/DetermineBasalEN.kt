@@ -1338,7 +1338,7 @@ class DetermineBasalEN @Inject constructor(
                     ENWActive && enConfig.ENWcobMaxbolus > 0 && eventualBG == lastCOBpredBG -> {
                         "COB" to enConfig.ENWcobMaxbolus
                     }
-                    (ENWActive || AllowUAMplusNoENW) && enConfig.ENWuamMaxbolus > 0 && eventualBG == lastUAMpredBG -> {
+                    ENWActive && enConfig.ENWuamMaxbolus > 0 && eventualBG == lastUAMpredBG -> {
                         "UAM" to enConfig.ENWuamMaxbolus
                     }
                     else -> {
