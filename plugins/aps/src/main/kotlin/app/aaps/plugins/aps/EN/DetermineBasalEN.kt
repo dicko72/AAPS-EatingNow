@@ -366,7 +366,7 @@ class DetermineBasalEN @Inject constructor(
         val isLongTermStable = glucose_status.longAvgDelta.isStable()
 
         // logic: BG is high, no insulin peak is imminent, and glucose has plateaued
-        val noPeakComing = (peakIOBmins ?: 0) == 0
+        val noPeakComing = peakIOBmins == null
         val isFootToFloor = highBGthresholdActive && !ENActive && systemTime > enConfig.ENTimeStart && deltaFastUp
         val isHigh15m = highBGthresholdActive && noPeakComing && isShortTermStable
         val isHigh40m = isHigh15m && isLongTermStable
@@ -1290,18 +1290,29 @@ class DetermineBasalEN @Inject constructor(
             }
 
 
-            // ============== EATING NOW IOB RESTRICTION  ==============
+          // ============== EATING NOW IOB RESTRICTION  ==============
+            var UAMplusBypassActive = false
 
             // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
-
             if (ENWActive && enConfig.ENWNetIOBMax > 0 && insulinReq > enConfig.ENWNetIOBRemaining) {
-                insulinReq = min(insulinReq,enConfig.ENWNetIOBRemaining)
+                if (enConfig.ENWNetIOBRemaining <= 0.0 && UAMplusConfidence && bg > target_bg && minPredBG > threshold) {
+                    UAMplusBypassActive = true
+                } else {
+                    // Either budget remains OR budget is spent but no UAM+ confidence: Cap the request
+                    insulinReq = enConfig.ENWNetIOBRemaining
+                }
             }
+
+            // // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
+            // if (ENWActive && enConfig.ENWNetIOBMax > 0 && insulinReq > enConfig.ENWNetIOBRemaining) {
+            //     insulinReq = min(insulinReq,enConfig.ENWNetIOBRemaining)
+            // }
 
             // rate required to deliver insulinReq more insulin over 30m:
             // isAuthorisedMealRise or isAuthorisedResistance allows the rate to deliver insulinReq more insulin over 15m
             var basalRateMultiplier = if (isAuthorisedMealRise || isAuthorisedResistance || isFootToFloor) 4.0 else 2.0
             var rate = basal + (basalRateMultiplier * insulinReq)
+            if (UAMplusBypassActive) rate = basal
             rate = round_basal(rate)
             insulinReq = round(insulinReq, 3)
             rT.insulinReq = insulinReq
@@ -1328,6 +1339,11 @@ class DetermineBasalEN @Inject constructor(
                     isPrebolusing -> {
                         // Prioritize PreBolus requirements within safety limits but allow more if insulinReq is greater
                         "PB" to min(enConfig.ENWprebolus, enConfig.SafetyMaxBolus)
+                    }
+                    UAMplusBypassActive -> {
+                        // STRICT SAFETY: If the window limit was bypassed, DO NOT use custom EN boluses.
+                        // Strictly enforce the standard AAPS maxBolus to slowly catch up.
+                        "UAM+-" to maxBolusAAPS
                     }
                     ENWActive && UAMplusConfidence && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
                         "UAM+" to enConfig.ENWuamPlusMaxbolus
