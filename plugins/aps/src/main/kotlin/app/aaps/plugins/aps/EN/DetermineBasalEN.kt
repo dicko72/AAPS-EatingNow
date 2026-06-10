@@ -330,21 +330,34 @@ class DetermineBasalEN @Inject constructor(
         }
 
         // Upcoming insulin activity peak using position (index) of the maximum future insulin activity
-        // Find the index of the maximum future insulin activity
         val peakIndex = iobArray.indices.maxByOrNull { iobArray[it].activity } ?: 0
 
-        // peakIOBmins: null = no peak found, 0 = peak is now, >0 = peak in future minutes
-        // Set to null if it's noise or has passed
-        val peakIOBmins: Int? = (peakIndex * 5).takeUnless {
+        // Native AAPS future prediction
+        // peakIOBmins: minutes, (0) now, (null) no peak
+        var peakIOBmins: Int? = (peakIndex * 5).takeUnless {
             !highBGthresholdActive && iob_data.iob < (profile.current_basal / 4.0)
+        }
+
+        // --- DYNAMIC PEAK OVERRIDE ---
+        val basalActivity = profile.current_basal / 60.0
+        val isRidingPeak = iob_data.activity > max(basalActivity * 2.0, 0.02)
+
+        if (peakIOBmins != null && peakIOBmins > 0) {
+            // 1. FUTURE: A peak is coming. Do nothing, let the native prediction stand (e.g., 45m).
+        } else if (isRidingPeak) {
+            // 2. NOW: Native says 0 or null, but we are actively riding a massive wave. Force to Now.
+            peakIOBmins = 0
+        } else {
+            // 3. NONE: Native says 0 or null, and the active wave has passed. Coast is clear.
+            peakIOBmins = null
         }
 
         // when delta is rising fast for UAM+
         val deltaFastUp = when {
             // UAM+ aggressive short average when ENW is running
             ENWActive -> glucose_status.delta > 0.0
-            // Checks if it is 0 OR null in one clean line
-            (peakIOBmins ?: 0) == 0 -> glucose_status.delta > 6.0 && glucose_status.delta >= glucose_status.shortAvgDelta
+            // Checks if no peak is coming
+            peakIOBmins == null -> glucose_status.delta > 6.0 && glucose_status.delta >= glucose_status.shortAvgDelta
             // Require both short & long average acceleration outside of ENW
             else -> glucose_status.delta >= glucose_status.shortAvgDelta && glucose_status.delta > 7.0 && glucose_status.delta >= glucose_status.longAvgDelta
         }
@@ -366,9 +379,8 @@ class DetermineBasalEN @Inject constructor(
         val isLongTermStable = glucose_status.longAvgDelta.isStable()
 
         // logic: BG is high, no insulin peak is imminent, and glucose has plateaued
-        val noPeakComing = peakIOBmins == null
         val isFootToFloor = highBGthresholdActive && !ENActive && systemTime > enConfig.ENTimeStart && deltaFastUp
-        val isHigh15m = highBGthresholdActive && noPeakComing && isShortTermStable
+        val isHigh15m = highBGthresholdActive &&  peakIOBmins == null && isShortTermStable
         val isHigh40m = isHigh15m && isLongTermStable
 
         // ISF Scaling based on prefs or high BG
@@ -773,9 +785,12 @@ class DetermineBasalEN @Inject constructor(
         val ENWEndedAgoMins = max(0L,(currentTime - (enConfig.ENWEndTime ?: currentTime)) / 60_000L)
         // Determine the allowed UAM prediction window based on the Eating Now state
 
+        // Determine the allowed UAM prediction window based on the Eating Now state
         val allowedUAMRange = when {
             ENWActive -> 15 until 180 // Deep look-ahead while eating
-            else -> ((peakIOBmins ?: 0) + 16) until 90 // Conservative look-ahead for pure UAM
+            peakIOBmins == null -> 15 until 90 // Coast is clear: allow standard UAM tracking
+            peakIOBmins == 0 -> 45 until 90 // Riding a massive wave right now: force UAM to wait 45m for it to clear
+            else -> (peakIOBmins + 16) until 90 // Future peak: look safely past it
         }
 
         val UAMplusConfidence =
