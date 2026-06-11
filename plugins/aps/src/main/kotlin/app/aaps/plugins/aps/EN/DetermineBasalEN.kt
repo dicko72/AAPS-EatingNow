@@ -821,13 +821,15 @@ class DetermineBasalEN @Inject constructor(
         minIOBPredBG = max(39.0, minIOBPredBG)
         minCOBPredBG = max(39.0, minCOBPredBG)
         minUAMPredBG = max(39.0, minUAMPredBG)
-        // Allow higher minPredBG when authorised
-        minPredBG = round(if (isAuthorisedMealRise || isAuthorisedResistance) max(minIOBPredBG, minUAMPredBG) else minIOBPredBG,  0)
-        val safetyStar = if (isAuthorisedMealRise && minPredBG > minIOBPredBG) "*" else ""
+        minPredBG = round(minIOBPredBG, 0)
+
+        var minPredBGEN = if (isAuthorisedMealRise || isAuthorisedResistance)
+            max(minPredBG, round(max(minIOBPredBG, minUAMPredBG), 0))
+        else minPredBG
 
         // Dynamic ISF
         var future_sens = profile.sens // start with profile ISF
-        val fSensBG = min(minPredBG, bg)
+        val fSensBG = min(minPredBGEN, bg)
         if (dynIsfMode && !useISFscaler) {
             if (bg > target_bg && glucose_status.delta < 3 && glucose_status.delta > -3 && glucose_status.shortAvgDelta > -3 && glucose_status.shortAvgDelta < 3 && eventualBG > target_bg && eventualBG < bg) {
                 future_sens = (1800 / (ln((((fSensBG * 0.5) + (bg * 0.5)) / profile.insulinDivisor) + 1) * profile.TDD))
@@ -993,6 +995,9 @@ class DetermineBasalEN @Inject constructor(
             minPredBG = min(minPredBG, maxCOBPredBG)
         }
 
+        // Hold the EN trusted prediction as a floor over the recomputed minPredBG
+        minPredBGEN = if (isAuthorisedMealRise || isAuthorisedResistance) max(minPredBGEN, minPredBG) else minPredBG
+
         rT.COB = meal_data.mealCOB
         rT.IOB = iob_data.iob
 
@@ -1017,7 +1022,9 @@ class DetermineBasalEN @Inject constructor(
             append("ISF: ${convert_bg(sens)}=${convert_bg(future_sens)}, ")
             append("CR: ${round(profile.carb_ratio, 2).withoutZeros()}, ")
             append("Target: ${convert_bg(target_bg)}, ")
-            append("minPredBG$safetyStar: ${convert_bg(minPredBG)}, ")
+            append("minPredBG: ${convert_bg(minPredBG)}")
+            if (minPredBGEN != minPredBG) append("=${convert_bg(minPredBGEN)}")
+            append(", ")
             append("minGuardBG: ${convert_bg(minGuardBG)}, ")
             append("IOBpredBG: ${convert_bg(lastIOBpredBG)}")
         }
@@ -1310,7 +1317,7 @@ class DetermineBasalEN @Inject constructor(
 
             // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
             if (ENWActive && enConfig.ENWNetIOBMax > 0 && insulinReq > enConfig.ENWNetIOBRemaining) {
-                if (enConfig.ENWNetIOBRemaining <= 0.0 && UAMplusConfidence && bg > target_bg && minPredBG > threshold) {
+                if (enConfig.ENWNetIOBRemaining <= 0.0 && UAMplusConfidence && highBGthresholdActive && minPredBGEN > threshold) {
                     UAMplusBypassActive = true
                 } else {
                     // Either budget remains OR budget is spent but no UAM+ confidence: Cap the request
