@@ -1141,7 +1141,7 @@ class DetermineBasalEN @Inject constructor(
             rT.reason.append(" and minDelta ${convert_bg(minDelta)} > expectedDelta ${convert_bg(expectedDelta)}; ")
             // predictive low glucose suspend mode: BG is / is projected to be < threshold
             // Standard LGS logic only runs if NO authorisation is active
-        } else if ((bg < threshold || minGuardBG < threshold) && !isAuthorisedMealRise && !isAuthorisedResistance) {
+        } else if ((bg < threshold || minGuardBG < threshold) && !ENWActive) {
             rT.reason.append("minGuardBG " + convert_bg(minGuardBG) + " < " + convert_bg(threshold))
             bgUndershoot = target_bg - minGuardBG
             val worstCaseInsulinReq = bgUndershoot / sens
