@@ -374,14 +374,24 @@ class DetermineBasalEN @Inject constructor(
         // Helper to check if a delta is within the stability threshold
         fun Double.isStable() = this.absoluteValue < STABLE_BG_THRESHOLD
 
-        // Stability checks for different time horizons
+        // Stability checks for different time horizons (is BG plateaued?)
         val isShortTermStable = glucose_status.delta.isStable() && glucose_status.shortAvgDelta.isStable()
-        val isLongTermStable = glucose_status.longAvgDelta.isStable()
+        val isLongTermStable  = glucose_status.longAvgDelta.isStable()
 
-        // logic: BG is high, no insulin peak is imminent, and glucose has plateaued
+        // Direction: BG has not started to drop yet (resistance backs off the moment it turns)
+        val isNotFalling = minDelta >= 0
+
+        // Insulin activity peak state: peakIOBmins == null => on-board insulin already past its peak
+        val noPeakImminent = peakIOBmins == null
+
+        // isHigh*: high + plateaued + NO peak imminent — drives aggressive ISF scaling & high dosing branch (unchanged)
         val isFootToFloor = highBGthresholdActive && !ENActive && systemTime > enConfig.ENTimeStart && deltaFastUp
-        val isHigh15m = highBGthresholdActive &&  peakIOBmins == null && isShortTermStable
+        val isHigh15m = highBGthresholdActive && noPeakImminent && isShortTermStable
         val isHigh40m = isHigh15m && isLongTermStable
+
+        // isStuckHigh*: high + plateaued + not yet falling — the resistance signal (peak-INDEPENDENT)
+        val isStuckHigh15m = highBGthresholdActive && isShortTermStable && isNotFalling
+        val isStuckHigh40m = isStuckHigh15m && isLongTermStable
 
         // ISF Scaling based on prefs or high BG
         val isHighScaledPct = when {
@@ -812,11 +822,13 @@ class DetermineBasalEN @Inject constructor(
             maxUAMPredBGMins in allowedUAMRange
 
         // variables for allowing some overrides
-        val isBasalDeficit = enConfig.lastHrNetIOB < profile.current_basal
-        // rT.reason.append("* debug: ${enConfig.lastHrNetIOB} | ${profile.current_basal} = $isBasalDeficit *,")
+        val resistanceGain = 1.5   // integral gain: budget grows at 1.5× basal per hour stuck high
+        val owedSinceHigh = profile.current_basal * (min(enConfig.minutesHigh, 180) / 60.0) * resistanceGain
+        val isBasalDeficit = enConfig.netIOBSinceHigh < owedSinceHigh
+        rT.reason.append("* debug: high ${enConfig.minutesHigh}m owed ${round(owedSinceHigh, 2)} given ${enConfig.netIOBSinceHigh} def=$isBasalDeficit *,")
         val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
         val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 60) && !isHighTempSet && (UAMplusConfidence || isPrebolusing || deltaFastUp)
-        val isAuthorisedResistance = (isHigh15m || isHigh40m) && isBasalDeficit && !isHighTempSet
+        val isAuthorisedResistance = isStuckHigh40m && isBasalDeficit && !isHighTempSet
 
         minIOBPredBG = max(39.0, minIOBPredBG)
         minCOBPredBG = max(39.0, minCOBPredBG)

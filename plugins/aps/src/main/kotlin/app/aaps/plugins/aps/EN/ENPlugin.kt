@@ -566,7 +566,16 @@ open class ENPlugin @Inject constructor(
         val ENWNetIOB = if (isENWIOBActive) tddCalculator.calculateIntervalNet(ENWStartTime, now, allowMissingData = true)?.totalAmount ?: 0.0  else 0.0
         val ENWNetIOBRemaining = if (isENWIOBActive) max(ENWNetIOBMax - ENWNetIOB, 0.0) else 0.0
 
-        val lastHrNetIOB = tddCalculator.calculateIntervalNet(now - T.hours(1).msecs(), now, allowMissingData = true)?.totalAmount ?: 0.0
+        val normalTargetBG = profile.getTargetMgdl() // profile target bg at this time
+
+        // Calculate high bg for resistance assistance
+        val highThresholdMgdl = profileUtil.convertToMgdl(preferences.get(DoubleKey.highBGthreshold), units) + normalTargetBG
+        val recentBg = persistenceLayer.getBgReadingsDataFromTimeToTime(now - T.hours(6).msecs(), now, ascending = false)
+        var highSinceTime = now
+        for (gv in recentBg) { if (gv.value > highThresholdMgdl) highSinceTime = gv.timestamp else break }  // newest→oldest
+        val minutesHigh = ((now - highSinceTime) / 60_000L).toInt()
+        val netIOBSinceHigh = if (minutesHigh > 0)
+            tddCalculator.calculateIntervalNet(highSinceTime, now, allowMissingData = true)?.totalAmount ?: 0.0 else 0.0
 
         // using ISF scaling?
         val useISFscaler = preferences.get(BooleanKey.EatingNow_UseISFscaler)
@@ -584,8 +593,6 @@ open class ENPlugin @Inject constructor(
         }
         val scaledCarbRatio = Round.roundTo(profileCarbRatio / scaleMultiplier, 0.01)
         val scaledIsf = Round.roundTo(profileIsf / scaleMultiplier, 0.1)
-
-        val normalTargetBG = profile.getTargetMgdl() // profile target bg at this time
 
         @Suppress("KotlinConstantConditions")
         val oapsProfile = OapsProfile(
@@ -649,7 +656,8 @@ open class ENPlugin @Inject constructor(
             SafetyMaxBolus = preferences.get(DoubleKey.SafetyMaxBolus),
             useISFscaler = useISFscaler,
             highBGthreshold = profileUtil.convertToMgdl(preferences.get(DoubleKey.highBGthreshold), units) + normalTargetBG,
-            lastHrNetIOB = Round.roundTo(lastHrNetIOB, 0.01),
+            netIOBSinceHigh = Round.roundTo(netIOBSinceHigh, 0.01),
+            minutesHigh = minutesHigh,
             normalTargetBG = normalTargetBG,
 
             // ENW variables
