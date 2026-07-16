@@ -575,7 +575,7 @@ open class ENPlugin @Inject constructor(
         for (gv in recentBg) { if (gv.value > highThresholdMgdl) highSinceTime = gv.timestamp else break }  // newest→oldest
         val minutesHigh = ((now - highSinceTime) / 60_000L).toInt()
         val netIOBSinceHigh = if (minutesHigh > 0)
-            tddCalculator.calculateIntervalNet(highSinceTime, now, allowMissingData = true)?.totalAmount ?: 0.0 else 0.0
+            tddCalculator.calculateIntervalNet(max(highSinceTime, now - T.hours(3).msecs()), now, allowMissingData = true)?.totalAmount ?: 0.0 else 0.0
 
         // using ISF scaling?
         val useISFscaler = preferences.get(BooleanKey.EatingNow_UseISFscaler)
