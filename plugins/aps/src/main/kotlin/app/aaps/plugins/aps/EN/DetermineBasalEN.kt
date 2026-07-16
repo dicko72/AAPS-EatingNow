@@ -1331,16 +1331,28 @@ class DetermineBasalEN @Inject constructor(
             }
 
 
-          // ============== EATING NOW IOB RESTRICTION  ==============
+            // ============== EATING NOW IOB RESTRICTION  ==============
             var UAMplusBypassActive = false
 
-            // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
-            if (ENWActive && enConfig.ENWNetIOBMax > 0 && insulinReq > enConfig.ENWNetIOBRemaining) {
-                if (enConfig.ENWNetIOBRemaining <= 0.0 && UAMplusConfidence && highBGthresholdActive && minPredBGEN > threshold) {
-                    UAMplusBypassActive = true
-                } else {
-                    // Either budget remains OR budget is spent but no UAM+ confidence: Cap the request
-                    insulinReq = enConfig.ENWNetIOBRemaining
+            // The ENW net-IOB budget must cover the same 60m post-ENW grace that keeps
+            // isAuthorisedMealRise and UAM+ sized boluses alive — privileges and spending
+            // limit travel together. Previously the cap died with the window while the
+            // grace kept delivering full-size SMBs against an already-spent budget.
+            val ENWBudgetActive = ENWActive || ENWEndedAgoMins in 1 until 60
+
+            if (ENWBudgetActive && enConfig.ENWNetIOBMax > 0 && insulinReq > enConfig.ENWNetIOBRemaining) {
+                when {
+                    // Genuine shortfall: base IOB math agrees insulin is missing.
+                    // This is what the 60m grace is FOR — full authority, no cap.
+                    insulinReqOrig > 0.0 && UAMplusConfidence -> { /* no restriction */ }
+
+                    // Funded rise (late bolus in flight) but still climbing with confidence:
+                    // keep fixing at standard size only.
+                    enConfig.ENWNetIOBRemaining <= 0.0 && UAMplusConfidence && highBGthresholdActive && minPredBGEN > threshold ->
+                        UAMplusBypassActive = true
+
+                    // No confidence: cap to what's left of the budget.
+                    else -> insulinReq = enConfig.ENWNetIOBRemaining
                 }
             }
 
