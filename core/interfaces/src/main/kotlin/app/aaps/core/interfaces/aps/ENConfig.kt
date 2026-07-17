@@ -20,6 +20,8 @@ data class ENConfig(
     var highBGthreshold: Double,
     var netIOBSinceHigh: Double,
     var minutesHigh: Int,
+    var pastPeakAgoMins: Int,
+    var pastPeakActivity: Double,
     var normalTargetBG: Double,
 
     // ENW variables

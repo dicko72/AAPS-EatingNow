@@ -577,6 +577,21 @@ open class ENPlugin @Inject constructor(
         val netIOBSinceHigh = if (minutesHigh > 0)
             tddCalculator.calculateIntervalNet(max(highSinceTime, now - T.hours(3).msecs()), now, allowMissingData = true)?.totalAmount ?: 0.0 else 0.0
 
+        // Past insulin activity summit — same computation the Overview activity line plots.
+        // Telemetry for the signed peak timeline (−y) and waveLive calibration; NOT used for dosing yet.
+        var pastPeakTime = now
+        var pastPeakActivity = 0.0
+        var t = now - T.hours(4).msecs()
+        while (t <= now) {
+            val p = profileFunction.getProfile(t)
+            if (p != null) {
+                val act = iobCobCalculator.calculateFromTreatmentsAndTemps(t, p).activity
+                if (act >= pastPeakActivity) { pastPeakActivity = act; pastPeakTime = t }
+            }
+            t += T.mins(5).msecs()
+        }
+        val pastPeakAgoMins = ((now - pastPeakTime) / 60_000L).toInt()
+
         // using ISF scaling?
         val useISFscaler = preferences.get(BooleanKey.EatingNow_UseISFscaler)
         if (useISFscaler) preferences.put(BooleanKey.ApsUseDynamicSensitivity,false) // disable DynISF if using ISF scaler
@@ -658,6 +673,8 @@ open class ENPlugin @Inject constructor(
             highBGthreshold = profileUtil.convertToMgdl(preferences.get(DoubleKey.highBGthreshold), units) + normalTargetBG,
             netIOBSinceHigh = Round.roundTo(netIOBSinceHigh, 0.01),
             minutesHigh = minutesHigh,
+            pastPeakAgoMins = pastPeakAgoMins,
+            pastPeakActivity = Round.roundTo(pastPeakActivity, 0.0001),
             normalTargetBG = normalTargetBG,
 
             // ENW variables
