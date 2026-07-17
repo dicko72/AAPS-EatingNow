@@ -378,8 +378,10 @@ class DetermineBasalEN @Inject constructor(
         val isShortTermStable = glucose_status.delta.isStable() && glucose_status.shortAvgDelta.isStable()
         val isLongTermStable  = glucose_status.longAvgDelta.isStable()
 
-        // Direction: BG has not started to drop yet (resistance backs off the moment it turns)
-        val isNotFalling = minDelta >= 0
+        // Direction: BG has not started to drop yet (resistance backs off the moment it turns).
+        // Smoothed: a single noisy CGM down-tick must not de-authorise a stuck-high ramp;
+        // a genuine descent flips shortAvgDelta negative within 2–3 readings anyway.
+        val isNotFalling = glucose_status.shortAvgDelta >= 0.0
 
         // Insulin activity peak state: peakIOBmins == null => on-board insulin already past its peak
         val noPeakImminent = peakIOBmins == null
