@@ -314,7 +314,7 @@ class DetermineBasalEN @Inject constructor(
         // Eating Now Initial variables
         val ENActive = enConfig.ENActive
         val ENWActive = enConfig.ENWActive != null
-        val AllowUAMplusNoENW = ENActive && !ENWActive && enConfig.AllowUAMplusNoENW
+        val OverrideENWNetIOBMax = ENActive && ENWActive && enConfig.OverrideENWNetIOBMax
         val highBGthresholdActive = enConfig.highBGthreshold > 0 && bg > enConfig.highBGthreshold  // used for isHighLogic and peakIOBmins
 
 
@@ -834,13 +834,6 @@ class DetermineBasalEN @Inject constructor(
         val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 60) && !isHighTempSet && (UAMplusConfidence || isPrebolusing || deltaFastUp)
         val isAuthorisedResistance = isStuckHigh40m && isBasalDeficit && !isHighTempSet
 
-        // The ENW net-IOB budget covers the window AND the 60m post-ENW grace — privileges and
-        // spending limit travel together.
-        val ENWBudgetActive = ENWActive || ENWEndedAgoMins in 1 until 60
-        val UAMplusBypassActive = highBGthresholdActive && isNotFalling && !isShortTermStable &&
-            (!ENWBudgetActive || enConfig.ENWNetIOBRemaining <= 0.0)
-        if (UAMplusBypassActive) rT.reason.append("HighRise bypass, ")
-
         minIOBPredBG = max(39.0, minIOBPredBG)
         minCOBPredBG = max(39.0, minCOBPredBG)
         minUAMPredBG = max(39.0, minUAMPredBG)
@@ -1127,7 +1120,7 @@ class DetermineBasalEN @Inject constructor(
             }
         }
 
-        if (enableSMB && minGuardBG < threshold && !isAuthorisedMealRise && !UAMplusBypassActive) { // when prebolusing or high-rising allow SMB
+        if (enableSMB && minGuardBG < threshold && !isAuthorisedMealRise) { // when prebolusing or high-rising allow SMB
             consoleError.add("minGuardBG ${convert_bg(minGuardBG)} projected below ${convert_bg(threshold)} - disabling SMB")
             //rT.reason += "minGuardBG "+minGuardBG+"<"+threshold+": SMB disabled; ";
             enableSMB = false
@@ -1183,7 +1176,7 @@ class DetermineBasalEN @Inject constructor(
             return setTempBasal(0.0, 0, profile, rT, currenttemp)
         }
 
-        if (eventualBG < min_bg && !isAuthorisedMealRise && !UAMplusBypassActive) { // if eventual BG is below target, but not prebolusing or high-rising
+        if (eventualBG < min_bg && !isAuthorisedMealRise) { // if eventual BG is below target, but not prebolusing or high-rising
             rT.reason.append("Eventual BG ${convert_bg(eventualBG)} < ${convert_bg(min_bg)}")
             // if 5m or 30m avg BG is rising faster than expected delta
             if (minDelta > expectedDelta && minDelta > 0 && carbsReq == 0) {
@@ -1342,32 +1335,18 @@ class DetermineBasalEN @Inject constructor(
 
 
             // ============== EATING NOW IOB RESTRICTION  ==============
-            // UAMplusBypassActive and ENWBudgetActive are decided early (with the authorisation
-            // flags) so the phantom-prediction holds upstream can also honour them. When bypass
-            // is active the cap is skipped entirely: SMBs are maxBolusAAPS-limited instead.
-            if (!UAMplusBypassActive && ENWBudgetActive && enConfig.ENWNetIOBMax > 0 && insulinReq > enConfig.ENWNetIOBRemaining) {
-                when {
-                    // Genuine shortfall: base IOB math agrees insulin is missing.
-                    // This is what the 60m grace is FOR — full authority, no cap.
-                    insulinReqOrig > 0.0 && UAMplusConfidence -> { /* no restriction */ }
-
-                    // No confidence: cap to what's left of the budget.
-                    else -> insulinReq = enConfig.ENWNetIOBRemaining
-                }
+            // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
+            if (ENWActive && enConfig.ENWNetIOBMax > 0 && !OverrideENWNetIOBMax  && insulinReq > enConfig.ENWNetIOBRemaining) {
+                insulinReq = min(insulinReq,enConfig.ENWNetIOBRemaining)
             }
-
-            // // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
-            // if (ENWActive && enConfig.ENWNetIOBMax > 0 && insulinReq > enConfig.ENWNetIOBRemaining) {
-            //     insulinReq = min(insulinReq,enConfig.ENWNetIOBRemaining)
-            // }
 
             // rate required to deliver insulinReq more insulin over 30m:
             // isAuthorisedMealRise or isAuthorisedResistance allows the rate to deliver insulinReq more insulin over 15m
             var basalRateMultiplier = if (isAuthorisedMealRise || isFootToFloor) 4.0 else 2.0
             var rate = basal + (basalRateMultiplier * insulinReq)
-            // Spent-budget window/grace: neutral basal alongside the capped SMBs (proven-safe funded-rise
-            // profile). Outside budget context the normal rate logic runs — high temps allowed on a climb.
-            if (UAMplusBypassActive && ENWBudgetActive) rate = basal
+            // Spent/over budget window+grace: neutral basal alongside the capped SMBs (proven-safe
+            // funded-rise profile). Outside budget context the normal rate logic runs — high temps
+            // allowed on a climb.
             rate = round_basal(rate)
             insulinReq = round(insulinReq, 3)
             rT.insulinReq = insulinReq
@@ -1395,16 +1374,16 @@ class DetermineBasalEN @Inject constructor(
                         // Prioritize PreBolus requirements within safety limits but allow more if insulinReq is greater
                         "PB" to min(enConfig.ENWprebolus, enConfig.SafetyMaxBolus)
                     }
-                    UAMplusBypassActive -> {
-                        // STRICT SAFETY: If the window limit was bypassed, DO NOT use custom EN boluses.
-                        // Strictly enforce the standard AAPS maxBolus to slowly catch up.
+                    OverrideENWNetIOBMax && isAuthorisedMealRise -> {
+                        // STRICT SAFETY: past the window limit (or bypassing it), DO NOT use custom
+                        // EN boluses. Strictly enforce the standard AAPS maxBolus to slowly catch up.
                         "UAM+-" to maxBolusAAPS
                     }
                     ENWActive && UAMplusConfidence && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
                         "UAM+" to enConfig.ENWuamPlusMaxbolus
                     }
-                    AllowUAMplusNoENW && UAMplusConfidence && activeCarbs == 0.0 && bg > target_bg-> { // keep this to AAPS maxBolus for outside ENW
-                        "UAM+" to enConfig.ENWuamMaxbolus
+                    !ENWActive && UAMplusConfidence && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
+                        "UAM+-" to enConfig.ENWuamMaxbolus
                     }
                     ENWActive && enConfig.ENWcobMaxbolus > 0 && eventualBG == lastCOBpredBG -> {
                         "COB" to enConfig.ENWcobMaxbolus
@@ -1439,7 +1418,7 @@ class DetermineBasalEN @Inject constructor(
                 // Safe for resistance because insulinReq is clamped to resistanceBudgetLeft
                 // and the gate de-authorises the moment BG starts to fall (isNotFalling).
                 // Bypass (high+rising) likewise must not have basal cut beneath its SMBs.
-                if (isAuthorisedMealRise || isAuthorisedResistance || UAMplusBypassActive) {
+                if (isAuthorisedMealRise || isAuthorisedResistance) {
                     durationReq = 0
                 }
 

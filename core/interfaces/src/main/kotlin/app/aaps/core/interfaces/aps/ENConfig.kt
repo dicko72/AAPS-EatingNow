@@ -40,7 +40,7 @@ data class ENConfig(
     var ENWprebolus: Double,
     var ENWsmbPct: Int,
     var ENWuamPlusMaxbolus: Double,
-    var AllowUAMplusNoENW: Boolean,
+    var OverrideENWNetIOBMax: Boolean,
     var ENWBolusTrigger: Double,
     var ENWCOBTrigger: Double
 
