@@ -805,31 +805,38 @@ class DetermineBasalEN @Inject constructor(
             else -> (peakIOBmins + 16) until 90 // Future peak: look safely past it
         }
 
-        val UAMplusConfidence =
-            // UAM+ has a maxBolus configured for use intent
-            UAMplusEnabled &&
-            // ensure initialised vars
-            minUAMPredBG < 999 &&
-            // Context: Eating Now must have been activated today
-            ENActive &&
-            // Momentum: BG must be accelerating upwards (3-tier acceleration check)
-            deltaFastUp &&
-            // Current State: BG must already be above target or in active ENW to avoid aggressive firing during hypo recovery
-            (bg > target_bg || ENWActive) &&
-            // Magnitude: The predicted spike must be at least 15% above current BG
-            // OR if already well above target, any predicted rise is sufficient for confidence
-            // (maxUAMPredBG > (bg * 1.15) || (bg > target_bg * 1.3 && maxUAMPredBG > bg)) &&
-            (if (ENWActive) maxUAMPredBG > bg else (maxUAMPredBG > (bg * 1.15) || (bg > target_bg * 1.3 && maxUAMPredBG > bg))) &&
-            // Timing: The UAM peak must be at least 15 mins further out than the current active insulin peak and not too far out
-            maxUAMPredBGMins in allowedUAMRange
+        // CERTAIN RISE: high, well above threshold (+25%), still climbing, and the active
+        // insulin has had its fair chance — 40m patience while the wave is live (>60%),
+        // 15m once spent. Persistence route into UAMplusConfidence for steady climbs.
+        val wavePct = if (enConfig.pastPeakActivity > 0.0001) round(100.0 * iob_data.activity / enConfig.pastPeakActivity, 0).toInt() else -1
+        val certaintyMins = if (wavePct > 60) 40 else 15
+        val isCertainRise = highBGthresholdActive && isNotFalling && !isShortTermStable &&
+            bg > enConfig.highBGthreshold * 1.25 &&
+            enConfig.minutesHigh >= certaintyMins
+
+        val UAMplusConfidence = UAMplusEnabled && minUAMPredBG < 999 && ENActive && when {
+            // High and still rising after the active insulin has had time to work —
+            // the rise has outlasted the wave, so more insulin is certainly needed
+            isCertainRise -> true
+
+            // Within ENW: BG accelerating and UAM predicts a further rise
+            ENWActive && deltaFastUp && maxUAMPredBG > bg &&
+                maxUAMPredBGMins in allowedUAMRange -> true
+
+            // Outside ENW: BG accelerating above target and UAM predicts a
+            // significant rise (15% above current, or any rise when already well above target)
+            bg > target_bg && deltaFastUp && maxUAMPredBGMins in allowedUAMRange &&
+                (maxUAMPredBG > bg * 1.15 || (bg > target_bg * 1.3 && maxUAMPredBG > bg)) -> true
+
+            else -> false
+        }
 
         // variables for allowing some overrides
         val resistanceGain = 1.5   // integral gain: budget grows at 1.5× basal per hour stuck high
         val owedSinceHigh = profile.current_basal * (min(enConfig.minutesHigh, 180) / 60.0) * resistanceGain
         val resistanceBudgetLeft = max(0.0, owedSinceHigh - enConfig.netIOBSinceHigh)
         val isBasalDeficit = resistanceBudgetLeft > 0.0
-        val wavePct = if (enConfig.pastPeakActivity > 0.0001) round(100.0 * iob_data.activity / enConfig.pastPeakActivity, 0).toInt() else -1
-        rT.reason.append("* debug: high ${enConfig.minutesHigh}m owed ${round(owedSinceHigh, 2)} given ${enConfig.netIOBSinceHigh} left ${round(resistanceBudgetLeft, 2)} ago ${enConfig.pastPeakAgoMins}m wave ${wavePct}% *,")
+        rT.reason.append("* debug: high ${enConfig.minutesHigh}m owed ${round(owedSinceHigh, 2)} given ${enConfig.netIOBSinceHigh} left ${round(resistanceBudgetLeft, 2)} ago ${enConfig.pastPeakAgoMins}m wave ${wavePct}% cert ${certaintyMins}m=${isCertainRise} *,")
         val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
         val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 60) && !isHighTempSet && (UAMplusConfidence || isPrebolusing || deltaFastUp)
         val isAuthorisedResistance = isStuckHigh40m && isBasalDeficit && !isHighTempSet
@@ -1120,7 +1127,7 @@ class DetermineBasalEN @Inject constructor(
             }
         }
 
-        if (enableSMB && minGuardBG < threshold && !isAuthorisedMealRise) { // when prebolusing or high-rising allow SMB
+        if (enableSMB && minGuardBG < threshold && !isAuthorisedMealRise && !UAMplusConfidence) { // when prebolusing or high-rising allow SMB
             consoleError.add("minGuardBG ${convert_bg(minGuardBG)} projected below ${convert_bg(threshold)} - disabling SMB")
             //rT.reason += "minGuardBG "+minGuardBG+"<"+threshold+": SMB disabled; ";
             enableSMB = false
@@ -1176,7 +1183,7 @@ class DetermineBasalEN @Inject constructor(
             return setTempBasal(0.0, 0, profile, rT, currenttemp)
         }
 
-        if (eventualBG < min_bg && !isAuthorisedMealRise) { // if eventual BG is below target, but not prebolusing or high-rising
+        if (eventualBG < min_bg && !isAuthorisedMealRise && !UAMplusConfidence) { // if eventual BG is below target, but not prebolusing or high-rising
             rT.reason.append("Eventual BG ${convert_bg(eventualBG)} < ${convert_bg(min_bg)}")
             // if 5m or 30m avg BG is rising faster than expected delta
             if (minDelta > expectedDelta && minDelta > 0 && carbsReq == 0) {
