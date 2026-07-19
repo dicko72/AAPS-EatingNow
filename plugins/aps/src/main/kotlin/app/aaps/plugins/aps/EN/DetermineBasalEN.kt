@@ -833,13 +833,15 @@ class DetermineBasalEN @Inject constructor(
 
         // variables for allowing some overrides
         val resistanceGain = 1.5   // integral gain: budget grows at 1.5× basal per hour stuck high
-        val owedSinceHigh = profile.current_basal * (min(enConfig.minutesHigh, 180) / 60.0) * resistanceGain
+        val owedSinceHigh = profile.current_basal * (min(enConfig.minutesHigh, enConfig.insulinPeakMins * 3 / 2) / 60.0) * resistanceGain
         val resistanceBudgetLeft = max(0.0, owedSinceHigh - enConfig.netIOBSinceHigh)
         val isBasalDeficit = resistanceBudgetLeft > 0.0
         rT.reason.append("* debug: high ${enConfig.minutesHigh}m owed ${round(owedSinceHigh, 2)} given ${enConfig.netIOBSinceHigh} left ${round(resistanceBudgetLeft, 2)} ago ${enConfig.pastPeakAgoMins}m wave ${wavePct}% cert ${certaintyMins}m=${isCertainRise} *,")
         val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
         val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 60) && !isHighTempSet && (UAMplusConfidence || isPrebolusing || deltaFastUp)
-        val isAuthorisedResistance = isStuckHigh40m && isBasalDeficit && !isHighTempSet
+        // resistance silent until the last window insulin has peaked
+        val isAuthorisedResistance = isStuckHigh40m && isBasalDeficit && !isHighTempSet &&
+            !ENWActive && ENWEndedAgoMins >= enConfig.insulinPeakMins
 
         minIOBPredBG = max(39.0, minIOBPredBG)
         minCOBPredBG = max(39.0, minCOBPredBG)

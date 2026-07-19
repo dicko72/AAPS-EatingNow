@@ -22,6 +22,7 @@ data class ENConfig(
     var minutesHigh: Int,
     var pastPeakAgoMins: Int,
     var pastPeakActivity: Double,
+    var insulinPeakMins: Int,
     var normalTargetBG: Double,
 
     // ENW variables

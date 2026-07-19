@@ -569,13 +569,18 @@ open class ENPlugin @Inject constructor(
         val normalTargetBG = profile.getTargetMgdl() // profile target bg at this time
 
         // Calculate high bg for resistance assistance
+        // rolling window from the end of the last meal window based upon insulinPeak
         val highThresholdMgdl = profileUtil.convertToMgdl(preferences.get(DoubleKey.highBGthreshold), units) + normalTargetBG
         val recentBg = persistenceLayer.getBgReadingsDataFromTimeToTime(now - T.hours(6).msecs(), now, ascending = false)
         var highSinceTime = now
         for (gv in recentBg) { if (gv.value > highThresholdMgdl) highSinceTime = gv.timestamp else break }  // newest→oldest
         val minutesHigh = ((now - highSinceTime) / 60_000L).toInt()
+        // ledger lookback: corrections count for ~1.5× the insulin's peak time (Novorapid 75 → ~113m)
+        val highRangeMins = activePlugin.activeInsulin.peak * 3 / 2
+        val highSinceStart = maxOf(highSinceTime, now - T.mins(highRangeMins.toLong()).msecs(), (ENWEndTime ?: 0L).coerceAtMost(now))
         val netIOBSinceHigh = if (minutesHigh > 0)
-            tddCalculator.calculateIntervalNet(max(highSinceTime, now - T.hours(3).msecs()), now, allowMissingData = true)?.totalAmount ?: 0.0 else 0.0
+            tddCalculator.calculateIntervalNet(highSinceStart, now, allowMissingData = true)?.totalAmount ?: 0.0
+        else 0.0
 
         // Past insulin activity summit — same computation the Overview activity line plots.
         // Telemetry for the signed peak timeline (−y) and waveLive calibration; NOT used for dosing yet.
@@ -676,6 +681,7 @@ open class ENPlugin @Inject constructor(
             pastPeakAgoMins = pastPeakAgoMins,
             pastPeakActivity = Round.roundTo(pastPeakActivity, 0.0001),
             normalTargetBG = normalTargetBG,
+            insulinPeakMins = activePlugin.activeInsulin.peak,
 
             // ENW variables
             ENWfirstMeal = ENWfirstMeal,
