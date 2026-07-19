@@ -1372,24 +1372,28 @@ class DetermineBasalEN @Inject constructor(
                 val (ENmaxBolusType, maxBolus) = when {
                     isPrebolusing -> {
                         // Prioritize PreBolus requirements within safety limits but allow more if insulinReq is greater
-                        "PB" to min(enConfig.ENWprebolus, enConfig.SafetyMaxBolus)
+                        "ENW-PB" to min(enConfig.ENWprebolus, enConfig.SafetyMaxBolus)
                     }
-                    OverrideENWNetIOBMax && isAuthorisedMealRise -> {
+                    ENWEndedAgoMins in 1 until 60 && activeCarbs == 0.0 -> {
+                        // Grace-hour SMB ceiling fallback to maxBolusAAPS
+                        "ENW<60M" to maxBolusAAPS
+                    }
+                    OverrideENWNetIOBMax && insulinReq > enConfig.ENWNetIOBRemaining -> {
                         // STRICT SAFETY: past the window limit (or bypassing it), DO NOT use custom
                         // EN boluses. Strictly enforce the standard AAPS maxBolus to slowly catch up.
-                        "UAM+-" to maxBolusAAPS
-                    }
-                    ENWActive && UAMplusConfidence && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
-                        "UAM+" to enConfig.ENWuamPlusMaxbolus
+                        ">ENW-IOB" to maxBolusAAPS
                     }
                     !ENWActive && UAMplusConfidence && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
-                        "UAM+-" to enConfig.ENWuamMaxbolus
+                        ">ENW" to enConfig.ENWuamMaxbolus
+                    }
+                    ENWActive && UAMplusConfidence && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
+                        "ENW-UAM+" to enConfig.ENWuamPlusMaxbolus
                     }
                     ENWActive && enConfig.ENWcobMaxbolus > 0 && eventualBG == lastCOBpredBG -> {
-                        "COB" to enConfig.ENWcobMaxbolus
+                        "ENW-COB" to enConfig.ENWcobMaxbolus
                     }
                     ENWActive && enConfig.ENWuamMaxbolus > 0 && eventualBG == lastUAMpredBG -> {
-                        "UAM" to enConfig.ENWuamMaxbolus
+                        "ENW-UAM" to enConfig.ENWuamMaxbolus
                     }
                     else -> {
                         "" to maxBolusAAPS // Fallback to existing maxBolus
