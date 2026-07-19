@@ -1390,7 +1390,7 @@ class DetermineBasalEN @Inject constructor(
                         // Grace-hour SMB ceiling fallback to maxBolusAAPS
                         "ENW<60M" to maxBolusAAPS
                     }
-                    OverrideENWNetIOBMax && insulinReq > enConfig.ENWNetIOBRemaining -> {
+                    OverrideENWNetIOBMax && enConfig.ENWNetIOBRemaining == 0.0 -> {
                         // STRICT SAFETY: past the window limit (or bypassing it), DO NOT use custom
                         // EN boluses. Strictly enforce the standard AAPS maxBolus to slowly catch up.
                         ">ENW-IOB" to maxBolusAAPS
@@ -1399,13 +1399,15 @@ class DetermineBasalEN @Inject constructor(
                         ">ENW" to maxBolusAAPS
                     }
                     ENWActive && UAMplusConfidence && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
-                        "ENW-UAM+" to enConfig.ENWuamPlusMaxbolus
+                        // EN entitlement capped by the remaining budget, floored at standard size —
+                        // the final bolus spends the account to exactly zero, never past it
+                        "ENW-UAM+" to min(enConfig.ENWuamPlusMaxbolus, max(enConfig.ENWNetIOBRemaining, maxBolusAAPS))
                     }
                     ENWActive && enConfig.ENWcobMaxbolus > 0 && eventualBG == lastCOBpredBG -> {
-                        "ENW-COB" to enConfig.ENWcobMaxbolus
+                        "ENW-COB" to min(enConfig.ENWcobMaxbolus, max(enConfig.ENWNetIOBRemaining, maxBolusAAPS))
                     }
                     ENWActive && enConfig.ENWuamMaxbolus > 0 && eventualBG == lastUAMpredBG -> {
-                        "ENW-UAM" to enConfig.ENWuamMaxbolus
+                        "ENW-UAM" to min(enConfig.ENWuamMaxbolus, max(enConfig.ENWNetIOBRemaining, maxBolusAAPS))
                     }
                     else -> {
                         "" to maxBolusAAPS // Fallback to existing maxBolus
