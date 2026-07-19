@@ -1434,7 +1434,7 @@ class DetermineBasalEN @Inject constructor(
                 // Safe for resistance because insulinReq is clamped to resistanceBudgetLeft
                 // and the gate de-authorises the moment BG starts to fall (isNotFalling).
                 // Bypass (high+rising) likewise must not have basal cut beneath its SMBs.
-                if (isAuthorisedMealRise || isAuthorisedResistance) {
+                if (isAuthorisedMealRise || isAuthorisedResistance || UAMplusConfidence) {
                     durationReq = 0
                 }
 
