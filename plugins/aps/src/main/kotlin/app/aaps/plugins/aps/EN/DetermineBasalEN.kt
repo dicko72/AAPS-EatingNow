@@ -962,6 +962,9 @@ class DetermineBasalEN @Inject constructor(
 
         // Decide which BG value to use based on the delta for the insulinReq later
         val insulinReqBG = when {
+            // No ENW-IOB remaining so less aggressive prediction
+            // OverrideENWNetIOBMax && enConfig.ENWNetIOBRemaining <= 0.0 && minUAMPredBG < 999 -> (minUAMPredBG + maxUAMPredBG) / 2.0
+
             // UAM++ accelerating BG rise with UAM peaking after IOB peak ⇈✓
             UAMplusConfidence -> max(maxUAMPredBG, extrapolatedBG)
 
