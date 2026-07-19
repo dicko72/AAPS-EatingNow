@@ -1396,7 +1396,7 @@ class DetermineBasalEN @Inject constructor(
                         ">ENW-IOB" to maxBolusAAPS
                     }
                     !ENWActive && UAMplusConfidence && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
-                        ">ENW" to enConfig.ENWuamMaxbolus
+                        ">ENW" to maxBolusAAPS
                     }
                     ENWActive && UAMplusConfidence && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
                         "ENW-UAM+" to enConfig.ENWuamPlusMaxbolus
