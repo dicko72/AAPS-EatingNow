@@ -352,14 +352,22 @@ class DetermineBasalEN @Inject constructor(
             peakIOBmins = null
         }
 
-        // when delta is rising fast for UAM+
+        // when delta is rising fast for UAM+ — the bar to fire scales with how much
+        // insulin is already working on the rise (declared meal < no peak coming < peak coming)
         val deltaFastUp = when {
-            // UAM+ aggressive short average when ENW is running
+            // ENW running: user declared a meal, confidence inherited — react to any rise
             ENWActive -> glucose_status.delta > 0.0 && (deltaPctS >= 1.0 || bg < enConfig.highBGthreshold)
-            // Checks if no peak is coming
+
+            // Outside ENW, no peak coming
             peakIOBmins == null -> glucose_status.delta > 6.0 && glucose_status.delta >= glucose_status.shortAvgDelta
-            // Require both short & long average acceleration outside of ENW
-            else -> glucose_status.delta >= glucose_status.shortAvgDelta && glucose_status.delta > 7.0 && glucose_status.delta >= glucose_status.longAvgDelta && deltaPctS >= 1.0
+
+            // Outside ENW, peak coming
+            // (deltaPctS >= 1.2 = latest delta ≥20% over the short avg; steady fast-climbs fall
+            //  through to the persistence route instead)
+            else -> glucose_status.delta >= glucose_status.shortAvgDelta &&
+                glucose_status.delta > 7.0 &&
+                glucose_status.delta >= glucose_status.longAvgDelta &&
+                deltaPctS >= 1.2
         }
 
         //  Calculate stubborn high logic BG High for ~15 minutes (short average is flat)
