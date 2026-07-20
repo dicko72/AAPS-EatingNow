@@ -355,7 +355,7 @@ class DetermineBasalEN @Inject constructor(
         // when delta is rising fast for UAM+
         val deltaFastUp = when {
             // UAM+ aggressive short average when ENW is running
-            ENWActive -> glucose_status.delta > 0.0
+            ENWActive -> glucose_status.delta > 0.0 && (deltaPctS >= 1.0 || bg < enConfig.highBGthreshold)
             // Checks if no peak is coming
             peakIOBmins == null -> glucose_status.delta > 6.0 && glucose_status.delta >= glucose_status.shortAvgDelta
             // Require both short & long average acceleration outside of ENW
@@ -962,8 +962,8 @@ class DetermineBasalEN @Inject constructor(
 
         // Decide which BG value to use based on the delta for the insulinReq later
         val insulinReqBG = when {
-            // No ENW-IOB remaining so less aggressive prediction
-            // OverrideENWNetIOBMax && enConfig.ENWNetIOBRemaining <= 0.0 && minUAMPredBG < 999 -> (minUAMPredBG + maxUAMPredBG) / 2.0
+            // No ENW-IOB remaining and slowing so less aggressive prediction
+            OverrideENWNetIOBMax && enConfig.ENWNetIOBRemaining == 0.0 && minUAMPredBG < 999 -> (minUAMPredBG + maxUAMPredBG) / 2.0
 
             // UAM++ accelerating BG rise with UAM peaking after IOB peak ⇈✓
             UAMplusConfidence -> max(maxUAMPredBG, extrapolatedBG)
@@ -1043,7 +1043,7 @@ class DetermineBasalEN @Inject constructor(
         }
 
         rT.reason.apply {
-            append("Delta: $deltaText, ")
+            append("Delta: $deltaPctS/$deltaPctL $deltaText, ")
             append("COB: ${round(activeCOB, 1).withoutZeros()}, ")
             append("Dev: ${convert_bg(deviation.toDouble())}, ")
             append("BGI: ${convert_bg(bgi)}, ")
@@ -1356,9 +1356,10 @@ class DetermineBasalEN @Inject constructor(
             // isAuthorisedMealRise or isAuthorisedResistance allows the rate to deliver insulinReq more insulin over 15m
             var basalRateMultiplier = if (isAuthorisedMealRise || isFootToFloor) 4.0 else 2.0
             var rate = basal + (basalRateMultiplier * insulinReq)
-            // Spent/over budget window+grace: neutral basal alongside the capped SMBs (proven-safe
-            // funded-rise profile). Outside budget context the normal rate logic runs — high temps
-            // allowed on a climb.
+
+            // Spent/over budget: neutral basal alongside the capped SMBs — no high temp stacked onto
+            if (OverrideENWNetIOBMax && enConfig.ENWNetIOBRemaining == 0.0) rate = basal
+
             rate = round_basal(rate)
             insulinReq = round(insulinReq, 3)
             rT.insulinReq = insulinReq
