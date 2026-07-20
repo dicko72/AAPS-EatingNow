@@ -1026,16 +1026,17 @@ class DetermineBasalEN @Inject constructor(
         rT.IOB = iob_data.iob
 
         val deltaText = when {
-            UAMplusConfidence -> "⇈+" // FastUp AND UAM+ is active!
-            deltaFastUp -> "⇈"       // FastUp, but UAM+ is not confident yet
-            isHigh40m -> "⎺→→"
-            isHigh15m -> "⎺→"
-            glucose_status.delta < 9.0 -> "⇊"
-            glucose_status.delta > 1.5 -> "↗"
-            glucose_status.delta < -1.5 -> "↘"
-            else -> "→"
+            deltaFastUp                 -> "⇈"     // fast up
+            glucose_status.delta < -9.0 -> "⇊"     // fast down
+            isHigh40m                   -> "⎺→→"   // flat high 40m
+            isHigh15m                   -> "⎺→"    // flat high 15m
+            glucose_status.delta >  1.5 -> "↗"     // mild up
+            glucose_status.delta < -1.5 -> "↘"     // mild down
+            else                        -> "→"     // flat
         }.let { base ->
-            if (isAuthorisedMealRise || isAuthorisedResistance || isFootToFloor) "$base✓" else base
+            if (UAMplusConfidence) "$base+" else base  // confidence
+        }.let { base ->
+            if (isAuthorisedMealRise || isAuthorisedResistance || isFootToFloor) "$base✓" else base  // authorised
         }
 
         rT.reason.apply {
