@@ -362,11 +362,6 @@ class DetermineBasalEN @Inject constructor(
             else -> glucose_status.delta >= glucose_status.shortAvgDelta && glucose_status.delta > 7.0 && glucose_status.delta >= glucose_status.longAvgDelta && deltaPctS >= 1.0
         }
 
-        val deltaFastDown =
-            glucose_status.delta < 0.0 &&
-            glucose_status.delta < glucose_status.shortAvgDelta &&
-            glucose_status.delta < glucose_status.longAvgDelta
-
         //  Calculate stubborn high logic BG High for ~15 minutes (short average is flat)
         // Constants for stubborn high logic tuning
         val STABLE_BG_THRESHOLD = 4.0
@@ -1035,7 +1030,7 @@ class DetermineBasalEN @Inject constructor(
             deltaFastUp -> "⇈"       // FastUp, but UAM+ is not confident yet
             isHigh40m -> "⎺→→"
             isHigh15m -> "⎺→"
-            deltaFastDown -> "⇊"
+            glucose_status.delta < 9.0 -> "⇊"
             glucose_status.delta > 1.5 -> "↗"
             glucose_status.delta < -1.5 -> "↘"
             else -> "→"
