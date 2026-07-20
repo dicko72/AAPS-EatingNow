@@ -811,16 +811,16 @@ class DetermineBasalEN @Inject constructor(
         // CERTAIN RISE: high, well above threshold (+25%), still climbing, and the active
         // insulin has had its fair chance — 40m patience while the wave is live (>60%),
         // 15m once spent. Persistence route into UAMplusConfidence for steady climbs.
-        val wavePct = if (enConfig.pastPeakActivity > 0.0001) round(100.0 * iob_data.activity / enConfig.pastPeakActivity, 0).toInt() else -1
-        val certaintyMins = if (wavePct > 60) 40 else 15
-        val isCertainRise = highBGthresholdActive && isNotFalling && !isShortTermStable &&
+        val relativeActivityPct  = if (enConfig.pastPeakActivity > 0.0001) round(100.0 * iob_data.activity / enConfig.pastPeakActivity, 0).toInt() else -1
+        val certaintyMins = if (relativeActivityPct  > 60) 40 else 15
+        val isPersistentRise = highBGthresholdActive && isNotFalling && !isShortTermStable &&
             bg > enConfig.highBGthreshold * 1.25 &&
             enConfig.minutesHigh >= certaintyMins
 
         val UAMplusConfidence = UAMplusEnabled && minUAMPredBG < 999 && ENActive && when {
             // High and still rising after the active insulin has had time to work —
             // the rise has outlasted the wave, so more insulin is certainly needed
-            isCertainRise -> true
+            isPersistentRise -> true
 
             // Within ENW: BG accelerating and UAM predicts a further rise
             ENWActive && deltaFastUp && maxUAMPredBG > bg &&
@@ -839,7 +839,7 @@ class DetermineBasalEN @Inject constructor(
         val owedSinceHigh = profile.current_basal * (min(enConfig.minutesHigh, enConfig.insulinPeakMins * 3 / 2) / 60.0) * resistanceGain
         val resistanceBudgetLeft = max(0.0, owedSinceHigh - enConfig.netIOBSinceHigh)
         val isBasalDeficit = resistanceBudgetLeft > 0.0
-        rT.reason.append("* debug: high ${enConfig.minutesHigh}m owed ${round(owedSinceHigh, 2)} given ${enConfig.netIOBSinceHigh} left ${round(resistanceBudgetLeft, 2)} ago ${enConfig.pastPeakAgoMins}m wave ${wavePct}% cert ${certaintyMins}m=${isCertainRise} *,")
+        rT.reason.append("* debug: high ${enConfig.minutesHigh}m owed ${round(owedSinceHigh, 2)} given ${enConfig.netIOBSinceHigh} left ${round(resistanceBudgetLeft, 2)} ago ${enConfig.pastPeakAgoMins}m wave ${relativeActivityPct }% cert ${certaintyMins}m=${isPersistentRise} *,")
         val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
         val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 60) && !isHighTempSet && (UAMplusConfidence || isPrebolusing || deltaFastUp)
         // resistance silent until the last window insulin has peaked
