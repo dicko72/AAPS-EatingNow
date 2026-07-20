@@ -966,7 +966,8 @@ class DetermineBasalEN @Inject constructor(
             OverrideENWNetIOBMax && enConfig.ENWNetIOBRemaining == 0.0 && minUAMPredBG < 999 -> (minUAMPredBG + maxUAMPredBG) / 2.0
 
             // UAM++ accelerating BG rise with UAM peaking after IOB peak ⇈✓
-            UAMplusConfidence -> max(maxUAMPredBG, extrapolatedBG)
+            UAMplusConfidence && ENWActive -> max(maxUAMPredBG, extrapolatedBG)   // front-load the declared meal
+            UAMplusConfidence              -> max(eventualBG, bg)                 // post-window certainty: IOB-aware, no naive peak
 
             // Rising fast in with confidence and ENW IOB remaining ⇈✓
             isAuthorisedMealRise -> maxOf(maxUAMPredBG, eventualBG, extrapolatedBG)
