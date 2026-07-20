@@ -359,7 +359,7 @@ class DetermineBasalEN @Inject constructor(
             // Checks if no peak is coming
             peakIOBmins == null -> glucose_status.delta > 6.0 && glucose_status.delta >= glucose_status.shortAvgDelta
             // Require both short & long average acceleration outside of ENW
-            else -> glucose_status.delta >= glucose_status.shortAvgDelta && glucose_status.delta > 7.0 && glucose_status.delta >= glucose_status.longAvgDelta
+            else -> glucose_status.delta >= glucose_status.shortAvgDelta && glucose_status.delta > 7.0 && glucose_status.delta >= glucose_status.longAvgDelta && deltaPctS >= 1.0
         }
 
         val deltaFastDown =
