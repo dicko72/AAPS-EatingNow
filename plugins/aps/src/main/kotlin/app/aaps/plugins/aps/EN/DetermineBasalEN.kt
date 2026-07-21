@@ -951,14 +951,14 @@ class DetermineBasalEN @Inject constructor(
         // Decide which BG value to use based on the delta for the insulinReq later
         val insulinReqBG = when {
             // No ENW-IOB remaining and slowing so less aggressive prediction
-            OverrideENWNetIOBMax && enConfig.ENWNetIOBRemaining == 0.0 && minUAMPredBG < 999 -> (minUAMPredBG + maxUAMPredBG) / 2.0
+            OverrideENWNetIOBMax && enConfig.ENWNetIOBRemaining == 0.0 -> min(minPredBG, eventualBG)   // over budget: use AAPS safety until more insulin clearly needed
 
             // UAM++ accelerating BG rise with UAM peaking after IOB peak ⇈✓
             UAMplusConfidence && ENWActive -> max(maxUAMPredBG, extrapolatedBG)   // front-load the declared meal
             UAMplusConfidence              -> max(eventualBG, bg)                 // post-window certainty: IOB-aware, no naive peak
 
-            // Rising fast in with confidence and ENW IOB remaining ⇈✓
-            isAuthorisedMealRise -> maxOf(maxUAMPredBG, eventualBG, extrapolatedBG)
+            // Authorised meal rise condition is met
+            isAuthorisedMealRise -> max(bg, eventualBG)
 
             // Flat/Stubborn High: Use current BG or eventualBG for  ⎺⎺→ 15m and ⎺⎺→ 40m
             isAuthorisedResistance ->  max(bg, eventualBG)
