@@ -331,25 +331,21 @@ class DetermineBasalEN @Inject constructor(
 
         // Upcoming insulin activity peak using position (index) of the maximum future insulin activity
         val peakIndex = iobArray.indices.maxByOrNull { iobArray[it].activity } ?: 0
-
-        // Native AAPS future prediction
-        // peakIOBmins: minutes, (0) now, (null) no peak
+        val basalActivity = profile.current_basal / 60.0
+        val isRidingPeak = iob_data.activity > max(basalActivity * 2.0, 0.02)
+        // peakIOBmins: (neg) mins since past summit · (0) now · (pos) mins to future peak · (null) no wave
         var peakIOBmins: Int? = (peakIndex * 5).takeUnless {
             !highBGthresholdActive && iob_data.iob < (profile.current_basal / 4.0)
         }
-
-        // --- DYNAMIC PEAK OVERRIDE ---
-        val basalActivity = profile.current_basal / 60.0
-        val isRidingPeak = iob_data.activity > max(basalActivity * 2.0, 0.02)
-
         if (peakIOBmins != null && peakIOBmins > 0) {
-            // 1. FUTURE: A peak is coming. Do nothing, let the native prediction stand (e.g., 45m).
+            // 1. FUTURE: a peak is coming — keep the positive offset
         } else if (isRidingPeak) {
-            // 2. NOW: Native says 0 or null, but we are actively riding a massive wave. Force to Now.
-            peakIOBmins = 0
+            peakIOBmins = 0   // 2. NOW: riding the wave
         } else {
-            // 3. NONE: Native says 0 or null, and the active wave has passed. Coast is clear.
-            peakIOBmins = null
+            // 3. PAST: wave has peaked & passed — carry ENPlugin's summit as a negative offset;
+            //    null only when there's no meaningful wave at all (negligible IOB / empty scan)
+            peakIOBmins = if (enConfig.pastPeakActivity > 0.0001 && enConfig.pastPeakAgoMins > 0)
+                -enConfig.pastPeakAgoMins else null
         }
 
         // when delta is rising fast for UAM+ — the bar to fire scales with how much
@@ -359,7 +355,7 @@ class DetermineBasalEN @Inject constructor(
             ENWActive -> glucose_status.delta > 0.0 && (deltaPctS >= 1.0 || bg < enConfig.highBGthreshold)
 
             // Outside ENW, no peak coming
-            peakIOBmins == null -> glucose_status.delta > 6.0 && glucose_status.delta >= glucose_status.shortAvgDelta
+            peakIOBmins == null || peakIOBmins < 0 -> glucose_status.delta > 6.0 && glucose_status.delta >= glucose_status.shortAvgDelta
 
             // Outside ENW, peak coming
             // (deltaPctS >= 1.2 = latest delta ≥20% over the short avg; steady fast-climbs fall
@@ -387,7 +383,7 @@ class DetermineBasalEN @Inject constructor(
         val isNotFalling = glucose_status.shortAvgDelta >= 0.0
 
         // Insulin activity peak state: peakIOBmins == null => on-board insulin already past its peak
-        val noPeakImminent = peakIOBmins == null
+        val noPeakImminent = peakIOBmins == null || peakIOBmins < 0
 
         // isHigh*: high + plateaued + NO peak imminent — drives aggressive ISF scaling & high dosing branch (unchanged)
         val isFootToFloor = highBGthresholdActive && !ENActive && systemTime > enConfig.ENTimeStart && deltaFastUp
@@ -803,9 +799,9 @@ class DetermineBasalEN @Inject constructor(
         // Determine the allowed UAM prediction window based on the Eating Now state
         val allowedUAMRange = when {
             ENWActive -> 15 until 180 // Deep look-ahead while eating
-            peakIOBmins == null -> 15 until 90 // Coast is clear: allow standard UAM tracking
-            peakIOBmins == 0 -> 45 until 90 // Riding a massive wave right now: force UAM to wait 45m for it to clear
-            else -> (peakIOBmins + 16) until 90 // Future peak: look safely past it
+            peakIOBmins == null || peakIOBmins < 0 -> 15 until 90                 // no future peak (past or none)
+            peakIOBmins == 0                        -> 45 until 90                 // riding now
+            else                                    -> (peakIOBmins + 16) until 90 // future (positive)
         }
 
         // CERTAIN RISE: high, well above threshold (+25%), still climbing, and the active
@@ -839,7 +835,7 @@ class DetermineBasalEN @Inject constructor(
         val owedSinceHigh = profile.current_basal * (min(enConfig.minutesHigh, enConfig.insulinPeakMins * 3 / 2) / 60.0) * resistanceGain
         val resistanceBudgetLeft = max(0.0, owedSinceHigh - enConfig.netIOBSinceHigh)
         val isBasalDeficit = resistanceBudgetLeft > 0.0
-        rT.reason.append("* debug: high ${enConfig.minutesHigh}m owed ${round(owedSinceHigh, 2)} given ${enConfig.netIOBSinceHigh} left ${round(resistanceBudgetLeft, 2)} ago ${enConfig.pastPeakAgoMins}m wave ${relativeActivityPct }% cert ${certaintyMins}m=${isPersistentRise} *,")
+        rT.reason.append("* debug: owed ${round(owedSinceHigh, 2)} given ${enConfig.netIOBSinceHigh} left ${round(resistanceBudgetLeft, 2)} cert ${enConfig.minutesHigh}/${certaintyMins}m=${isPersistentRise} *,")
         val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
         val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 60) && !isHighTempSet && (UAMplusConfidence || isPrebolusing || deltaFastUp)
         // resistance silent until the last window insulin has peaked
@@ -1036,8 +1032,8 @@ class DetermineBasalEN @Inject constructor(
         val deltaText = when {
             deltaFastUp                 -> "⇈"     // fast up
             glucose_status.delta < -9.0 -> "⇊"     // fast down
-            isHigh40m                   -> "⎺→→"   // flat high 40m
-            isHigh15m                   -> "⎺→"    // flat high 15m
+            isHigh40m                   -> "⎺→→ ${enConfig.minutesHigh}m"   // flat high 40m
+            isHigh15m                   -> "⎺→ ${enConfig.minutesHigh}m"    // flat high 15m
             glucose_status.delta >  1.5 -> "↗"     // mild up
             glucose_status.delta < -1.5 -> "↘"     // mild down
             else                        -> "→"     // flat
@@ -1089,12 +1085,14 @@ class DetermineBasalEN @Inject constructor(
             rT.reason.append("ENW-IOB: ${enConfig.ENWNetIOB}/${enConfig.ENWNetIOBMax}, ")
         }
 
-        // show peakIOBmins
+        // show peakIOBmins and relativeActivityPct
+        rT.reason.append("PeakIOB: ")
         rT.reason.append(when (peakIOBmins) {
-            null -> "PeakIOB: None, "
-            0 -> "PeakIOB: Now, "
-            else -> "PeakIOB: ${peakIOBmins}m, "
+            null -> "None"
+            0 -> "Now"
+            else -> "${peakIOBmins}m"
         })
+        rT.reason.append(" ${relativeActivityPct }%,")
 
         // use naive_eventualBG if above 40, but switch to minGuardBG if both eventualBGs hit floor of 39
         var carbsReqBG = naive_eventualBG
