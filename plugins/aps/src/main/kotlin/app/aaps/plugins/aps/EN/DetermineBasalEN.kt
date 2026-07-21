@@ -387,21 +387,10 @@ class DetermineBasalEN @Inject constructor(
 
         // isHigh*: high + plateaued + NO peak imminent — drives aggressive ISF scaling & high dosing branch (unchanged)
         val isFootToFloor = highBGthresholdActive && !ENActive && systemTime > enConfig.ENTimeStart && deltaFastUp
-        val isHigh15m = highBGthresholdActive && noPeakImminent && isShortTermStable
-        val isHigh40m = isHigh15m && isLongTermStable
+        val isHigh      = highBGthresholdActive && noPeakImminent && isShortTermStable && enConfig.minutesHigh > 30
+        val isStuckHigh = highBGthresholdActive && isNotFalling  && isShortTermStable && enConfig.minutesHigh > 30
 
-        // isStuckHigh*: high + plateaued + not yet falling — the resistance signal (peak-INDEPENDENT)
-        val isStuckHigh15m = highBGthresholdActive && isShortTermStable && isNotFalling
-        val isStuckHigh40m = isStuckHigh15m && isLongTermStable
-
-        // ISF Scaling based on prefs or high BG
-        val isHighScaledPct = when {
-            ENWActive -> 1.0 // no scaling during ENW
-            isHigh40m -> enConfig.enwProfileScalePct + 0.50 // Stuck for 40+ minutes extra 50%
-            isHigh15m -> enConfig.enwProfileScalePct + 0.25 // Stuck for 15+ minutes extra 25%
-            else -> 1.0
-        }
-
+        // Prebolus amounts
         val remainingPrebolus = round((enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0) ,1)// remaining prebolus
         val isPrebolusing = enConfig.ENWActive == TT.Reason.EATING_NOW_PB && remainingPrebolus > 0.0 && enConfig.ENWRunTime < 10 // if prebolusing
 
@@ -839,7 +828,7 @@ class DetermineBasalEN @Inject constructor(
         val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
         val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 60) && !isHighTempSet && (UAMplusConfidence || isPrebolusing || deltaFastUp)
         // resistance silent until the last window insulin has peaked
-        val isAuthorisedResistance = isStuckHigh40m && isBasalDeficit && !isHighTempSet &&
+        val isAuthorisedResistance = isStuckHigh && isBasalDeficit && !isHighTempSet &&
             !ENWActive && ENWEndedAgoMins >= enConfig.insulinPeakMins
 
         minIOBPredBG = max(39.0, minIOBPredBG)
@@ -973,7 +962,7 @@ class DetermineBasalEN @Inject constructor(
 
             // Flat/Stubborn High: Use current BG or eventualBG for  ⎺⎺→ 15m and ⎺⎺→ 40m
             isAuthorisedResistance ->  max(bg, eventualBG)
-            isHigh15m || isHigh40m ->  (min(minPredBG, bg) + bg) * 0.5
+            isHigh ->  (min(minPredBG, bg) + bg) * 0.5
 
             // UAM+ accelerating BG rise without prediction factors ⇈
             deltaFastUp -> (minPredBG + extrapolatedBG + eventualBG) / 3
@@ -999,7 +988,7 @@ class DetermineBasalEN @Inject constructor(
             val baseAdaptiveISF = (profile.sens / sensBGScaler) * sensNormalTargetScaler
 
             // Calculate how much the ISF was supposed to change, then multiply it
-            future_sens = baseAdaptiveISF / isHighScaledPct
+            future_sens = baseAdaptiveISF
 
             // Prevent the algorithm from giving you too much or too little insulin
             val minSafeIsf = profile.sens * 0.4
@@ -1032,8 +1021,7 @@ class DetermineBasalEN @Inject constructor(
         val deltaText = when {
             deltaFastUp                 -> "⇈"     // fast up
             glucose_status.delta < -9.0 -> "⇊"     // fast down
-            isHigh40m                   -> "⎺→→ ${enConfig.minutesHigh}m"   // flat high 40m
-            isHigh15m                   -> "⎺→ ${enConfig.minutesHigh}m"    // flat high 15m
+            isHigh                      -> "⎺→ ${enConfig.minutesHigh}m"    // flat high
             glucose_status.delta >  1.5 -> "↗"     // mild up
             glucose_status.delta < -1.5 -> "↘"     // mild down
             else                        -> "→"     // flat
