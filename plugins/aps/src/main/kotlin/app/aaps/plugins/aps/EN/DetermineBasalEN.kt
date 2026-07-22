@@ -1387,15 +1387,15 @@ class DetermineBasalEN @Inject constructor(
                     }
                     ENWEndedAgoMins in 1 until 60 && activeCarbs == 0.0 -> {
                         // Grace-hour SMB ceiling fallback to maxBolusAAPS
-                        "ENW<60M" to maxBolusAAPS
+                        "ENW-60M" to maxBolusAAPS
                     }
                     OverrideENWNetIOBMax && enConfig.ENWNetIOBRemaining == 0.0 -> {
                         // STRICT SAFETY: past the window limit (or bypassing it), DO NOT use custom
                         // EN boluses. Strictly enforce the standard AAPS maxBolus to slowly catch up.
-                        ">ENW-IOB" to maxBolusAAPS
+                        "ENW-IOB" to maxBolusAAPS
                     }
                     !ENWActive && UAMplusConfidence && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
-                        ">ENW" to maxBolusAAPS
+                        "ENW-OFF" to maxBolusAAPS
                     }
                     ENWActive && UAMplusConfidence && enConfig.ENWuamPlusMaxbolus > 0 && activeCarbs == 0.0 -> {
                         // EN entitlement capped by the remaining budget, floored at standard size —
