@@ -586,7 +586,8 @@ open class ENPlugin @Inject constructor(
         // Telemetry for the signed peak timeline (−y) and waveLive calibration; NOT used for dosing yet.
         var pastPeakTime = now
         var pastPeakActivity = 0.0
-        var t = now - T.hours(4).msecs()
+        val pastPeakRangeMins = activePlugin.activeInsulin.peak * 3 / 2
+        var t = now - T.mins(pastPeakRangeMins.toLong()).msecs()
         while (t <= now) {
             val p = profileFunction.getProfile(t)
             if (p != null) {
