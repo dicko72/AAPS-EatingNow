@@ -573,7 +573,16 @@ open class ENPlugin @Inject constructor(
         val highThresholdMgdl = profileUtil.convertToMgdl(preferences.get(DoubleKey.highBGthreshold), units) + normalTargetBG
         val recentBg = persistenceLayer.getBgReadingsDataFromTimeToTime(now - T.hours(6).msecs(), now, ascending = false)
         var highSinceTime = now
-        for (gv in recentBg) { if (gv.value > highThresholdMgdl) highSinceTime = gv.timestamp else break }  // newest→oldest
+        var belowSince: Long? = null
+        for (gv in recentBg) {                                   // newest→oldest
+            if (gv.value > highThresholdMgdl) {
+                highSinceTime = gv.timestamp
+                belowSince = null
+            } else {
+                if (belowSince == null) belowSince = gv.timestamp
+                if (belowSince!! - gv.timestamp >= T.mins(15).msecs()) break   // >15min continuous sub-threshold = real recovery
+            }
+        }
         val minutesHigh = ((now - highSinceTime) / 60_000L).toInt()
         // ledger lookback: corrections count for ~1.5× the insulin's peak time (Novorapid 75 → ~113m)
         val highRangeMins = activePlugin.activeInsulin.peak * 3 / 2
