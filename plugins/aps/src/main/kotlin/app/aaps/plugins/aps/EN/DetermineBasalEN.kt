@@ -824,7 +824,7 @@ class DetermineBasalEN @Inject constructor(
         val owedSinceHigh = profile.current_basal * (min(enConfig.minutesHigh, enConfig.insulinPeakMins * 3 / 2) / 60.0) * resistanceGain
         val resistanceBudgetLeft = max(0.0, owedSinceHigh - enConfig.netIOBSinceHigh)
         val isBasalDeficit = resistanceBudgetLeft > 0.0
-        rT.reason.append("* debug: owed ${round(owedSinceHigh, 2)} given ${enConfig.netIOBSinceHigh} left ${round(resistanceBudgetLeft, 2)} cert ${enConfig.minutesHigh}/${certaintyMins}m=${isPersistentRise} *,")
+        // rT.reason.append("* debug: owed ${round(owedSinceHigh, 2)} given ${enConfig.netIOBSinceHigh} left ${round(resistanceBudgetLeft, 2)} cert ${enConfig.minutesHigh}/${certaintyMins}m=${isPersistentRise} *,")
         val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
         val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 60) && !isHighTempSet &&
             (ENWActive || peakIOBmins == null || peakIOBmins < 0 || relativeActivityPct < 60) &&
