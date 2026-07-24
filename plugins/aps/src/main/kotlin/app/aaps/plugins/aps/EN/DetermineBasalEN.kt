@@ -820,11 +820,11 @@ class DetermineBasalEN @Inject constructor(
         }
 
         // variables for allowing some overrides
-        val resistanceGain = 1.5   // integral gain: budget grows at 1.5× basal per hour stuck high
-        val owedSinceHigh = profile.current_basal * (min(enConfig.minutesHigh, enConfig.insulinPeakMins * 3 / 2) / 60.0) * resistanceGain
-        val resistanceBudgetLeft = max(0.0, owedSinceHigh - enConfig.netIOBSinceHigh)
+        val resistanceGain = (1.0 + 0.15 * (enConfig.minutesHigh / 60.0)).coerceIn(1.0, profile.autosens_max)
+        val resistanceMaxIOB = profile.current_basal * 3.0   // flat cap ≈ 3h of basal per high episode
+        val resistanceBudgetLeft = max(0.0, resistanceMaxIOB - enConfig.netIOBSinceHigh)
+        rT.reason.append("* debug: cap ${round(resistanceBudgetLeft,2)}/${round(resistanceMaxIOB,2)} gain ${round(resistanceGain,2)} * ")
         val isBasalDeficit = resistanceBudgetLeft > 0.0
-        // rT.reason.append("* debug: owed ${round(owedSinceHigh, 2)} given ${enConfig.netIOBSinceHigh} left ${round(resistanceBudgetLeft, 2)} cert ${enConfig.minutesHigh}/${certaintyMins}m=${isPersistentRise} *,")
         val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
         val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 60) && !isHighTempSet &&
             (ENWActive || peakIOBmins == null || peakIOBmins < 0 || relativeActivityPct < 60) &&
@@ -998,6 +998,9 @@ class DetermineBasalEN @Inject constructor(
             future_sens = future_sens.coerceIn(minSafeIsf, maxSafeIsf)
             future_sens = round(future_sens, 1)
         }
+
+        // make ISF stronger when resistant
+        if (isAuthorisedResistance) future_sens /= resistanceGain
 
         consoleLog.add("minPredBG: $minPredBG minIOBPredBG: $minIOBPredBG minZTGuardBG: $minZTGuardBG")
         if (minCOBPredBG < 999) {
@@ -1352,7 +1355,11 @@ class DetermineBasalEN @Inject constructor(
 
             // rate required to deliver insulinReq more insulin over 30m:
             // isAuthorisedMealRise or isAuthorisedResistance allows the rate to deliver insulinReq more insulin over 15m
-            var basalRateMultiplier = if (isAuthorisedMealRise || isFootToFloor) 4.0 else 2.0
+            var basalRateMultiplier = when {
+                isAuthorisedMealRise || isFootToFloor -> 4.0
+                isAuthorisedResistance                -> 4.0 * resistanceGain   // faster + escalating TBR for stuck highs
+                else                                  -> 2.0
+            }
             var rate = basal + (basalRateMultiplier * insulinReq)
 
             // Spent/over budget: neutral basal alongside the capped SMBs — no high temp stacked onto
