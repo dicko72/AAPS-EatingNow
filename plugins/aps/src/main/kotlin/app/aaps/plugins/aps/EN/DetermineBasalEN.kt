@@ -314,6 +314,11 @@ class DetermineBasalEN @Inject constructor(
         // Eating Now Initial variables
         val ENActive = enConfig.ENActive
         val ENWActive = enConfig.ENWActive != null
+        // Past the ENW + 1h grace (or no ENW at all): aggressive meal delivery not permitted —
+        // corrections are bounded to the resistance budget. Drives both the clamp and the ⊘ glyph.
+        val ENWEndedAgoMins = max(0L,(currentTime - (enConfig.ENWEndTime ?: currentTime)) / 60_000L)
+        val isRestrictedENW = !ENWActive && ENWEndedAgoMins !in 1 until 60
+
         val OverrideENWNetIOBMax = ENActive && ENWActive && enConfig.OverrideENWNetIOBMax
         val highBGthresholdActive = enConfig.highBGthreshold > 0 && bg > enConfig.highBGthreshold  // used for isHighLogic and peakIOBmins
 
@@ -782,9 +787,6 @@ class DetermineBasalEN @Inject constructor(
         consoleLog.add("EventualBG is $eventualBG ;")
 
         // UAM+ CONFIDENCE: This high-confidence check authorizes the algorithm to use maxUAMPredBG for insulinReq
-        val ENWEndedAgoMins = max(0L,(currentTime - (enConfig.ENWEndTime ?: currentTime)) / 60_000L)
-        // Determine the allowed UAM prediction window based on the Eating Now state
-
         // Determine the allowed UAM prediction window based on the Eating Now state
         val allowedUAMRange = when {
             ENWActive -> 15 until 180 // Deep look-ahead while eating
@@ -821,7 +823,11 @@ class DetermineBasalEN @Inject constructor(
 
         // variables for allowing some overrides
         val resistanceGain = (1.0 + 0.15 * (enConfig.minutesHigh / 60.0)).coerceIn(1.0, profile.autosens_max)
-        val resistanceMaxIOB = profile.current_basal * 3.0   // flat cap ≈ 3h of basal per high episode
+        val highRangeHours = enConfig.insulinPeakMins * 3 / 2 / 60.0   // = highRangeMins in hours ≈ 1.87 for Novorapid peak 75
+        val resistanceMaxIOB = when {
+            ENActive -> profile.current_basal * highRangeHours          // ≈ basal × 1.87  (your ~2.0)
+            else     -> profile.current_basal * highRangeHours * 0.8    // overnight tighter (≈ basal × 1.5)
+        }
         val resistanceBudgetLeft = max(0.0, resistanceMaxIOB - enConfig.netIOBSinceHigh)
         rT.reason.append("* debug: cap ${round(resistanceBudgetLeft,2)}/${round(resistanceMaxIOB,2)} gain ${round(resistanceGain,2)} * ")
         val isBasalDeficit = resistanceBudgetLeft > 0.0
@@ -1032,12 +1038,12 @@ class DetermineBasalEN @Inject constructor(
             else                            -> "→"                           // flat
         }.let { base ->
             if (UAMplusConfidence) "$base+" else base                        // + = UAM+ confidence
-        }.let { base ->
+        }.let { base ->                                                      // ← added closing } above
             val authorised = isAuthorisedMealRise || isAuthorisedResistance || isFootToFloor
             when {
-                authorised && insulinReqBG <= target_bg -> "$base⊘"          // authorised but HELD (basis won't dose)
-                authorised                              -> "$base✓"          // authorised & delivering
-                else                                    -> base
+                isRestrictedENW && (isAuthorisedResistance || UAMplusConfidence) -> "$base⊘"
+                authorised                                                       -> "$base✓"
+                else                                                             -> base
             }
         }
 
@@ -1336,7 +1342,7 @@ class DetermineBasalEN @Inject constructor(
 
             // Resistance is metered: never request more than the remaining integral budget.
             // Total extra insulin per high episode is bounded by owedSinceHigh — stacking-proof by construction.
-            if (isAuthorisedResistance) {
+            if (isAuthorisedResistance || (UAMplusConfidence && isRestrictedENW)) {
                 insulinReq = min(insulinReq, resistanceBudgetLeft)
             }
 
