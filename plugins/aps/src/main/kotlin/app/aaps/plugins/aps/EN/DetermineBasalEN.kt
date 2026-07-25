@@ -320,6 +320,7 @@ class DetermineBasalEN @Inject constructor(
         val isRestrictedENW = !ENWActive && ENWEndedAgoMins !in 1 until 60
 
         val OverrideENWNetIOBMax = ENActive && ENWActive && enConfig.OverrideENWNetIOBMax
+        val ENWNetIOBExceeded = OverrideENWNetIOBMax && enConfig.ENWNetIOBRemaining == 0.0   // in-window: ENW-IOB stake spent
         val highBGthresholdActive = enConfig.highBGthreshold > 0 && bg > enConfig.highBGthreshold  // used for isHighLogic and peakIOBmins
 
 
@@ -958,7 +959,7 @@ class DetermineBasalEN @Inject constructor(
         // Decide which BG value to use based on the delta for the insulinReq later
         val insulinReqBG = when {
             // No ENW-IOB remaining and slowing so less aggressive prediction
-            OverrideENWNetIOBMax && enConfig.ENWNetIOBRemaining == 0.0 -> min(minPredBG, eventualBG)   // over budget: use AAPS safety until more insulin clearly needed
+            ENWNetIOBExceeded                  -> min(minPredBG, eventualBG)   // over budget: use AAPS safety until more insulin clearly needed
 
             // UAM++ accelerating BG rise with UAM peaking after IOB peak ⇈✓
             UAMplusConfidence && ENWActive -> max(maxUAMPredBG, extrapolatedBG)   // front-load the declared meal
@@ -1038,12 +1039,16 @@ class DetermineBasalEN @Inject constructor(
             else                            -> "→"                           // flat
         }.let { base ->
             if (UAMplusConfidence) "$base+" else base                        // + = UAM+ confidence
-        }.let { base ->                                                      // ← added closing } above
-            val authorised = isAuthorisedMealRise || isAuthorisedResistance || isFootToFloor
+        }.let { base ->
+            val authorised  = isAuthorisedMealRise || isAuthorisedResistance || isFootToFloor
+            val restricted =
+                (isRestrictedENW && (isAuthorisedResistance || UAMplusConfidence)) ||    // post-grace resistance budget
+                (ENWActive && enConfig.ENWNetIOBRemaining == 0.0) ||                     // in-window ENW stake exhausted (both prefs)
+                iob_data.iob >= max_iob                                                  // global max_iob ceiling
             when {
-                isRestrictedENW && (isAuthorisedResistance || UAMplusConfidence) -> "$base⊘"
-                authorised                                                       -> "$base✓"
-                else                                                             -> base
+                restricted -> "$base⊘"   // delivery capped — post-grace budget OR over the ENW stake
+                authorised -> "$base✓"
+                else       -> base
             }
         }
 
@@ -1369,7 +1374,7 @@ class DetermineBasalEN @Inject constructor(
             var rate = basal + (basalRateMultiplier * insulinReq)
 
             // Spent/over budget: neutral basal alongside the capped SMBs — no high temp stacked onto
-            if (OverrideENWNetIOBMax && enConfig.ENWNetIOBRemaining == 0.0) rate = basal
+            if (ENWNetIOBExceeded) rate = basal
 
             rate = round_basal(rate)
             insulinReq = round(insulinReq, 3)
@@ -1402,7 +1407,7 @@ class DetermineBasalEN @Inject constructor(
                         // Grace-hour SMB ceiling fallback to maxBolusAAPS
                         "ENW-60M" to maxBolusAAPS
                     }
-                    OverrideENWNetIOBMax && enConfig.ENWNetIOBRemaining == 0.0 -> {
+                    ENWNetIOBExceeded -> {
                         // STRICT SAFETY: past the window limit (or bypassing it), DO NOT use custom
                         // EN boluses. Strictly enforce the standard AAPS maxBolus to slowly catch up.
                         "ENW-IOB" to maxBolusAAPS
