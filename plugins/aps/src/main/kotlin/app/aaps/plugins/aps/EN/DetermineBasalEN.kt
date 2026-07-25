@@ -317,8 +317,6 @@ class DetermineBasalEN @Inject constructor(
         // Past the ENW + 1h grace (or no ENW at all): aggressive meal delivery not permitted —
         // corrections are bounded to the resistance budget. Drives both the clamp and the ⊘ glyph.
         val ENWEndedAgoMins = max(0L,(currentTime - (enConfig.ENWEndTime ?: currentTime)) / 60_000L)
-        val isRestrictedENW = !ENWActive && ENWEndedAgoMins !in 1 until 60
-
         val OverrideENWNetIOBMax = ENActive && ENWActive && enConfig.OverrideENWNetIOBMax
         val ENWNetIOBExceeded = OverrideENWNetIOBMax && enConfig.ENWNetIOBRemaining == 0.0   // in-window: ENW-IOB stake spent
         val highBGthresholdActive = enConfig.highBGthreshold > 0 && bg > enConfig.highBGthreshold  // used for isHighLogic and peakIOBmins
@@ -338,7 +336,8 @@ class DetermineBasalEN @Inject constructor(
         // Upcoming insulin activity peak using position (index) of the maximum future insulin activity
         val peakIndex = iobArray.indices.maxByOrNull { iobArray[it].activity } ?: 0
         val basalActivity = profile.current_basal / 60.0
-        val isRidingPeak = iob_data.activity > max(basalActivity * 2.0, 0.02)
+        val relativeActivityPct  = if (enConfig.pastPeakActivity > 0.0001) round(100.0 * iob_data.activity / enConfig.pastPeakActivity, 0).toInt() else -1
+        val isRidingPeak = iob_data.activity > max(basalActivity * 2.0, 0.02) && (relativeActivityPct < 0 || relativeActivityPct >= 70)   // still near the recent peak, not deep in the tail
         // peakIOBmins: (neg) mins since past summit · (0) now · (pos) mins to future peak · (null) no wave
         var peakIOBmins: Int? = (peakIndex * 5).takeUnless {
             !highBGthresholdActive && iob_data.iob < (profile.current_basal / 4.0)
@@ -353,7 +352,8 @@ class DetermineBasalEN @Inject constructor(
             peakIOBmins = if (enConfig.pastPeakActivity > 0.0001 && enConfig.pastPeakAgoMins > 0)
                 -enConfig.pastPeakAgoMins else null
         }
-
+        val peakPassed      = peakIOBmins != null && peakIOBmins <= -15     // insulin peaked & declined past +15m
+        val isRestrictedENW = !ENWActive && !peakPassed                    // post-window, peak not yet passed
         // when delta is rising fast for UAM+ — the bar to fire scales with how much
         // insulin is already working on the rise (declared meal < no peak coming < peak coming)
         val deltaFastUp = when {
@@ -799,7 +799,6 @@ class DetermineBasalEN @Inject constructor(
         // CERTAIN RISE: high, well above threshold (+25%), still climbing, and the active
         // insulin has had its fair chance — 40m patience while the wave is live (>60%),
         // 15m once spent. Persistence route into UAMplusConfidence for steady climbs.
-        val relativeActivityPct  = if (enConfig.pastPeakActivity > 0.0001) round(100.0 * iob_data.activity / enConfig.pastPeakActivity, 0).toInt() else -1
         val certaintyMins = if (relativeActivityPct  > 60) 40 else 15
         val isPersistentRise = highBGthresholdActive && isNotFalling && !isShortTermStable &&
             bg > enConfig.highBGthreshold * 1.25 &&
@@ -833,11 +832,8 @@ class DetermineBasalEN @Inject constructor(
         rT.reason.append("* debug: cap ${round(resistanceBudgetLeft,2)}/${round(resistanceMaxIOB,2)} gain ${round(resistanceGain,2)} * ")
         val isBasalDeficit = resistanceBudgetLeft > 0.0
         val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
-        val isAuthorisedMealRise = (ENWActive || ENWEndedAgoMins in 1 until 60) && !isHighTempSet &&
-            (ENWActive || peakIOBmins == null || peakIOBmins < 0 || relativeActivityPct < 60) &&
-            (UAMplusConfidence || isPrebolusing || deltaFastUp)        // resistance silent until the last window insulin has peaked
-        val isAuthorisedResistance = isStuckHigh && isBasalDeficit && !isHighTempSet &&
-            !ENWActive && ENWEndedAgoMins >= enConfig.insulinPeakMins
+        val isAuthorisedMealRise = ENWActive && !isHighTempSet && (UAMplusConfidence || isPrebolusing || deltaFastUp)
+        val isAuthorisedResistance = isStuckHigh && isBasalDeficit && !isHighTempSet && !ENWActive && peakPassed
 
         minIOBPredBG = max(39.0, minIOBPredBG)
         minCOBPredBG = max(39.0, minCOBPredBG)
@@ -1347,7 +1343,7 @@ class DetermineBasalEN @Inject constructor(
 
             // Resistance is metered: never request more than the remaining integral budget.
             // Total extra insulin per high episode is bounded by owedSinceHigh — stacking-proof by construction.
-            if (isAuthorisedResistance || (UAMplusConfidence && isRestrictedENW)) {
+            if (isAuthorisedResistance || (UAMplusConfidence && !ENWActive)) {
                 insulinReq = min(insulinReq, resistanceBudgetLeft)
             }
 
@@ -1403,9 +1399,9 @@ class DetermineBasalEN @Inject constructor(
                         // Prioritize PreBolus requirements within safety limits but allow more if insulinReq is greater
                         "ENW-PB" to min(enConfig.ENWprebolus, enConfig.SafetyMaxBolus)
                     }
-                    ENWEndedAgoMins in 1 until 60 && activeCarbs == 0.0 -> {
-                        // Grace-hour SMB ceiling fallback to maxBolusAAPS
-                        "ENW-60M" to maxBolusAAPS
+                    isRestrictedENW -> {
+                        // peak not yet passsed so fallback to maxBolusAAPS
+                        "ENW-PEAK" to maxBolusAAPS
                     }
                     ENWNetIOBExceeded -> {
                         // STRICT SAFETY: past the window limit (or bypassing it), DO NOT use custom
