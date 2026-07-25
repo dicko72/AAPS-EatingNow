@@ -226,6 +226,7 @@ class EquilBLE @Inject constructor(
 
     fun disconnect() {
         isConnected = false
+        connecting = false
         startTrue = false
         autoScan = false
         equilManager?.equilState?.bluetoothConnectionState = BluetoothConnectionState.DISCONNECTED
@@ -239,9 +240,11 @@ class EquilBLE @Inject constructor(
     }
 
     fun closeBleAuto() {
-        handler.postDelayed({
-            disconnect()
-        }, EquilConst.EQUIL_BLE_NEXT_CMD)
+        // Tear down immediately. The AAPS command queue owns the connection lifecycle: after the last
+        // command it holds the link for waitForDisconnectionInSeconds() (5 s) for reuse and only then
+        // calls Pump.disconnect() -> here. No extra driver-side linger is needed, and an immediate
+        // teardown avoids the mid-command race that a deferred, cancellable timer would introduce.
+        disconnect()
     }
 
     var autoScan = true
@@ -276,10 +279,18 @@ class EquilBLE @Inject constructor(
         if (isConnected && baseCmd.isPairStep()) {
             ready()
         } else if (isConnected) {
-            preCmd?.let { preCmd ->
-                baseCmd.runCode = preCmd.runCode
-                baseCmd.runPwd = preCmd.runPwd
+            val prevCmd = preCmd
+            if (prevCmd != null) {
+                baseCmd.runCode = prevCmd.runCode
+                baseCmd.runPwd = prevCmd.runPwd
                 nextCmd2()
+            } else {
+                // The GATT link was opened by the queue's connect() phase, which leaves no prior
+                // command context (baseCmd/preCmd are null, so the connect-time ready() was a no-op).
+                // Send this command as the first one on the open connection instead of silently
+                // dropping it - otherwise the pump receives nothing and idle-disconnects (status 19),
+                // surfacing as a bolus/command timeout. See issue #4910.
+                ready()
             }
         } else {
             findEquil(mac)
@@ -297,6 +308,7 @@ class EquilBLE @Inject constructor(
             preCmd = baseCmd
         } else {
             aapsLogger.debug(LTag.PUMPCOMM, "readHistory error")
+            synchronized(baseCmd) { (baseCmd as Object).notifyAll() }
         }
     }
 
@@ -373,12 +385,14 @@ class EquilBLE @Inject constructor(
         aapsLogger.debug(LTag.PUMPBTCOMM, "startScan====$startTrue====$macAddress===")
         if (macAddress.isNullOrEmpty()) return
         if (startTrue) return
+        startTrue = true
+        connecting = true
+        equilManager?.equilState?.bluetoothConnectionState = BluetoothConnectionState.CONNECTING
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED) {
             try {
                 val bluetoothLeScanner = bluetoothAdapter?.bluetoothLeScanner
                 if (bluetoothLeScanner != null) {
                     updateCmdStatus(ResolvedResult.NOT_FOUNT)
-                    connecting = true
                     bluetoothLeScanner.startScan(buildScanFilters(), buildScanSettings(), scanCallback)
                 }
             } catch (_: IllegalStateException) {
@@ -393,8 +407,8 @@ class EquilBLE @Inject constructor(
     }
 
     fun connect(from: String) {
-        aapsLogger.debug(LTag.PUMPCOMM, "connect====startTrue=$startTrue====isConnected=$isConnected from $from")
-        if (startTrue || isConnected) {
+        aapsLogger.debug(LTag.PUMPCOMM, "connect====connecting=$connecting====isConnected=$isConnected from $from")
+        if (connecting || isConnected) {
             return
         }
         autoScan = true
