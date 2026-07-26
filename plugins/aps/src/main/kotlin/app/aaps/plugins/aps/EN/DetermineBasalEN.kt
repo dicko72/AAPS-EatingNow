@@ -1298,7 +1298,7 @@ class DetermineBasalEN @Inject constructor(
             }
         }
         // eventualBG or minPredBG is below max_bg
-        if (min(eventualBG, minPredBG) < max_bg && !isAuthorisedMealRise) { // when prebolusing allow insulin
+        if (min(eventualBG, minPredBG) < max_bg && !isAuthorisedMealRise && !isAuthorisedResistance) { // when prebolusing allow insulin
             // if in SMB mode, don't cancel SMB zero temp
             if (!(microBolusAllowed && enableSMB)) {
                 rT.reason.append("${convert_bg(eventualBG)}-${convert_bg(minPredBG)} in range: no temp required")
