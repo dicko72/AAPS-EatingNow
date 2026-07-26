@@ -1049,7 +1049,7 @@ class DetermineBasalEN @Inject constructor(
         }
 
         rT.reason.apply {
-            append("Delta: $deltaPctS/$deltaPctL $deltaText, ")
+            append("Delta: ${convert_bg(glucose_status.delta)} $deltaPctS/$deltaPctL $deltaText, ")
             append("COB: ${round(activeCOB, 1).withoutZeros()}, ")
             append("Dev: ${convert_bg(deviation.toDouble())}, ")
             append("BGI: ${convert_bg(bgi)}, ")
