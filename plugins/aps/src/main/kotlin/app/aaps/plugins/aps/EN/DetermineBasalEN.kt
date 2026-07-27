@@ -1196,7 +1196,7 @@ class DetermineBasalEN @Inject constructor(
             return setTempBasal(0.0, 0, profile, rT, currenttemp)
         }
 
-        if (eventualBG < min_bg && !isAuthorisedMealRise && !UAMplusConfidence) { // if eventual BG is below target, but not prebolusing or high-rising
+        if (eventualBG < min_bg && !isAuthorisedMealRise && !UAMplusConfidence && !isAuthorisedResistance) { // if eventual BG is below target, but not prebolusing or high-rising
             rT.reason.append("Eventual BG ${convert_bg(eventualBG)} < ${convert_bg(min_bg)}")
             // if 5m or 30m avg BG is rising faster than expected delta
             if (minDelta > expectedDelta && minDelta > 0 && carbsReq == 0) {
@@ -1345,6 +1345,7 @@ class DetermineBasalEN @Inject constructor(
             // Total extra insulin per high episode is bounded by owedSinceHigh — stacking-proof by construction.
             if (isAuthorisedResistance || (UAMplusConfidence && !ENWActive)) {
                 insulinReq = min(insulinReq, resistanceBudgetLeft)
+                insulinReq = max(insulinReq, insulinReqOrig)
             }
 
             // if that would put us over max_iob, then reduce accordingly
