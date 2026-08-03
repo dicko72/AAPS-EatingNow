@@ -352,7 +352,7 @@ class DetermineBasalEN @Inject constructor(
             peakIOBmins = if (enConfig.pastPeakActivity > 0.0001 && enConfig.pastPeakAgoMins > 0)
                 -enConfig.pastPeakAgoMins else null
         }
-        val peakPassed      = peakIOBmins != null && peakIOBmins <= -15     // insulin peaked & declined past +15m
+        val peakPassed = (peakIOBmins != null && peakIOBmins <= -15) || enConfig.minutesHigh > enConfig.insulinPeakMins   // high longer than insulin's peak → its chance has passed
         val isRestrictedENW = !ENWActive && !peakPassed                    // post-window, peak not yet passed
         // when delta is rising fast for UAM+ — the bar to fire scales with how much
         // insulin is already working on the rise (declared meal < no peak coming < peak coming)
@@ -1029,7 +1029,7 @@ class DetermineBasalEN @Inject constructor(
             deltaFastUp && deltaPctS >= 1.0 -> "⇈"                           // fast up AND accelerating
             deltaFastUp                     -> "↑"                           // fast up, not accelerating
             glucose_status.delta < -9.0     -> "⇊"                           // fast down
-            isHigh                          -> "⎺→ ${enConfig.minutesHigh}m" // flat high
+            isHigh                          -> "⎺→ ${enConfig.minutesHigh}m (${round(enConfig.netIOBSinceHigh,2)}/${round(resistanceMaxIOB,2)}U)" // flat high
             glucose_status.delta >  1.5     -> "↗"                           // mild up
             glucose_status.delta < -1.5     -> "↘"                           // mild down
             else                            -> "→"                           // flat
