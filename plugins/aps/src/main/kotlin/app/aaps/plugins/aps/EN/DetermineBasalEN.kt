@@ -352,7 +352,7 @@ class DetermineBasalEN @Inject constructor(
             peakIOBmins = if (enConfig.pastPeakActivity > 0.0001 && enConfig.pastPeakAgoMins > 0)
                 -enConfig.pastPeakAgoMins else null
         }
-        val peakPassed      = peakIOBmins != null && peakIOBmins <= -15     // insulin peaked & declined past +15m
+        val peakPassed = (peakIOBmins != null && peakIOBmins <= -15) || enConfig.minutesHigh > enConfig.insulinPeakMins   // high longer than insulin's peak → its chance has passed
         val isRestrictedENW = !ENWActive && !peakPassed                    // post-window, peak not yet passed
         // when delta is rising fast for UAM+ — the bar to fire scales with how much
         // insulin is already working on the rise (declared meal < no peak coming < peak coming)
@@ -380,8 +380,7 @@ class DetermineBasalEN @Inject constructor(
         fun Double.isStable() = this.absoluteValue < STABLE_BG_THRESHOLD
 
         // Stability checks for different time horizons (is BG plateaued?)
-        val isShortTermStable = glucose_status.delta.isStable() && glucose_status.shortAvgDelta.isStable()
-        val isLongTermStable  = glucose_status.longAvgDelta.isStable()
+        val isShortTermStable = glucose_status.shortAvgDelta.isStable()
 
         // Direction: BG has not started to drop yet (resistance backs off the moment it turns).
         // Smoothed: a single noisy CGM down-tick must not de-authorise a stuck-high ramp;
@@ -829,7 +828,7 @@ class DetermineBasalEN @Inject constructor(
             else     -> profile.current_basal * highRangeHours * 0.8    // overnight tighter (≈ basal × 1.5)
         }
         val resistanceBudgetLeft = max(0.0, resistanceMaxIOB - enConfig.netIOBSinceHigh)
-        rT.reason.append("* debug: cap ${round(resistanceBudgetLeft,2)}/${round(resistanceMaxIOB,2)} gain ${round(resistanceGain,2)} * ")
+        //rT.reason.append("* debug: cap ${round(resistanceBudgetLeft,2)}/${round(resistanceMaxIOB,2)} gain ${round(resistanceGain,2)} * ")
         val isBasalDeficit = resistanceBudgetLeft > 0.0
         val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
         val isAuthorisedMealRise = ENWActive && !isHighTempSet && (UAMplusConfidence || isPrebolusing || deltaFastUp)
@@ -1029,7 +1028,7 @@ class DetermineBasalEN @Inject constructor(
             deltaFastUp && deltaPctS >= 1.0 -> "⇈"                           // fast up AND accelerating
             deltaFastUp                     -> "↑"                           // fast up, not accelerating
             glucose_status.delta < -9.0     -> "⇊"                           // fast down
-            isHigh                          -> "⎺→ ${enConfig.minutesHigh}m" // flat high
+            isHigh                          -> "⎺→ ${enConfig.minutesHigh}m (${round(enConfig.netIOBSinceHigh,2)}/${round(resistanceMaxIOB,2)}U)" // flat high
             glucose_status.delta >  1.5     -> "↗"                           // mild up
             glucose_status.delta < -1.5     -> "↘"                           // mild down
             else                            -> "→"                           // flat
