@@ -827,7 +827,8 @@ class DetermineBasalEN @Inject constructor(
             ENActive -> profile.current_basal * highRangeHours          // ≈ basal × 1.87  (your ~2.0)
             else     -> profile.current_basal * highRangeHours * 0.8    // overnight tighter (≈ basal × 1.5)
         }
-        val resistanceBudgetLeft = max(0.0, resistanceMaxIOB - enConfig.netIOBSinceHigh)
+        val resistanceBudgetUsed = max(0.0, enConfig.netIOBSinceHigh)
+        val resistanceBudgetLeft = max(0.0, resistanceMaxIOB - resistanceBudgetUsed)
         //rT.reason.append("* debug: cap ${round(resistanceBudgetLeft,2)}/${round(resistanceMaxIOB,2)} gain ${round(resistanceGain,2)} * ")
         val isBasalDeficit = resistanceBudgetLeft > 0.0
         val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
@@ -1028,7 +1029,7 @@ class DetermineBasalEN @Inject constructor(
             deltaFastUp && deltaPctS >= 1.0 -> "⇈"                           // fast up AND accelerating
             deltaFastUp                     -> "↑"                           // fast up, not accelerating
             glucose_status.delta < -9.0     -> "⇊"                           // fast down
-            isHigh                          -> "⎺→ ${enConfig.minutesHigh}m (${round(enConfig.netIOBSinceHigh,2)}/${round(resistanceMaxIOB,2)}U)" // flat high
+            isHigh -> "⎺→ ${enConfig.minutesHigh}m (${round(resistanceBudgetUsed,2)}/${round(resistanceMaxIOB,2)}U)" // flat high
             glucose_status.delta >  1.5     -> "↗"                           // mild up
             glucose_status.delta < -1.5     -> "↘"                           // mild down
             else                            -> "→"                           // flat
