@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Modified for Eating Now -->
 <resources>
     <!--    Keys-->
     <string name="key_units_mgdl" translatable="false">units_mgdl</string>
-
-    <!-- Eating Now-->
-    <string name="eatingnow">Eating Now</string>
-    <!--    <string name="key_eatingnow_duration" translatable="false">key_eatingnow_enwindowminutes</string>-->
-    <string name="key_eatingnow_enwindowminutes" translatable="false">key_eatingnow_enwindowminutes</string>
-    <string name="key_enbkfstwindowminutes" translatable="false">key_enbkfstwindowminutes</string>
-    <string name="key_en_variant" translatable="false">en_variant</string>
-    <string name="key_eatingnow_uambgboost_maxbolus_bkfast">key_eatingnow_uambgboost_maxbolus_bkfast</string>
-    <string name="key_eatingnow_uambgboost_maxbolus">key_eatingnow_uambgboost_maxbolus</string>
-    <string name="key_enw_breakfast_max_tdd">key_enw_breakfast_max_tdd</string>
-    <string name="key_enw_max_tdd">key_enw_max_tdd</string>
 
 </resources>
