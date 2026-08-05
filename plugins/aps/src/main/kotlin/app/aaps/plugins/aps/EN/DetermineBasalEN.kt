@@ -1029,14 +1029,14 @@ class DetermineBasalEN @Inject constructor(
             deltaFastUp && deltaPctS >= 1.0 -> "⇈"                           // fast up AND accelerating
             deltaFastUp                     -> "↑"                           // fast up, not accelerating
             glucose_status.delta < -9.0     -> "⇊"                           // fast down
-            isHigh -> "⎺→ ${enConfig.minutesHigh}m (${round(resistanceBudgetUsed,2)}/${round(resistanceMaxIOB,2)}U)" // flat high
+            isHigh || isStuckHigh -> "⎺→ ${enConfig.minutesHigh}m (${round(enConfig.netIOBSinceHigh,2)}/${round(resistanceMaxIOB,2)}U)" // flat high
             glucose_status.delta >  1.5     -> "↗"                           // mild up
             glucose_status.delta < -1.5     -> "↘"                           // mild down
             else                            -> "→"                           // flat
         }.let { base ->
             if (UAMplusConfidence) "$base+" else base                        // + = UAM+ confidence
         }.let { base ->
-            val authorised  = isAuthorisedMealRise || isAuthorisedResistance || isFootToFloor
+            val authorised = (isAuthorisedMealRise || isAuthorisedResistance || isFootToFloor) && minGuardBG >= threshold
             val restricted =
                 (isRestrictedENW && (isAuthorisedResistance || UAMplusConfidence)) ||    // post-grace resistance budget
                 (ENWActive && enConfig.ENWNetIOBRemaining == 0.0) ||                     // in-window ENW stake exhausted (both prefs)
