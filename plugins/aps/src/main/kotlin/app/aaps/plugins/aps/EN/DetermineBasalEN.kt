@@ -385,15 +385,11 @@ class DetermineBasalEN @Inject constructor(
         // Direction: BG has not started to drop yet (resistance backs off the moment it turns).
         // Smoothed: a single noisy CGM down-tick must not de-authorise a stuck-high ramp;
         // a genuine descent flips shortAvgDelta negative within 2–3 readings anyway.
-        val isNotFalling = glucose_status.shortAvgDelta >= 0.0
+        val isNotFalling = glucose_status.shortAvgDelta >= -2.0
 
-        // Insulin activity peak state: peakIOBmins == null => on-board insulin already past its peak
-        val noPeakImminent = peakIOBmins == null || peakIOBmins < 0
-
-        // isHigh*: high + plateaued + NO peak imminent — drives aggressive ISF scaling & high dosing branch (unchanged)
         val isFootToFloor = highBGthresholdActive && !ENActive && systemTime > enConfig.ENTimeStart && deltaFastUp
-        val isHigh      = highBGthresholdActive && noPeakImminent && isShortTermStable && enConfig.minutesHigh > 30
-        val isStuckHigh = highBGthresholdActive && isNotFalling  && isShortTermStable && enConfig.minutesHigh > 30
+        // stuck high: high + plateaued + not falling. peakPassed covers the "insulin has had its chance" gate separately.
+        val isStuckHigh = highBGthresholdActive && isNotFalling && isShortTermStable && enConfig.minutesHigh > 30
 
         // Prebolus amounts
         val remainingPrebolus = round((enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0) ,1)// remaining prebolus
@@ -966,7 +962,7 @@ class DetermineBasalEN @Inject constructor(
 
             // Flat/Stubborn High: Use current BG or eventualBG for  ⎺⎺→ 15m and ⎺⎺→ 40m
             isAuthorisedResistance ->  max(bg, eventualBG)
-            isHigh ->  (min(minPredBG, bg) + bg) * 0.5
+            isStuckHigh ->  (min(minPredBG, bg) + bg) * 0.5
 
             // UAM+ accelerating BG rise without prediction factors ⇈
             deltaFastUp -> (minPredBG + extrapolatedBG + eventualBG) / 3
@@ -1029,7 +1025,7 @@ class DetermineBasalEN @Inject constructor(
             deltaFastUp && deltaPctS >= 1.0 -> "⇈"                           // fast up AND accelerating
             deltaFastUp                     -> "↑"                           // fast up, not accelerating
             glucose_status.delta < -9.0     -> "⇊"                           // fast down
-            isHigh || isStuckHigh -> "⎺→ ${enConfig.minutesHigh}m (${round(enConfig.netIOBSinceHigh,2)}/${round(resistanceMaxIOB,2)}U)" // flat high
+            isStuckHigh -> "⎺→ ${enConfig.minutesHigh}m (${round(enConfig.netIOBSinceHigh,2)}/${round(resistanceMaxIOB,2)}U)" // flat high
             glucose_status.delta >  1.5     -> "↗"                           // mild up
             glucose_status.delta < -1.5     -> "↘"                           // mild down
             else                            -> "→"                           // flat
