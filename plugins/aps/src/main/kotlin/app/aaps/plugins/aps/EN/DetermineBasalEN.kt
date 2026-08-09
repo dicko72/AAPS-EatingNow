@@ -1025,7 +1025,7 @@ class DetermineBasalEN @Inject constructor(
             deltaFastUp && deltaPctS >= 1.0 -> "⇈"                           // fast up AND accelerating
             deltaFastUp                     -> "↑"                           // fast up, not accelerating
             glucose_status.delta < -9.0     -> "⇊"                           // fast down
-            isStuckHigh -> "⎺→ ${enConfig.minutesHigh}m (${round(enConfig.netIOBSinceHigh,2)}/${round(resistanceMaxIOB,2)}U)" // flat high
+            isStuckHigh -> "⎺→ ${enConfig.minutesHigh}m (${round(resistanceBudgetUsed,2)}/${round(resistanceMaxIOB,2)}U)" // flat high
             glucose_status.delta >  1.5     -> "↗"                           // mild up
             glucose_status.delta < -1.5     -> "↘"                           // mild down
             else                            -> "→"                           // flat
