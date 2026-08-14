@@ -1339,7 +1339,7 @@ class DetermineBasalEN @Inject constructor(
 
             // Resistance is metered: never request more than the remaining integral budget.
             // Total extra insulin per high episode is bounded by owedSinceHigh — stacking-proof by construction.
-            if (isAuthorisedResistance || (UAMplusConfidence && !ENWActive)) {
+            if (isAuthorisedResistance || isStuckHigh || (UAMplusConfidence && !ENWActive)) {
                 insulinReq = min(insulinReq, resistanceBudgetLeft)
                 insulinReq = max(insulinReq, insulinReqOrig)
             }
