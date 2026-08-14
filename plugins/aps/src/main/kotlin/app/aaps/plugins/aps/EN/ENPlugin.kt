@@ -682,6 +682,7 @@ open class ENPlugin @Inject constructor(
             ENActive = ENActive,
             AutoStartEN = preferences.get(BooleanKey.EatingNow_AutoStart),
             OvernightSMBRestrict = profileUtil.convertToMgdl(preferences.get(DoubleKey.Eatingnow_overnightSMB), units) + normalTargetBG,
+            DaytimeSMBRestrict = profileUtil.convertToMgdl(preferences.get(DoubleKey.Eatingnow_daytimeSMB), units) + normalTargetBG,
             IgnoreCOB = ignoreCOB,
             SafetyMaxBolus = preferences.get(DoubleKey.SafetyMaxBolus),
             useISFscaler = useISFscaler,
@@ -903,6 +904,7 @@ open class ENPlugin @Inject constructor(
                 addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.Eatingnow_timeend, dialogMessage = R.string.eatingnow_timeend_summary, title = R.string.eatingnow_timeend_title))
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.EatingNow_AutoStart, summary = R.string.EatingNow_AutoStart_summary, title = R.string.EatingNow_AutoStart_title))
                 addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_overnightSMB, dialogMessage = R.string.eatingnow_overnightSMB_summary, title = R.string.eatingnow_overnightSMB_title))
+                addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.Eatingnow_daytimeSMB, dialogMessage = R.string.eatingnow_daytimeSMB_summary, title = R.string.eatingnow_daytimeSMB_title))
                 addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.highBGthreshold, dialogMessage = R.string.eatingnow_highBGthreshold_summary, title = R.string.eatingnow_highBGthreshold_title))
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.EatingNow_IgnoreCOB, summary = R.string.EatingNow_IgnoreCOB_summary, title = R.string.EatingNow_IgnoreCOB_title))
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.EatingNow_UseISFscaler, summary = R.string.EatingNow_useISFscaler_summary, title = R.string.EatingNow_useISFscaler_title))

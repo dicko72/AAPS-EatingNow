@@ -76,6 +76,12 @@ class DetermineBasalEN @Inject constructor(
             return false
         }
 
+        // Disable SMB overnight when option enabled and BG is too low
+        if (enConfig.ENWActive == null && bg <= enConfig.DaytimeSMBRestrict) {
+            consoleError.add("SMB disabled: ENW inactive and BG ${convert_bg(bg)} <= daytime limit of ${convert_bg(enConfig.DaytimeSMBRestrict)}")
+            return false
+        }
+
         // disable SMB when a high temptarget is set
         if (!microBolusAllowed) {
             consoleError.add("SMB disabled (!microBolusAllowed)")

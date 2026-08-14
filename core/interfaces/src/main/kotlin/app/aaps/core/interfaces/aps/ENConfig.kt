@@ -14,6 +14,7 @@ data class ENConfig(
     var ENActive: Boolean,
     var AutoStartEN: Boolean,
     var OvernightSMBRestrict: Double,
+    var DaytimeSMBRestrict: Double,
     var IgnoreCOB: Boolean,
     var SafetyMaxBolus: Double,
     var useISFscaler: Boolean,
