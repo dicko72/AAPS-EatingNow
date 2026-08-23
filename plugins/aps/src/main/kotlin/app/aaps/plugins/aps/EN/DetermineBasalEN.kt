@@ -826,8 +826,8 @@ class DetermineBasalEN @Inject constructor(
         val resistanceGain = (1.0 + 0.15 * (enConfig.minutesHigh / 60.0)).coerceIn(1.0, profile.autosens_max)
         val highRangeHours = enConfig.insulinPeakMins * 3 / 2 / 60.0   // = highRangeMins in hours ≈ 1.87 for Novorapid peak 75
         val resistanceMaxIOB = when {
-            ENActive -> profile.current_basal * highRangeHours          // ≈ basal × 1.87  (your ~2.0)
-            else     -> profile.current_basal * highRangeHours * 0.8    // overnight tighter (≈ basal × 1.5)
+            ENActive -> profile.current_basal * highRangeHours * resistanceGain   // ≈ basal × resistance time
+            else     -> profile.current_basal * highRangeHours * resistanceGain * 0.8              // overnight tighter (≈ basal × 1.5)
         }
         val resistanceBudgetUsed = max(0.0, enConfig.netIOBSinceHigh)
         val resistanceBudgetLeft = max(0.0, resistanceMaxIOB - resistanceBudgetUsed)
