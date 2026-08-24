@@ -536,6 +536,8 @@ open class ENPlugin @Inject constructor(
             val end = start + (it.duration)
             now >= start && now < end // true if 'now' falls inside the target's time window
         }
+        // a high temp target = TT active AND its target is above profile target
+        val isHighTempTarget = isTempTarget && targetBg > profile.getTargetMgdl()
 
         val ENWStarted = ENWStartTime != null && ENWEndTime != null && now >= ENWStartTime && now < ENWEndTime // check to see if TT or COB would mean the ENW is started
 
@@ -547,7 +549,7 @@ open class ENPlugin @Inject constructor(
         }
 
         val ENWfirstMeal = (mealCount == 1 && activeENTT != null) // is this the firstmeal?
-        val ENActive = ENTimeOK && ENStarted && (!isTempTarget && ENWActive == null || ENWActive != null || manualENTT) // is EN activated?
+        val ENActive = ENTimeOK && ENStarted && (!isHighTempTarget || ENWActive != null || manualENTT) // is EN activated?
         val advancedFiltering = if (ENWActive != null) true else constraintsChecker.isAdvancedFilteringEnabled().also { inputConstraints.copyReasons(it) }.value()
 
         // Calculate the amount of time ENW has been running
