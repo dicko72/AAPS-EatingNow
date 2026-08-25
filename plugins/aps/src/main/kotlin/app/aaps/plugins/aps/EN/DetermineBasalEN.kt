@@ -902,6 +902,13 @@ class DetermineBasalEN @Inject constructor(
         minGuardBG = round(minGuardBG, 0)
         //console.error(minCOBGuardBG, minUAMGuardBG, minIOBGuardBG, minGuardBG);
 
+        // EN-trusted guard, mirroring minPredBGEN: while genuinely stuck-high with budget unused
+        // (net deficit since high), a low prediction is deviation/UAM fiction — lift the guard to the
+        // least-pessimistic real sub-prediction. Gated on budget; never applied to an actual low.
+        val minGuardBGEN = if (isAuthorisedResistance && resistanceBudgetUsed <= 0.0)
+            max(minGuardBG, round(max(minIOBGuardBG, minUAMGuardBG), 0))
+        else minGuardBG
+
         var minZTUAMPredBG = minUAMPredBG
         // if minZTGuardBG is below threshold, bring down any super-high minUAMPredBG by averaging
         // this helps prevent UAM from giving too much insulin in case absorption falls off suddenly
@@ -1038,7 +1045,7 @@ class DetermineBasalEN @Inject constructor(
         }.let { base ->
             if (UAMplusConfidence) "$base+" else base                        // + = UAM+ confidence
         }.let { base ->
-            val authorised = (isAuthorisedMealRise || isAuthorisedResistance || isFootToFloor) && minGuardBG >= threshold
+            val authorised = (isAuthorisedMealRise || isAuthorisedResistance || isFootToFloor) && minGuardBGEN >= threshold
             val restricted =
                 (isRestrictedENW && (isAuthorisedResistance || UAMplusConfidence)) ||    // post-grace resistance budget
                 (ENWActive && enConfig.ENWNetIOBRemaining == 0.0) ||                     // in-window ENW stake exhausted (both prefs)
@@ -1061,7 +1068,9 @@ class DetermineBasalEN @Inject constructor(
             append("minPredBG: ${convert_bg(minPredBG)}")
             if (minPredBGEN != minPredBG) append("=${convert_bg(minPredBGEN)}")
             append(", ")
-            append("minGuardBG: ${convert_bg(minGuardBG)}, ")
+            append("minGuardBG: ${convert_bg(minGuardBG)}")
+            if (minGuardBGEN != minGuardBG) append("=${convert_bg(minGuardBGEN)}")
+            append(", ")
             append("IOBpredBG: ${convert_bg(lastIOBpredBG)}")
         }
         if (lastCOBpredBG != null) {
@@ -1142,7 +1151,7 @@ class DetermineBasalEN @Inject constructor(
             }
         }
 
-        if (enableSMB && minGuardBG < threshold && !isAuthorisedMealRise && !UAMplusConfidence) { // when prebolusing or high-rising allow SMB
+        if (enableSMB && minGuardBGEN < threshold && !isAuthorisedMealRise && !UAMplusConfidence) { // when prebolusing or high-rising allow SMB
             consoleError.add("minGuardBG ${convert_bg(minGuardBG)} projected below ${convert_bg(threshold)} - disabling SMB")
             //rT.reason += "minGuardBG "+minGuardBG+"<"+threshold+": SMB disabled; ";
             enableSMB = false
@@ -1179,7 +1188,7 @@ class DetermineBasalEN @Inject constructor(
             rT.reason.append(" and minDelta ${convert_bg(minDelta)} > expectedDelta ${convert_bg(expectedDelta)}; ")
             // predictive low glucose suspend mode: BG is / is projected to be < threshold
             // Standard LGS logic only runs if NO authorisation is active
-        } else if ((bg < threshold || minGuardBG < threshold) && !ENWActive) {
+        } else if ((bg < threshold || minGuardBGEN < threshold) && !ENWActive) {
             rT.reason.append("minGuardBG " + convert_bg(minGuardBG) + " < " + convert_bg(threshold))
             bgUndershoot = target_bg - minGuardBG
             val worstCaseInsulinReq = bgUndershoot / sens
