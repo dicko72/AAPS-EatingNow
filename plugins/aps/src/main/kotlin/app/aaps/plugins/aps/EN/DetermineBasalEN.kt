@@ -1011,8 +1011,8 @@ class DetermineBasalEN @Inject constructor(
             future_sens = round(future_sens, 1)
         }
 
-        // make ISF stronger when resistant
-        if (isAuthorisedResistance) future_sens /= resistanceGain
+        // make ISF stronger when resistant and ENActive
+        if (isAuthorisedResistance && ENActive) future_sens /= resistanceGain
 
         consoleLog.add("minPredBG: $minPredBG minIOBPredBG: $minIOBPredBG minZTGuardBG: $minZTGuardBG")
         if (minCOBPredBG < 999) {
@@ -1376,7 +1376,7 @@ class DetermineBasalEN @Inject constructor(
             // isAuthorisedMealRise or isAuthorisedResistance allows the rate to deliver insulinReq more insulin over 15m
             var basalRateMultiplier = when {
                 isAuthorisedMealRise || isFootToFloor -> 4.0
-                isAuthorisedResistance                -> 4.0 * resistanceGain   // faster + escalating TBR for stuck highs
+                isAuthorisedResistance && ENActive    -> 4.0 * resistanceGain   // faster + escalating TBR for stuck highs
                 else                                  -> 2.0
             }
             var rate = basal + (basalRateMultiplier * insulinReq)
