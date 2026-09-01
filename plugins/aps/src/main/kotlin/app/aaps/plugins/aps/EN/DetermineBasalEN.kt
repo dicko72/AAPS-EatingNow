@@ -393,7 +393,6 @@ class DetermineBasalEN @Inject constructor(
         // a genuine descent flips shortAvgDelta negative within 2–3 readings anyway.
         val isNotFalling = glucose_status.shortAvgDelta >= -2.0
 
-        val isFootToFloor = highBGthresholdActive && !ENActive && systemTime > enConfig.ENTimeStart && deltaFastUp
         // stuck high: high + plateaued + not falling. peakPassed covers the "insulin has had its chance" gate separately.
         val isStuckHigh = highBGthresholdActive && isNotFalling && isShortTermStable && enConfig.minutesHigh > 30
 
@@ -1045,7 +1044,7 @@ class DetermineBasalEN @Inject constructor(
         }.let { base ->
             if (UAMplusConfidence) "$base+" else base                        // + = UAM+ confidence
         }.let { base ->
-            val authorised = (isAuthorisedMealRise || isAuthorisedResistance || isFootToFloor) && minGuardBGEN >= threshold
+            val authorised = (isAuthorisedMealRise || isAuthorisedResistance) && minGuardBGEN >= threshold
             val restricted =
                 (isRestrictedENW && (isAuthorisedResistance || UAMplusConfidence)) ||    // post-grace resistance budget
                 (ENWActive && enConfig.ENWNetIOBRemaining == 0.0) ||                     // in-window ENW stake exhausted (both prefs)
@@ -1354,7 +1353,7 @@ class DetermineBasalEN @Inject constructor(
 
             // Resistance is metered: never request more than the remaining integral budget.
             // Total extra insulin per high episode is bounded by owedSinceHigh — stacking-proof by construction.
-            if (isAuthorisedResistance || isStuckHigh || (UAMplusConfidence && !ENWActive)) {
+            if (isStuckHigh || !ENWActive) {   // meter everything outside a declared window; declared meals (ENWActive) dose full
                 insulinReq = min(insulinReq, resistanceBudgetLeft)
                 insulinReq = max(insulinReq, insulinReqOrig)
             }
@@ -1375,7 +1374,7 @@ class DetermineBasalEN @Inject constructor(
             // rate required to deliver insulinReq more insulin over 30m:
             // isAuthorisedMealRise or isAuthorisedResistance allows the rate to deliver insulinReq more insulin over 15m
             var basalRateMultiplier = when {
-                isAuthorisedMealRise || isFootToFloor -> 4.0
+                isAuthorisedMealRise -> 4.0
                 isAuthorisedResistance && ENActive    -> 4.0 * resistanceGain   // faster + escalating TBR for stuck highs
                 else                                  -> 2.0
             }
@@ -1441,7 +1440,7 @@ class DetermineBasalEN @Inject constructor(
 
                 // bolus 1/2 the insulinReq, up to maxBolus, rounding down to nearest bolus increment
                 val roundSMBTo = 1 / profile.bolus_increment
-                val microBolus = if (ENWActive || isAuthorisedMealRise || isFootToFloor) {
+                val microBolus = if (ENWActive || isAuthorisedMealRise) {
                     Math.floor(Math.min(insulinReq, maxBolus) * roundSMBTo) / roundSMBTo // EN PreBolus Override for microBolus
                 } else {
                     // bolus 1/2 the insulinReq, up to maxBolus, rounding down to nearest bolus increment
