@@ -1380,8 +1380,9 @@ class DetermineBasalEN @Inject constructor(
             }
             var rate = basal + (basalRateMultiplier * insulinReq)
 
-            // Spent/over budget: neutral basal alongside the capped SMBs — no high temp stacked onto
-            if (ENWNetIOBExceeded) rate = basal
+            // TBR cannot exceed ENWNetIOBMax
+            if (ENWActive && enConfig.ENWNetIOBMax > 0)
+                rate = min(rate, basal + 2.0 * enConfig.ENWNetIOBRemaining)
 
             rate = round_basal(rate)
             insulinReq = round(insulinReq, 3)
