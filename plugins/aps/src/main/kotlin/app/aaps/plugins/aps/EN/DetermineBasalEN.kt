@@ -822,7 +822,7 @@ class DetermineBasalEN @Inject constructor(
         }
 
         // variables for allowing some overrides
-        val resistanceGain = (1.0 + 0.15 * (enConfig.minutesHigh / 60.0)).coerceIn(1.0, profile.autosens_max)
+        val resistanceGain = (1.0 + 0.20 * (enConfig.minutesHigh / 60.0)).coerceIn(1.0, profile.autosens_max)
         val highRangeHours = enConfig.insulinPeakMins * 3 / 2 / 60.0   // = highRangeMins in hours ≈ 1.87 for Novorapid peak 75
         val resistanceMaxIOB = when {
             ENActive -> profile.current_basal * highRangeHours * resistanceGain   // ≈ basal × resistance time
@@ -1011,7 +1011,9 @@ class DetermineBasalEN @Inject constructor(
         }
 
         // make ISF stronger when resistant and ENActive
-        if (isAuthorisedResistance && ENActive) future_sens /= resistanceGain
+        // if (isAuthorisedResistance && ENActive) future_sens /= resistanceGain
+        if (isAuthorisedResistance) future_sens = min(sens, future_sens) / resistanceGain
+
 
         consoleLog.add("minPredBG: $minPredBG minIOBPredBG: $minIOBPredBG minZTGuardBG: $minZTGuardBG")
         if (minCOBPredBG < 999) {
@@ -1037,7 +1039,8 @@ class DetermineBasalEN @Inject constructor(
             deltaFastUp && deltaPctS >= 1.0 -> "⇈"                           // fast up AND accelerating
             deltaFastUp                     -> "↑"                           // fast up, not accelerating
             glucose_status.delta < -9.0     -> "⇊"                           // fast down
-            isStuckHigh -> "⎺→ ${enConfig.minutesHigh}m (${round(resistanceBudgetUsed,2)}/${round(resistanceMaxIOB,2)}U)" // flat high
+            enConfig.minutesHigh > 0 -> "⎺→ ${enConfig.minutesHigh}m (${round(resistanceBudgetUsed,2)}/${round(resistanceMaxIOB,2)}U x ${resistanceGain})" // flat high
+            // isStuckHigh -> "⎺→ ${enConfig.minutesHigh}m (${round(resistanceBudgetUsed,2)}/${round(resistanceMaxIOB,2)}U)" // flat high
             glucose_status.delta >  1.5     -> "↗"                           // mild up
             glucose_status.delta < -1.5     -> "↘"                           // mild down
             else                            -> "→"                           // flat
