@@ -2,6 +2,7 @@
 package app.aaps.plugins.sync.nsclient.data
 
 import android.text.Spanned
+import android.text.TextUtils
 import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.aps.APSResult
 import app.aaps.core.interfaces.nsclient.NSSettingsStatus
@@ -92,7 +93,9 @@ class ProcessedDeviceStatusDataImpl @Inject constructor(
                 string.append("<b>")
                     .append(dateUtil.minAgo(rh, mainClock))
                     .append("</b> ")
-                    .append(mainResult.reason)
+                    // reason is plain text (may contain literal '<', e.g. "temp 0.00 < 6U/hr."); escape it
+                    // before fromHtml() so a stray '<' isn't parsed as a tag and swallow the rest of the line
+                    .append(TextUtils.htmlEncode(mainResult.reason.toString()))
             }
 
             // Handle the differences cleanly

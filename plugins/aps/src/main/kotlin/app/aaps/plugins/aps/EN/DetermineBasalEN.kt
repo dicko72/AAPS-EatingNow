@@ -1039,15 +1039,16 @@ class DetermineBasalEN @Inject constructor(
             deltaFastUp && deltaPctS >= 1.0 -> "⇈"                           // fast up AND accelerating
             deltaFastUp                     -> "↑"                           // fast up, not accelerating
             glucose_status.delta < -9.0     -> "⇊"                           // fast down
-            enConfig.minutesHigh > 0 -> "⎺→ ${enConfig.minutesHigh}m (${round(resistanceBudgetUsed,2)}/${round(resistanceMaxIOB,2)}U x ${resistanceGain})" // flat high
-            // isStuckHigh -> "⎺→ ${enConfig.minutesHigh}m (${round(resistanceBudgetUsed,2)}/${round(resistanceMaxIOB,2)}U)" // flat high
+            // flat high: carries the inline detail (duration, budget used/cap, resistance gain) for every
+            // stuck-high cycle. The • EN note just names the decisive reason; these figures live here.
+            enConfig.minutesHigh > 0        -> "⎺→ ${enConfig.minutesHigh}m (${round(resistanceBudgetUsed,2)}/${round(resistanceMaxIOB,2)}U x ${resistanceGain})" // flat high
             glucose_status.delta >  1.5     -> "↗"                           // mild up
             glucose_status.delta < -1.5     -> "↘"                           // mild down
             else                            -> "→"                           // flat
         }.let { base ->
             if (UAMplusConfidence) "$base+" else base                        // + = UAM+ confidence
         }.let { base ->
-            val authorised = (isAuthorisedMealRise || isAuthorisedResistance) && minGuardBGEN >= threshold
+            val authorised = isAuthorisedMealRise && minGuardBGEN >= threshold   // resistance signals itself via the • EN: Resistance note, so no ✓
             val restricted =
                 (isRestrictedENW && (isAuthorisedResistance || UAMplusConfidence)) ||    // post-grace resistance budget
                 (ENWActive && enConfig.ENWNetIOBRemaining == 0.0) ||                     // in-window ENW stake exhausted (both prefs)
@@ -1064,6 +1065,7 @@ class DetermineBasalEN @Inject constructor(
             append("COB: ${round(activeCOB, 1).withoutZeros()}, ")
             append("Dev: ${convert_bg(deviation.toDouble())}, ")
             append("BGI: ${convert_bg(bgi)}, ")
+            // original=dosing ISF shown inline every cycle; the • EN note just names the decisive reason
             append("ISF: ${convert_bg(sens)}=${convert_bg(future_sens)}, ")
             append("CR: ${round(profile.carb_ratio, 2).withoutZeros()}, ")
             append("Target: ${convert_bg(target_bg)}, ")
@@ -1340,6 +1342,14 @@ class DetermineBasalEN @Inject constructor(
                 return setTempBasal(basal, 30, profile, rT, currenttemp)
             }
         } else { // otherwise, calculate 30m high-temp required to get projected BG down to target
+            // changeReason: a short human-readable note explaining why insulinReq diverged from baseline.
+            // Composed once below (when the driver is known) and appended as the LAST item of the reason
+            // text on every dosing exit via done(), so it reads as a trailing summary.
+            var changeReason = ""
+            fun done(r: RT): RT {
+                if (changeReason.isNotEmpty()) r.reason.append("  • EN: $changeReason")
+                return r
+            }
             // insulinReq is the additional insulin required to get minPredBG down to target_bg
             //console.error(minPredBG,eventualBG);
 
@@ -1352,11 +1362,30 @@ class DetermineBasalEN @Inject constructor(
             }
             val insulinReqENW = insulinReq
 
-            if (isPrebolusing) insulinReq = max(remainingPrebolus, insulinReq) // Give the minimum in the prebolus
+            // ---- decisive-reason tracking ----------------------------------------------------------------
+            // Pick the ONE reason that set the final insulinReq: the driver that asked for the most insulin,
+            // unless a restraint capped the dose below that ask — then the restraint is the decisive reason.
+            val baselineReq = max(insulinReqOrig, 0.0)        // plain high-BG correction (profile ISF), floored at 0
+            val driverLabel = when {                          // what authorised/named dosing above baseline
+                isPrebolusing          -> "Prebolus"
+                isAuthorisedResistance -> "Resistance"
+                isAuthorisedMealRise   -> "Meal rise"
+                UAMplusConfidence      -> "UAM+"
+                else                   -> "High"
+            }
+            var topAsk = insulinReqENW                        // largest amount any driver wanted, pre-caps
+            var restraint = ""                                // label of the binding restraint, if one bound below topAsk
+            // --------------------------------------------------------------------------------------------
+
+            if (isPrebolusing) {
+                insulinReq = max(remainingPrebolus, insulinReq) // Give the minimum in the prebolus
+                topAsk = max(topAsk, remainingPrebolus)
+            }
 
             // Resistance is metered: never request more than the remaining integral budget.
             // Total extra insulin per high episode is bounded by owedSinceHigh — stacking-proof by construction.
             if (isStuckHigh || !ENWActive) {   // meter everything outside a declared window; declared meals (ENWActive) dose full
+                if (insulinReq > resistanceBudgetLeft) restraint = "Resistance budget"   // budget held the dose below the ask
                 insulinReq = min(insulinReq, resistanceBudgetLeft)
                 insulinReq = max(insulinReq, insulinReqOrig)
             }
@@ -1365,6 +1394,7 @@ class DetermineBasalEN @Inject constructor(
             if (insulinReq > max_iob - iob_data.iob) {
                 rT.reason.append("max_iob $max_iob, ")
                 insulinReq = max_iob - iob_data.iob
+                restraint = "Max IOB"        // applied after the budget — a tighter, later cap, so it is decisive
             }
 
 
@@ -1372,6 +1402,7 @@ class DetermineBasalEN @Inject constructor(
             // restrict insulinReq and TBR when ENWBolusIOB will be exceeded
             if (ENWActive && enConfig.ENWNetIOBMax > 0 && !OverrideENWNetIOBMax  && insulinReq > enConfig.ENWNetIOBRemaining) {
                 insulinReq = min(insulinReq,enConfig.ENWNetIOBRemaining)
+                restraint = "ENW IOB"
             }
 
             // rate required to deliver insulinReq more insulin over 30m:
@@ -1390,6 +1421,22 @@ class DetermineBasalEN @Inject constructor(
             rate = round_basal(rate)
             insulinReq = round(insulinReq, 3)
             rT.insulinReq = insulinReq
+
+            // Decisive-reason note (appended last via done()): just NAMES the ONE reason insulinReq diverged
+            // from the plain baseline correction. All figures (duration, budget, ISF shift, amounts) live
+            // inline above — the Delta ⎺→ glyph, the ISF: field, and the max_iob/ENW readouts — so this line
+            // stays a short label. The reason is either:
+            //   • the driver, if it still delivered insulin above baseline (even when a cap trimmed the top), else
+            //   • the restraint, when a high ask was held down at ~baseline (the cap is the whole story), else
+            //   • nothing, when the dose didn't diverge from baseline.
+            val addl = round(insulinReq - baselineReq, 2)     // extra delivered over the plain baseline correction
+            val withheld = round(topAsk - insulinReq, 2)      // how much the binding cap held back
+            changeReason = when {
+                addl > 0.05 -> if (driverLabel == "High") "High correction" else driverLabel
+                restraint == "Resistance budget" && withheld > 0.05 -> "Resistance over budget"
+                restraint.isNotEmpty() && withheld > 0.05           -> "$restraint capped"   // Max IOB capped / ENW IOB capped
+                else                                                -> ""                    // dose didn't diverge: no • EN line
+            }
             //console.error(iob_data.lastBolusTime);
             //console.error(profile.temptargetSet, target_bg, rT.COB);
             // only allow microboluses with COB or low temp targets, or within DIA hours of a bolus
@@ -1481,13 +1528,16 @@ class DetermineBasalEN @Inject constructor(
                     durationReq = 30
                 }
                 // show insulinReq original value with actual restricted
-                rT.reason.apply {
-                    append(" insulinReq ")
-                    if (insulinReqOrig != insulinReq) append(insulinReqOrig).append("U=")
-                    if (insulinReqENW != insulinReq) append(insulinReqENW).append("U=")
-                    append(insulinReq).append('U')
+                // (suppressed for resistance, whose • EN: note already conveys this; kept otherwise)
+                if (!isAuthorisedResistance) {
+                    rT.reason.apply {
+                        append(" insulinReq ")
+                        if (insulinReqOrig != insulinReq) append(insulinReqOrig).append("U=")
+                        if (insulinReqENW != insulinReq) append(insulinReqENW).append("U=")
+                        append(insulinReq).append('U')
+                    }
+                    rT.reason.append(", iReqBG: ${convert_bg(insulinReqBG)}")
                 }
-                rT.reason.append(", iReqBG: ${convert_bg(insulinReqBG)}")
                 if (microBolus >= maxBolus || maxBolus > maxBolusAAPS) { // if the maxBolus has increased due to EN
                     rT.reason.append("; $ENmaxBolusType maxBolus $maxBolus")
                 }
@@ -1527,7 +1577,7 @@ class DetermineBasalEN @Inject constructor(
                 if (durationReq > 0) {
                     rT.rate = smbLowTempReq
                     rT.duration = durationReq
-                    return rT
+                    return done(rT)
                 }
 
             }
@@ -1542,22 +1592,22 @@ class DetermineBasalEN @Inject constructor(
             val insulinScheduled = currenttemp.duration * (currenttemp.rate - basal) / 60
             if (insulinScheduled >= insulinReq * 2) { // if current temp would deliver >2x more than the required insulin, lower the rate
                 rT.reason.append("${currenttemp.duration}m@${(currenttemp.rate).toFixed2()} > 2 * insulinReq. Setting temp basal of ${round(rate, 2)}U/hr. ")
-                return setTempBasal(rate, 30, profile, rT, currenttemp)
+                return done(setTempBasal(rate, 30, profile, rT, currenttemp))
             }
 
             if (currenttemp.duration == 0) { // no temp is set
                 rT.reason.append("no temp, setting " + round(rate, 2).withoutZeros() + "U/hr. ")
-                return setTempBasal(rate, 30, profile, rT, currenttemp)
+                return done(setTempBasal(rate, 30, profile, rT, currenttemp))
             }
 
             if (currenttemp.duration > 5 && (round_basal(rate) <= round_basal(currenttemp.rate))) { // if required temp <~ existing temp basal
                 rT.reason.append("temp ${(currenttemp.rate).toFixed2()} >~ req ${round(rate, 2).withoutZeros()}U/hr. ")
-                return rT
+                return done(rT)
             }
 
             // required temp > existing temp basal
             rT.reason.append("temp ${currenttemp.rate.toFixed2()} < ${round(rate, 2).withoutZeros()}U/hr. ")
-            return setTempBasal(rate, 30, profile, rT, currenttemp)
+            return done(setTempBasal(rate, 30, profile, rT, currenttemp))
         }
     }
 }
