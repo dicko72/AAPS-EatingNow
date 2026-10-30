@@ -1438,7 +1438,7 @@ class DetermineBasalEN @Inject constructor(
                 enConfig.minutesHigh > 0 && !ENWActive ->
                     "Resistance ${enConfig.minutesHigh}m, budget (${round(resistanceBudgetUsed, 2)}/${round(resistanceMaxIOB, 2)}U) ISF ${round(resistanceGain * 100)}%"
                 addl > 0.05 -> if (driverLabel == "High") "High correction" else driverLabel
-                else        -> ""                    // dose didn't diverge: no • EN line
+                else        -> "No change"           // dose matches the plain baseline correction
             }
             //console.error(iob_data.lastBolusTime);
             //console.error(profile.temptargetSet, target_bg, rT.COB);
