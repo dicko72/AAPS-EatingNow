@@ -1065,14 +1065,14 @@ class DetermineBasalEN @Inject constructor(
             append("Dev: ${convert_bg(deviation.toDouble())}, ")
             append("BGI: ${convert_bg(bgi)}, ")
             // original=dosing ISF shown inline every cycle; the • EN note just names the decisive reason
-            append("ISF: ${convert_bg(sens)}=${convert_bg(future_sens)}, ")
+            append("ISF: ${convert_bg(sens)}→${convert_bg(future_sens)}, ")
             append("CR: ${round(profile.carb_ratio, 2).withoutZeros()}, ")
             append("Target: ${convert_bg(target_bg)}, ")
             append("minPredBG: ${convert_bg(minPredBG)}")
-            if (minPredBGEN != minPredBG) append("=${convert_bg(minPredBGEN)}")
+            if (minPredBGEN != minPredBG) append("→${convert_bg(minPredBGEN)}")
             append(", ")
             append("minGuardBG: ${convert_bg(minGuardBG)}")
-            if (minGuardBGEN != minGuardBG) append("=${convert_bg(minGuardBGEN)}")
+            if (minGuardBGEN != minGuardBG) append("→${convert_bg(minGuardBGEN)}")
             append(", ")
             append("IOBpredBG: ${convert_bg(lastIOBpredBG)}")
         }
@@ -1361,6 +1361,11 @@ class DetermineBasalEN @Inject constructor(
             }
             val insulinReqENW = insulinReq
 
+            // iReqBG transparency: AAPS safety doses on min(minPredBG, eventualBG); EN can pick a higher BG
+            val insulinReqBGorig = min(minPredBG, eventualBG)
+            if (round(insulinReqBG, 0) > round(insulinReqBGorig, 0))
+                rT.reason.append(", iReqBG: ${convert_bg(insulinReqBGorig)}→${convert_bg(insulinReqBG)}")
+
             // ---- decisive-reason tracking ----------------------------------------------------------------
             // Pick the ONE reason that set the final insulinReq: the driver that asked for the most insulin,
             // unless a restraint capped the dose below that ask — then the restraint is the decisive reason.
@@ -1534,7 +1539,7 @@ class DetermineBasalEN @Inject constructor(
                         if (insulinReqENW != insulinReq) append(insulinReqENW).append("U=")
                         append(insulinReq).append('U')
                     }
-                    rT.reason.append(", iReqBG: ${convert_bg(insulinReqBG)}")
+                    // iReqBG is now shown earlier (on every dosing cycle where EN raised the dosing BG)
                 }
                 if (microBolus >= maxBolus || maxBolus > maxBolusAAPS) { // if the maxBolus has increased due to EN
                     rT.reason.append("; $ENmaxBolusType maxBolus $maxBolus")
