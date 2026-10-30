@@ -1039,9 +1039,8 @@ class DetermineBasalEN @Inject constructor(
             deltaFastUp && deltaPctS >= 1.0 -> "⇈"                           // fast up AND accelerating
             deltaFastUp                     -> "↑"                           // fast up, not accelerating
             glucose_status.delta < -9.0     -> "⇊"                           // fast down
-            // flat high: carries the inline detail (duration, budget used/cap, resistance gain) for every
-            // stuck-high cycle. The • EN note just names the decisive reason; these figures live here.
-            enConfig.minutesHigh > 0        -> "⎺→ ${enConfig.minutesHigh}m (${round(resistanceBudgetUsed,2)}/${round(resistanceMaxIOB,2)}U x ${resistanceGain})" // flat high
+            // flat-high detail (duration, budget used/cap, resistance gain) is carried by the • EN note now,
+            // so no ⎺→ glyph here — fall through to the plain delta arrow.
             glucose_status.delta >  1.5     -> "↗"                           // mild up
             glucose_status.delta < -1.5     -> "↘"                           // mild down
             else                            -> "→"                           // flat
@@ -1385,7 +1384,6 @@ class DetermineBasalEN @Inject constructor(
             // Resistance is metered: never request more than the remaining integral budget.
             // Total extra insulin per high episode is bounded by owedSinceHigh — stacking-proof by construction.
             if (isStuckHigh || !ENWActive) {   // meter everything outside a declared window; declared meals (ENWActive) dose full
-                if (insulinReq > resistanceBudgetLeft) restraint = "Resistance budget"   // budget held the dose below the ask
                 insulinReq = min(insulinReq, resistanceBudgetLeft)
                 insulinReq = max(insulinReq, insulinReqOrig)
             }
@@ -1422,20 +1420,20 @@ class DetermineBasalEN @Inject constructor(
             insulinReq = round(insulinReq, 3)
             rT.insulinReq = insulinReq
 
-            // Decisive-reason note (appended last via done()): just NAMES the ONE reason insulinReq diverged
-            // from the plain baseline correction. All figures (duration, budget, ISF shift, amounts) live
-            // inline above — the Delta ⎺→ glyph, the ISF: field, and the max_iob/ENW readouts — so this line
-            // stays a short label. The reason is either:
-            //   • the driver, if it still delivered insulin above baseline (even when a cap trimmed the top), else
-            //   • the restraint, when a high ask was held down at ~baseline (the cap is the whole story), else
-            //   • nothing, when the dose didn't diverge from baseline.
+            // Decisive-reason note (appended last via done()): the ONE reason insulinReq diverged from the
+            // plain baseline correction.
+            //   • a hard ceiling (Max IOB / ENW IOB) bound the dose → name it, it's the binding limit; else
+            //   • stuck high outside a meal → the resistance context: duration, budget used/cap, ISF gain as a %
+            //     (factual — budget may still have room, so no "over budget" claim); else
+            //   • a driver delivered above baseline → name it; else nothing.
             val addl = round(insulinReq - baselineReq, 2)     // extra delivered over the plain baseline correction
             val withheld = round(topAsk - insulinReq, 2)      // how much the binding cap held back
             changeReason = when {
+                restraint.isNotEmpty() && withheld > 0.05 -> "$restraint capped"   // Max IOB capped / ENW IOB capped
+                enConfig.minutesHigh > 0 && !ENWActive ->
+                    "Resistance ${enConfig.minutesHigh}m, budget (${round(resistanceBudgetUsed, 2)}/${round(resistanceMaxIOB, 2)}U) ISF ${round(resistanceGain * 100)}%"
                 addl > 0.05 -> if (driverLabel == "High") "High correction" else driverLabel
-                restraint == "Resistance budget" && withheld > 0.05 -> "Resistance over budget"
-                restraint.isNotEmpty() && withheld > 0.05           -> "$restraint capped"   // Max IOB capped / ENW IOB capped
-                else                                                -> ""                    // dose didn't diverge: no • EN line
+                else        -> ""                    // dose didn't diverge: no • EN line
             }
             //console.error(iob_data.lastBolusTime);
             //console.error(profile.temptargetSet, target_bg, rT.COB);
