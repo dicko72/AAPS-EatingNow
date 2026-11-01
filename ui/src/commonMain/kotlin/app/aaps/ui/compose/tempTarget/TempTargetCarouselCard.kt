@@ -243,6 +243,9 @@ private fun getTTReasonColor(reason: TT.Reason): Color {
         TT.Reason.HYPOGLYCEMIA -> colors.ttHypoglycemia
         TT.Reason.CUSTOM,
         TT.Reason.AUTOMATION,
+        // Modified for Eating Now
+        TT.Reason.EATING_NOW,
+        TT.Reason.EATING_NOW_PB,
         TT.Reason.WEAR         -> colors.ttCustom
     }
 }
@@ -258,6 +261,9 @@ private fun getTTReasonStringRes(reason: TT.Reason): TextRef {
         TT.Reason.CUSTOM       -> CoreUiStrings.custom
         TT.Reason.AUTOMATION   -> CoreUiStrings.automation
         TT.Reason.WEAR         -> CoreUiStrings.wear
+        // Modified for Eating Now
+        TT.Reason.EATING_NOW    -> CoreUiStrings.eatingnow
+        TT.Reason.EATING_NOW_PB -> CoreUiStrings.eatingnow_prebolus
     }
 }
 
@@ -271,6 +277,9 @@ private fun getTTReasonIcon(reason: TT.Reason): ImageVector {
         TT.Reason.HYPOGLYCEMIA -> IcTtHypo
         TT.Reason.CUSTOM,
         TT.Reason.AUTOMATION,
+        // Modified for Eating Now
+        TT.Reason.EATING_NOW,
+        TT.Reason.EATING_NOW_PB,
         TT.Reason.WEAR         -> IcTtManual
     }
 }

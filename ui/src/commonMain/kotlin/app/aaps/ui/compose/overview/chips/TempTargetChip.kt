@@ -153,6 +153,9 @@ private fun TT.Reason?.toDescription(): TextRef? = when (this) {
     TT.Reason.ACTIVITY     -> CoreUiStrings.activity
     TT.Reason.AUTOMATION   -> CoreUiStrings.automation
     TT.Reason.WEAR         -> CoreUiStrings.wear
+    // Modified for Eating Now: shows "Eating Now" / "Eating Now PB" on the overview TT chip
+    TT.Reason.EATING_NOW    -> CoreUiStrings.eatingnow
+    TT.Reason.EATING_NOW_PB -> CoreUiStrings.eatingnow_prebolus
     null                   -> null
 }
 
