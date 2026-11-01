@@ -29,6 +29,7 @@ import app.aaps.plugins.automation.actions.ActionSMBChange
 import app.aaps.plugins.automation.actions.ActionSendSMS
 import app.aaps.plugins.automation.actions.ActionSettingsExport
 import app.aaps.plugins.automation.actions.ActionSmoothingChange
+import app.aaps.plugins.automation.actions.ActionStartENTempTarget // Modified for Eating Now
 import app.aaps.plugins.automation.actions.ActionStartTempTarget
 import app.aaps.plugins.automation.compose.elements.AutomationDropdown
 import app.aaps.plugins.automation.compose.elements.InputDropdownOnOffEditor
@@ -73,6 +74,7 @@ fun ActionEditor(
             is ActionProfileSwitchPercent -> ActionProfileSwitchPercentEditor(action, tick, onChange)
             is ActionRunAutotune          -> ActionRunAutotuneEditor(action, profileNames, tick, onChange)
             is ActionStartTempTarget      -> ActionStartTempTargetEditor(action, tick, onChange)
+            is ActionStartENTempTarget    -> ActionStartENTempTargetEditor(action, tick, onChange) // Modified for Eating Now
             is ActionRunScene             -> ActionRunSceneEditor(action, sceneOptions, tick, onChange)
             is ActionEnableScene          -> ActionEnableSceneEditor(action, sceneOptions, tick, onChange)
             is ActionDisableScene         -> ActionDisableSceneEditor(action, sceneOptions, tick, onChange)
@@ -252,6 +254,30 @@ fun ActionRunAutotuneEditor(
 
 @Composable
 fun ActionStartTempTargetEditor(a: ActionStartTempTarget, tick: Int = 0, onChange: () -> Unit) {
+    @Suppress("UNUSED_EXPRESSION") tick
+    val isMmol = a.value.units == GlucoseUnit.MMOL
+    NumberInputRow(
+        labelRef = CoreUiStrings.temporary_target,
+        value = a.value.value,
+        onValueChange = { a.value.value = it; onChange() },
+        valueRange = if (isMmol) Constants.TT_RANGE_MMOL else Constants.TT_RANGE_MGDL,
+        step = if (isMmol) 0.1 else 1.0,
+        decimalPlaces = if (isMmol) 1 else 0,
+        unitLabel = if (isMmol) CoreUiStrings.units_mmol else CoreUiStrings.units_mgdl
+    )
+    NumberInputRow(
+        labelRef = CoreUiStrings.duration_label,
+        value = a.duration.value.toDouble(),
+        onValueChange = { a.duration.value = it.toInt(); onChange() },
+        valueRange = 5.0..(24 * 60.0),
+        step = 10.0,
+        unitLabel = CoreUiStrings.units_min
+    )
+}
+
+// Modified for Eating Now: same inputs as ActionStartTempTargetEditor, for the EN temp-target action
+@Composable
+fun ActionStartENTempTargetEditor(a: ActionStartENTempTarget, tick: Int = 0, onChange: () -> Unit) {
     @Suppress("UNUSED_EXPRESSION") tick
     val isMmol = a.value.units == GlucoseUnit.MMOL
     NumberInputRow(
