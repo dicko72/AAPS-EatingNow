@@ -15,7 +15,9 @@ import app.aaps.core.interfaces.profile.ProfileRepository
 import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.protection.ExportPasswordDataStore
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.queue.CommandQueue
 import app.aaps.core.interfaces.resources.TextResolver
+import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.core.interfaces.scenes.SceneAutomationApi
 import app.aaps.core.interfaces.scenes.SceneIconResolver
@@ -60,7 +62,10 @@ class ActionFactory(
     private val autotunePlugin: Autotune,
     private val importExportPrefs: ImportExportPrefs,
     private val exportPasswordDataStore: ExportPasswordDataStore,
-    private val configBuilder: ConfigBuilder
+    private val configBuilder: ConfigBuilder,
+    // Modified for Eating Now
+    private val commandQueue: CommandQueue,
+    private val uiInteraction: UiInteraction
 ) {
 
     /** A new, empty instance of every action type, for the "choose an action" list. */
@@ -68,7 +73,8 @@ class ActionFactory(
         actionAlarm(), actionCarePortalEvent(), actionDisableScene(), actionEnableScene(),
         actionNotification(), actionProfileSwitch(), actionProfileSwitchPercent(), actionRunAutotune(),
         actionRunScene(), actionSendSMS(), actionSettingsExport(), actionSMBChange(), actionSmoothingChange(),
-        actionStartTempTarget(), actionStopProcessing(), actionStopTempTarget()
+        actionStartTempTarget(), actionStopProcessing(), actionStopTempTarget(),
+        actionStartENTempTarget(), actionBasalCancel() // Modified for Eating Now
     )
 
     fun actionAlarm() = ActionAlarm(aapsLogger, rh, pumpEnactResultProvider, rxBus, dateUtil, reminderScheduler, config)
@@ -95,6 +101,10 @@ class ActionFactory(
     fun actionStopProcessing() = ActionStopProcessing(aapsLogger, rh, pumpEnactResultProvider)
     fun actionStopTempTarget() = ActionStopTempTarget(aapsLogger, rh, pumpEnactResultProvider, persistenceLayer, dateUtil)
 
+    // Modified for Eating Now
+    fun actionStartENTempTarget() = ActionStartENTempTarget(aapsLogger, rh, pumpEnactResultProvider, activePlugin, persistenceLayer, profileFunction, dateUtil, profileUtil, triggerDeps)
+    fun actionBasalCancel() = ActionBasalCancel(aapsLogger, rh, pumpEnactResultProvider, commandQueue, uiInteraction)
+
     /**
      * A new, empty action of the given type. The name may be plain or fully qualified, because that is
      * how it is written in stored automations. Returns null on an unknown type.
@@ -118,6 +128,8 @@ class ActionFactory(
             ActionStartTempTarget::class.simpleName      -> actionStartTempTarget()
             ActionStopProcessing::class.simpleName       -> actionStopProcessing()
             ActionStopTempTarget::class.simpleName       -> actionStopTempTarget()
+            ActionStartENTempTarget::class.simpleName    -> actionStartENTempTarget() // Modified for Eating Now
+            ActionBasalCancel::class.simpleName          -> actionBasalCancel() // Modified for Eating Now
             else                                             -> null
         }
 
