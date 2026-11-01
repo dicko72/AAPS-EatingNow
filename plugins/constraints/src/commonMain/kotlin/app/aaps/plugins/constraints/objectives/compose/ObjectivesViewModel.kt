@@ -8,6 +8,7 @@ import app.aaps.core.data.ue.Sources
 import app.aaps.core.data.ue.ValueWithUnit
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.plugin.ActivePlugin // Modified for Eating Now
 import app.aaps.core.interfaces.receivers.ReceiverStatusStore
 import app.aaps.core.interfaces.resources.TextResolver
 import app.aaps.core.interfaces.rx.bus.RxBus
@@ -57,7 +58,8 @@ class ObjectivesViewModel(
     private val receiverStatusStore: ReceiverStatusStore,
     private val aapsLogger: AAPSLogger,
     private val uel: UserEntryLogger,
-    private val preferences: Preferences
+    private val preferences: Preferences,
+    private val activePlugin: ActivePlugin // Modified for Eating Now
 ) : ViewModel() {
 
     private val scope get() = viewModelScope
@@ -158,7 +160,10 @@ class ObjectivesViewModel(
             )
         }
 
-        _uiState.update { it.copy(objectives = objectives) }
+        // Modified for Eating Now: expose objectives debug/skip controls (fake mode + instant verify)
+        // only when the Eating Now plugin is the active APS, not for other APS plugins.
+        val enApsActive = activePlugin.activeAPS?.let { it::class.simpleName == "ENPlugin" } == true
+        _uiState.update { it.copy(objectives = objectives, showDebugControls = enApsActive) }
     }
 
     fun onDismissNtpDialog() {
