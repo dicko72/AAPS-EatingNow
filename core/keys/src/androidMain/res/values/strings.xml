@@ -428,4 +428,46 @@
 
     <!--    Appearance preferences-->
 
+    <!-- Modified for Eating Now -->
+    <string name="EatingNow_IgnoreCOB_title">Ignore COB</string>
+    <string name="EatingNow_IgnoreCOB_summary">Ignore COB predictions, useful when entering rescue carbs</string>
+    <string name="EatingNow_useISFscaler_title">ISF Scaling</string>
+    <string name="EatingNow_useISFscaler_summary">Similar to dynISF but uses profile ISF at target bg</string>
+    <string name="EatingNow_AutoStart_title">Autostart EN</string>
+    <string name="EatingNow_AutoStart_summary">Disable sleep mode and activate Eating Now after the start time</string>
+    <string name="EatingNow_OverrideENWNetIOBMax_title">Allow UAM maxBolus when ENWNetIOBMax is insufficient</string>
+    <string name="EatingNow_OverrideENWNetIOBMax_summary">UAM maxBolus for confident accelerated BG rise allowed when ENWNetIOBMax has been exceeded</string>
+    <string name="eatingnow_overnightSMB_title">Overnight SMB Restriction</string>
+    <string name="eatingnow_overnightSMB_summary">There will be no SMB when below this BG offset at night unless COB or a TT lower or equal to normalTarget\ne.g. if normalTarget is 5.5 (99) and this setting is 1.5 (27) there will be no SMB below 7.0 (126)</string>
+    <string name="eatingnow_daytimeSMB_title">Daytime SMB Restriction</string>
+    <string name="eatingnow_daytimeSMB_summary">There will be no SMB when below this BG offset during the day unless ENW is active\ne.g. if normalTarget is 5.5 (99) and this setting is 1.5 (27) there will be no SMB below 7.0 (126)</string>
+    <string name="eatingnow_highBGthreshold_title">High BG Threshold</string>
+    <string name="eatingnow_highBGthreshold_summary">ISF Scaling will increase when BG is stuck above this additional BG offset\ne.g. if normalTarget is 5.5 (99) and this setting is 1.5 (27) ISF scaling will commence at above 7.0 (126)\n0 is disabled</string>
+    <string name="Eatingnow_enw_cob_maxbolus_title">COB maxBolus [U]</string>
+    <string name="Eatingnow_enw_cob_maxbolus_summary">COB maxBolus for BGL rises within the EN Window.\n0 will use existing maxBolus limit</string>
+    <string name="Eatingnow_enw_uam_maxbolus_title">UAM maxBolus [U]</string>
+    <string name="Eatingnow_enw_uam_maxbolus_summary">UAM maxBolus for BGL rises within the EN Window.\n0 will use existing maxBolus limit</string>
+    <string name="Eatingnow_enw_maxiob_title">ENW max units [U]</string>
+    <string name="Eatingnow_enw_maxiob_summary">Max insulin units received from treatments within eating window. Once reached insulin delivery will cease until the window ends.</string>
+    <string name="Eatingnow_enw_prebolus_title">PreBolus [U]</string>
+    <string name="Eatingnow_enw_prebolus_summary">PreBolus for within the EN Window only.</string>
+    <string name="Eatingnow_enw_uamplus_maxbolus_title">UAM+ maxBolus [U]</string>
+    <string name="Eatingnow_enw_uamplus_maxbolus_summary">UAM+ maxBolus for accelerated BG rise within the EN Window only.</string>
+    <string name="Eatingnow_enw_triggerbolus_title">Start ENW with manual bolus [U]</string>
+    <string name="Eatingnow_enw_triggerbolus_summary">Start an Eating Window with a bolus of this size or above, zero disables</string>
+    <string name="Eatingnow_enw_triggercob_title">Start ENW with COB [g]</string>
+    <string name="Eatingnow_enw_triggercob_summary">Start an Eating Window with COB of this amount or above, zero disables</string>
+    <string name="eatingnow_timestart_title">Start Time</string>
+    <string name="eatingnow_timestart_summary">Enter Eating Now start time in 24h e.g. 9AM is 9</string>
+    <string name="eatingnow_timeend_title">End Time</string>
+    <string name="eatingnow_timeend_summary">Enter Eating Now end time in 24h e.g. 5PM is 17</string>
+    <string name="Eatingnow_enw_minutes_title">EN Window Duration [0-120m]</string>
+    <string name="Eatingnow_enw_minutes_summary">Window in minutes for increased maxBolus with COB or UAM.\n0 will disable and allow AAPS maxBolus limit.</string>
+    <string name="enwProfileScalePct_title">Profile Scaling During ENW [100-200%]</string>
+    <string name="enwProfileScalePct_summary">The CR and ISF can be scaled during the eating window similar to a profile switch.</string>
+    <string name="eatingnow_duration_title">Eating Now Duration</string>
+    <string name="Eatingnow_enw_smb_pct_title">ENW SMB %</string>
+    <string name="eatingnow_max_iob_title">Eating Now Max IOB</string>
+    <string name="eatingnow_overview_prebolus_title">Eating Now PreBolus</string>
+
 </resources>

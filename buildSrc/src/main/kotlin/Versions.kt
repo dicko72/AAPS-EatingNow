@@ -1,3 +1,4 @@
+// Modified for Eating Now
 import org.gradle.api.JavaVersion
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -5,7 +6,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 object Versions {
 
     // On change edit aaps-ci.yml
-    const val appVersion = "4.0.0"
+    const val appVersion = "4.0.0" + "-EatingNow"
     const val versionCode = 1500
 
     const val compileSdk = 37

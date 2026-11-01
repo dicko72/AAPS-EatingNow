@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.core.data.model
 
 import app.aaps.core.data.time.systemUtcOffsetAt
@@ -38,6 +39,8 @@ data class TT(
         HYPOGLYCEMIA("Hypo"),
         ACTIVITY("Activity"),
         EATING_SOON("Eating Soon"),
+        EATING_NOW("Eating Now"),
+        EATING_NOW_PB("Eating Now PB"),
         AUTOMATION("Automation"),
         WEAR("Wear")
         ;

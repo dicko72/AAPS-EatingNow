@@ -32,7 +32,11 @@ enum class UnitDoubleKey(
         defaultedBySM = true,
         dependency = BooleanKey.ApsUseDynamicSensitivity,
         sync = SyncSpec(SyncChannel.Cold, SyncDirection.Bidirectional)
-    )
+    ),
+
+    // Modified for Eating Now
+    OverviewEatingNowIOB(key = "enw_max_iob", defaultValue = 0.0, minMgdl = 0, maxMgdl = 10, title = KeysStrings.eatingnow_max_iob_title, defaultedBySM = true),
+    OverviewEatingNowPreBolus(key = "eatingnow_prebolus", defaultValue = 0.0, minMgdl = 0, maxMgdl = 10, title = KeysStrings.eatingnow_overview_prebolus_title, defaultedBySM = true),
     ;
 
 }

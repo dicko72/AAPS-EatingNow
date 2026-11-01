@@ -285,6 +285,12 @@ enum class BooleanKey(
     SiteRotationManagePump("site_rotation_manage_pump", defaultValue = false, title = KeysStrings.pref_title_site_rotation_manage_pump, sync = SyncSpec(SyncChannel.Cold, SyncDirection.Bidirectional)),
     SiteRotationManageCgm("site_rotation_manage_cgm", defaultValue = false, title = KeysStrings.pref_title_site_rotation_manage_cgm, sync = SyncSpec(SyncChannel.Cold, SyncDirection.Bidirectional)),
 
+    // Modified for Eating Now
+    EatingNow_IgnoreCOB(key = "IgnoreCOB", defaultValue = false, title = KeysStrings.EatingNow_IgnoreCOB_title, summary = KeysStrings.EatingNow_IgnoreCOB_summary, defaultedBySM = true, hideParentScreenIfHidden = true),
+    EatingNow_UseISFscaler(key = "UseISFscaler", defaultValue = false, title = KeysStrings.EatingNow_useISFscaler_title, summary = KeysStrings.EatingNow_useISFscaler_summary, defaultedBySM = true, hideParentScreenIfHidden = true),
+    EatingNow_AutoStart(key = "AutostartEN", defaultValue = false, title = KeysStrings.EatingNow_AutoStart_title, summary = KeysStrings.EatingNow_AutoStart_summary, defaultedBySM = true, hideParentScreenIfHidden = true),
+    EatingNow_OverrideENWNetIOBMax(key = "EatingNow_OverrideENWNetIOBMax", defaultValue = false, title = KeysStrings.EatingNow_OverrideENWNetIOBMax_title, summary = KeysStrings.EatingNow_OverrideENWNetIOBMax_summary, defaultedBySM = true, hideParentScreenIfHidden = true),
+
     ;
 
 }

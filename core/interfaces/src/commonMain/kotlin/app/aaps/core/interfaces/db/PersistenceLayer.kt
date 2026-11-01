@@ -1,3 +1,4 @@
+// Modified for Eating Now
 package app.aaps.core.interfaces.db
 
 import app.aaps.core.data.model.BCR
@@ -1304,6 +1305,14 @@ interface PersistenceLayer {
      *  @return id
      */
     suspend fun getLastTemporaryTargetId(): Long?
+
+    /**
+     *  Eating Now
+     *  Count EN TempTargets since EN start time
+     */
+    fun getENTemporaryTargetCountFromTime(timestamp: Long): Single<Int>
+    fun getENTemporaryTargetActiveAt(timestamp: Long): TT?
+    fun getENTemporaryTargetsFromTime(timestamp: Long, ascending: Boolean): Single<List<TT>>
 
     /**
      *  Get temporary target by NS id
