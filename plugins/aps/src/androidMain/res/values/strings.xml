@@ -114,4 +114,10 @@
     <string name="autoISF_settings_title">AutoISF settings</string>
     <string name="smb_delivery_settings_title">SMB delivery settings</string>
 
+    <!-- Modified for Eating Now -->
+    <string name="eatingnow_plugin">Eating Now</string>
+    <string name="eatingnow_plugin_description">Customisable plugin leveraging most recent algorithm</string>
+    <string name="eatingnow_plugin_shortname">EN</string>
+    <string name="eatingnow_settings">Eating Now settings</string>
+
 </resources>
