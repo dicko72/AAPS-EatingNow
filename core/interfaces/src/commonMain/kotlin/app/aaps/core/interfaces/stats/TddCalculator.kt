@@ -83,7 +83,7 @@ interface TddCalculator {
      * @param allowMissingData if true intervals without data are allowed (no profile, bolus, TBR)
      * @return Net insulin or null if data is not available
      */
-    fun calculateIntervalNet(startTime: Long, endTime: Long, allowMissingData: Boolean): TDD?
+    suspend fun calculateIntervalNet(startTime: Long, endTime: Long, allowMissingData: Boolean): TDD?
 
 
     /**

@@ -241,6 +241,9 @@ class TranslatorImpl internal constructor(
         TT.Reason.ACTIVITY     -> rh.gs(CoreUiStrings.activity)
         TT.Reason.AUTOMATION   -> rh.gs(CoreUiStrings.automation)
         TT.Reason.WEAR         -> rh.gs(CoreUiStrings.wear)
+        // Modified for Eating Now
+        TT.Reason.EATING_NOW    -> rh.gs(CoreUiStrings.eatingnow)
+        TT.Reason.EATING_NOW_PB -> rh.gs(CoreUiStrings.eatingnow_prebolus)
 
         else                   -> rh.gs(CoreUiStrings.unknown)
     }

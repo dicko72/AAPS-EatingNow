@@ -11,6 +11,9 @@ fun TemporaryTarget.Reason.fromDb(): TT.Reason =
         TemporaryTarget.Reason.EATING_SOON  -> TT.Reason.EATING_SOON
         TemporaryTarget.Reason.AUTOMATION   -> TT.Reason.AUTOMATION
         TemporaryTarget.Reason.WEAR         -> TT.Reason.WEAR
+        // Modified for Eating Now
+        TemporaryTarget.Reason.EATING_NOW    -> TT.Reason.EATING_NOW
+        TemporaryTarget.Reason.EATING_NOW_PB -> TT.Reason.EATING_NOW_PB
     }
 
 fun TT.Reason.toDb(): TemporaryTarget.Reason =
@@ -21,6 +24,9 @@ fun TT.Reason.toDb(): TemporaryTarget.Reason =
         TT.Reason.EATING_SOON  -> TemporaryTarget.Reason.EATING_SOON
         TT.Reason.AUTOMATION   -> TemporaryTarget.Reason.AUTOMATION
         TT.Reason.WEAR         -> TemporaryTarget.Reason.WEAR
+        // Modified for Eating Now
+        TT.Reason.EATING_NOW    -> TemporaryTarget.Reason.EATING_NOW
+        TT.Reason.EATING_NOW_PB -> TemporaryTarget.Reason.EATING_NOW_PB
     }
 
 fun TemporaryTarget.fromDb(): TT =

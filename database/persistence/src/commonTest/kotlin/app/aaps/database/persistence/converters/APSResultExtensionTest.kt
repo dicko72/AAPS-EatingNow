@@ -115,6 +115,7 @@ internal class APSResultExtensionTest {
 
         override fun rawData(): Any = rt
 
+        override var enConfig: app.aaps.core.interfaces.aps.ENConfig? = null // Modified for Eating Now
         override var date: Long = 1_000L
         override var autosensResult: AutosensResult? = null
         override var iobData: Array<IobTotal>? = null

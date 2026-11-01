@@ -1310,9 +1310,9 @@ interface PersistenceLayer {
      *  Eating Now
      *  Count EN TempTargets since EN start time
      */
-    fun getENTemporaryTargetCountFromTime(timestamp: Long): Single<Int>
-    fun getENTemporaryTargetActiveAt(timestamp: Long): TT?
-    fun getENTemporaryTargetsFromTime(timestamp: Long, ascending: Boolean): Single<List<TT>>
+    suspend fun getENTemporaryTargetCountFromTime(timestamp: Long): Int
+    suspend fun getENTemporaryTargetActiveAt(timestamp: Long): TT?
+    suspend fun getENTemporaryTargetsFromTime(timestamp: Long, ascending: Boolean): List<TT>
 
     /**
      *  Get temporary target by NS id

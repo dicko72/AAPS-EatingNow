@@ -453,20 +453,17 @@ class AppRepository internal constructor(
         database.temporaryTargetDao.getLastId()
 
     // Eating Now Count EN TempTargets since EN start time
-    fun getENTemporaryTargetCountFromTime(from: Long): Single<Int> =
+    suspend fun getENTemporaryTargetCountFromTime(from: Long): Int =
         database.temporaryTargetDao.getENTemporaryTargetCountFromTime(from, TemporaryTarget.Reason.EATING_NOW, TemporaryTarget.Reason.EATING_NOW_PB)
-            .subscribeOn(Schedulers.io())
 
     // Eating Now: Get the first EN TT since EN start time
-    fun getENTemporaryTargetsFromTime(timestamp: Long, ascending: Boolean): Single<List<TemporaryTarget>> =
+    suspend fun getENTemporaryTargetsFromTime(timestamp: Long, ascending: Boolean): List<TemporaryTarget> =
         database.temporaryTargetDao.getENTemporaryTargetsFromTime(timestamp, TemporaryTarget.Reason.EATING_NOW, TemporaryTarget.Reason.EATING_NOW_PB)
-            .map { if (!ascending) it.reversed() else it }
-            .subscribeOn(Schedulers.io())
+            .let { if (!ascending) it.reversed() else it }
 
     // Eating Now: Get the EN TT at time
-    fun getENTemporaryTargetActiveAt(timestamp: Long):Maybe<TemporaryTarget> =
-        database.temporaryTargetDao.getENTemporaryTargetActiveAt(timestamp,TemporaryTarget.Reason.EATING_NOW, TemporaryTarget.Reason.EATING_NOW_PB)
-            .subscribeOn(Schedulers.io())
+    suspend fun getENTemporaryTargetActiveAt(timestamp: Long): TemporaryTarget? =
+        database.temporaryTargetDao.getENTemporaryTargetActiveAt(timestamp, TemporaryTarget.Reason.EATING_NOW, TemporaryTarget.Reason.EATING_NOW_PB)
 
     // USER ENTRY
     suspend fun getUserEntryDataFromTime(timestamp: Long): List<UserEntry> =

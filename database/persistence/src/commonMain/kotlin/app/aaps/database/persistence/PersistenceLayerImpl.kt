@@ -1964,6 +1964,19 @@ class PersistenceLayerImpl(
     override suspend fun getTemporaryTargetActiveAt(timestamp: Long): TT? =
         repository.getTemporaryTargetActiveAt(timestamp)?.fromDb()
 
+    // Modified for Eating Now
+    // Count EN TempTargets since EN start time
+    override suspend fun getENTemporaryTargetCountFromTime(timestamp: Long): Int =
+        repository.getENTemporaryTargetCountFromTime(timestamp)
+
+    // Get all the EN TT since time
+    override suspend fun getENTemporaryTargetsFromTime(timestamp: Long, ascending: Boolean): List<TT> =
+        repository.getENTemporaryTargetsFromTime(timestamp, ascending).map { it.fromDb() }
+
+    // EATING NOW TT at time
+    override suspend fun getENTemporaryTargetActiveAt(timestamp: Long): TT? =
+        repository.getENTemporaryTargetActiveAt(timestamp)?.fromDb()
+
     override suspend fun getTemporaryTargetsActiveAt(timestamp: Long): List<TT> =
         repository.getTemporaryTargetsActiveAt(timestamp).map { it.fromDb() }
 

@@ -249,7 +249,10 @@ class TddCalculatorImpl(
         return IntervalSum(tdd, hasData = tdd.bolusAmount > 0 || tdd.basalAmount > 0 || tbrFound)
     }
 
-    override fun calculateIntervalNet(startTime: Long, endTime: Long, allowMissingData: Boolean): TDD? {
+    // Modified for Eating Now
+    // Net basal = temp basal deviation from profile basal over the interval (used by Eating Now).
+    // Adapted to 4.0: suspend, and basal rates come from processedTbrEbData instead of iobCobCalculator.getBasalData.
+    override suspend fun calculateIntervalNet(startTime: Long, endTime: Long, allowMissingData: Boolean): TDD? {
         val startTimeAligned = startTime - startTime % (5 * 60 * 1000)
         val endTimeAligned = endTime - endTime % (5 * 60 * 1000)
         val tdd = TDD(timestamp = startTimeAligned)
@@ -259,23 +262,25 @@ class TddCalculatorImpl(
             .forEach { t ->
                 tdd.bolusAmount += t.amount
             }
-        // repository.getCarbsDataFromTimeToTimeExpanded(startTime, endTime, true).blockingGet().forEach { t ->
-        //     tdd.carbs += t.amount
-        // }
+        val extendedBoluses =
+            if (activePlugin.activePump.isFakingTempsByExtendedBoluses) emptyList()
+            else (persistenceLayer.getExtendedBolusesActiveAt(startTimeAligned) +
+                persistenceLayer.getExtendedBolusesStartingFromTimeToTime(startTimeAligned, endTimeAligned, true))
+                .distinctBy { it.id }
+        val temporaryBasals = processedTbrEbData.getTempBasalsIncludingConvertedExtended(startTimeAligned, endTimeAligned)
         val calculationStep = T.mins(5).msecs()
         for (t in startTimeAligned until endTimeAligned step calculationStep) {
 
             val profile = profileFunction.getProfile(t) ?: if (allowMissingData) continue else return null
-            val tbr = iobCobCalculator.getBasalData(profile, t)
-            if (tbr.isTempBasalRunning) tbrFound = true
-            val rate = tbr.tempBasalAbsolute - tbr.basal
+            val tbr = temporaryBasals.at(t)
+            if (tbr != null) tbrFound = true
+            val absoluteRate = tbr?.convertedToAbsolute(t, profile) ?: profile.getBasal(t)
+            val rate = absoluteRate - profile.getBasal(t) // net deviation from profile basal
             tdd.basalAmount += rate / 60.0 * 5.0
 
-            if (!activePlugin.activePump.isFakingTempsByExtendedBoluses) {
-                val eb = persistenceLayer.getExtendedBolusActiveAt(t)
-                val absoluteEbRate = eb?.rate ?: 0.0
-                tdd.bolusAmount += absoluteEbRate / 60.0 * 5.0
-            }
+            val eb = extendedBoluses.latestRunningAt(t) { it.duration }
+            val absoluteEbRate = eb?.rate ?: 0.0
+            tdd.bolusAmount += absoluteEbRate / 60.0 * 5.0
         }
         tdd.totalAmount = tdd.bolusAmount + tdd.basalAmount
         aapsLogger.debug(LTag.CORE, tdd.toString())

@@ -32,6 +32,19 @@ internal interface TemporaryTargetDao : TraceableDao<TemporaryTarget> {
     @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE (+timestamp <= :timestamp) AND ((timestamp + duration) > :timestamp) AND (+referenceId IS NULL) AND (isValid = 1) ORDER BY timestamp DESC LIMIT 1")
     suspend fun getTemporaryTargetActiveAt(timestamp: Long): TemporaryTarget?
 
+    // Modified for Eating Now
+    // Count EN TempTargets since EN start time
+    @Query("SELECT COUNT(*) FROM $TABLE_TEMPORARY_TARGETS WHERE timestamp >= :timestamp AND isValid = 1 AND referenceId IS NULL AND (reason = :reason1 OR reason = :reason2)")
+    suspend fun getENTemporaryTargetCountFromTime(timestamp: Long, reason1: TemporaryTarget.Reason, reason2: TemporaryTarget.Reason): Int
+
+    // EATING NOW TT from time
+    @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE timestamp >= :timestamp AND isValid = 1 AND referenceId IS NULL AND (reason = :reason1 OR reason = :reason2) ORDER BY timestamp ASC")
+    suspend fun getENTemporaryTargetsFromTime(timestamp: Long, reason1: TemporaryTarget.Reason, reason2: TemporaryTarget.Reason): List<TemporaryTarget>
+
+    // EATING NOW TT at time
+    @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE timestamp <= :timestamp AND (timestamp + duration) > :timestamp AND (reason = :reason1 OR reason = :reason2) AND referenceId IS NULL AND isValid = 1 ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getENTemporaryTargetActiveAt(timestamp: Long, reason1: TemporaryTarget.Reason, reason2: TemporaryTarget.Reason): TemporaryTarget?
+
     /** Every entry running at [timestamp], also those that overlap; [getTemporaryTargetActiveAt] gives the last started of them. */
     @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE (+timestamp <= :timestamp) AND ((timestamp + duration) > :timestamp) AND (+referenceId IS NULL) AND (isValid = 1) ORDER BY +timestamp ASC")
     suspend fun getTemporaryTargetsActiveAt(timestamp: Long): List<TemporaryTarget>

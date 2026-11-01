@@ -8,6 +8,9 @@ interface APSResult {
 
     fun with(result: RT): APSResult
 
+    // Modified for Eating Now
+    var enConfig: ENConfig?
+
     var date: Long
     var reason: String
     var rate: Double

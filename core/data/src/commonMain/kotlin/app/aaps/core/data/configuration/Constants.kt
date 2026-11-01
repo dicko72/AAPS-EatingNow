@@ -132,4 +132,9 @@ object Constants {
 
     // Graph time range
     const val GRAPH_TIME_RANGE_HOURS = 24
+
+    // Modified for Eating Now
+    // Eating Now Temp targets
+    const val MAX_ENTT_DURATION = 240.0  // min
+    const val MAX_EN_PREBOLUS = 15.0  // units
 }

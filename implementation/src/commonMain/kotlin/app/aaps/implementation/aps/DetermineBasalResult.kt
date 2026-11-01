@@ -61,6 +61,9 @@ class DetermineBasalResult(
     private val ch: ConcentrationHelper
 ) : APSResult {
 
+    // Modified for Eating Now
+    override var enConfig: app.aaps.core.interfaces.aps.ENConfig? = null
+
     override var date: Long = 0
     override var reason: String = ""
     override var rate = -1.0
