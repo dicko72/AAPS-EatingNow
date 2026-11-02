@@ -174,9 +174,19 @@ fun OverviewScreenStacked(
             )
         }
 
+        // Recent insulin list under the charts — opt-in, so recent SMBs/boluses can be read at a glance
+        // without press-and-hold on the chart. Passed as GraphsSection's bottom slot so it sits under the
+        // graphs but above the quick-launch clearance (and stays off the tablet/split/history screens).
+        val showRecentInsulin by graphViewModel.showRecentInsulinFlow.collectAsStateWithLifecycle()
         GraphsSection(
             graphViewModel = graphViewModel, isSimpleMode = isSimpleMode, iobText = iobUiState.text, cobText = cobUiState.text,
-            overlaidBarsHeight = overlaidBarsHeight
+            overlaidBarsHeight = overlaidBarsHeight,
+            bottomContent = {
+                if (showRecentInsulin) {
+                    val treatmentData by graphViewModel.treatmentGraphFlow.collectAsStateWithLifecycle()
+                    RecentInsulinList(boluses = treatmentData.boluses)
+                }
+            }
         )
     }
 }

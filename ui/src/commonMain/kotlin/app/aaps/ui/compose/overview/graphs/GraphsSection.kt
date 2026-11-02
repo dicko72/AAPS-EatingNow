@@ -227,7 +227,9 @@ fun GraphsSection(
     iobText: String? = null,
     cobText: String? = null,
     /** Height of the bars drawn over the end of this section (the overview's preview mode), added to the space at its end. */
-    overlaidBarsHeight: Dp = 0.dp
+    overlaidBarsHeight: Dp = 0.dp,
+    /** Extra content shown under the graphs, above the quick-launch clearance (e.g. the recent-insulin list on the phone overview). */
+    bottomContent: @Composable () -> Unit = {}
 ) {
     val dateUtil = LocalDateUtil.current
     val savedGraphConfig by graphViewModel.graphConfigFlow.collectAsStateWithLifecycle()
@@ -810,6 +812,7 @@ fun GraphsSection(
                 }
             )
         }
+        bottomContent()
         // Spacer so the last graph / Add button isn't covered by QuickLaunch toolbar
         Spacer(Modifier.height(48.dp + overlaidBarsHeight))
     }

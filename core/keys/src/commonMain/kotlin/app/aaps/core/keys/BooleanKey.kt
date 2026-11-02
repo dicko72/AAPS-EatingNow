@@ -60,6 +60,8 @@ enum class BooleanKey(
         showInNsClientMode = false
     ),
     OverviewShowNotesInDialogs(key = "show_notes_entry_dialogs", defaultValue = false, title = KeysStrings.pref_title_show_notes_in_dialogs, defaultedBySM = true),
+    // Recent-insulin list under the charts. No defaultedBySM: it must be readable and editable in simple mode.
+    OverviewShowRecentInsulin(key = "show_recent_insulin", defaultValue = false, title = KeysStrings.pref_title_show_recent_insulin),
     OverviewUseBolusAdvisor("use_bolus_advisor", true, KeysStrings.pref_title_use_bolus_advisor, KeysStrings.pref_summary_use_bolus_advisor, defaultedBySM = true, sync = SyncSpec(SyncChannel.Cold, SyncDirection.Bidirectional)),
     OverviewUseBolusReminder("use_bolus_reminder", true, KeysStrings.pref_title_use_bolus_reminder, KeysStrings.pref_summary_use_bolus_reminder, defaultedBySM = true, sync = SyncSpec(SyncChannel.Cold, SyncDirection.Bidirectional)),
 

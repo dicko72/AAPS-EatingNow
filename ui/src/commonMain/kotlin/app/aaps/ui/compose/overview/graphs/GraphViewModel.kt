@@ -14,6 +14,7 @@ import app.aaps.core.interfaces.overview.graph.SeriesType
 import app.aaps.core.interfaces.resources.TextResolver
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.keys.BooleanNonKey
+import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.UnitDoubleKey
 import app.aaps.core.keys.interfaces.Preferences
 import dev.zacsweers.metro.Assisted
@@ -96,6 +97,12 @@ class GraphViewModel(
     val graphConfigFlow: StateFlow<GraphConfig> = graphConfigRepository.graphConfigFlow
 
     fun updateGraphConfig(config: GraphConfig) = graphConfigRepository.update(config)
+
+    // Whether to show the recent-insulin list under the charts. Read here (not via a preference-screen
+    // composition local, which is absent on the overview) so the overview can observe it reactively.
+    val showRecentInsulinFlow: StateFlow<Boolean> =
+        preferences.observe(BooleanKey.OverviewShowRecentInsulin)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), preferences.get(BooleanKey.OverviewShowRecentInsulin))
 
     // Individual series flows - each can trigger independent recomposition
     val bgReadingsFlow: StateFlow<List<BgDataPoint>> = cache.bgReadingsFlow

@@ -9,6 +9,7 @@
     <string name="pref_title_keep_screen_on">Keep screen on</string>
     <string name="pref_summary_keep_screen_on">Prevent Android to turn screen off. It will consume lot of energy when not plugged to power outlet.</string>
     <string name="pref_title_show_treatment_button">Show treatment button</string>
+    <string name="pref_title_show_recent_insulin">Show recent insulin under charts</string>
     <string name="pref_title_show_wizard_button">Show wizard button</string>
     <string name="pref_title_show_insulin_button">Show insulin button</string>
     <string name="pref_title_show_carbs_button">Show carbs button</string>
