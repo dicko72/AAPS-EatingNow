@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.aaps.core.interfaces.InterfacesStrings
+import app.aaps.core.interfaces.aps.ENConfig
 import app.aaps.core.interfaces.aps.Loop
 import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.db.PersistenceLayer
@@ -132,35 +133,35 @@ class ChipsViewModel(
             val bolusIob = iobCobCalculator.calculateIobFromBolus().round()
             val basalIob = iobCobCalculator.calculateIobFromTempBasalsIncludingConvertedExtended().round()
             val total = bolusIob.iob + basalIob.basaliob
-            // label -> already-formatted value. The Eating Now window line is added only while a window is live.
+            // One pre-formatted "label: value" line each; an empty string renders as a blank line (gap).
+            fun line(label: String, value: String) = rh.gs(InterfacesStrings.confirmation_line, label, value)
             val lines = buildList {
-                add(rh.gs(CoreUiStrings.bolus_iob_label) to rh.gs(InterfacesStrings.format_insulin_units, bolusIob.iob))
-                add(rh.gs(CoreUiStrings.treatments_wizard_basaliob_label) to rh.gs(InterfacesStrings.format_insulin_units, basalIob.basaliob))
-                add(rh.gs(CoreUiStrings.iob) to rh.gs(InterfacesStrings.format_insulin_units, total))
-                enwIobValue()?.let { add(rh.gs(CoreUiStrings.eatingnow_enw_iob) to it) }
-            }
-            val message = lines.joinToString("\n") { (label, value) ->
-                rh.gs(InterfacesStrings.confirmation_line, label, value)
+                add(line(rh.gs(CoreUiStrings.bolus_iob_label), rh.gs(InterfacesStrings.format_insulin_units, bolusIob.iob)))
+                add(line(rh.gs(CoreUiStrings.treatments_wizard_basaliob_label), rh.gs(InterfacesStrings.format_insulin_units, basalIob.basaliob)))
+                add(line(rh.gs(CoreUiStrings.iob), rh.gs(InterfacesStrings.format_insulin_units, total)))
+                // Eating Now window block (only while a window is live): a gap, then the prebolus (if any), then ENW-IOB.
+                activePlugin.activeAPS?.lastAPSResult?.enConfig?.takeIf { enwIobActive(it) }?.let { en ->
+                    add("")
+                    if (en.ENWprebolus > 0.0) add(line(rh.gs(CoreUiStrings.prebolus_label), rh.gs(InterfacesStrings.format_insulin_units, en.ENWprebolus)))
+                    add(line(rh.gs(CoreUiStrings.eatingnow_enw_iob), rh.gs(CoreUiStrings.eatingnow_enw_iob_value, en.ENWNetIOB, en.ENWNetIOBMax)))
+                }
             }
             rxBus.send(
                 EventShowDialog.Ok(
                     title = rh.gs(CoreUiStrings.iob),
-                    message = message
+                    message = lines.joinToString("\n")
                 )
             )
         }
     }
 
     /**
-     * The Eating Now window IOB as "given / limit U" (net insulin given in the window against its limit), or null
-     * when no window is live. Taken from the last APS run's enConfig; live while the window and its 3h IOB tail
-     * last (mirrors ENPlugin's own isENWIOBActive), which is exactly when ENWNetIOB is computed.
+     * Whether the Eating Now window (and its 3h IOB tail) is live, so its IOB/prebolus are worth showing.
+     * Mirrors ENPlugin's own isENWIOBActive, which is exactly when ENWNetIOB is computed.
      */
-    private fun enwIobValue(): String? {
-        val en = activePlugin.activeAPS?.lastAPSResult?.enConfig ?: return null
+    private fun enwIobActive(en: ENConfig): Boolean {
         val start = en.ENWStartTime
         val end = en.ENWEndTime
-        val live = start != null && end != null && dateUtil.now() < end + T.hours(3).msecs()
-        return if (live) rh.gs(CoreUiStrings.eatingnow_enw_iob_value, en.ENWNetIOB, en.ENWNetIOBMax) else null
+        return start != null && end != null && dateUtil.now() < end + T.hours(3).msecs()
     }
 }

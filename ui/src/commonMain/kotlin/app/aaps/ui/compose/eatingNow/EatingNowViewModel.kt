@@ -8,6 +8,8 @@ import app.aaps.core.data.model.GlucoseUnit
 import app.aaps.core.data.model.TT
 import app.aaps.core.data.ue.Sources
 import app.aaps.core.data.ui.ConfirmationLine
+import app.aaps.core.data.ui.ConfirmationRole
+import app.aaps.core.interfaces.InterfacesStrings
 import app.aaps.core.interfaces.bolus.BatchAction
 import app.aaps.core.interfaces.bolus.BatchExecutor
 import app.aaps.core.interfaces.clientcontrol.ActionProgress
@@ -194,7 +196,7 @@ class EatingNowViewModel(
             }
 
             when (val prepared = batchExecutor.prepare(listOf(action), Sources.TTDialog, label)) {
-                is ActionProgress.Prepared -> _sideEffect.tryEmit(SideEffect.ShowConfirmation(prepared.id, prepared.lines))
+                is ActionProgress.Prepared -> _sideEffect.tryEmit(SideEffect.ShowConfirmation(prepared.id, prepared.lines + enwConfirmLines(state)))
                 is ActionProgress.Rejected ->
                     if (!config.AAPSCLIENT || prepared.reason.isNotDeliveryError())
                         rxBus.send(EventShowDialog.Ok(title = label, message = prepared.detail ?: rh.gs(prepared.reason.failText())))
@@ -242,6 +244,30 @@ class EatingNowViewModel(
     fun requestCancel() {
         _uiState.update { it.copy(durationMinutes = 0) }
         prepareAndConfirm()
+    }
+
+    /**
+     * Extra confirmation lines for the Eating Now window: a blank line, then the prebolus (when ticked), then the
+     * ENW-IOB limit being set. Empty on a cancel, where there is nothing to prebolus for.
+     */
+    private fun enwConfirmLines(state: EatingNowUiState): List<ConfirmationLine> {
+        if (isCancelling(state)) return emptyList()
+        return buildList {
+            add(ConfirmationLine(ConfirmationRole.NORMAL, ""))
+            if (state.prebolusChecked)
+                add(
+                    ConfirmationLine(
+                        ConfirmationRole.BOLUS,
+                        rh.gs(InterfacesStrings.confirmation_line, rh.gs(CoreUiStrings.prebolus_label), rh.gs(InterfacesStrings.format_insulin_units, Round.roundTo(state.prebolus, 0.01)))
+                    )
+                )
+            add(
+                ConfirmationLine(
+                    ConfirmationRole.INFO,
+                    rh.gs(InterfacesStrings.confirmation_line, rh.gs(CoreUiStrings.eatingnow_enw_iob), rh.gs(InterfacesStrings.format_insulin_units, state.enwIob))
+                )
+            )
+        }
     }
 
     /** A target or duration of 0 means "stop the current target" rather than "set an Eating Now target". */

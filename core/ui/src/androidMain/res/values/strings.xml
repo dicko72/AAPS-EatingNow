@@ -521,6 +521,7 @@
     <string name="eatingnow_window_pb_short" comment="Short tag shown on the overview temp-target chip for an Eating Now window with prebolus. Abbreviation of Eating Now Window - PreBolus; usually kept the same across languages.">ENW-PB</string>
     <string name="eatingnow_chip_label" comment="Eating Now tag before the target on the overview chip. %1$s = tag (ENW or ENW-PB), %2$s = target and time. Example: ENW 5.5 (55')">%1$s %2$s</string>
     <string name="eatingnow_enw_iob">ENW-IOB</string>
+    <string name="prebolus_label">Prebolus</string>
     <string name="recent_insulin">Recent Insulin</string>
     <string name="format_mins_compact" comment="Compact minutes-ago on the recent-insulin list, no space. %1$s = signed minutes (negative is in the past). Example: -8m">%1$dm</string>
     <string name="eatingnow_enw_iob_value" comment="Insulin given in the Eating Now window against its limit, shown as a value after a label. %1$s = given insulin, %2$s = limit, both in units. Example: 1.20 / 3.00 U">%1$.2f / %2$.2f U</string>

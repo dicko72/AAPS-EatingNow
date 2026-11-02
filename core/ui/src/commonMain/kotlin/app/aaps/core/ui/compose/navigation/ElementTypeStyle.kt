@@ -144,8 +144,10 @@ fun ElementType.icon(): ImageVector = when (this) {
 
     ElementType.PROFILE_MANAGEMENT      -> IcProfile
 
-    ElementType.TEMP_TARGET_MANAGEMENT,
-    ElementType.EATING_NOW              -> IcTtHigh
+    ElementType.TEMP_TARGET_MANAGEMENT  -> IcTtHigh
+    // Eating Now uses the food icon everywhere (entry, confirmation dialog, overview chip) for a
+    // consistent meal identity.
+    ElementType.EATING_NOW              -> IcPluginFood
 
     ElementType.BG_CHECK                -> IcBgCheck
     ElementType.NOTE                    -> IcNote
