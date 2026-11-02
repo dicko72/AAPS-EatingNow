@@ -452,12 +452,12 @@ enum class IntKey(
     // Modified for Eating Now
     OverviewEatingNowDuration(key = "eatingnow_duration", defaultValue = 45, min = 15, max = 120, title = KeysStrings.eatingnow_duration_title, defaultedBySM = true),
     // General
-    Eatingnow_timestart(key = "eatingnow_timestart", defaultValue = 9, min = 0, max = 23, title = KeysStrings.eatingnow_timestart_title, summary = KeysStrings.eatingnow_timestart_summary, defaultedBySM = true),
-    Eatingnow_timeend(key = "eatingnow_timeend", defaultValue = 17, min = 0, max = 23, title = KeysStrings.eatingnow_timeend_title, summary = KeysStrings.eatingnow_timeend_summary, defaultedBySM = true),
+    Eatingnow_timestart(key = "eatingnow_timestart", defaultValue = 9, min = 0, max = 23, title = KeysStrings.eatingnow_timestart_title, summary = KeysStrings.eatingnow_timestart_summary),
+    Eatingnow_timeend(key = "eatingnow_timeend", defaultValue = 17, min = 0, max = 23, title = KeysStrings.eatingnow_timeend_title, summary = KeysStrings.eatingnow_timeend_summary),
     // ENW other Meals
-    Eatingnow_enw_minutes(key = "Eatingnow_enw_minutes", defaultValue = 15, min = 0, max = 120, title = KeysStrings.Eatingnow_enw_minutes_title, summary = KeysStrings.Eatingnow_enw_minutes_summary, defaultedBySM = true),
+    Eatingnow_enw_minutes(key = "Eatingnow_enw_minutes", defaultValue = 15, min = 0, max = 120, title = KeysStrings.Eatingnow_enw_minutes_title, summary = KeysStrings.Eatingnow_enw_minutes_summary),
     enwProfileScalePct(key = "enwProfileScalePct", defaultValue = 100, min = 100, max = 200, title = KeysStrings.enwProfileScalePct_title, summary = KeysStrings.enwProfileScalePct_summary, defaultedBySM = true),
-    Eatingnow_enw_smb_pct(key = "Eatingnow_enw_smb_pct", defaultValue = 100, min = 1, max = 100, title = KeysStrings.Eatingnow_enw_smb_pct_title, defaultedBySM = true),
+    Eatingnow_enw_smb_pct(key = "Eatingnow_enw_smb_pct", defaultValue = 100, min = 1, max = 100, title = KeysStrings.Eatingnow_enw_smb_pct_title),
     ;
 
     override val entries: Map<Int, TextRef> = entriesRefs

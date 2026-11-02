@@ -354,18 +354,18 @@ enum class DoubleKey(
 
     // Modified for Eating Now
     // General
-    Eatingnow_overnightSMB(key = "overnightSMB", defaultValue = 0.0, min = 0.0, max = 270.0, title = KeysStrings.eatingnow_overnightSMB_title, summary = KeysStrings.eatingnow_overnightSMB_summary, defaultedBySM = true),
-    Eatingnow_daytimeSMB(key = "daytimeSMB", defaultValue = 0.0, min = 0.0, max = 270.0, title = KeysStrings.eatingnow_daytimeSMB_title, summary = KeysStrings.eatingnow_daytimeSMB_summary, defaultedBySM = true),
+    Eatingnow_overnightSMB(key = "overnightSMB", defaultValue = 0.0, min = 0.0, max = 270.0, title = KeysStrings.eatingnow_overnightSMB_title, summary = KeysStrings.eatingnow_overnightSMB_summary),
+    Eatingnow_daytimeSMB(key = "daytimeSMB", defaultValue = 0.0, min = 0.0, max = 270.0, title = KeysStrings.eatingnow_daytimeSMB_title, summary = KeysStrings.eatingnow_daytimeSMB_summary),
     highBGthreshold(key = "highBGthreshold", defaultValue = 0.0, min = 0.0, max = 100.0, title = KeysStrings.eatingnow_highBGthreshold_title, summary = KeysStrings.eatingnow_highBGthreshold_summary, defaultedBySM = true),
 
     // ENW variable limits
-    Eatingnow_enw_cob_maxbolus(key = "Eatingnow_enw_cob_maxbolus", defaultValue = 0.0, min = 0.0, max = 5.0, title = KeysStrings.Eatingnow_enw_cob_maxbolus_title, summary = KeysStrings.Eatingnow_enw_cob_maxbolus_summary, defaultedBySM = true),
-    Eatingnow_enw_uam_maxbolus(key = "Eatingnow_enw_uam_maxbolus", defaultValue = 0.0, min = 0.0, max = 5.0, title = KeysStrings.Eatingnow_enw_uam_maxbolus_title, summary = KeysStrings.Eatingnow_enw_uam_maxbolus_summary, defaultedBySM = true),
-    Eatingnow_enw_maxiob(key = "Eatingnow_enw_maxiob", defaultValue = 0.0, min = 0.0, max = 15.0, title = KeysStrings.Eatingnow_enw_maxiob_title, summary = KeysStrings.Eatingnow_enw_maxiob_summary, defaultedBySM = true),
-    Eatingnow_enw_prebolus(key = "Eatingnow_enw_prebolus", defaultValue = 0.0, min = 0.0, max = 15.0, title = KeysStrings.Eatingnow_enw_prebolus_title, summary = KeysStrings.Eatingnow_enw_prebolus_summary, defaultedBySM = true),
-    Eatingnow_enw_uamplus_maxbolus(key = "Eatingnow_enw_uamplus_maxbolus", defaultValue = 0.0, min = 0.0, max = 5.0, title = KeysStrings.Eatingnow_enw_uamplus_maxbolus_title, summary = KeysStrings.Eatingnow_enw_uamplus_maxbolus_summary, defaultedBySM = true),
-    Eatingnow_enw_triggerbolus(key = "Eatingnow_enw_triggerbolus", defaultValue = 0.0, min = 0.0, max = 15.0, title = KeysStrings.Eatingnow_enw_triggerbolus_title, summary = KeysStrings.Eatingnow_enw_triggerbolus_summary, defaultedBySM = true),
-    Eatingnow_enw_triggercob(key = "Eatingnow_enw_triggercob", defaultValue = 0.0, min = 0.0, max = 100.0, title = KeysStrings.Eatingnow_enw_triggercob_title, summary = KeysStrings.Eatingnow_enw_triggercob_summary, defaultedBySM = true),
+    Eatingnow_enw_cob_maxbolus(key = "Eatingnow_enw_cob_maxbolus", defaultValue = 0.0, min = 0.0, max = 5.0, title = KeysStrings.Eatingnow_enw_cob_maxbolus_title, summary = KeysStrings.Eatingnow_enw_cob_maxbolus_summary),
+    Eatingnow_enw_uam_maxbolus(key = "Eatingnow_enw_uam_maxbolus", defaultValue = 0.0, min = 0.0, max = 5.0, title = KeysStrings.Eatingnow_enw_uam_maxbolus_title, summary = KeysStrings.Eatingnow_enw_uam_maxbolus_summary),
+    Eatingnow_enw_maxiob(key = "Eatingnow_enw_maxiob", defaultValue = 0.0, min = 0.0, max = 15.0, title = KeysStrings.Eatingnow_enw_maxiob_title, summary = KeysStrings.Eatingnow_enw_maxiob_summary),
+    Eatingnow_enw_prebolus(key = "Eatingnow_enw_prebolus", defaultValue = 0.0, min = 0.0, max = 15.0, title = KeysStrings.Eatingnow_enw_prebolus_title, summary = KeysStrings.Eatingnow_enw_prebolus_summary),
+    Eatingnow_enw_uamplus_maxbolus(key = "Eatingnow_enw_uamplus_maxbolus", defaultValue = 0.0, min = 0.0, max = 5.0, title = KeysStrings.Eatingnow_enw_uamplus_maxbolus_title, summary = KeysStrings.Eatingnow_enw_uamplus_maxbolus_summary),
+    Eatingnow_enw_triggerbolus(key = "Eatingnow_enw_triggerbolus", defaultValue = 0.0, min = 0.0, max = 15.0, title = KeysStrings.Eatingnow_enw_triggerbolus_title, summary = KeysStrings.Eatingnow_enw_triggerbolus_summary),
+    Eatingnow_enw_triggercob(key = "Eatingnow_enw_triggercob", defaultValue = 0.0, min = 0.0, max = 100.0, title = KeysStrings.Eatingnow_enw_triggercob_title, summary = KeysStrings.Eatingnow_enw_triggercob_summary),
 
     ;
 
