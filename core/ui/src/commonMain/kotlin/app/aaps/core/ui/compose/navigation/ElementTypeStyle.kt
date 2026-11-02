@@ -77,7 +77,8 @@ fun ElementType.color(): Color = when (this) {
 
     ElementType.PROFILE_MANAGEMENT      -> AapsTheme.elementColors.profileSwitch
 
-    ElementType.TEMP_TARGET_MANAGEMENT  -> AapsTheme.elementColors.tempTarget
+    ElementType.TEMP_TARGET_MANAGEMENT,
+    ElementType.EATING_NOW              -> AapsTheme.elementColors.tempTarget
 
     ElementType.BG_CHECK                -> AapsTheme.elementColors.bgCheck
     ElementType.NOTE                    -> AapsTheme.elementColors.note
@@ -143,7 +144,8 @@ fun ElementType.icon(): ImageVector = when (this) {
 
     ElementType.PROFILE_MANAGEMENT      -> IcProfile
 
-    ElementType.TEMP_TARGET_MANAGEMENT  -> IcTtHigh
+    ElementType.TEMP_TARGET_MANAGEMENT,
+    ElementType.EATING_NOW              -> IcTtHigh
 
     ElementType.BG_CHECK                -> IcBgCheck
     ElementType.NOTE                    -> IcNote
@@ -213,6 +215,7 @@ fun ElementType.label(): TextRef? = when (this) {
     ElementType.INSULIN_MANAGEMENT      -> CoreUiStrings.insulin_management
     ElementType.PROFILE_MANAGEMENT      -> CoreUiStrings.profile_management
     ElementType.TEMP_TARGET_MANAGEMENT  -> CoreUiStrings.temp_target_management
+    ElementType.EATING_NOW              -> CoreUiStrings.eatingnow
     ElementType.BG_CHECK                -> CoreUiStrings.careportal_bgcheck
     ElementType.NOTE                    -> CoreUiStrings.careportal_note
     ElementType.EXERCISE                -> CoreUiStrings.careportal_exercise
@@ -260,6 +263,7 @@ fun ElementType.description(): TextRef? = when (this) {
     ElementType.INSULIN_MANAGEMENT      -> CoreUiStrings.manage_insulin_desc
     ElementType.PROFILE_MANAGEMENT      -> CoreUiStrings.manage_profile_desc
     ElementType.TEMP_TARGET_MANAGEMENT  -> CoreUiStrings.manage_temp_target_desc
+    ElementType.EATING_NOW              -> CoreUiStrings.treatment_eating_now_desc
     ElementType.QUICK_WIZARD_MANAGEMENT -> CoreUiStrings.manage_quickwizard_desc
     ElementType.FOOD_MANAGEMENT         -> CoreUiStrings.manage_food_desc
 

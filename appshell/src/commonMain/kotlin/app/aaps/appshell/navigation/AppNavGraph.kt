@@ -76,6 +76,7 @@ import app.aaps.plugins.sync.nsclientV3.clientcontrol.compose.PairWithMasterScre
 import app.aaps.plugins.sync.nsclientV3.clientcontrol.compose.ScanMasterQrScreen
 import app.aaps.ui.compose.calibrationDialog.CalibrationDialogScreen
 import app.aaps.ui.compose.carbsDialog.CarbsDialogScreen
+import app.aaps.ui.compose.eatingNow.EatingNowScreen
 import app.aaps.ui.compose.careDialog.CareDialogScreen
 import app.aaps.ui.compose.configuration.ConfigurationScreen
 import app.aaps.ui.compose.configuration.ConfigurationViewModel
@@ -357,6 +358,12 @@ fun NavGraphBuilder.appNavGraph(
 
     composable(route = AppRoute.CalibrationDialog.route) {
         CalibrationDialogScreen(
+            onNavigateBack = { navController.safePopBackStack() }
+        )
+    }
+
+    composable(route = AppRoute.EatingNowDialog.route) {
+        EatingNowScreen(
             onNavigateBack = { navController.safePopBackStack() }
         )
     }

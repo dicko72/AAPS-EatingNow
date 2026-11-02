@@ -10,9 +10,12 @@ import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.iob.IobCobCalculator
 import app.aaps.core.interfaces.overview.SensitivityOverview
 import app.aaps.core.interfaces.overview.graph.OverviewDataCache
+import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.resources.TextResolver
 import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.core.interfaces.rx.events.EventShowDialog
+import app.aaps.core.data.time.T
+import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.DecimalFormatter
 import app.aaps.core.objects.extensions.round
 import app.aaps.core.ui.CoreUiStrings
@@ -40,6 +43,8 @@ class ChipsViewModel(
     private val sensitivityOverview: SensitivityOverview,
     private val rh: TextResolver,
     private val decimalFormatter: DecimalFormatter,
+    private val activePlugin: ActivePlugin,
+    private val dateUtil: DateUtil,
     private val rxBus: RxBus
 ) : ViewModel() {
 
@@ -127,12 +132,15 @@ class ChipsViewModel(
             val bolusIob = iobCobCalculator.calculateIobFromBolus().round()
             val basalIob = iobCobCalculator.calculateIobFromTempBasalsIncludingConvertedExtended().round()
             val total = bolusIob.iob + basalIob.basaliob
-            val message = listOf(
-                CoreUiStrings.bolus_iob_label to bolusIob.iob,
-                CoreUiStrings.treatments_wizard_basaliob_label to basalIob.basaliob,
-                CoreUiStrings.iob to total
-            ).joinToString("\n") { (label, insulin) ->
-                rh.gs(InterfacesStrings.confirmation_line, rh.gs(label), rh.gs(InterfacesStrings.format_insulin_units, insulin))
+            // label -> already-formatted value. The Eating Now window line is added only while a window is live.
+            val lines = buildList {
+                add(rh.gs(CoreUiStrings.bolus_iob_label) to rh.gs(InterfacesStrings.format_insulin_units, bolusIob.iob))
+                add(rh.gs(CoreUiStrings.treatments_wizard_basaliob_label) to rh.gs(InterfacesStrings.format_insulin_units, basalIob.basaliob))
+                add(rh.gs(CoreUiStrings.iob) to rh.gs(InterfacesStrings.format_insulin_units, total))
+                enwIobValue()?.let { add(rh.gs(CoreUiStrings.eatingnow_enw_iob) to it) }
+            }
+            val message = lines.joinToString("\n") { (label, value) ->
+                rh.gs(InterfacesStrings.confirmation_line, label, value)
             }
             rxBus.send(
                 EventShowDialog.Ok(
@@ -141,5 +149,18 @@ class ChipsViewModel(
                 )
             )
         }
+    }
+
+    /**
+     * The Eating Now window IOB as "given / limit U" (net insulin given in the window against its limit), or null
+     * when no window is live. Taken from the last APS run's enConfig; live while the window and its 3h IOB tail
+     * last (mirrors ENPlugin's own isENWIOBActive), which is exactly when ENWNetIOB is computed.
+     */
+    private fun enwIobValue(): String? {
+        val en = activePlugin.activeAPS?.lastAPSResult?.enConfig ?: return null
+        val start = en.ENWStartTime
+        val end = en.ENWEndTime
+        val live = start != null && end != null && dateUtil.now() < end + T.hours(3).msecs()
+        return if (live) rh.gs(CoreUiStrings.eatingnow_enw_iob_value, en.ENWNetIOB, en.ENWNetIOBMax) else null
     }
 }

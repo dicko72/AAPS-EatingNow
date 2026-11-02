@@ -111,6 +111,9 @@ class TreatmentViewModel(
             val showInsulin = preferences.get(BooleanKey.OverviewShowInsulinButton)
             val showCarbs = preferences.get(BooleanKey.OverviewShowCarbsButton)
             val showCalculator = preferences.get(BooleanKey.OverviewShowWizardButton)
+            // The Eating Now entry only does anything when the Eating Now plugin is the running APS, so it is
+            // offered only then. Detected by simple name to avoid a dependency on the plugin module.
+            val showEatingNow = activePlugin.activeAPS?.let { it::class.simpleName == "ENPlugin" } == true
 
             val showSettingsIcon = !preferences.simpleMode
 
@@ -122,6 +125,7 @@ class TreatmentViewModel(
                     showInsulin = showInsulin,
                     showCarbs = showCarbs,
                     showCalculator = showCalculator,
+                    showEatingNow = showEatingNow,
                     isDexcomSource = isDexcomSource,
                     quickWizardItems = quickWizardItems,
                     showSettingsIcon = showSettingsIcon

@@ -35,6 +35,12 @@ enum class ElementType(
     QUICK_WIZARD(protection = ProtectionCheck.Protection.BOLUS, visibility = ElementVisibility.MASTER_OR_PAIRED_CLIENT, role = ClientRole.MealAssistant),
     TREATMENT(category = ElementCategory.TREATMENT, searchable = true, protection = ProtectionCheck.Protection.BOLUS, visibility = ElementVisibility.MASTER_OR_PAIRED_CLIENT, role = ClientRole.MealAssistant),
 
+    // Eating Now — a meal announcement that opens the Eating Now window: sets an EN temp target (optionally with an
+    // up-front prebolus). It writes a temp target through the Client-Control batch channel like the other treatment
+    // actions, so it is gated the same way. Not searchable: the Treatments sheet only offers it when the Eating Now
+    // plugin is the active APS, which this enum cannot know.
+    EATING_NOW(category = ElementCategory.TREATMENT, protection = ProtectionCheck.Protection.BOLUS, visibility = ElementVisibility.MASTER_OR_PAIRED_CLIENT, role = ClientRole.Caregiver),
+
     // CGM
     CGM_XDRIP(category = ElementCategory.CGM, searchable = true),
     CGM_DEX(category = ElementCategory.CGM),

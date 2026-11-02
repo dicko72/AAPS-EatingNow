@@ -30,6 +30,7 @@ import app.aaps.core.ui.CoreUiStrings
 import app.aaps.core.ui.compose.AapsSpacing
 import app.aaps.core.ui.compose.AapsTheme
 import app.aaps.core.ui.compose.LocalAapsScale
+import app.aaps.core.ui.compose.icons.IcPluginFood
 import app.aaps.core.ui.compose.icons.IcTarget
 import app.aaps.core.ui.compose.icons.IcTtActivity
 import app.aaps.core.ui.compose.icons.IcTtEatingSoon
@@ -108,9 +109,17 @@ fun TempTargetChip(
                     tint = iconColor,
                     modifier = Modifier.size(AapsSpacing.chipIconSize)
                 )
+                // Eating Now targets carry a short tag before the value so the chip shows it is an Eating Now
+                // window (and whether it includes a prebolus), not just the number. Built from a format resource,
+                // never concatenated, so the tag/value order stays translatable.
+                val displayText = when (reason) {
+                    TT.Reason.EATING_NOW    -> stringResource(CoreUiStrings.eatingnow_chip_label, stringResource(CoreUiStrings.eatingnow_window_short), targetText)
+                    TT.Reason.EATING_NOW_PB -> stringResource(CoreUiStrings.eatingnow_chip_label, stringResource(CoreUiStrings.eatingnow_window_pb_short), targetText)
+                    else                    -> targetText
+                }
                 // One line, like the profile chip: a second line did not fit the chip's height.
                 Text(
-                    text = targetText,
+                    text = displayText,
                     style = MaterialTheme.typography.bodyMedium,
                     color = textColor,
                     maxLines = 1,
@@ -160,8 +169,10 @@ private fun TT.Reason?.toDescription(): TextRef? = when (this) {
 }
 
 private fun TT.Reason?.toIcon(): ImageVector = when (this) {
-    TT.Reason.EATING_SOON  -> IcTtEatingSoon
-    TT.Reason.ACTIVITY     -> IcTtActivity
-    TT.Reason.HYPOGLYCEMIA -> IcTtHypo
-    else                   -> IcTtManual // Custom, Automation, Wear, null
+    TT.Reason.EATING_SOON                        -> IcTtEatingSoon
+    TT.Reason.ACTIVITY                           -> IcTtActivity
+    TT.Reason.HYPOGLYCEMIA                       -> IcTtHypo
+    // Eating Now (with or without prebolus) gets the food icon so the chip is recognisable at a glance.
+    TT.Reason.EATING_NOW, TT.Reason.EATING_NOW_PB -> IcPluginFood
+    else                                         -> IcTtManual // Custom, Automation, Wear, null
 }

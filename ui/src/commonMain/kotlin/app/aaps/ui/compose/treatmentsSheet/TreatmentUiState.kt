@@ -15,6 +15,8 @@ data class TreatmentUiState(
     val showInsulin: Boolean = true,
     val showCarbs: Boolean = true,
     val showCalculator: Boolean = true,
+    // Eating Now entry — shown only when the Eating Now plugin is the active APS.
+    val showEatingNow: Boolean = false,
 
     // Source info
     val isDexcomSource: Boolean = false,

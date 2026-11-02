@@ -511,6 +511,17 @@
     <string name="treatment_insulin_desc">Deliver bolus manually</string>
     <string name="treatment_carbs_desc">Record carbs without insulin</string>
     <string name="treatment_calculator_desc">Calculate bolus</string>
+    <string name="treatment_eating_now_desc">Open the Eating Now window</string>
+    <string name="eatingnow_prebolus_exceeds_iob">Prebolus cannot be larger than the ENW-IOB limit</string>
+    <string name="eatingnow_enw_iob_label">ENW-IOB limit</string>
+    <string name="eatingnow_use_prebolus">Use prebolus</string>
+    <string name="eatingnow_prebolus_amount">Prebolus amount</string>
+    <string name="eatingnow_stop">Stop Eating Now target</string>
+    <string name="eatingnow_window_short" comment="Short tag shown on the overview temp-target chip for an Eating Now window. Abbreviation of Eating Now Window; usually kept the same across languages.">ENW</string>
+    <string name="eatingnow_window_pb_short" comment="Short tag shown on the overview temp-target chip for an Eating Now window with prebolus. Abbreviation of Eating Now Window - PreBolus; usually kept the same across languages.">ENW-PB</string>
+    <string name="eatingnow_chip_label" comment="Eating Now tag before the target on the overview chip. %1$s = tag (ENW or ENW-PB), %2$s = target and time. Example: ENW 5.5 (55')">%1$s %2$s</string>
+    <string name="eatingnow_enw_iob">ENW-IOB</string>
+    <string name="eatingnow_enw_iob_value" comment="Insulin given in the Eating Now window against its limit, shown as a value after a label. %1$s = given insulin, %2$s = limit, both in units. Example: 1.20 / 3.00 U">%1$.2f / %2$.2f U</string>
     <string name="insulin_management" comment="Name of the screen for editing insulin types (DIA, peak). Must NOT translate to the same word as overview_insulin_label, which names the bolus action - both can sit next to each other on the quick launch toolbar, and one of them delivers insulin.">Insulin settings</string>
     <string name="manage_insulin_desc">Manage and activate insulin configurations</string>
     <string name="concentration_disable_blocked">Cannot disable concentration support while non-U100 insulins exist. Remove all non-U100 insulin configurations and switch to a U100 profile first.</string>

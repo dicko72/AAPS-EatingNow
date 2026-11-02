@@ -59,6 +59,7 @@ class TreatmentSelectionContentTest {
                     showInsulin = true,
                     showCarbs = true,
                     showCalculator = true,
+                    showEatingNow = true,
                     isDexcomSource = false,
                     showSettingsIcon = true,
                     onSettingsClick = { settingsClicked = true }

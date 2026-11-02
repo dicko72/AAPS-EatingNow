@@ -517,6 +517,7 @@ fun MainScreen(
             showInsulin = treatmentState.showInsulin,
             showCarbs = treatmentState.showCarbs,
             showCalculator = treatmentState.showCalculator,
+            showEatingNow = treatmentState.showEatingNow,
             isDexcomSource = treatmentState.isDexcomSource,
             showSettingsIcon = treatmentState.showSettingsIcon,
             quickWizardItems = treatmentState.quickWizardItems,

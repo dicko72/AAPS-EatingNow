@@ -61,6 +61,7 @@ fun TreatmentBottomSheet(
     showInsulin: Boolean,
     showCarbs: Boolean,
     showCalculator: Boolean,
+    showEatingNow: Boolean,
     isDexcomSource: Boolean,
     showSettingsIcon: Boolean,
     // QuickWizard
@@ -94,6 +95,7 @@ fun TreatmentBottomSheet(
                 showInsulin = showInsulin,
                 showCarbs = showCarbs,
                 showCalculator = showCalculator,
+                showEatingNow = showEatingNow,
                 isDexcomSource = isDexcomSource,
                 showSettingsIcon = showSettingsIcon,
                 onSettingsClick = { showSettings = true }
@@ -116,6 +118,7 @@ internal fun TreatmentSelectionContent(
     showInsulin: Boolean,
     showCarbs: Boolean,
     showCalculator: Boolean,
+    showEatingNow: Boolean,
     isDexcomSource: Boolean,
     showSettingsIcon: Boolean,
     onSettingsClick: () -> Unit
@@ -282,6 +285,17 @@ internal fun TreatmentSelectionContent(
                 disabledAlpha = disabledAlpha,
                 onDismiss = onDismiss,
                 onClick = { onNavigate(NavigationRequest.Element(ElementType.BOLUS_WIZARD)) }
+            )
+        }
+
+        // Eating Now (only when the Eating Now plugin is the active APS)
+        if (showEatingNow) {
+            TreatmentItem(
+                elementType = ElementType.EATING_NOW,
+                enabled = true,
+                disabledAlpha = disabledAlpha,
+                onDismiss = onDismiss,
+                onClick = { onNavigate(NavigationRequest.Element(ElementType.EATING_NOW)) }
             )
         }
     }
