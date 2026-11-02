@@ -28,6 +28,7 @@ import app.aaps.core.ui.compose.icons.IcCannulaChange
 import app.aaps.core.ui.compose.icons.IcCarbs
 import app.aaps.core.ui.compose.icons.IcCgmInsert
 import app.aaps.core.ui.compose.icons.IcClinicalNotes
+import app.aaps.core.ui.compose.icons.IcEatingNow
 import app.aaps.core.ui.compose.icons.IcExtendedBolus
 import app.aaps.core.ui.compose.icons.IcHistory
 import app.aaps.core.ui.compose.icons.IcLoopClosed
@@ -145,9 +146,9 @@ fun ElementType.icon(): ImageVector = when (this) {
     ElementType.PROFILE_MANAGEMENT      -> IcProfile
 
     ElementType.TEMP_TARGET_MANAGEMENT  -> IcTtHigh
-    // Eating Now uses the food icon everywhere (entry, confirmation dialog, overview chip) for a
-    // consistent meal identity.
-    ElementType.EATING_NOW              -> IcPluginFood
+    // Eating Now uses its own fork/plate-clock/knife icon everywhere (entry, confirmation dialog,
+    // overview chip) for a consistent meal-timing identity.
+    ElementType.EATING_NOW              -> IcEatingNow
 
     ElementType.BG_CHECK                -> IcBgCheck
     ElementType.NOTE                    -> IcNote

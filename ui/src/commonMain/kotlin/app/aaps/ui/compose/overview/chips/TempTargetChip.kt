@@ -30,7 +30,7 @@ import app.aaps.core.ui.CoreUiStrings
 import app.aaps.core.ui.compose.AapsSpacing
 import app.aaps.core.ui.compose.AapsTheme
 import app.aaps.core.ui.compose.LocalAapsScale
-import app.aaps.core.ui.compose.icons.IcPluginFood
+import app.aaps.core.ui.compose.icons.IcEatingNow
 import app.aaps.core.ui.compose.icons.IcTarget
 import app.aaps.core.ui.compose.icons.IcTtActivity
 import app.aaps.core.ui.compose.icons.IcTtEatingSoon
@@ -172,7 +172,8 @@ private fun TT.Reason?.toIcon(): ImageVector = when (this) {
     TT.Reason.EATING_SOON                        -> IcTtEatingSoon
     TT.Reason.ACTIVITY                           -> IcTtActivity
     TT.Reason.HYPOGLYCEMIA                       -> IcTtHypo
-    // Eating Now (with or without prebolus) gets the food icon so the chip is recognisable at a glance.
-    TT.Reason.EATING_NOW, TT.Reason.EATING_NOW_PB -> IcPluginFood
+    // Eating Now (with or without prebolus) gets its own fork/plate-clock/knife icon so the chip is
+    // recognisable at a glance.
+    TT.Reason.EATING_NOW, TT.Reason.EATING_NOW_PB -> IcEatingNow
     else                                         -> IcTtManual // Custom, Automation, Wear, null
 }
