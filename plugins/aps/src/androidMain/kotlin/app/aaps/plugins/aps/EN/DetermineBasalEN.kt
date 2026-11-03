@@ -46,13 +46,27 @@ class DetermineBasalEN(
     // Rounds value to 'digits' decimal places
     // different for negative numbers fun round(value: Double, digits: Int): Double = BigDecimal(value).setScale(digits, RoundingMode.HALF_EVEN).toDouble()
     fun round(value: Double, digits: Int): Double {
-        if (value.isNaN()) return Double.NaN
+        // Pass NaN and ±Infinity through untouched. Math.round saturates at Long.MAX_VALUE, so an
+        // infinite value would otherwise come back as a finite-looking huge number and hide itself
+        // from the isFinite() guards downstream.
+        if (!value.isFinite()) return value
         val scale = 10.0.pow(digits.toDouble())
         return Math.round(value * scale) / scale
     }
 
     fun Double.withoutZeros(): String = DecimalFormat("0.##").format(this)
-    fun round(value: Double): Int = value.roundToInt()
+    fun round(value: Double): Int =
+        // Crash backstop: roundToInt() throws on NaN and saturates on ±Infinity. Substitute 0 and
+        // record it so the non-finite value is not silently laundered.
+        if (!value.isFinite()) {
+            consoleError.add("round(): non-finite value substituted with 0 (roundNonFinite=$value)")
+            0
+        } else value.roundToInt()
+
+    // kotlin.math.max and Double.coerceAtLeast both propagate NaN. This variant pins NaN/±Infinity
+    // to `minimum` and otherwise behaves like coerceAtLeast.
+    private fun Double.coerceAtLeastFinite(minimum: Double): Double =
+        if (isFinite()) maxOf(this, minimum) else minimum
 
     // we expect BG to rise or fall at the rate of BGI,
     // adjusted by the rate at which BG would need to rise /
@@ -136,6 +150,13 @@ class DetermineBasalEN(
 
         val maxSafeBasal = getMaxSafeBasal(profile)
         var rate = _rate
+        // A non-finite rate would pass both clamps below untouched (every comparison with NaN is
+        // false) and become a real pump command. Fall back to the profile basal rather than invent a
+        // dose from a broken value.
+        if (!rate.isFinite()) {
+            consoleError.add("setTempBasal: setTempBasalRate=$_rate is not finite, using profile basal instead")
+            rate = profile.current_basal
+        }
         if (rate < 0) rate = 0.0
         else if (rate > maxSafeBasal) rate = maxSafeBasal
 
@@ -167,6 +188,33 @@ class DetermineBasalEN(
             rT.rate = suggestedRate
             return rT
         }
+    }
+
+    /**
+     * Give up on this run instead of turning a broken internal value into a dose.
+     *
+     * Same policy the invalid-input check uses for bad CGM data: put a running high temp back to a
+     * neutral temp, shorten a long zero temp, otherwise leave the pump alone. Never suspend, never
+     * guess a rate. Ported from `DetermineBasalSMB` so a non-finite value aborts cleanly rather than
+     * throwing (an uncaught throw loses the whole loop run).
+     */
+    private fun abortNonFinite(token: String, rT: RT, currenttemp: CurrentTemp, basal: Double, deliverAt: Long): RT {
+        consoleError.add("Aborting run: $token")
+        rT.reason.append("Aborting run: $token. ")
+        if (currenttemp.rate > basal) {
+            rT.reason.append("Replacing high temp basal of ${currenttemp.rate} with neutral temp of $basal. ")
+            rT.deliverAt = deliverAt
+            rT.duration = 30
+            rT.rate = basal
+        } else if (currenttemp.rate == 0.0 && currenttemp.duration > 30) {
+            rT.reason.append("Shortening ${currenttemp.duration}m long zero temp to 30m. ")
+            rT.deliverAt = deliverAt
+            rT.duration = 30
+            rT.rate = 0.0
+        } else {
+            rT.reason.append("Temp ${currenttemp.rate} <= current basal ${round(basal, 2)}U/hr; doing nothing. ")
+        }
+        return rT
     }
 
     fun determine_basal(
@@ -590,8 +638,11 @@ class DetermineBasalEN(
         // area of the /\ triangle is the same as a remainingCIpeak-height rectangle out to remainingCATime/2
         // remainingCIpeak (mg/dL/5m) = remainingCarbs (g) * CSF (mg/dL/g) * 5 (m/5m) * 1h/60m / (remainingCATime/2) (h)
         val remainingCIpeak = remainingCarbs * csf * 5 / 60 / (remainingCATime / 2)
-        if (remainingCIpeak.isNaN()) {
-            throw Exception("remainingCarbs=$remainingCarbs remainingCATime=$remainingCATime profile.remainingCarbsCap=${profile.remainingCarbsCap} csf=$csf")
+        // Was a throw. Nothing catches it, so the whole loop run was lost - no dose, no result.
+        // Stop the run in a defined state instead.
+        if (!remainingCIpeak.isFinite()) {
+            consoleError.add("remainingCarbs=$remainingCarbs remainingCATime=$remainingCATime profile.remainingCarbsCap=${profile.remainingCarbsCap} csf=$csf")
+            return abortNonFinite("remainingCIpeak=$remainingCIpeak", rT, currenttemp, basal, deliverAt)
         }
         //console.error(profile.min_5m_carbimpact,ci,totalCI,totalCA,remainingCarbs,remainingCI,remainingCATime);
 
@@ -645,6 +696,20 @@ class DetermineBasalEN(
         var UAMpredBG: Double? = null
         var COBpredBG: Double? = null
         var aCOBpredBG: Double?
+        // Report once per call if any IOB tick has non-finite activity (or sens is NaN), so these
+        // group in Crashlytics with a stack trace. NaN here propagates through the predictions into
+        // minPredBG, insulinReq and the rate, and points to an upstream IOB/insulin-model bug.
+        val firstBadIobTick = iobArray.firstOrNull {
+            it.activity.isNaN() || it.iobWithZeroTemp?.activity?.isNaN() == true
+        }
+        if (firstBadIobTick != null || sens.isNaN()) {
+            val msg = "Eating Now non-finite IOB inputs: " +
+                "activity=${firstBadIobTick?.activity} " +
+                "iobWithZeroTemp.activity=${firstBadIobTick?.iobWithZeroTemp?.activity} " +
+                "sens=$sens"
+            consoleError.add(msg)
+            fabricPrivacy.logException(IllegalStateException(msg))
+        }
         iobArray.forEach { iobTick ->
             //console.error(iobTick);
             val predBGI: Double = round((-iobTick.activity * sens * 5), 2)
@@ -652,9 +717,6 @@ class DetermineBasalEN(
                 if (dynIsfMode) round((-iobTick.activity * (1800 / (profile.TDD * (ln((max(IOBpredBGs[IOBpredBGs.size - 1], 39.0) / profile.insulinDivisor) + 1)))) * 5), 2)
                 else predBGI
             iobTick.iobWithZeroTemp ?: error("iobTick.iobWithZeroTemp missing")
-            // try to find where is crashing https://console.firebase.google.com/u/0/project/androidaps-c34f8/crashlytics/app/android:info.nightscout.androidaps/issues/950cdbaf63d545afe6d680281bb141e5?versions=3.3.0-dev-d%20(1500)&time=last-thirty-days&types=crash&sessionEventKey=673BF7DD032300013D4704707A053273_2017608123846397475
-            if (iobTick.iobWithZeroTemp!!.activity.isNaN() || sens.isNaN())
-                fabricPrivacy.logCustom("iobTick.iobWithZeroTemp!!.activity=${iobTick.iobWithZeroTemp!!.activity} sens=$sens")
             val predZTBGI =
                 if (dynIsfMode) round((-iobTick.iobWithZeroTemp!!.activity * (1800 / (profile.TDD * (ln((max(ZTpredBGs[ZTpredBGs.size - 1], 39.0) / profile.insulinDivisor) + 1)))) * 5), 2)
                 else round((-iobTick.iobWithZeroTemp!!.activity * sens * 5), 2)
@@ -676,8 +738,10 @@ class DetermineBasalEN(
             // and ending at remainingCATime h (remainingCATime*12 * 5m intervals)
             val intervals = Math.min(COBpredBGs.size.toDouble(), ((remainingCATime * 12) - COBpredBGs.size))
             val remainingCI = Math.max(0.0, intervals / (remainingCATime / 2 * 12) * remainingCIpeak)
-            if (remainingCI.isNaN()) {
-                throw Exception("remainingCI=$remainingCI intervals=$intervals remainingCIpeak=$remainingCIpeak")
+            // Was a throw, same problem as remainingCIpeak above: uncaught, so the loop run vanished.
+            if (!remainingCI.isFinite()) {
+                consoleError.add("intervals=$intervals remainingCIpeak=$remainingCIpeak")
+                return abortNonFinite("remainingCI=$remainingCI", rT, currenttemp, basal, deliverAt)
             }
             remainingCItotal += predCI + remainingCI
             remainingCIs.add(round(remainingCI))
@@ -739,14 +803,14 @@ class DetermineBasalEN(
             consoleError.add("remainingCIs:      " + remainingCIs.joinToString(separator = " "))
         }
         rT.predBGs = Predictions()
-        IOBpredBGs = IOBpredBGs.map { round(min(401.0, max(39.0, it)), 0) }.toMutableList()
+        IOBpredBGs = IOBpredBGs.map { round(min(401.0, it.coerceAtLeastFinite(39.0)), 0) }.toMutableList()
         for (i in IOBpredBGs.size - 1 downTo 13) {
             if (IOBpredBGs[i - 1] != IOBpredBGs[i]) break
             else IOBpredBGs.removeAt(IOBpredBGs.lastIndex)
         }
         rT.predBGs?.IOB = IOBpredBGs.map { it.toInt() }
         lastIOBpredBG = round(IOBpredBGs[IOBpredBGs.size - 1]).toDouble()
-        ZTpredBGs = ZTpredBGs.map { round(min(401.0, max(39.0, it)), 0) }.toMutableList()
+        ZTpredBGs = ZTpredBGs.map { round(min(401.0, it.coerceAtLeastFinite(39.0)), 0) }.toMutableList()
         for (i in ZTpredBGs.size - 1 downTo 7) {
             // stop displaying ZTpredBGs once they're rising and above target
             if (ZTpredBGs[i - 1] >= ZTpredBGs[i] || ZTpredBGs[i] <= target_bg) break
@@ -754,14 +818,14 @@ class DetermineBasalEN(
         }
         rT.predBGs?.ZT = ZTpredBGs.map { it.toInt() }
         if (activeCOB > 0) {
-            aCOBpredBGs = aCOBpredBGs.map { round(min(401.0, max(39.0, it)), 0) }.toMutableList()
+            aCOBpredBGs = aCOBpredBGs.map { round(min(401.0, it.coerceAtLeastFinite(39.0)), 0) }.toMutableList()
             for (i in aCOBpredBGs.size - 1 downTo 13) {
                 if (aCOBpredBGs[i - 1] != aCOBpredBGs[i]) break
                 else aCOBpredBGs.removeAt(aCOBpredBGs.lastIndex)
             }
         }
         if (activeCOB > 0 && (ci > 0 || remainingCIpeak > 0)) {
-            COBpredBGs = COBpredBGs.map { round(min(401.0, max(39.0, it)), 0) }.toMutableList()
+            COBpredBGs = COBpredBGs.map { round(min(401.0, it.coerceAtLeastFinite(39.0)), 0) }.toMutableList()
             for (i in COBpredBGs.size - 1 downTo 13) {
                 if (COBpredBGs[i - 1] != COBpredBGs[i]) break
                 else COBpredBGs.removeAt(COBpredBGs.lastIndex)
@@ -772,7 +836,7 @@ class DetermineBasalEN(
         }
         if (ci > 0 || remainingCIpeak > 0) {
             if (enableUAM) {
-                UAMpredBGs = UAMpredBGs.map { round(min(401.0, max(39.0, it)), 0) }.toMutableList()
+                UAMpredBGs = UAMpredBGs.map { round(min(401.0, it.coerceAtLeastFinite(39.0)), 0) }.toMutableList()
                 for (i in UAMpredBGs.size - 1 downTo 13) {
                     if (UAMpredBGs[i - 1] != UAMpredBGs[i]) break
                     else UAMpredBGs.removeAt(UAMpredBGs.lastIndex)
@@ -838,9 +902,14 @@ class DetermineBasalEN(
         val isAuthorisedMealRise = ENWActive && !isHighTempSet && (UAMplusConfidence || isPrebolusing || deltaFastUp)
         val isAuthorisedResistance = isStuckHigh && isBasalDeficit && !isHighTempSet && !ENWActive && peakPassed
 
-        minIOBPredBG = max(39.0, minIOBPredBG)
-        minCOBPredBG = max(39.0, minCOBPredBG)
-        minUAMPredBG = max(39.0, minUAMPredBG)
+        // The predictions above are clamped to [39, 401], but a non-finite tick escapes that clamp
+        // and reaches here. rT.eventualBG is stored and uploaded, and predBGs are written with
+        // toInt() where NaN becomes 0 (a 0 mg/dL predicted BG). Stop the run rather than dose on it.
+        if (!eventualBG.isFinite()) return abortNonFinite("eventualBG=$eventualBG", rT, currenttemp, basal, deliverAt)
+
+        minIOBPredBG = minIOBPredBG.coerceAtLeastFinite(39.0)
+        minCOBPredBG = minCOBPredBG.coerceAtLeastFinite(39.0)
+        minUAMPredBG = minUAMPredBG.coerceAtLeastFinite(39.0)
         minPredBG = round(minIOBPredBG, 0)
 
         var minPredBGEN = if (isAuthorisedMealRise || isAuthorisedResistance)
@@ -869,7 +938,11 @@ class DetermineBasalEN(
             }
         }
 
-        val fractionCarbsLeft = activeCOB / activeCarbs
+        // activeCarbs can drop to 0 while activeCOB is still > 0 (slow or stalled absorption), and
+        // activeCOB / 0 is Infinity, which made avgPredBG below Infinity - Infinity = NaN and spread
+        // the NaN into minPredBG -> insulinReq -> rate. Fall back to 0.0, the same choice the no-carb
+        // branch of minGuardBG makes.
+        val fractionCarbsLeft = if (activeCarbs > 0.0) activeCOB / activeCarbs else 0.0
         // if we have COB and UAM is enabled, average both
         if (minUAMPredBG < 999 && minCOBPredBG < 999) {
             // weight COBpredBG vs. UAMpredBG based on how many carbs remain as COB
@@ -901,6 +974,10 @@ class DetermineBasalEN(
             minGuardBG = minIOBGuardBG
         }
         minGuardBG = round(minGuardBG, 0)
+        // A non-finite minGuardBG is worse than a wrong number: every guard that reads it is a "<"
+        // comparison, false for NaN, so it would silently switch off both the SMB suppression and the
+        // predictive low-glucose suspend below - and still look finite afterwards. Stop the run.
+        if (!minGuardBG.isFinite()) return abortNonFinite("minGuardBG=$minGuardBG", rT, currenttemp, basal, deliverAt)
         //console.error(minCOBGuardBG, minUAMGuardBG, minIOBGuardBG, minGuardBG);
 
         // EN-trusted guard, mirroring minPredBGEN: while genuinely stuck-high with budget unused
@@ -953,6 +1030,9 @@ class DetermineBasalEN(
         }
         // make sure minPredBG isn't higher than avgPredBG
         minPredBG = min(minPredBG, avgPredBG)
+        // Final defensive guard: minPredBG can still be NaN if the chain above poisoned it, and
+        // min(...) propagates NaN. Pin to the floor so insulinReq / rT.insulinReq stay finite.
+        if (!minPredBG.isFinite()) minPredBG = 39.0
 
         // Extrapolated BG calculation
         val extrapolatedDelta = if (ENWActive && enConfig.ENWDuration > 0 && enConfig.ENWNetIOBRemaining > 0 && glucose_status.delta > 0.0 && max(activeCOB, activeCarbs) == 0.0) {
