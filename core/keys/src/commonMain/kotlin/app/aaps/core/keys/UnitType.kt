@@ -15,6 +15,7 @@ enum class UnitType {
     SEC,
     HOURS,
     HOURS_DOUBLE,
+    HOUR_OF_DAY,
     DAYS,
     PERCENT,
     INSULIN,

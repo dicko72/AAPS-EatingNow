@@ -1262,6 +1262,8 @@
     <string name="units_format_hours_double">%1$.1f h</string>
     <string name="units_format_hours_double_range">%1$.1f h (%2$.1f - %3$.1f)</string>
     <string name="units_format_hours_range">%1$d h (%2$d - %3$d)</string>
+    <string name="units_format_hour_of_day" comment="%1$s=hour of the day on a 24h clock, zero padded. Example: 09 gives 09:00">%1$02d:00</string>
+    <string name="units_format_hour_of_day_range" comment="%1$s=value hour, %2$s=min hour, %3$s=max hour, all on a 24h clock zero padded. Example: 09:00 (00:00 - 23:00)">%1$02d:00 (%2$02d:00 - %3$02d:00)</string>
     <string name="units_format_insulin">%1$.1f U</string>
     <string name="units_format_insulin_2" comment="%1$s=insulin amount with two decimals. Example: 1.05 U">%1$.2f U</string>
     <string name="units_format_insulin_2_range" comment="%1$s=value, %2$s=min, %3$s=max, all insulin amounts with two decimals. Example: 1.05 U (0.00 - 5.00)">%1$.2f U (%2$.2f - %3$.2f)</string>

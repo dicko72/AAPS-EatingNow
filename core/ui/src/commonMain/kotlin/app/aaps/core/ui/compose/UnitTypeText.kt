@@ -23,6 +23,7 @@ fun UnitType.unitLabel(): TextRef? = when (this) {
     UnitType.MIN                                          -> CoreUiStrings.units_min
     UnitType.SEC                                          -> CoreUiStrings.units_sec
     UnitType.HOURS, UnitType.HOURS_DOUBLE                 -> CoreUiStrings.units_hours
+    UnitType.HOUR_OF_DAY                                  -> null // the value already reads as "09:00"
     UnitType.DAYS                                         -> CoreUiStrings.units_days
     UnitType.PERCENT                                      -> CoreUiStrings.units_percent
     UnitType.INSULIN, UnitType.INSULIN_INT, UnitType.INSULIN_005 -> CoreUiStrings.units_insulin
@@ -53,6 +54,7 @@ fun UnitType.valueFormat(): TextRef? = when (this) {
     UnitType.SEC          -> CoreUiStrings.units_format_sec
     UnitType.HOURS        -> CoreUiStrings.units_format_hours
     UnitType.HOURS_DOUBLE -> CoreUiStrings.units_format_hours_double
+    UnitType.HOUR_OF_DAY  -> CoreUiStrings.units_format_hour_of_day
     UnitType.DAYS         -> CoreUiStrings.units_format_days
     UnitType.PERCENT      -> CoreUiStrings.units_format_percent
     UnitType.INSULIN      -> CoreUiStrings.units_format_insulin
@@ -72,6 +74,7 @@ private fun UnitType.rangeFormat(): TextRef? = when (this) {
     UnitType.SEC          -> CoreUiStrings.units_format_sec_range
     UnitType.HOURS        -> CoreUiStrings.units_format_hours_range
     UnitType.HOURS_DOUBLE -> CoreUiStrings.units_format_hours_double_range
+    UnitType.HOUR_OF_DAY  -> CoreUiStrings.units_format_hour_of_day_range
     UnitType.DAYS         -> CoreUiStrings.units_format_days_range
     UnitType.PERCENT      -> CoreUiStrings.units_format_percent_range
     UnitType.INSULIN      -> CoreUiStrings.units_format_insulin_range
