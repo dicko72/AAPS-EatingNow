@@ -1,3 +1,4 @@
+import com.android.build.api.variant.impl.VariantOutputImpl
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -110,6 +111,14 @@ val generateAppStringOwners = tasks.register<GenerateStringOwnerRegistryTask>("g
 androidComponents {
     onVariants { variant ->
         variant.sources.kotlin?.addGeneratedSourceDirectory(generateAppStringOwners, GenerateStringOwnerRegistryTask::outputDir)
+
+        // Rename the built APK to "<version>-<flavor>-<gitbuild>.apk", the same output name the
+        // Eating Now fork used before the 4.0 port (e.g. 4.0.0-full-1a2b3c4d.apk). AGP 9 dropped the
+        // old applicationVariants API, so the new Variant API sets outputFileName instead.
+        val gitbuild = generateGitBuild().take(8)
+        variant.outputs.forEach { output ->
+            (output as? VariantOutputImpl)?.outputFileName?.set("${version}-${variant.flavorName}-$gitbuild.apk")
+        }
     }
 }
 android {
@@ -212,6 +221,7 @@ android {
             }
         }
     }
+
 }
 
 allprojects {
