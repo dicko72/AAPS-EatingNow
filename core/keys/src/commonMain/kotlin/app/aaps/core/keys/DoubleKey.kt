@@ -359,12 +359,12 @@ enum class DoubleKey(
     highBGthreshold(key = "highBGthreshold", defaultValue = 0.0, min = 0.0, max = 100.0, title = KeysStrings.eatingnow_highBGthreshold_title, summary = KeysStrings.eatingnow_highBGthreshold_summary, defaultedBySM = true),
 
     // ENW variable limits
-    Eatingnow_enw_cob_maxbolus(key = "Eatingnow_enw_cob_maxbolus", defaultValue = 0.0, min = 0.0, max = 5.0, title = KeysStrings.Eatingnow_enw_cob_maxbolus_title, summary = KeysStrings.Eatingnow_enw_cob_maxbolus_summary),
-    Eatingnow_enw_uam_maxbolus(key = "Eatingnow_enw_uam_maxbolus", defaultValue = 0.0, min = 0.0, max = 5.0, title = KeysStrings.Eatingnow_enw_uam_maxbolus_title, summary = KeysStrings.Eatingnow_enw_uam_maxbolus_summary),
-    Eatingnow_enw_maxiob(key = "Eatingnow_enw_maxiob", defaultValue = 0.0, min = 0.0, max = 15.0, title = KeysStrings.Eatingnow_enw_maxiob_title, summary = KeysStrings.Eatingnow_enw_maxiob_summary),
-    Eatingnow_enw_prebolus(key = "Eatingnow_enw_prebolus", defaultValue = 0.0, min = 0.0, max = 15.0, title = KeysStrings.Eatingnow_enw_prebolus_title, summary = KeysStrings.Eatingnow_enw_prebolus_summary),
-    Eatingnow_enw_uamplus_maxbolus(key = "Eatingnow_enw_uamplus_maxbolus", defaultValue = 0.0, min = 0.0, max = 5.0, title = KeysStrings.Eatingnow_enw_uamplus_maxbolus_title, summary = KeysStrings.Eatingnow_enw_uamplus_maxbolus_summary),
-    Eatingnow_enw_triggerbolus(key = "Eatingnow_enw_triggerbolus", defaultValue = 0.0, min = 0.0, max = 15.0, title = KeysStrings.Eatingnow_enw_triggerbolus_title, summary = KeysStrings.Eatingnow_enw_triggerbolus_summary),
+    Eatingnow_enw_cob_maxbolus(key = "Eatingnow_enw_cob_maxbolus", defaultValue = 0.0, min = 0.0, max = 5.0, title = KeysStrings.Eatingnow_enw_cob_maxbolus_title, summary = KeysStrings.Eatingnow_enw_cob_maxbolus_summary, unitType = UnitType.INSULIN_005),
+    Eatingnow_enw_uam_maxbolus(key = "Eatingnow_enw_uam_maxbolus", defaultValue = 0.0, min = 0.0, max = 5.0, title = KeysStrings.Eatingnow_enw_uam_maxbolus_title, summary = KeysStrings.Eatingnow_enw_uam_maxbolus_summary, unitType = UnitType.INSULIN_005),
+    Eatingnow_enw_maxiob(key = "Eatingnow_enw_maxiob", defaultValue = 0.0, min = 0.0, max = 15.0, title = KeysStrings.Eatingnow_enw_maxiob_title, summary = KeysStrings.Eatingnow_enw_maxiob_summary, unitType = UnitType.INSULIN_005),
+    Eatingnow_enw_prebolus(key = "Eatingnow_enw_prebolus", defaultValue = 0.0, min = 0.0, max = 15.0, title = KeysStrings.Eatingnow_enw_prebolus_title, summary = KeysStrings.Eatingnow_enw_prebolus_summary, unitType = UnitType.INSULIN_005),
+    Eatingnow_enw_uamplus_maxbolus(key = "Eatingnow_enw_uamplus_maxbolus", defaultValue = 0.0, min = 0.0, max = 5.0, title = KeysStrings.Eatingnow_enw_uamplus_maxbolus_title, summary = KeysStrings.Eatingnow_enw_uamplus_maxbolus_summary, unitType = UnitType.INSULIN_005),
+    Eatingnow_enw_triggerbolus(key = "Eatingnow_enw_triggerbolus", defaultValue = 0.0, min = 0.0, max = 15.0, title = KeysStrings.Eatingnow_enw_triggerbolus_title, summary = KeysStrings.Eatingnow_enw_triggerbolus_summary, unitType = UnitType.INSULIN_005),
     Eatingnow_enw_triggercob(key = "Eatingnow_enw_triggercob", defaultValue = 0.0, min = 0.0, max = 100.0, title = KeysStrings.Eatingnow_enw_triggercob_title, summary = KeysStrings.Eatingnow_enw_triggercob_summary),
 
     ;

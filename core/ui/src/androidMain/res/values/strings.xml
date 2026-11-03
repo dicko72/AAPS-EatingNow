@@ -1263,6 +1263,8 @@
     <string name="units_format_hours_double_range">%1$.1f h (%2$.1f - %3$.1f)</string>
     <string name="units_format_hours_range">%1$d h (%2$d - %3$d)</string>
     <string name="units_format_insulin">%1$.1f U</string>
+    <string name="units_format_insulin_2" comment="%1$s=insulin amount with two decimals. Example: 1.05 U">%1$.2f U</string>
+    <string name="units_format_insulin_2_range" comment="%1$s=value, %2$s=min, %3$s=max, all insulin amounts with two decimals. Example: 1.05 U (0.00 - 5.00)">%1$.2f U (%2$.2f - %3$.2f)</string>
     <string name="units_format_insulin_int">%1$d U</string>
     <string name="units_format_insulin_int_range">%1$d U (%2$d - %3$d)</string>
     <string name="units_format_insulin_range">%1$.1f U (%2$.1f - %3$.1f)</string>

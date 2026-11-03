@@ -25,7 +25,7 @@ fun UnitType.unitLabel(): TextRef? = when (this) {
     UnitType.HOURS, UnitType.HOURS_DOUBLE                 -> CoreUiStrings.units_hours
     UnitType.DAYS                                         -> CoreUiStrings.units_days
     UnitType.PERCENT                                      -> CoreUiStrings.units_percent
-    UnitType.INSULIN, UnitType.INSULIN_INT                -> CoreUiStrings.units_insulin
+    UnitType.INSULIN, UnitType.INSULIN_INT, UnitType.INSULIN_005 -> CoreUiStrings.units_insulin
     UnitType.INSULIN_RATE                                 -> CoreUiStrings.units_insulin_rate
     UnitType.DOUBLE, UnitType.DOUBLE_2, UnitType.DOUBLE_3 -> null // generic doubles carry no unit
     UnitType.MGDL                                         -> CoreUiStrings.units_mgdl
@@ -57,6 +57,7 @@ fun UnitType.valueFormat(): TextRef? = when (this) {
     UnitType.PERCENT      -> CoreUiStrings.units_format_percent
     UnitType.INSULIN      -> CoreUiStrings.units_format_insulin
     UnitType.INSULIN_INT  -> CoreUiStrings.units_format_insulin_int
+    UnitType.INSULIN_005  -> CoreUiStrings.units_format_insulin_2
     UnitType.INSULIN_RATE -> CoreUiStrings.units_format_insulin_rate
     UnitType.DOUBLE       -> CoreUiStrings.units_format_double
     UnitType.DOUBLE_2     -> CoreUiStrings.units_format_double_2
@@ -75,6 +76,7 @@ private fun UnitType.rangeFormat(): TextRef? = when (this) {
     UnitType.PERCENT      -> CoreUiStrings.units_format_percent_range
     UnitType.INSULIN      -> CoreUiStrings.units_format_insulin_range
     UnitType.INSULIN_INT  -> CoreUiStrings.units_format_insulin_int_range
+    UnitType.INSULIN_005  -> CoreUiStrings.units_format_insulin_2_range
     UnitType.INSULIN_RATE -> CoreUiStrings.units_format_insulin_rate_range
     UnitType.DOUBLE       -> CoreUiStrings.units_format_double_range
     UnitType.DOUBLE_2     -> CoreUiStrings.units_format_double_2_range

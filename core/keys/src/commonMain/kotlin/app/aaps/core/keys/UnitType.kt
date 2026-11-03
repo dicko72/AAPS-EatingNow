@@ -19,6 +19,7 @@ enum class UnitType {
     PERCENT,
     INSULIN,
     INSULIN_INT,
+    INSULIN_005,
     INSULIN_RATE,
     DOUBLE,
     DOUBLE_2,
@@ -31,7 +32,7 @@ enum class UnitType {
  */
 fun UnitType.decimalPlaces(): Int = when (this) {
     UnitType.DOUBLE_3                                                               -> 3
-    UnitType.DOUBLE_2                                                               -> 2
+    UnitType.DOUBLE_2, UnitType.INSULIN_005                                         -> 2
     UnitType.INSULIN, UnitType.INSULIN_RATE, UnitType.DOUBLE, UnitType.HOURS_DOUBLE -> 1
     else                                                                            -> 0
 }
@@ -42,6 +43,7 @@ fun UnitType.decimalPlaces(): Int = when (this) {
 fun UnitType.step(): Double = when (this) {
     UnitType.DOUBLE_3                                                               -> 0.001
     UnitType.DOUBLE_2                                                               -> 0.01
+    UnitType.INSULIN_005                                                            -> 0.05
     UnitType.INSULIN, UnitType.INSULIN_RATE, UnitType.DOUBLE, UnitType.HOURS_DOUBLE -> 0.1
     else                                                                            -> 1.0
 }
