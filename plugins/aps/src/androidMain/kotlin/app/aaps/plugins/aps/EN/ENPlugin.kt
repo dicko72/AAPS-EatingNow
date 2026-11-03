@@ -429,7 +429,6 @@ open class ENPlugin(
 
         // COB Trigger
         val ignoreCOB = preferences.get(BooleanKey.EatingNow_IgnoreCOB)
-        val units = profileFunction.getUnits()
         val ENWCOBTrigger = preferences.get(DoubleKey.Eatingnow_enw_triggercob)
         val todaysCarbs = if (ENWCOBTrigger > 0.0 && !ignoreCOB) {
             persistenceLayer.getCarbsFromTime(EatingNowTimeStart, true)
@@ -544,7 +543,8 @@ open class ENPlugin(
 
         // Calculate high bg for resistance assistance
         // rolling window from the end of the last meal window based upon insulinPeak
-        val highThresholdMgdl = profileUtil.convertToMgdl(preferences.get(DoubleKey.highBGthreshold), units) + normalTargetBG
+        // highBGthreshold is a glucose delta stored in mg/dl (see DoubleKey.glucoseDelta).
+        val highThresholdMgdl = preferences.get(DoubleKey.highBGthreshold) + normalTargetBG
         val recentBg = persistenceLayer.getBgReadingsDataFromTimeToTime(now - T.hours(6).msecs(), now, ascending = false)
         var highSinceTime = now
         var belowSince: Long? = null
@@ -655,12 +655,12 @@ open class ENPlugin(
             ENTimeEnd = EatingNowTimeEnd,
             ENActive = ENActive,
             AutoStartEN = preferences.get(BooleanKey.EatingNow_AutoStart),
-            OvernightSMBRestrict = profileUtil.convertToMgdl(preferences.get(DoubleKey.Eatingnow_overnightSMB), units) + normalTargetBG,
-            DaytimeSMBRestrict = profileUtil.convertToMgdl(preferences.get(DoubleKey.Eatingnow_daytimeSMB), units) + normalTargetBG,
+            OvernightSMBRestrict = preferences.get(DoubleKey.Eatingnow_overnightSMB) + normalTargetBG,
+            DaytimeSMBRestrict = preferences.get(DoubleKey.Eatingnow_daytimeSMB) + normalTargetBG,
             IgnoreCOB = ignoreCOB,
             SafetyMaxBolus = preferences.get(DoubleKey.SafetyMaxBolus),
             useISFscaler = useISFscaler,
-            highBGthreshold = profileUtil.convertToMgdl(preferences.get(DoubleKey.highBGthreshold), units) + normalTargetBG,
+            highBGthreshold = preferences.get(DoubleKey.highBGthreshold) + normalTargetBG,
             netIOBSinceHigh = Round.roundTo(netIOBSinceHigh, 0.01),
             minutesHigh = minutesHigh,
             pastPeakAgoMins = pastPeakAgoMins,

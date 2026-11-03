@@ -17,6 +17,7 @@ import app.aaps.core.interfaces.tempTargets.toJson
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.keys.BooleanComposedKey
 import app.aaps.core.keys.BooleanKey
+import app.aaps.core.keys.DoubleKey
 import app.aaps.core.keys.IntKey
 import app.aaps.core.keys.ProfileComposedBooleanKey
 import app.aaps.core.keys.ProfileComposedStringKey
@@ -117,6 +118,7 @@ class PreferenceMigrations(
         apsMode(sp)
         tempTargetPresets(sp)
         activityMonitorRetired(sp)
+        enwGlucoseDeltasToMgdl(sp)
     }
 
     /**
@@ -444,6 +446,34 @@ class PreferenceMigrations(
         if (sp.contains("stats_activity_expanded")) sp.remove("stats_activity_expanded")
     }
 
+    /**
+     * The three Eating Now glucose deltas - the high BG threshold and the overnight / daytime SMB
+     * limits - are now stored in mg/dl, like every other glucose value in the app.
+     *
+     * They used to be stored in whatever units the user was in, and the loop read them back with the
+     * same current units. So the one true conversion is to read each with the current units and write
+     * back the mg/dl it meant - exactly what the loop computed from them before.
+     *
+     * Unlike the other migrations this one guards with its own marker rather than a legacy name,
+     * because the key names do not change and the value can no longer be told apart from an
+     * already-migrated one by magnitude: a delta can sit on either side of the 36 mg/dl boundary that
+     * the auto-detect uses, so there is no safe magnitude test. A zero is left alone - it means the
+     * same in both units and is the default.
+     *
+     * Over an imported file `units` is this device's, not the backup's, the same limitation
+     * [tempTargetPresets] notes. On the normal start-up path, against the live store, it is exact.
+     */
+    private fun enwGlucoseDeltasToMgdl(sp: KeyValueStore) {
+        if (sp.getBoolean(ENW_DELTA_MGDL_MARKER, false)) return
+        val units = profileUtil.units
+        val values = sp.getAll()
+        ENW_GLUCOSE_DELTA_KEYS.forEach { name ->
+            val stored = LegacyPreferenceValue.asDouble(values[name]) ?: return@forEach
+            if (stored != 0.0) sp.putDouble(name, profileUtil.convertToMgdl(stored, units))
+        }
+        sp.putBoolean(ENW_DELTA_MGDL_MARKER, true)
+    }
+
     /** Moves a legacy name holding a whole number to [destinationPrefix] + [argument]. */
     private fun moveLong(sp: KeyValueStore, name: String, value: Any?, argument: String?, destinationPrefix: String) {
         if (argument == null) return skip(name, "the name does not say what it belongs to")
@@ -476,6 +506,16 @@ class PreferenceMigrations(
     private companion object {
 
         const val LOCAL_PROFILE_PREFIX = "LocalProfile_"
+
+        /** Set once the Eating Now glucose deltas have been converted to mg/dl storage. */
+        const val ENW_DELTA_MGDL_MARKER = "enw_glucose_delta_mgdl"
+
+        /** The Eating Now glucose-delta keys converted to mg/dl storage. */
+        val ENW_GLUCOSE_DELTA_KEYS = listOf(
+            DoubleKey.highBGthreshold.key,
+            DoubleKey.Eatingnow_overnightSMB.key,
+            DoubleKey.Eatingnow_daytimeSMB.key
+        )
 
         /** The five schedules a profile carries, and the key each one moves to. */
         val SCHEDULE_FIELDS = mapOf(

@@ -22,7 +22,8 @@ enum class DoubleKey(
     override val hideParentScreenIfHidden: Boolean = false,
     override val unitType: UnitType = UnitType.NONE,
     override val sync: SyncSpec? = null,
-    override val visibility: ElementVisibility = ElementVisibility.ALWAYS
+    override val visibility: ElementVisibility = ElementVisibility.ALWAYS,
+    override val glucoseDelta: Boolean = false
 ) : DoublePreferenceKey {
 
     OverviewInsulinButtonIncrement1(
@@ -354,9 +355,9 @@ enum class DoubleKey(
 
     // Modified for Eating Now
     // General
-    Eatingnow_overnightSMB(key = "overnightSMB", defaultValue = 0.0, min = 0.0, max = 270.0, title = KeysStrings.eatingnow_overnightSMB_title, summary = KeysStrings.eatingnow_overnightSMB_summary),
-    Eatingnow_daytimeSMB(key = "daytimeSMB", defaultValue = 0.0, min = 0.0, max = 270.0, title = KeysStrings.eatingnow_daytimeSMB_title, summary = KeysStrings.eatingnow_daytimeSMB_summary),
-    highBGthreshold(key = "highBGthreshold", defaultValue = 0.0, min = 0.0, max = 100.0, title = KeysStrings.eatingnow_highBGthreshold_title, summary = KeysStrings.eatingnow_highBGthreshold_summary, defaultedBySM = true),
+    Eatingnow_overnightSMB(key = "overnightSMB", defaultValue = 0.0, min = 0.0, max = 270.0, title = KeysStrings.eatingnow_overnightSMB_title, summary = KeysStrings.eatingnow_overnightSMB_summary, glucoseDelta = true),
+    Eatingnow_daytimeSMB(key = "daytimeSMB", defaultValue = 0.0, min = 0.0, max = 270.0, title = KeysStrings.eatingnow_daytimeSMB_title, summary = KeysStrings.eatingnow_daytimeSMB_summary, glucoseDelta = true),
+    highBGthreshold(key = "highBGthreshold", defaultValue = 0.0, min = 0.0, max = 100.0, title = KeysStrings.eatingnow_highBGthreshold_title, summary = KeysStrings.eatingnow_highBGthreshold_summary, defaultedBySM = true, glucoseDelta = true),
 
     // ENW variable limits
     Eatingnow_enw_cob_maxbolus(key = "Eatingnow_enw_cob_maxbolus", defaultValue = 0.0, min = 0.0, max = 5.0, title = KeysStrings.Eatingnow_enw_cob_maxbolus_title, summary = KeysStrings.Eatingnow_enw_cob_maxbolus_summary, unitType = UnitType.INSULIN_005),
