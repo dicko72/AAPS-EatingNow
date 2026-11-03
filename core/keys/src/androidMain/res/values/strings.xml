@@ -439,11 +439,11 @@
     <string name="EatingNow_OverrideENWNetIOBMax_title">Allow UAM maxBolus when ENWNetIOBMax is insufficient</string>
     <string name="EatingNow_OverrideENWNetIOBMax_summary">UAM maxBolus for confident accelerated BG rise allowed when ENWNetIOBMax has been exceeded</string>
     <string name="eatingnow_overnightSMB_title">Overnight SMB Restriction</string>
-    <string name="eatingnow_overnightSMB_summary">There will be no SMB when below this BG offset at night unless COB or a TT lower or equal to normalTarget\ne.g. if normalTarget is 5.5 (99) and this setting is 1.5 (27) there will be no SMB below 7.0 (126)</string>
+    <string name="eatingnow_overnightSMB_summary">There will be no SMB during EN inactive hours when BG is below target plus this offset unless COB or a TT lower or equal to normalTarget.</string>
     <string name="eatingnow_daytimeSMB_title">Daytime SMB Restriction</string>
-    <string name="eatingnow_daytimeSMB_summary">There will be no SMB when below this BG offset during the day unless ENW is active\ne.g. if normalTarget is 5.5 (99) and this setting is 1.5 (27) there will be no SMB below 7.0 (126)</string>
+    <string name="eatingnow_daytimeSMB_summary">There will be no SMB during EN active hours when BG is below target plus this offset unless COB or a TT lower or equal to normalTarget.</string>
     <string name="eatingnow_highBGthreshold_title">High BG Threshold</string>
-    <string name="eatingnow_highBGthreshold_summary">ISF Scaling will increase when BG is stuck above this additional BG offset\ne.g. if normalTarget is 5.5 (99) and this setting is 1.5 (27) ISF scaling will commence at above 7.0 (126)\n0 is disabled</string>
+    <string name="eatingnow_highBGthreshold_summary">ISF Scaling will increase when BG is stuck above target by this additional BG offset. 0 is disabled</string>
     <string name="Eatingnow_enw_cob_maxbolus_title">COB maxBolus [U]</string>
     <string name="Eatingnow_enw_cob_maxbolus_summary">COB maxBolus for BGL rises within the EN Window.\n0 will use existing maxBolus limit</string>
     <string name="Eatingnow_enw_uam_maxbolus_title">UAM maxBolus [U]</string>
