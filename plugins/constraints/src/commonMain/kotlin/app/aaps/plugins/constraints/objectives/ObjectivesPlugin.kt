@@ -30,6 +30,8 @@ import app.aaps.plugins.constraints.objectives.compose.ObjectivesComposeContent
 import app.aaps.plugins.constraints.objectives.keys.ObjectivesBooleanComposedKey
 import app.aaps.plugins.constraints.objectives.keys.ObjectivesLongComposedKey
 import app.aaps.plugins.constraints.objectives.objectives.Objective
+import app.aaps.plugins.constraints.objectives.objectives.Objective.ExamTask
+import app.aaps.plugins.constraints.objectives.objectives.Objective.UITask
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
@@ -70,6 +72,15 @@ class ObjectivesPlugin(
         for (objective in objectives) {
             objective.startedOn = 0
             objective.accomplishedOn = 0
+            // Clear the stored exam/UI answers too. The timestamps above are not enough on their
+            // own: the exam objective re-reads its answers on every launch, so an answer left set
+            // would make it look part-answered after a reset - and once fake-verify writes the
+            // answers (see ObjectivesViewModel.onVerify), a leftover answer would undo the reset on
+            // the exam. Only reachable from the EN debug Reset button, so real users are unaffected.
+            for (task in objective.tasks) {
+                if (task is ExamTask) task.answered = false
+                if (task is UITask) task.answered = false
+            }
         }
         preferences.put(BooleanNonKey.ObjectivesBgIsAvailableInNs, false)
         preferences.put(BooleanNonKey.ObjectivesPumpStatusIsAvailableInNS, false)

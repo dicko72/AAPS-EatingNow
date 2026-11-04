@@ -215,6 +215,15 @@ class ObjectivesViewModel(
         val objective = objectivesPlugin.objectives[objectiveIndex]
         receiverStatusStore.updateNetworkStatus()
         if (_uiState.value.isFakeMode) {
+            // Fake-complete must also satisfy the task state an objective re-checks when it is
+            // built again, or the completion does not survive an app restart. The exam objective
+            // (Objective2) zeroes accomplishedOn in its init whenever an exam answer is missing,
+            // so a faked verify that only stamped the time would drop back to not-done on every
+            // rebuild. Writing the answers makes it stick like the other objectives.
+            objective.tasks.forEach { task ->
+                if (task is ExamTask) task.answered = true
+                if (task is UITask) task.answered = true
+            }
             // -1000ms: Objective.isAccomplished uses strict `<` comparison with dateUtil.now(),
             // so the timestamp must be strictly in the past for the UI to update immediately.
             objective.accomplishedOn = dateUtil.now() - 1000
