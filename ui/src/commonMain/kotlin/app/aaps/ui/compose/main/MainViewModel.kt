@@ -268,6 +268,7 @@ class MainViewModel(
             runningModeRecordId = chip.runningModeRecordId,
             tbrState = chip.tbrState,
             tbrText = chip.tbrText,
+            tbrProgress = chip.tbrProgress,
             smbEnabled = ev.smbEnabled,
             quickWizardItems = chip.quickWizardItems
         )
@@ -369,6 +370,14 @@ class MainViewModel(
         // the profile base rate when no temp basal is active). Shown beside the icon on the basal chip.
         val tbrText = if (tbrData == null) "" else rh.gs(CoreUiStrings.pump_base_basal_rate, tbrData.rate)
 
+        // TBR progress: how much of a running temp basal's duration has elapsed, for the bar along the
+        // chip's bottom edge (like the TT chip). 0 when no finite temp basal is running, so no bar.
+        val tbrIsFinite = tbrData != null && !tbrExpired && tbrData.state != TbrState.NONE
+            && tbrData.duration > 0 && tbrData.duration < T.days(30).msecs()
+        val tbrProgress = if (tbrIsFinite) {
+            ((now - tbrData!!.timestamp).toFloat() / tbrData.duration.toFloat()).coerceIn(0f, 1f)
+        } else 0f
+
         return ChipState(
             isProfileLoaded = profileData?.isLoaded ?: false,
             profileName = profileText,
@@ -388,6 +397,7 @@ class MainViewModel(
             runningModeRecordId = if (rmExpired) 0 else rmData?.recordId ?: 0,
             tbrState = if (tbrExpired) TbrState.NONE else tbrData?.state ?: TbrState.NONE,
             tbrText = tbrText,
+            tbrProgress = tbrProgress,
             quickWizardItems = computeQuickWizardItems(rmData?.mode)
         )
     }
@@ -1064,5 +1074,6 @@ private data class ChipState(
     val runningModeRecordId: Long = 0,
     val tbrState: TbrState = TbrState.NONE,
     val tbrText: String = "",
+    val tbrProgress: Float = 0f,
     val quickWizardItems: List<QuickWizardItem> = emptyList()
 )

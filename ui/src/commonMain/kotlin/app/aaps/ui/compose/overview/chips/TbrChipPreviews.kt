@@ -8,13 +8,13 @@ import app.aaps.core.interfaces.overview.graph.TbrState
 @Preview(showBackground = true)
 @Composable
 internal fun TbrChipHighPreview() {
-    MaterialTheme { TbrChip(state = TbrState.HIGH, text = "1.20 U/h", onClick = {}) }
+    MaterialTheme { TbrChip(state = TbrState.HIGH, text = "1.20 U/h", progress = 0.4f, onClick = {}) }
 }
 
 @Preview(showBackground = true)
 @Composable
 internal fun TbrChipLowPreview() {
-    MaterialTheme { TbrChip(state = TbrState.LOW, text = "0.45 U/h", onClick = {}) }
+    MaterialTheme { TbrChip(state = TbrState.LOW, text = "0.45 U/h", progress = 0.8f, onClick = {}) }
 }
 
 @Preview(showBackground = true)

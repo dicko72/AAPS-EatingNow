@@ -13,6 +13,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -43,7 +45,8 @@ fun TbrChip(
     state: TbrState,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    text: String = ""
+    text: String = "",
+    progress: Float = 0f
 ) {
     val iconColor = AapsTheme.elementColors.tempBasal
     val containerColor = iconColor.copy(alpha = 0.2f)
@@ -65,7 +68,18 @@ fun TbrChip(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxHeight()
-                .padding(horizontal = AapsSpacing.medium)
+                // Progress bar along the bottom edge, like the TT chip: how much of a running temp
+                // basal's duration has elapsed. Drawn here (not a fillMaxWidth child) so it spans the
+                // chip's own content width and never forces the chip wider. No bar when progress is 0.
+                .then(
+                    if (progress > 0f) Modifier.drawBehind {
+                        val stroke = AapsSpacing.chipProgressHeight.toPx()
+                        val y = size.height - stroke / 2f
+                        drawLine(iconColor.copy(alpha = 0.3f), Offset(0f, y), Offset(size.width, y), stroke)
+                        drawLine(iconColor, Offset(0f, y), Offset(size.width * progress, y), stroke)
+                    } else Modifier
+                )
+                .padding(horizontal = AapsSpacing.medium, vertical = AapsSpacing.small)
         ) {
             Icon(
                 imageVector = state.toIcon(),
@@ -73,8 +87,8 @@ fun TbrChip(
                 tint = iconColor,
                 modifier = Modifier.size(AapsSpacing.chipIconSize)
             )
-            // Icon then text: the current basal rate, plus elapsed/total minutes while a temp basal
-            // runs (e.g. "0.90 U/h 4/30m"). Empty text falls back to the icon-only chip.
+            // Icon then text: the current effective basal rate, e.g. "0.90 U/h". Empty text falls
+            // back to the icon-only chip.
             if (text.isNotEmpty()) {
                 Text(
                     text = text,

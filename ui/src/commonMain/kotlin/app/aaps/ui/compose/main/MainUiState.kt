@@ -47,8 +47,10 @@ data class MainUiState(
     val runningModeRecordId: Long = 0, // DB record ID (for scene override detection)
     // Running TBR state for chip (HIGH / LOW / NONE)
     val tbrState: TbrState = TbrState.NONE,
-    // TBR chip text: current rate, plus elapsed/total minutes while a temp basal runs (e.g. "0.90 U/h 4/30m")
+    // TBR chip text: current effective basal rate (e.g. "0.90 U/h")
     val tbrText: String = "",
+    // TBR chip progress: fraction of a running temp basal's duration elapsed (0 = no bar)
+    val tbrProgress: Float = 0f,
     // SMB enabled in APS preferences — drives a small triangle marker on the running-mode chip
     val smbEnabled: Boolean = false,
     // QuickWizard entries for treatment bottom sheet
