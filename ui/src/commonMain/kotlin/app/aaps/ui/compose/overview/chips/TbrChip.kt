@@ -1,15 +1,16 @@
 package app.aaps.ui.compose.overview.chips
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -17,7 +18,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.style.TextOverflow
 import app.aaps.core.interfaces.navigation.ElementType
 import app.aaps.core.interfaces.overview.graph.TbrState
 import app.aaps.core.keys.interfaces.TextRef
@@ -41,37 +42,47 @@ import app.aaps.core.ui.compose.stringResourceOrNull
 fun TbrChip(
     state: TbrState,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    text: String = ""
 ) {
     val iconColor = AapsTheme.elementColors.tempBasal
     val containerColor = iconColor.copy(alpha = 0.2f)
+    val textColor = MaterialTheme.colorScheme.onSurfaceVariant
     val haptic = LocalHapticFeedback.current
 
-    // Disable the clickable Surface's 48dp minimum interactive size so this content-width chip
-    // isn't padded to 48dp and centered, which would inset it from the row's right edge
-    // (same guard IobChip uses).
-    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
-        // Whether a temp basal is running, and which way it goes, was carried ONLY by which of the
-        // three icons was drawn - this chip has no text at all. So it announced "Temp basal" in
-        // every state and a blind user could not tell a running temp basal from none.
-        val tbrState = stringResource(state.toDescription())
-        Surface(
-            onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onClick() },
-            shape = RoundedCornerShape(AapsSpacing.chipCornerRadius),
-            color = containerColor,
-            modifier = modifier
-                .height(AapsSpacing.chipHeight * LocalAapsScale.current)
-                .semantics { stateDescription = tbrState }
+    // Whether a temp basal is running, and which way it goes, is still carried by the icon for a11y
+    // (the text is a visual convenience). The state description keeps "above / below / none profile".
+    val tbrState = stringResource(state.toDescription())
+    Surface(
+        onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onClick() },
+        shape = RoundedCornerShape(AapsSpacing.chipCornerRadius),
+        color = containerColor,
+        modifier = modifier
+            .height(AapsSpacing.chipHeight * LocalAapsScale.current)
+            .semantics { stateDescription = tbrState }
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(horizontal = AapsSpacing.medium)
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.padding(horizontal = AapsSpacing.medium)
-            ) {
-                Icon(
-                    imageVector = state.toIcon(),
-                    contentDescription = stringResourceOrNull(ElementType.TEMP_BASAL.label()),
-                    tint = iconColor,
-                    modifier = Modifier.size(AapsSpacing.chipIconSize)
+            Icon(
+                imageVector = state.toIcon(),
+                contentDescription = stringResourceOrNull(ElementType.TEMP_BASAL.label()),
+                tint = iconColor,
+                modifier = Modifier.size(AapsSpacing.chipIconSize)
+            )
+            // Icon then text: the current basal rate, plus elapsed/total minutes while a temp basal
+            // runs (e.g. "0.90 U/h 4/30m"). Empty text falls back to the icon-only chip.
+            if (text.isNotEmpty()) {
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = textColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(start = AapsSpacing.medium)
                 )
             }
         }

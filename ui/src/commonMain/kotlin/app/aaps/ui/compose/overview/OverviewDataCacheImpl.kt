@@ -760,7 +760,7 @@ class OverviewDataCacheImpl(
     private suspend fun updateTbrFromDatabase() {
         val profile = profileFunction.getProfile()
         if (profile == null) {
-            _tbrFlow.value = TbrDisplayData(TbrState.NONE, 0L, 0L)
+            _tbrFlow.value = TbrDisplayData(TbrState.NONE, 0L, 0L, 0.0)
             return
         }
         val now = dateUtil.now()
@@ -775,10 +775,15 @@ class OverviewDataCacheImpl(
         // converted to TBR (EB-as-TB) won't have a TB row; state is still correct but the
         // ViewModel won't auto-refresh on expiry — the next TB/EB DB event catches it.
         val activeTb = if (state != TbrState.NONE) persistenceLayer.getTemporaryBasalActiveAt(now) else null
+        // Current effective rate: the running TBR absolute rate, or the profile base rate when no TBR
+        // is running. Shown on the chip so the user always sees the rate, with the time only while a
+        // temp basal is active.
+        val rate = if (basalData.isTempBasalRunning) basalData.tempBasalAbsolute else basalData.basal
         _tbrFlow.value = TbrDisplayData(
             state = state,
             timestamp = activeTb?.timestamp ?: 0L,
-            duration = activeTb?.duration ?: 0L
+            duration = activeTb?.duration ?: 0L,
+            rate = rate
         )
     }
 

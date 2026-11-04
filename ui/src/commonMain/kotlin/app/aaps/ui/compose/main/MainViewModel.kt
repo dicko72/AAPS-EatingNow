@@ -267,6 +267,7 @@ class MainViewModel(
             runningModeProgress = chip.runningModeProgress,
             runningModeRecordId = chip.runningModeRecordId,
             tbrState = chip.tbrState,
+            tbrText = chip.tbrText,
             smbEnabled = ev.smbEnabled,
             quickWizardItems = chip.quickWizardItems
         )
@@ -364,6 +365,10 @@ class MainViewModel(
             }
         } else rh.gs(CoreUiStrings.unknown)
 
+        // TBR chip text: the current effective basal rate, e.g. "0.90 U/h" (the running TBR rate, or
+        // the profile base rate when no temp basal is active). Shown beside the icon on the basal chip.
+        val tbrText = if (tbrData == null) "" else rh.gs(CoreUiStrings.pump_base_basal_rate, tbrData.rate)
+
         return ChipState(
             isProfileLoaded = profileData?.isLoaded ?: false,
             profileName = profileText,
@@ -382,6 +387,7 @@ class MainViewModel(
             runningModeProgress = rmProgress,
             runningModeRecordId = if (rmExpired) 0 else rmData?.recordId ?: 0,
             tbrState = if (tbrExpired) TbrState.NONE else tbrData?.state ?: TbrState.NONE,
+            tbrText = tbrText,
             quickWizardItems = computeQuickWizardItems(rmData?.mode)
         )
     }
@@ -1057,5 +1063,6 @@ private data class ChipState(
     val runningModeProgress: Float = 0f,
     val runningModeRecordId: Long = 0,
     val tbrState: TbrState = TbrState.NONE,
+    val tbrText: String = "",
     val quickWizardItems: List<QuickWizardItem> = emptyList()
 )

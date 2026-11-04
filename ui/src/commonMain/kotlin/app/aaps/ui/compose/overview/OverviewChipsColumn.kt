@@ -45,6 +45,7 @@ fun OverviewChipsColumn(
     tempTargetReason: TT.Reason?,
     tempTargetSceneManaged: Boolean = false,
     tbrState: TbrState,
+    tbrText: String = "",
     iobUiState: IobUiState,
     cobUiState: CobUiState,
     sensitivityUiState: SensitivityUiState,
@@ -77,6 +78,7 @@ fun OverviewChipsColumn(
             tempTargetReason = tempTargetReason,
             tempTargetSceneManaged = tempTargetSceneManaged,
             tbrState = tbrState,
+            tbrText = tbrText,
             onNavigate = onNavigate,
             onTbrChipClick = onTbrChipClick,
             commandsAllowed = commandsAllowed
@@ -111,6 +113,7 @@ private fun NarrowChips(
     tempTargetReason: TT.Reason?,
     tempTargetSceneManaged: Boolean,
     tbrState: TbrState,
+    tbrText: String,
     onNavigate: (NavigationRequest) -> Unit,
     onTbrChipClick: () -> Unit,
     commandsAllowed: Boolean
@@ -152,14 +155,18 @@ private fun NarrowChips(
                 state = tempTargetState,
                 progress = tempTargetProgress,
                 reason = tempTargetReason,
+                // Takes all the remaining row width; the basal chip beside it hugs its content.
                 modifier = Modifier.weight(1f),
                 onClick = { onNavigate(NavigationRequest.Element(ElementType.TEMP_TARGET_MANAGEMENT)) },
                 sceneManaged = tempTargetSceneManaged,
                 enabled = commandsAllowed && LocalClientRole.current.allows(ElementType.TEMP_TARGET_MANAGEMENT.role)
             )
         }
+        // Content-width: the chip hugs "icon + rate" so it never steals space from the temp-target
+        // chip's detail. The temp-target chip takes the rest of the row.
         TbrChip(
             state = tbrState,
+            text = tbrText,
             onClick = onTbrChipClick
         )
     }
