@@ -119,5 +119,7 @@
     <string name="eatingnow_plugin_description">Customisable plugin leveraging most recent algorithm</string>
     <string name="eatingnow_plugin_shortname">EN</string>
     <string name="eatingnow_settings">Eating Now settings</string>
+    <string name="eatingnow_section_general">General</string>
+    <string name="eatingnow_section_enw">Eating Now Window</string>
 
 </resources>

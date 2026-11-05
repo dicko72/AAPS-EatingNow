@@ -104,7 +104,7 @@ class BuiltInSearchables(
             ),
 
             BooleanKey.OverviewShowNotesInDialogs,
-            BooleanKey.OverviewShowRecentInsulin,
+            // OverviewShowRecentInsulin moved to the Eating Now settings "Appearance" section.
             StringKey.GeneralDarkMode
         ),
         icon = Icons.Outlined.Palette

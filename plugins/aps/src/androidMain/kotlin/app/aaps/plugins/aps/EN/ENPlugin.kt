@@ -3,6 +3,9 @@ package app.aaps.plugins.aps.EN
 
 import androidx.collection.LongSparseArray
 import androidx.collection.forEach
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Palette
 import app.aaps.core.data.aps.SMBDefaults
 import app.aaps.core.data.model.BS
 import app.aaps.core.data.model.GlucoseUnit
@@ -63,6 +66,7 @@ import app.aaps.core.objects.extensions.plannedRemainingMinutes
 import app.aaps.core.objects.extensions.target
 import app.aaps.core.objects.profile.ProfileSealed
 import app.aaps.core.ui.CoreUiStrings
+import app.aaps.core.ui.compose.icons.IcEatingNow
 import app.aaps.core.ui.compose.icons.IcPluginOpenAPS
 import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.utils.MidnightUtils
@@ -809,28 +813,53 @@ open class ENPlugin(
     override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
         key = "eatingnow_settings",
         title = ApsStrings.eatingnow_settings,
+        // Grouped into collapsible sections (nested subscreens) instead of one long flat list.
         items = listOf(
             // General
-            IntKey.Eatingnow_timestart,
-            IntKey.Eatingnow_timeend,
-            BooleanKey.EatingNow_AutoStart,
-            DoubleKey.Eatingnow_overnightSMB,
-            DoubleKey.Eatingnow_daytimeSMB,
-            BooleanKey.EatingNow_IgnoreCOB,
-            BooleanKey.EatingNow_UseISFscaler,
-            DoubleKey.highBGthreshold,
+            PreferenceSubScreenDef(
+                key = "eatingnow_general",
+                title = ApsStrings.eatingnow_section_general,
+                items = listOf(
+                    IntKey.Eatingnow_timestart,
+                    IntKey.Eatingnow_timeend,
+                    BooleanKey.EatingNow_AutoStart,
+                    DoubleKey.Eatingnow_overnightSMB,
+                    DoubleKey.Eatingnow_daytimeSMB,
+                    BooleanKey.EatingNow_IgnoreCOB,
+                    BooleanKey.EatingNow_UseISFscaler,
+                    DoubleKey.highBGthreshold
+                ),
+                icon = Icons.Default.Settings
+            ),
             // ENW other meals
-            IntKey.Eatingnow_enw_minutes,
-            IntKey.enwProfileScalePct,
-            IntKey.Eatingnow_enw_smb_pct,
-            DoubleKey.Eatingnow_enw_cob_maxbolus,
-            DoubleKey.Eatingnow_enw_uam_maxbolus,
-            DoubleKey.Eatingnow_enw_maxiob,
-            DoubleKey.Eatingnow_enw_prebolus,
-            DoubleKey.Eatingnow_enw_uamplus_maxbolus,
-            BooleanKey.EatingNow_OverrideENWNetIOBMax,
-            DoubleKey.Eatingnow_enw_triggerbolus,
-            DoubleKey.Eatingnow_enw_triggercob
+            PreferenceSubScreenDef(
+                key = "eatingnow_enw",
+                title = ApsStrings.eatingnow_section_enw,
+                items = listOf(
+                    IntKey.Eatingnow_enw_minutes,
+                    IntKey.enwProfileScalePct,
+                    IntKey.Eatingnow_enw_smb_pct,
+                    DoubleKey.Eatingnow_enw_cob_maxbolus,
+                    DoubleKey.Eatingnow_enw_uam_maxbolus,
+                    DoubleKey.Eatingnow_enw_maxiob,
+                    DoubleKey.Eatingnow_enw_prebolus,
+                    DoubleKey.Eatingnow_enw_uamplus_maxbolus,
+                    BooleanKey.EatingNow_OverrideENWNetIOBMax,
+                    DoubleKey.Eatingnow_enw_triggerbolus,
+                    DoubleKey.Eatingnow_enw_triggercob
+                ),
+                icon = IcEatingNow
+            ),
+            // Appearance - EN-specific overview display options. OverviewShowRecentInsulin was
+            // moved here from the main Appearance screen so all EN options live in one place.
+            PreferenceSubScreenDef(
+                key = "eatingnow_appearance",
+                title = CoreUiStrings.appearance,
+                items = listOf(
+                    BooleanKey.OverviewShowRecentInsulin
+                ),
+                icon = Icons.Outlined.Palette
+            )
         ),
         icon = pluginDescription.icon
     )
