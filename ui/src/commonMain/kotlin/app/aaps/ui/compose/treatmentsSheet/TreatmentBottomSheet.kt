@@ -62,6 +62,7 @@ fun TreatmentBottomSheet(
     showCarbs: Boolean,
     showCalculator: Boolean,
     showEatingNow: Boolean,
+    showTreatmentsHistory: Boolean,
     isDexcomSource: Boolean,
     showSettingsIcon: Boolean,
     // QuickWizard
@@ -96,6 +97,7 @@ fun TreatmentBottomSheet(
                 showCarbs = showCarbs,
                 showCalculator = showCalculator,
                 showEatingNow = showEatingNow,
+                showTreatmentsHistory = showTreatmentsHistory,
                 isDexcomSource = isDexcomSource,
                 showSettingsIcon = showSettingsIcon,
                 onSettingsClick = { showSettings = true }
@@ -119,6 +121,7 @@ internal fun TreatmentSelectionContent(
     showCarbs: Boolean,
     showCalculator: Boolean,
     showEatingNow: Boolean,
+    showTreatmentsHistory: Boolean,
     isDexcomSource: Boolean,
     showSettingsIcon: Boolean,
     onSettingsClick: () -> Unit
@@ -296,6 +299,17 @@ internal fun TreatmentSelectionContent(
                 disabledAlpha = disabledAlpha,
                 onDismiss = onDismiss,
                 onClick = { onNavigate(NavigationRequest.Element(ElementType.EATING_NOW)) }
+            )
+        }
+
+        // Treatments history (opens the same screen as the main menu entry; same icon and text)
+        if (showTreatmentsHistory) {
+            TreatmentItem(
+                elementType = ElementType.TREATMENTS,
+                enabled = true,
+                disabledAlpha = disabledAlpha,
+                onDismiss = onDismiss,
+                onClick = { onNavigate(NavigationRequest.Element(ElementType.TREATMENTS)) }
             )
         }
     }

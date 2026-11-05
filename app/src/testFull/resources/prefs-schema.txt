@@ -436,6 +436,7 @@ show_cgm_button|BooleanKey|true
 show_insulin_button|BooleanKey|true
 show_notes_entry_dialogs|BooleanKey|true
 show_treatment_button|BooleanKey|true
+show_treatments_history_button|BooleanKey|true
 show_wizard_button|BooleanKey|true
 simple_mode|BooleanKey|true
 site_rotation_manage_cgm|BooleanKey|true

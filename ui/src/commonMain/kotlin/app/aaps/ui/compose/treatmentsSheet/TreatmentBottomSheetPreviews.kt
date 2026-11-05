@@ -23,6 +23,7 @@ internal fun TreatmentBottomSheetPreview() {
             showCarbs = true,
             showCalculator = true,
             showEatingNow = true,
+            showTreatmentsHistory = true,
             isDexcomSource = false,
             showSettingsIcon = true,
             onSettingsClick = {}

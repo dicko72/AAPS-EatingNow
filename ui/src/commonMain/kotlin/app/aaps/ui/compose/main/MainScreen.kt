@@ -520,6 +520,7 @@ fun MainScreen(
             showCarbs = treatmentState.showCarbs,
             showCalculator = treatmentState.showCalculator,
             showEatingNow = treatmentState.showEatingNow,
+            showTreatmentsHistory = treatmentState.showTreatmentsHistory,
             isDexcomSource = treatmentState.isDexcomSource,
             showSettingsIcon = treatmentState.showSettingsIcon,
             quickWizardItems = treatmentState.quickWizardItems,

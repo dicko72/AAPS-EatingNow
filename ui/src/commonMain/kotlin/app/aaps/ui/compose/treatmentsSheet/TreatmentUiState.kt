@@ -17,6 +17,8 @@ data class TreatmentUiState(
     val showCalculator: Boolean = true,
     // Eating Now entry — shown only when the Eating Now plugin is the active APS.
     val showEatingNow: Boolean = false,
+    // Treatments history entry — opens the same screen as the main menu entry.
+    val showTreatmentsHistory: Boolean = false,
 
     // Source info
     val isDexcomSource: Boolean = false,

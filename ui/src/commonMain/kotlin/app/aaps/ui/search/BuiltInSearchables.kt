@@ -293,7 +293,8 @@ class BuiltInSearchables(
             BooleanKey.OverviewShowTreatmentButton,
             BooleanKey.OverviewShowInsulinButton,
             BooleanKey.OverviewShowCarbsButton,
-            BooleanKey.OverviewShowWizardButton
+            BooleanKey.OverviewShowWizardButton,
+            BooleanKey.OverviewShowTreatmentsHistoryButton
         ),
         icon = IcBolus
     )

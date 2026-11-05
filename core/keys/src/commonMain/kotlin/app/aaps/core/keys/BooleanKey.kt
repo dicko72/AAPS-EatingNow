@@ -48,6 +48,7 @@ enum class BooleanKey(
     ),
     OverviewShowTreatmentButton(key = "show_treatment_button", defaultValue = false, title = KeysStrings.pref_title_show_treatment_button, defaultedBySM = true),
     OverviewShowWizardButton(key = "show_wizard_button", defaultValue = true, title = KeysStrings.pref_title_show_wizard_button, defaultedBySM = true),
+    OverviewShowTreatmentsHistoryButton(key = "show_treatments_history_button", defaultValue = false, title = KeysStrings.pref_title_show_treatments_history_button, defaultedBySM = true),
     OverviewShowInsulinButton(key = "show_insulin_button", defaultValue = true, title = KeysStrings.pref_title_show_insulin_button, defaultedBySM = true),
     OverviewShowCarbsButton(key = "show_carbs_button", defaultValue = true, title = KeysStrings.pref_title_show_carbs_button, defaultedBySM = true),
     OverviewShowCgmButton(key = "show_cgm_button", defaultValue = false, title = KeysStrings.pref_title_show_cgm_button, summary = KeysStrings.pref_summary_show_cgm_button, defaultedBySM = true, showInNsClientMode = false),

@@ -86,6 +86,7 @@ class TreatmentViewModel(
             preferences.observe(BooleanKey.OverviewShowInsulinButton).drop(1).map {},
             preferences.observe(BooleanKey.OverviewShowCarbsButton).drop(1).map {},
             preferences.observe(BooleanKey.OverviewShowWizardButton).drop(1).map {},
+            preferences.observe(BooleanKey.OverviewShowTreatmentsHistoryButton).drop(1).map {},
             preferences.observe(BooleanKey.GeneralSimpleMode).drop(1).map {},
             // QuickWizard entries changed (local edit or synced from the main phone).
             quickWizard.changes.drop(1).map {},
@@ -114,6 +115,7 @@ class TreatmentViewModel(
             // The Eating Now entry only does anything when the Eating Now plugin is the running APS, so it is
             // offered only then. Detected by simple name to avoid a dependency on the plugin module.
             val showEatingNow = activePlugin.activeAPS?.let { it::class.simpleName == "ENPlugin" } == true
+            val showTreatmentsHistory = preferences.get(BooleanKey.OverviewShowTreatmentsHistoryButton)
 
             val showSettingsIcon = !preferences.simpleMode
 
@@ -126,6 +128,7 @@ class TreatmentViewModel(
                     showCarbs = showCarbs,
                     showCalculator = showCalculator,
                     showEatingNow = showEatingNow,
+                    showTreatmentsHistory = showTreatmentsHistory,
                     isDexcomSource = isDexcomSource,
                     quickWizardItems = quickWizardItems,
                     showSettingsIcon = showSettingsIcon
