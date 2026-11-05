@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import app.aaps.core.interfaces.aps.APS
 import app.aaps.core.interfaces.aps.AutosensResult
 import app.aaps.core.interfaces.aps.CurrentTemp
+import app.aaps.core.interfaces.aps.ENConfig
 import app.aaps.core.interfaces.aps.GlucoseStatus
 import app.aaps.core.interfaces.aps.IobTotal
 import app.aaps.core.interfaces.aps.MealData
@@ -154,6 +155,16 @@ class OpenAPSViewModel(
                     OpenAPSSection(
                         title = ApsStrings.openapsma_meal_data_label,
                         rows = md.toRows()
+                    )
+                )
+            }
+
+            // Eating Now variables (only present when the Eating Now plugin produced the result)
+            lastAPSResult.enConfig?.let { en ->
+                add(
+                    OpenAPSSection(
+                        title = ApsStrings.openapsma_eatingnow_variables_label,
+                        rows = en.toRows()
                     )
                 )
             }
@@ -367,6 +378,48 @@ class OpenAPSViewModel(
         add(KeyValueRow("lastBolusTime", if (lastBolusTime > 0) dateUtil.dateAndTimeString(lastBolusTime) else "0"))
         add(KeyValueRow("lastCarbTime", if (lastCarbTime > 0) dateUtil.dateAndTimeString(lastCarbTime) else "0"))
         add(KeyValueRow("usedMinCarbsImpact", usedMinCarbsImpact.toString()))
+    }
+
+    private fun timeOrNull(time: Long?): String =
+        if (time != null && time > 0) dateUtil.dateAndTimeString(time) else "null"
+
+    private fun ENConfig.toRows(): List<KeyValueRow> = buildList {
+        // General
+        add(KeyValueRow("ENTimeStart", timeOrNull(ENTimeStart)))
+        add(KeyValueRow("ENTimeEnd", timeOrNull(ENTimeEnd)))
+        add(KeyValueRow("ENActive", ENActive.toString()))
+        add(KeyValueRow("AutoStartEN", AutoStartEN.toString()))
+        add(KeyValueRow("OvernightSMBRestrict", OvernightSMBRestrict.toString()))
+        add(KeyValueRow("DaytimeSMBRestrict", DaytimeSMBRestrict.toString()))
+        add(KeyValueRow("IgnoreCOB", IgnoreCOB.toString()))
+        add(KeyValueRow("SafetyMaxBolus", SafetyMaxBolus.toString()))
+        add(KeyValueRow("useISFscaler", useISFscaler.toString()))
+        add(KeyValueRow("highBGthreshold", highBGthreshold.toString()))
+        add(KeyValueRow("netIOBSinceHigh", netIOBSinceHigh.toString()))
+        add(KeyValueRow("minutesHigh", minutesHigh.toString()))
+        add(KeyValueRow("pastPeakAgoMins", pastPeakAgoMins.toString()))
+        add(KeyValueRow("pastPeakActivity", pastPeakActivity.toString()))
+        add(KeyValueRow("insulinPeakMins", insulinPeakMins.toString()))
+        add(KeyValueRow("normalTargetBG", normalTargetBG.toString()))
+        // ENW (Eating Now Window)
+        add(KeyValueRow("ENWfirstMeal", ENWfirstMeal.toString()))
+        add(KeyValueRow("ENWActive", ENWActive?.name ?: "null"))
+        add(KeyValueRow("ENWStartTime", timeOrNull(ENWStartTime)))
+        add(KeyValueRow("ENWEndTime", timeOrNull(ENWEndTime)))
+        add(KeyValueRow("ENWRunTime", ENWRunTime.toString()))
+        add(KeyValueRow("ENWDuration", ENWDuration.toString()))
+        add(KeyValueRow("enwProfileScalePct", enwProfileScalePct.toString()))
+        add(KeyValueRow("ENWcobMaxbolus", ENWcobMaxbolus.toString()))
+        add(KeyValueRow("ENWuamMaxbolus", ENWuamMaxbolus.toString()))
+        add(KeyValueRow("ENWNetIOB", ENWNetIOB.toString()))
+        add(KeyValueRow("ENWNetIOBMax", ENWNetIOBMax.toString()))
+        add(KeyValueRow("ENWNetIOBRemaining", ENWNetIOBRemaining.toString()))
+        add(KeyValueRow("ENWprebolus", ENWprebolus.toString()))
+        add(KeyValueRow("ENWsmbPct", ENWsmbPct.toString()))
+        add(KeyValueRow("ENWuamPlusMaxbolus", ENWuamPlusMaxbolus.toString()))
+        add(KeyValueRow("OverrideENWNetIOBMax", OverrideENWNetIOBMax.toString()))
+        add(KeyValueRow("ENWBolusTrigger", ENWBolusTrigger.toString()))
+        add(KeyValueRow("ENWCOBTrigger", ENWCOBTrigger.toString()))
     }
 
     private fun AutosensResult.toRows(): List<KeyValueRow> = buildList {
