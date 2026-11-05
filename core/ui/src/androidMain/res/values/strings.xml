@@ -511,7 +511,7 @@
     <string name="treatment_insulin_desc">Deliver bolus manually</string>
     <string name="treatment_carbs_desc">Record carbs without insulin</string>
     <string name="treatment_calculator_desc">Calculate bolus</string>
-    <string name="treatment_eating_now_desc">Open the Eating Now window</string>
+    <string name="treatment_eating_now_desc">Start Eating Now Window</string>
     <string name="eatingnow_prebolus_exceeds_iob">Prebolus cannot be larger than the ENW-IOB limit</string>
     <string name="eatingnow_enw_iob_label">ENW-IOB limit</string>
     <string name="eatingnow_use_prebolus">Use prebolus</string>
