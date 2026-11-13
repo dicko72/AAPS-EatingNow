@@ -443,8 +443,11 @@ class DetermineBasalEN(
         // a genuine descent flips shortAvgDelta negative within 2–3 readings anyway.
         val isNotFalling = glucose_status.shortAvgDelta >= -2.0
 
-        // stuck high: high + plateaued + not falling. peakPassed covers the "insulin has had its chance" gate separately.
-        val isStuckHigh = highBGthresholdActive && isNotFalling && isShortTermStable && enConfig.minutesHigh > 30
+        // Over the last ~40 minutes BG has not been falling either. A pause in a fall is not a stuck high.
+        val isNotFallingLongTerm = glucose_status.longAvgDelta >= -2.0
+
+        // stuck high: high + plateaued + not falling now + not falling over the last ~40 minutes.
+        val isStuckHigh = highBGthresholdActive && isNotFalling && isNotFallingLongTerm && isShortTermStable && enConfig.minutesHigh > 30
 
         // Prebolus amounts
         val remainingPrebolus = round((enConfig.ENWprebolus - enConfig.ENWNetIOB).coerceAtLeast(0.0) ,1)// remaining prebolus
@@ -889,18 +892,21 @@ class DetermineBasalEN(
 
         // variables for allowing some overrides
         val resistanceGain = (1.0 + 0.20 * (enConfig.minutesHigh / 60.0)).coerceIn(1.0, profile.autosens_max)
-        val highRangeHours = enConfig.insulinPeakMins * 3 / 2 / 60.0   // = highRangeMins in hours ≈ 1.87 for Novorapid peak 75
-        val resistanceMaxIOB = when {
-            ENActive -> profile.current_basal * highRangeHours * resistanceGain   // ≈ basal × resistance time
-            else     -> profile.current_basal * highRangeHours * resistanceGain * 0.8              // overnight tighter (≈ basal × 1.5)
-        }
-        val resistanceBudgetUsed = max(0.0, enConfig.netIOBSinceHigh)
-        val resistanceBudgetLeft = max(0.0, resistanceMaxIOB - resistanceBudgetUsed)
-        //rT.reason.append("* debug: cap ${round(resistanceBudgetLeft,2)}/${round(resistanceMaxIOB,2)} gain ${round(resistanceGain,2)} * ")
+        val highRangeHours = enConfig.insulinPeakMins * 3 / 2 / 60.0   // 1.5 × insulin peak, in hours ≈ 1.87 for Novorapid peak 75
+        // Resistance IOB cap. The budget is compared with insulin on board, not with recent delivery,
+        // so a zero temp cannot refund it and repeated doses cannot stack past it.
+        // IOB that a plain correction to target needs. Uses the weaker ISF, so the cap assumes insulin works fully.
+        val correctionIOB = max(0.0, bg - max(target_bg, enConfig.normalTargetBG)) / max(sens, profile.sens)
+        // Extra IOB accepted above that: about what a zero temp can take back. Smaller overnight (EN off).
+        // resistanceGain does not raise it: the gain only makes dosing faster.
+        val resistanceBudget = profile.current_basal * (if (ENActive) highRangeHours else 1.0)
+        val resistanceBudgetUsed = max(0.0, iob_data.iob - correctionIOB)   // IOB above a plain correction
+        val resistanceBudgetLeft = max(0.0, resistanceBudget - resistanceBudgetUsed)
         val isBasalDeficit = resistanceBudgetLeft > 0.0
         val isHighTempSet = profile.temptargetSet && target_bg > enConfig.normalTargetBG
         val isAuthorisedMealRise = ENWActive && !isHighTempSet && (UAMplusConfidence || isPrebolusing || deltaFastUp)
-        val isAuthorisedResistance = isStuckHigh && isBasalDeficit && !isHighTempSet && !ENWActive && peakPassed
+        // No peak gate here: the IOB cap above is what limits resistance dosing.
+        val isAuthorisedResistance = isStuckHigh && isBasalDeficit && !isHighTempSet && !ENWActive
 
         // The predictions above are clamped to [39, 401], but a non-finite tick escapes that clamp
         // and reaches here. rT.eventualBG is stored and uploaded, and predBGs are written with
@@ -981,7 +987,7 @@ class DetermineBasalEN(
         //console.error(minCOBGuardBG, minUAMGuardBG, minIOBGuardBG, minGuardBG);
 
         // EN-trusted guard, mirroring minPredBGEN: while genuinely stuck-high with budget unused
-        // (net deficit since high), a low prediction is deviation/UAM fiction — lift the guard to the
+        // (IOB not above a plain correction), a low prediction is deviation/UAM fiction — lift the guard to the
         // least-pessimistic real sub-prediction. Gated on budget; never applied to an actual low.
         val minGuardBGEN = if (isAuthorisedResistance && resistanceBudgetUsed <= 0.0)
             max(minGuardBG, round(max(minIOBGuardBG, minUAMGuardBG), 0))
@@ -1068,6 +1074,9 @@ class DetermineBasalEN(
             else -> min(minPredBG, eventualBG)
         }
 
+        // The strongest ISF any EN scaling may reach
+        val minSafeIsf = profile.sens * 0.4
+
         // ISF Scaling similar to dynamic ISF but using profile target BG ISF as the anchor
         if (useISFscaler && !isHighTempSet) {
             // Prevent divide-by-zero or math errors with extremely low BGs
@@ -1085,16 +1094,14 @@ class DetermineBasalEN(
             future_sens = baseAdaptiveISF
 
             // Prevent the algorithm from giving you too much or too little insulin
-            val minSafeIsf = profile.sens * 0.4
             val maxSafeIsf = profile.sens * 1.5
 
             future_sens = future_sens.coerceIn(minSafeIsf, maxSafeIsf)
             future_sens = round(future_sens, 1)
         }
 
-        // make ISF stronger when resistant and ENActive
-        // if (isAuthorisedResistance && ENActive) future_sens /= resistanceGain
-        if (isAuthorisedResistance) future_sens = min(sens, future_sens) / resistanceGain
+        // make ISF stronger when resistant, but never stronger than the safe floor
+        if (isAuthorisedResistance) future_sens = max(min(sens, future_sens) / resistanceGain, minSafeIsf)
 
 
         consoleLog.add("minPredBG: $minPredBG minIOBPredBG: $minIOBPredBG minZTGuardBG: $minZTGuardBG")
@@ -1468,10 +1475,12 @@ class DetermineBasalEN(
                 topAsk = max(topAsk, remainingPrebolus)
             }
 
-            // Resistance is metered: never request more than the remaining integral budget.
-            // Total extra insulin per high episode is bounded by owedSinceHigh — stacking-proof by construction.
+            // Resistance is metered: never request more than the room left under the resistance IOB cap.
+            // The cap is on insulin on board, so repeated requests cannot stack past it.
+            // Inside a declared window the ENW-IOB stake is the meter (the prebolus IOB is there on purpose),
+            // so a stuck high there only limits the size of one request.
             if (isStuckHigh || !ENWActive) {   // meter everything outside a declared window; declared meals (ENWActive) dose full
-                insulinReq = min(insulinReq, resistanceBudgetLeft)
+                insulinReq = min(insulinReq, if (ENWActive) resistanceBudget else resistanceBudgetLeft)
                 insulinReq = max(insulinReq, insulinReqOrig)
             }
 
@@ -1491,12 +1500,9 @@ class DetermineBasalEN(
             }
 
             // rate required to deliver insulinReq more insulin over 30m:
-            // isAuthorisedMealRise or isAuthorisedResistance allows the rate to deliver insulinReq more insulin over 15m
-            var basalRateMultiplier = when {
-                isAuthorisedMealRise -> 4.0
-                isAuthorisedResistance && ENActive    -> 4.0 * resistanceGain   // faster + escalating TBR for stuck highs
-                else                                  -> 2.0
-            }
+            // isAuthorisedMealRise allows the rate to deliver insulinReq more insulin over 15m.
+            // Resistance keeps the 30m rule: if the loop stops running, the temp gives insulinReq and no more.
+            val basalRateMultiplier = if (isAuthorisedMealRise) 4.0 else 2.0
             var rate = basal + (basalRateMultiplier * insulinReq)
 
             // TBR cannot exceed ENWNetIOBMax
@@ -1511,14 +1517,14 @@ class DetermineBasalEN(
             // plain baseline correction.
             //   • a hard ceiling (Max IOB / ENW IOB) bound the dose → name it, it's the binding limit; else
             //   • stuck high outside a meal → the resistance context: duration, budget used/cap, ISF gain as a %
-            //     (factual — budget may still have room, so no "over budget" claim); else
+            //     (used = IOB above a plain correction; factual — budget may still have room, so no "over budget" claim); else
             //   • a driver delivered above baseline → name it; else nothing.
             val addl = round(insulinReq - baselineReq, 2)     // extra delivered over the plain baseline correction
             val withheld = round(topAsk - insulinReq, 2)      // how much the binding cap held back
             changeReason = when {
                 restraint.isNotEmpty() && withheld > 0.05 -> "$restraint capped"   // Max IOB capped / ENW IOB capped
                 enConfig.minutesHigh > 0 && !ENWActive ->
-                    "Resistance ${enConfig.minutesHigh}m, budget (${round(resistanceBudgetUsed, 2)}/${round(resistanceMaxIOB, 2)}U) ISF ${round(resistanceGain * 100)}%"
+                    "Resistance ${enConfig.minutesHigh}m, budget (${round(resistanceBudgetUsed, 2)}/${round(resistanceBudget, 2)}U) ISF ${round(resistanceGain * 100)}%"
                 addl > 0.05 -> if (driverLabel == "High") "High correction" else driverLabel
                 else        -> "No change"           // dose matches the plain baseline correction
             }

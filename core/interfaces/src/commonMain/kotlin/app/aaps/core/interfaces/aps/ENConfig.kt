@@ -19,7 +19,6 @@ data class ENConfig(
     var SafetyMaxBolus: Double,
     var useISFscaler: Boolean,
     var highBGthreshold: Double,
-    var netIOBSinceHigh: Double,
     var minutesHigh: Int,
     var pastPeakAgoMins: Int,
     var pastPeakActivity: Double,

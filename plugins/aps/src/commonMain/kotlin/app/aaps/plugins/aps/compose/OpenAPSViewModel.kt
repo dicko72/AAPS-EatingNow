@@ -395,7 +395,6 @@ class OpenAPSViewModel(
         add(KeyValueRow("SafetyMaxBolus", SafetyMaxBolus.toString()))
         add(KeyValueRow("useISFscaler", useISFscaler.toString()))
         add(KeyValueRow("highBGthreshold", highBGthreshold.toString()))
-        add(KeyValueRow("netIOBSinceHigh", netIOBSinceHigh.toString()))
         add(KeyValueRow("minutesHigh", minutesHigh.toString()))
         add(KeyValueRow("pastPeakAgoMins", pastPeakAgoMins.toString()))
         add(KeyValueRow("pastPeakActivity", pastPeakActivity.toString()))
