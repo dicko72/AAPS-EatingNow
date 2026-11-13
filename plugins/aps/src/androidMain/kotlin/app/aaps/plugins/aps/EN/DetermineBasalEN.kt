@@ -1618,17 +1618,15 @@ class DetermineBasalEN(
                     smbLowTempReq = round(basal * durationReq / 30.0, 2)
                     durationReq = 30
                 }
+
                 // show insulinReq original value with actual restricted
-                // (suppressed for resistance, whose • EN: note already conveys this; kept otherwise)
-                if (!isAuthorisedResistance) {
-                    rT.reason.apply {
-                        append(" insulinReq ")
-                        if (insulinReqOrig != insulinReq) append(insulinReqOrig).append("U=")
-                        if (insulinReqENW != insulinReq) append(insulinReqENW).append("U=")
-                        append(insulinReq).append('U')
-                    }
-                    // iReqBG is now shown earlier (on every dosing cycle where EN raised the dosing BG)
+                rT.reason.apply {
+                    append(" insulinReq ")
+                    if (insulinReqOrig != insulinReq) append(insulinReqOrig).append("U→")
+                    if (insulinReqENW != insulinReq) append(insulinReqENW).append("U→")
+                    append(insulinReq).append('U')
                 }
+
                 if (microBolus >= maxBolus || maxBolus > maxBolusAAPS) { // if the maxBolus has increased due to EN
                     rT.reason.append("; $ENmaxBolusType maxBolus $maxBolus")
                 }
