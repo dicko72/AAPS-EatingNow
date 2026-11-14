@@ -1479,7 +1479,8 @@ class DetermineBasalEN(
             // The cap is on insulin on board, so repeated requests cannot stack past it.
             // Inside a declared window the ENW-IOB stake is the meter (the prebolus IOB is there on purpose),
             // so a stuck high there only limits the size of one request.
-            if (isStuckHigh || !ENWActive) {   // meter everything outside a declared window; declared meals (ENWActive) dose full
+            // A prebolus is never metered here: the user chose the amount, and BG is often high before a meal.
+            if ((isStuckHigh || !ENWActive) && !isPrebolusing) {   // meter everything outside a declared window; declared meals (ENWActive) dose full
                 insulinReq = min(insulinReq, if (ENWActive) resistanceBudget else resistanceBudgetLeft)
                 insulinReq = max(insulinReq, insulinReqOrig)
             }
@@ -1502,8 +1503,10 @@ class DetermineBasalEN(
             // rate required to deliver insulinReq more insulin over 30m:
             // isAuthorisedMealRise allows the rate to deliver insulinReq more insulin over 15m.
             // Resistance keeps the 30m rule: if the loop stops running, the temp gives insulinReq and no more.
+            // While prebolusing the SMB gives the whole dose. The temp stays at profile basal,
+            // so it does not add insulin on top of the prebolus the user chose.
             val basalRateMultiplier = if (isAuthorisedMealRise) 4.0 else 2.0
-            var rate = basal + (basalRateMultiplier * insulinReq)
+            var rate = if (isPrebolusing) basal else basal + (basalRateMultiplier * insulinReq)
 
             // TBR cannot exceed ENWNetIOBMax
             if (ENWActive && enConfig.ENWNetIOBMax > 0)
