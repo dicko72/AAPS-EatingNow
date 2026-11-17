@@ -1179,6 +1179,9 @@ class DetermineBasalEN(
         // Eating Now Reason
         rT.reason.append("EN: ${if (enConfig.ENActive) "On" else "Off"}, ") // Base EN state
 
+        // Phone steps since the EN start time (only when step counting is on and inside the EN hours)
+        enConfig.stepsSinceStart?.let { rT.reason.append(if (it < 0) "Steps: n/a, " else "Steps: $it, ") }
+
         // Determine the ENW status string
         val enwStatus = when {
             ENWActive -> "On ${enConfig.ENWRunTime}/${enConfig.ENWDuration}m @ ${enConfig.enwProfileScalePct}x"
@@ -1475,8 +1478,10 @@ class DetermineBasalEN(
                 topAsk = max(topAsk, remainingPrebolus)
             }
 
-            // Resistance is metered: never request more than the room left under the resistance IOB cap.
+            // Resistance is metered: EN's own extra dosing never goes past the room left under the resistance IOB cap.
             // The cap is on insulin on board, so repeated requests cannot stack past it.
+            // The cap limits only what EN adds: the second line puts back the plain AAPS request (insulinReqOrig),
+            // so the result is never below what conservative AAPS asks for.
             // Inside a declared window the ENW-IOB stake is the meter (the prebolus IOB is there on purpose),
             // so a stuck high there only limits the size of one request.
             // A prebolus is never metered here: the user chose the amount, and BG is often high before a meal.

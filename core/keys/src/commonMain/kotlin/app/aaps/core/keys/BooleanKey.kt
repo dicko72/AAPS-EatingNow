@@ -292,6 +292,7 @@ enum class BooleanKey(
     EatingNow_IgnoreCOB(key = "IgnoreCOB", defaultValue = false, title = KeysStrings.EatingNow_IgnoreCOB_title, summary = KeysStrings.EatingNow_IgnoreCOB_summary, hideParentScreenIfHidden = true),
     EatingNow_UseISFscaler(key = "UseISFscaler", defaultValue = false, title = KeysStrings.EatingNow_useISFscaler_title, summary = KeysStrings.EatingNow_useISFscaler_summary, hideParentScreenIfHidden = true),
     EatingNow_AutoStart(key = "AutostartEN", defaultValue = false, title = KeysStrings.EatingNow_AutoStart_title, summary = KeysStrings.EatingNow_AutoStart_summary, hideParentScreenIfHidden = true),
+    EatingNow_PhoneSteps(key = "EatingNow_PhoneSteps", defaultValue = false, title = KeysStrings.EatingNow_PhoneSteps_title, summary = KeysStrings.EatingNow_PhoneSteps_summary, hideParentScreenIfHidden = true),
     EatingNow_OverrideENWNetIOBMax(key = "EatingNow_OverrideENWNetIOBMax", defaultValue = false, title = KeysStrings.EatingNow_OverrideENWNetIOBMax_title, summary = KeysStrings.EatingNow_OverrideENWNetIOBMax_summary, hideParentScreenIfHidden = true),
 
     ;

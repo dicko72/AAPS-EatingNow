@@ -1,6 +1,8 @@
 // Modified for Eating Now
 package app.aaps.plugins.aps.EN
 
+import android.Manifest
+import android.os.Build
 import androidx.collection.LongSparseArray
 import androidx.collection.forEach
 import androidx.compose.material.icons.Icons
@@ -38,6 +40,7 @@ import app.aaps.core.interfaces.notifications.NotificationId
 import app.aaps.core.interfaces.notifications.NotificationLevel
 import app.aaps.core.interfaces.notifications.NotificationManager
 import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.plugin.PermissionGroup
 import app.aaps.core.interfaces.plugin.PluginBaseWithPreferences
 import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.profile.EffectiveProfile
@@ -115,6 +118,7 @@ open class ENPlugin(
     private val profiler: Profiler,
     private val glucoseStatusCalculatorSMB: GlucoseStatusCalculatorSMB,
     private val ch: ConcentrationHelper, // Modified for Eating Now: 4.0 insulin-concentration conversion
+    private val phoneStepCounter: PhoneStepCounter,
     private val apsResultProvider: () -> APSResult
 ) : PluginBaseWithPreferences(
     PluginDescription()
@@ -151,6 +155,21 @@ open class ENPlugin(
         }
         aapsLogger.debug(LTag.APS, "Loaded $count variable sensitivity values from database")
     }
+
+    override suspend fun onStop() {
+        phoneStepCounter.stop()
+        super.onStop()
+    }
+
+    // The step counter needs "physical activity" from Android 10. Asked only when step counting is on.
+    override fun requiredPermissions(): List<PermissionGroup> =
+        if (preferences.get(BooleanKey.EatingNow_PhoneSteps) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) listOf(
+            PermissionGroup(
+                permissions = listOf(Manifest.permission.ACTIVITY_RECOGNITION),
+                rationaleTitle = ApsStrings.eatingnow_permission_steps_title,
+                rationaleDescription = ApsStrings.eatingnow_permission_steps_description,
+            )
+        ) else emptyList()
 
     // last values
     override var lastAPSRun: Long = 0
@@ -428,6 +447,21 @@ open class ENPlugin(
         val ENTimeOK = now >= EatingNowTimeStart && now < EatingNowTimeEnd
         val AutoStartEN = preferences.get(BooleanKey.EatingNow_AutoStart)
 
+        // Phone steps since the EN start time, shown in the reason. -1 = on, but the counter cannot run
+        // (no permission or no step sensor). null = off, or outside the EN hours.
+        val stepsSinceStart: Int? = if (preferences.get(BooleanKey.EatingNow_PhoneSteps)) {
+            phoneStepCounter.start()
+            phoneStepCounter.flush(now)
+            when {
+                !phoneStepCounter.isRunning -> -1
+                ENTimeOK                    -> phoneStepCounter.stepsSince(EatingNowTimeStart, now)
+                else                        -> null
+            }
+        } else {
+            phoneStepCounter.stop()
+            null
+        }
+
         // Eating Now Treatments to trigger ENW and Start EN
         val todaysENTargets = persistenceLayer.getENTemporaryTargetsFromTime(EatingNowTimeStart, true)
 
@@ -682,7 +716,8 @@ open class ENPlugin(
             ENWuamPlusMaxbolus = max(Round.roundTo(preferences.get(DoubleKey.Eatingnow_enw_uamplus_maxbolus), 0.01), 0.0),
             OverrideENWNetIOBMax =  preferences.get(BooleanKey.EatingNow_OverrideENWNetIOBMax),
             ENWBolusTrigger = ENWBolusTrigger,
-            ENWCOBTrigger = ENWCOBTrigger
+            ENWCOBTrigger = ENWCOBTrigger,
+            stepsSinceStart = stepsSinceStart
         )
 
         val microBolusAllowed = constraintsChecker.isSMBModeEnabled(ConstraintObject(tempBasalFallback.not(), aapsLogger)).also { inputConstraints.copyReasons(it) }.value()
@@ -815,6 +850,7 @@ open class ENPlugin(
                     IntKey.Eatingnow_timestart,
                     IntKey.Eatingnow_timeend,
                     BooleanKey.EatingNow_AutoStart,
+                    BooleanKey.EatingNow_PhoneSteps,
                     DoubleKey.Eatingnow_overnightSMB,
                     DoubleKey.Eatingnow_daytimeSMB,
                     BooleanKey.EatingNow_IgnoreCOB,

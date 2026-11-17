@@ -122,5 +122,7 @@
     <string name="eatingnow_settings">Eating Now settings</string>
     <string name="eatingnow_section_general">General</string>
     <string name="eatingnow_section_enw">Eating Now Window</string>
+    <string name="eatingnow_permission_steps_title">Physical activity</string>
+    <string name="eatingnow_permission_steps_description">Eating Now counts phone steps to see when you are up in the morning.</string>
 
 </resources>

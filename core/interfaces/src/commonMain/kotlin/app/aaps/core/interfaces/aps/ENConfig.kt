@@ -43,7 +43,10 @@ data class ENConfig(
     var ENWuamPlusMaxbolus: Double,
     var OverrideENWNetIOBMax: Boolean,
     var ENWBolusTrigger: Double,
-    var ENWCOBTrigger: Double
+    var ENWCOBTrigger: Double,
+
+    // Phone steps since the EN start time. null when step counting is off or outside the EN hours.
+    var stepsSinceStart: Int? = null
 
 
     // Outside ENW
