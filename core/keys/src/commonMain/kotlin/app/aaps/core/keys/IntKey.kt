@@ -455,6 +455,7 @@ enum class IntKey(
     Eatingnow_timestart(key = "eatingnow_timestart", defaultValue = 9, min = 0, max = 23, title = KeysStrings.eatingnow_timestart_title, summary = KeysStrings.eatingnow_timestart_summary, unitType = UnitType.HOUR_OF_DAY),
     Eatingnow_timeend(key = "eatingnow_timeend", defaultValue = 17, min = 0, max = 23, title = KeysStrings.eatingnow_timeend_title, summary = KeysStrings.eatingnow_timeend_summary, unitType = UnitType.HOUR_OF_DAY),
     // ENW other Meals
+    Eatingnow_steps_start(key = "Eatingnow_steps_start", defaultValue = 0, min = 0, max = 5000, title = KeysStrings.Eatingnow_steps_start_title, summary = KeysStrings.Eatingnow_steps_start_summary),
     Eatingnow_enw_minutes(key = "Eatingnow_enw_minutes", defaultValue = 15, min = 0, max = 120, title = KeysStrings.Eatingnow_enw_minutes_title, summary = KeysStrings.Eatingnow_enw_minutes_summary),
     enwProfileScalePct(key = "enwProfileScalePct", defaultValue = 100, min = 100, max = 200, title = KeysStrings.enwProfileScalePct_title, summary = KeysStrings.enwProfileScalePct_summary, defaultedBySM = true),
     Eatingnow_enw_smb_pct(key = "Eatingnow_enw_smb_pct", defaultValue = 100, min = 1, max = 100, title = KeysStrings.Eatingnow_enw_smb_pct_title),

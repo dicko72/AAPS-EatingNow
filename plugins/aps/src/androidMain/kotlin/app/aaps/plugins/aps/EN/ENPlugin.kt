@@ -447,15 +447,19 @@ open class ENPlugin(
         val ENTimeOK = now >= EatingNowTimeStart && now < EatingNowTimeEnd
         val AutoStartEN = preferences.get(BooleanKey.EatingNow_AutoStart)
 
-        // Phone steps since the EN start time, shown in the reason. -1 = on, but the counter cannot run
-        // (no permission or no step sensor). null = off, or outside the EN hours.
+        // Phone steps, counted from the most recent EN start time and shown in the reason all day.
+        // -1 = on, but the counter cannot run (no permission or no step sensor). null = step counting is off.
+        // Outside the EN hours the start time above can be later today, so step back one day.
+        val lastStartTime = if (EatingNowTimeStart > now) EatingNowTimeStart - oneDayMs else EatingNowTimeStart
+        val stepsLimit = preferences.get(IntKey.Eatingnow_steps_start)
+        var stepsLimitTime: Long? = null   // when the steps passed the limit in this EN period
         val stepsSinceStart: Int? = if (preferences.get(BooleanKey.EatingNow_PhoneSteps)) {
             phoneStepCounter.start()
             phoneStepCounter.flush(now)
-            when {
-                !phoneStepCounter.isRunning -> -1
-                ENTimeOK                    -> phoneStepCounter.stepsSince(EatingNowTimeStart, now)
-                else                        -> null
+            if (!phoneStepCounter.isRunning) -1
+            else {
+                if (stepsLimit > 0 && ENTimeOK) stepsLimitTime = phoneStepCounter.timeStepsReached(lastStartTime, now, stepsLimit)
+                phoneStepCounter.stepsSince(lastStartTime, now)
             }
         } else {
             phoneStepCounter.stop()
@@ -488,7 +492,20 @@ open class ENPlugin(
 
         // Variables based on todays ENW TTs
         val mealCount = todaysENTargets.size
-        val ENStarted = todaysENTargets.isNotEmpty() || (todaysCarbs.isNotEmpty() && !ignoreCOB) || todaysTriggerBoluses.isNotEmpty() || (ENTimeOK && AutoStartEN)
+        // Steps start EN like Autostart, but only once the user is up: the steps since the start time passed the limit
+        val stepsStartedEN = stepsLimitTime != null
+        val ENStarted = todaysENTargets.isNotEmpty() || (todaysCarbs.isNotEmpty() && !ignoreCOB) || todaysTriggerBoluses.isNotEmpty() || (ENTimeOK && AutoStartEN) || stepsStartedEN
+
+        // What started EN first, for the reason text, e.g. "steps 04:32"
+        val ENStartCause = listOfNotNull(
+            if (ENTimeOK && AutoStartEN) EatingNowTimeStart to "autostart" else null,
+            todaysENTargets.minOfOrNull { it.timestamp }?.let { it to "ENW" },
+            todaysCarbs.minOfOrNull { it.timestamp }?.let { it to "carbs" },
+            todaysTriggerBoluses.minOfOrNull { it.timestamp }?.let { it to "bolus" },
+            stepsLimitTime?.let { it to "steps" }
+        ).minByOrNull { it.first }?.let { (time, cause) ->
+            if (cause == "autostart") cause else "$cause ${dateUtil.timeString(time)}"
+        }
 
         // Directly extract the timestamps rather than the events, avoiding list concatenations
         val lastENTT = todaysENTargets.maxByOrNull { it.timestamp }
@@ -717,7 +734,8 @@ open class ENPlugin(
             OverrideENWNetIOBMax =  preferences.get(BooleanKey.EatingNow_OverrideENWNetIOBMax),
             ENWBolusTrigger = ENWBolusTrigger,
             ENWCOBTrigger = ENWCOBTrigger,
-            stepsSinceStart = stepsSinceStart
+            stepsSinceStart = stepsSinceStart,
+            ENStartCause = if (ENActive) ENStartCause else null
         )
 
         val microBolusAllowed = constraintsChecker.isSMBModeEnabled(ConstraintObject(tempBasalFallback.not(), aapsLogger)).also { inputConstraints.copyReasons(it) }.value()
@@ -851,6 +869,7 @@ open class ENPlugin(
                     IntKey.Eatingnow_timeend,
                     BooleanKey.EatingNow_AutoStart,
                     BooleanKey.EatingNow_PhoneSteps,
+                    IntKey.Eatingnow_steps_start,
                     DoubleKey.Eatingnow_overnightSMB,
                     DoubleKey.Eatingnow_daytimeSMB,
                     BooleanKey.EatingNow_IgnoreCOB,

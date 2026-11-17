@@ -121,6 +121,20 @@ class PhoneStepCounter(
         return saved + (blocks[blockOf(now)] ?: 0)
     }
 
+    /**
+     * Time when the steps since [from] first reached [limit], or null if they have not yet.
+     * Saved records give the end of the 5 minute block; the running block counts as [now].
+     */
+    suspend fun timeStepsReached(from: Long, now: Long, limit: Int): Long? {
+        var sum = 0
+        persistenceLayer.getStepsCountFromTimeToTime(from, now)
+            .filter { it.isValid && it.device == device && it.duration == BLOCK_MS && it.timestamp > from }
+            .sortedBy { it.timestamp }
+            .forEach { sum += it.steps5min; if (sum >= limit) return it.timestamp }
+        sum += blocks[blockOf(now)] ?: 0
+        return if (sum >= limit) now else null
+    }
+
     /** Sum of [count] blocks that end with [lastBlock]. */
     private fun stepsIn(lastBlock: Long, count: Int): Int =
         (lastBlock - count + 1..lastBlock).sumOf { blocks[it] ?: 0 }

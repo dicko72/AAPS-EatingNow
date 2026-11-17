@@ -1177,9 +1177,15 @@ class DetermineBasalEN(
         rT.reason.append("; ")
 
         // Eating Now Reason
-        rT.reason.append("EN: ${if (enConfig.ENActive) "On" else "Off"}, ") // Base EN state
+        // Base EN state, with what started it, e.g. "EN: On (steps 04:32)"
+        val enState = when {
+            !enConfig.ENActive              -> "Off"
+            enConfig.ENStartCause != null   -> "On (${enConfig.ENStartCause})"
+            else                            -> "On"
+        }
+        rT.reason.append("EN: $enState, ")
 
-        // Phone steps since the EN start time (only when step counting is on and inside the EN hours)
+        // Phone steps since the most recent EN start time (only when step counting is on)
         enConfig.stepsSinceStart?.let { rT.reason.append(if (it < 0) "Steps: n/a, " else "Steps: $it, ") }
 
         // Determine the ENW status string

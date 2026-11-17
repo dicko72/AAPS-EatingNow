@@ -45,8 +45,10 @@ data class ENConfig(
     var ENWBolusTrigger: Double,
     var ENWCOBTrigger: Double,
 
-    // Phone steps since the EN start time. null when step counting is off or outside the EN hours.
-    var stepsSinceStart: Int? = null
+    // Phone steps since the most recent EN start time. -1 = counting is on but cannot run. null = counting is off.
+    var stepsSinceStart: Int? = null,
+    // What started EN first, e.g. "steps 04:32" or "autostart". null when EN is off.
+    var ENStartCause: String? = null
 
 
     // Outside ENW

@@ -439,6 +439,8 @@
     <string name="EatingNow_AutoStart_summary">Disable sleep mode and activate Eating Now after the start time</string>
     <string name="EatingNow_PhoneSteps_title">Count phone steps</string>
     <string name="EatingNow_PhoneSteps_summary">Count steps with the phone step sensor and show the steps since the start time in the loop reason</string>
+    <string name="Eatingnow_steps_start_title">Steps to start EN</string>
+    <string name="Eatingnow_steps_start_summary">Start Eating Now when the phone steps since the start time pass this number. Needs Count phone steps. 0 = off.</string>
     <string name="EatingNow_OverrideENWNetIOBMax_title">Allow UAM maxBolus when ENWNetIOBMax is insufficient</string>
     <string name="EatingNow_OverrideENWNetIOBMax_summary">UAM maxBolus for confident accelerated BG rise allowed when ENWNetIOBMax has been exceeded</string>
     <string name="eatingnow_overnightSMB_title">Overnight SMB Restriction</string>
