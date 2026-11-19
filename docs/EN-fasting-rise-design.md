@@ -1,6 +1,6 @@
 # EN design: "up, not eaten yet" (fasting rise)
 
-Status: built, not device-tested. Setting "Careful dosing before the first meal"
+Status: built, not device-tested. Setting "Ignore UAM prediction when fasting"
 (`EatingNow_FastingRise`), off by default. Turn it on only after the basal review, so the two changes
 can be judged one at a time.
 

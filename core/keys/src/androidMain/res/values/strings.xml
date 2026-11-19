@@ -439,7 +439,7 @@
     <string name="EatingNow_AutoStart_summary">Disable sleep mode and activate Eating Now after the start time</string>
     <string name="EatingNow_PhoneSteps_title">Count phone steps</string>
     <string name="EatingNow_PhoneSteps_summary">Count steps with the phone step sensor and show the steps since the start time in the loop reason</string>
-    <string name="EatingNow_FastingRise_title">Careful dosing before the first meal</string>
+    <string name="EatingNow_FastingRise_title">Ignore UAM prediction when fasting</string>
     <string name="EatingNow_FastingRise_summary">While EN is on and nothing was eaten today, a rise is treated as a waking rise, not food: no UAM projection, no negative IOB, profile ISF. Turn on only if every meal is logged with an ENW or a pump bolus.</string>
     <string name="Eatingnow_steps_start_title">Steps to start EN</string>
     <string name="Eatingnow_steps_start_summary">Start Eating Now when the phone steps since the start time pass this number. Needs Count phone steps. 0 = off.</string>
