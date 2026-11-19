@@ -48,7 +48,11 @@ data class ENConfig(
     // Phone steps since the most recent EN start time. -1 = counting is on but cannot run. null = counting is off.
     var stepsSinceStart: Int? = null,
     // What started EN first, e.g. "steps 04:32" or "autostart". null when EN is off.
-    var ENStartCause: String? = null
+    var ENStartCause: String? = null,
+    // First meal since the EN start time, e.g. "ENW 11:30" or "bolus 07:15". null = nothing eaten yet (fasting).
+    var ENFirstMeal: String? = null,
+    // Setting: before the first meal, dose a rise as a waking rise, not as food
+    var FastingRise: Boolean = false
 
 
     // Outside ENW

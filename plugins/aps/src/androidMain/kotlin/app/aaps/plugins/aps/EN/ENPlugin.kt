@@ -14,6 +14,7 @@ import app.aaps.core.data.model.GlucoseUnit
 import app.aaps.core.data.model.TT
 import app.aaps.core.data.model.getPassedDurationToTimeInMinutes
 import app.aaps.core.data.plugin.PluginType
+import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.aps.APS
 import app.aaps.core.interfaces.aps.APSResult
@@ -504,7 +505,7 @@ open class ENPlugin(
             todaysTriggerBoluses.minOfOrNull { it.timestamp }?.let { it to "bolus" },
             stepsLimitTime?.let { it to "steps" }
         ).minByOrNull { it.first }?.let { (time, cause) ->
-            if (cause == "autostart") cause else "$cause ${dateUtil.timeString(time)}"
+            if (cause == "autostart") "> ${dateUtil.timeString(time)}" else "$cause ${dateUtil.timeString(time)}"
         }
 
         // Directly extract the timestamps rather than the events, avoiding list concatenations
@@ -595,6 +596,27 @@ open class ENPlugin(
         val ENWNetIOBRemaining = if (isENWIOBActive) max(ENWNetIOBMax - ENWNetIOB, 0.0) else 0.0
 
         val normalTargetBG = profile.getTargetMgdl() // profile target bg at this time
+
+        // First meal since the EN start time: an ENW, meal carbs or a meal bolus. null = nothing eaten yet (fasting).
+        // A meal bolus is a NORMAL bolus the pump delivered; a record-only bolus has no pump type.
+        // With the bolus trigger at 0 every such bolus counts, so fasting ends too early rather than too late.
+        val mealBoluses = persistenceLayer.getBolusesFromTime(EatingNowTimeStart, true).filter {
+            it.type == BS.Type.NORMAL && it.amount >= ENWBolusTrigger && it.ids.pumpType != null && it.ids.pumpType != PumpType.USER
+        }
+        // Carbs taken while BG was below target are rescue carbs, not a meal
+        val mealCarbs = if (todaysCarbs.isEmpty()) emptyList() else {
+            val bgSinceStart = persistenceLayer.getBgReadingsDataFromTimeToTime(EatingNowTimeStart - T.mins(15).msecs(), now, ascending = true)
+            todaysCarbs.filter { carbs ->
+                val bgAtCarbs = bgSinceStart.lastOrNull { it.timestamp <= carbs.timestamp }?.value
+                bgAtCarbs == null || bgAtCarbs >= normalTargetBG
+            }
+        }
+        val ENFirstMeal = listOfNotNull(
+            todaysENTargets.minOfOrNull { it.timestamp }?.let { it to "ENW" },
+            if (manualENTT) manualENTTtimestamp to "ENW" else null,
+            mealCarbs.minOfOrNull { it.timestamp }?.let { it to "carbs" },
+            mealBoluses.minOfOrNull { it.timestamp }?.let { it to "bolus" }
+        ).filter { it.first <= now }.minByOrNull { it.first }?.let { (time, cause) -> "$cause ${dateUtil.timeString(time)}" }
 
         // Calculate how long BG has been high, for resistance assistance
         // highBGthreshold is a glucose delta stored in mg/dl (see DoubleKey.glucoseDelta).
@@ -735,7 +757,9 @@ open class ENPlugin(
             ENWBolusTrigger = ENWBolusTrigger,
             ENWCOBTrigger = ENWCOBTrigger,
             stepsSinceStart = stepsSinceStart,
-            ENStartCause = if (ENActive) ENStartCause else null
+            ENStartCause = if (ENActive) ENStartCause else null,
+            ENFirstMeal = ENFirstMeal,
+            FastingRise = preferences.get(BooleanKey.EatingNow_FastingRise)
         )
 
         val microBolusAllowed = constraintsChecker.isSMBModeEnabled(ConstraintObject(tempBasalFallback.not(), aapsLogger)).also { inputConstraints.copyReasons(it) }.value()
@@ -870,6 +894,7 @@ open class ENPlugin(
                     BooleanKey.EatingNow_AutoStart,
                     BooleanKey.EatingNow_PhoneSteps,
                     IntKey.Eatingnow_steps_start,
+                    BooleanKey.EatingNow_FastingRise,
                     DoubleKey.Eatingnow_overnightSMB,
                     DoubleKey.Eatingnow_daytimeSMB,
                     BooleanKey.EatingNow_IgnoreCOB,

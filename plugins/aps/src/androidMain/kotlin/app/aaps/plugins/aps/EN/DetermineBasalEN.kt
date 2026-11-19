@@ -908,6 +908,13 @@ class DetermineBasalEN(
         // No peak gate here: the IOB cap above is what limits resistance dosing.
         val isAuthorisedResistance = isStuckHigh && isBasalDeficit && !isHighTempSet && !ENWActive
 
+        // Fasting: EN is on but nothing was eaten today (no ENW, meal carbs or meal bolus since the start time).
+        // A rise now is most likely a waking rise (hormones), not food. It stops by itself, often before the insulin peaks.
+        val isFasting = ENActive && !ENWActive && enConfig.ENFirstMeal == null
+        // With the setting on, a fasting rise is dosed carefully: IOB prediction only, no negative IOB, profile ISF.
+        // A long high still gets the resistance path, so illness or a bad site is not held back.
+        val isFastingRule = isFasting && enConfig.FastingRise && !isAuthorisedResistance && !isPrebolusing
+
         // The predictions above are clamped to [39, 401], but a non-finite tick escapes that clamp
         // and reaches here. rT.eventualBG is stored and uploaded, and predBGs are written with
         // toInt() where NaN becomes 0 (a 0 mg/dL predicted BG). Stop the run rather than dose on it.
@@ -1050,6 +1057,9 @@ class DetermineBasalEN(
 
         // Decide which BG value to use based on the delta for the insulinReq later
         val insulinReqBG = when {
+            // Fasting rise: IOB prediction only, without the UAM projection, and never above the AAPS BG
+            isFastingRule -> minOf(minPredBG, eventualBG, minIOBPredBG, lastIOBpredBG)
+
             // No ENW-IOB remaining and slowing so less aggressive prediction
             ENWNetIOBExceeded                  -> min(minPredBG, eventualBG)   // over budget: use AAPS safety until more insulin clearly needed
 
@@ -1102,6 +1112,9 @@ class DetermineBasalEN(
 
         // make ISF stronger when resistant, but never stronger than the safe floor
         if (isAuthorisedResistance) future_sens = max(min(sens, future_sens) / resistanceGain, minSafeIsf)
+
+        // Fasting rise: no stronger ISF for a rise that is not food
+        if (isFastingRule) future_sens = sens
 
 
         consoleLog.add("minPredBG: $minPredBG minIOBPredBG: $minIOBPredBG minZTGuardBG: $minZTGuardBG")
@@ -1177,11 +1190,12 @@ class DetermineBasalEN(
         rT.reason.append("; ")
 
         // Eating Now Reason
-        // Base EN state, with what started it, e.g. "EN: On (steps 04:32)"
+        // Base EN state: Off, Fasting (with what started EN, e.g. "steps 04:32") or Eaten (with the first meal, e.g. "ENW 11:30")
         val enState = when {
             !enConfig.ENActive              -> "Off"
-            enConfig.ENStartCause != null   -> "On (${enConfig.ENStartCause})"
-            else                            -> "On"
+            enConfig.ENFirstMeal != null    -> "Eaten (${enConfig.ENFirstMeal})"
+            enConfig.ENStartCause != null   -> "Fasting (${enConfig.ENStartCause})"
+            else                            -> "Fasting"
         }
         rT.reason.append("EN: $enState, ")
 
@@ -1457,12 +1471,19 @@ class DetermineBasalEN(
             } else {
                 round((insulinReqBG - target_bg) / sens, 2)
             }
+            // Fasting rise: negative IOB counts as zero. It comes from zero temps when less insulin was needed,
+            // so it is not insulin that must be made up. The IOB prediction above still holds it, so take it off here.
+            val fastingIobIgnored = if (isFastingRule && iob_data.iob < 0.0) round(iob_data.iob, 2) else 0.0
+            if (fastingIobIgnored < 0.0) insulinReq = round(insulinReq + fastingIobIgnored, 2)
             val insulinReqENW = insulinReq
 
-            // iReqBG transparency: AAPS safety doses on min(minPredBG, eventualBG); EN can pick a higher BG
+            // iReqBG transparency: AAPS doses on min(minPredBG, eventualBG); EN can pick a higher or lower BG.
+            // Shown every run: one value when EN used the same BG, "orig→EN" when it changed.
             val insulinReqBGorig = min(minPredBG, eventualBG)
-            if (round(insulinReqBG, 0) > round(insulinReqBGorig, 0))
-                rT.reason.append(", iReqBG: ${convert_bg(insulinReqBGorig)}→${convert_bg(insulinReqBG)}")
+            if (round(insulinReqBG, 0) != round(insulinReqBGorig, 0))
+                rT.reason.append("iReqBG: ${convert_bg(insulinReqBGorig)}→${convert_bg(insulinReqBG)}, ")
+            else
+                rT.reason.append("iReqBG: ${convert_bg(insulinReqBG)}, ")
 
             // ---- decisive-reason tracking ----------------------------------------------------------------
             // Pick the ONE reason that set the final insulinReq: the driver that asked for the most insulin,
@@ -1487,13 +1508,14 @@ class DetermineBasalEN(
             // Resistance is metered: EN's own extra dosing never goes past the room left under the resistance IOB cap.
             // The cap is on insulin on board, so repeated requests cannot stack past it.
             // The cap limits only what EN adds: the second line puts back the plain AAPS request (insulinReqOrig),
-            // so the result is never below what conservative AAPS asks for.
+            // so the result is never below what conservative AAPS asks for. A fasting rise is the exception:
+            // there the lower request is the point, so the AAPS request is not put back.
             // Inside a declared window the ENW-IOB stake is the meter (the prebolus IOB is there on purpose),
             // so a stuck high there only limits the size of one request.
             // A prebolus is never metered here: the user chose the amount, and BG is often high before a meal.
             if ((isStuckHigh || !ENWActive) && !isPrebolusing) {   // meter everything outside a declared window; declared meals (ENWActive) dose full
                 insulinReq = min(insulinReq, if (ENWActive) resistanceBudget else resistanceBudgetLeft)
-                insulinReq = max(insulinReq, insulinReqOrig)
+                if (!isFastingRule) insulinReq = max(insulinReq, insulinReqOrig)
             }
 
             // if that would put us over max_iob, then reduce accordingly
@@ -1537,6 +1559,8 @@ class DetermineBasalEN(
             val withheld = round(topAsk - insulinReq, 2)      // how much the binding cap held back
             changeReason = when {
                 restraint.isNotEmpty() && withheld > 0.05 -> "$restraint capped"   // Max IOB capped / ENW IOB capped
+                isFastingRule && baselineReq - insulinReq > 0.05 ->
+                    if (fastingIobIgnored < 0.0) "Fasting rise, IOB<0 ignored (${fastingIobIgnored}U)" else "Fasting rise"
                 enConfig.minutesHigh > 0 && !ENWActive ->
                     "Resistance ${enConfig.minutesHigh}m, budget (${round(resistanceBudgetUsed, 2)}/${round(resistanceBudget, 2)}U) ISF ${round(resistanceGain * 100)}%"
                 addl > 0.05 -> if (driverLabel == "High") "High correction" else driverLabel
