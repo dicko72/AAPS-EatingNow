@@ -289,12 +289,12 @@ enum class BooleanKey(
     SiteRotationManageCgm("site_rotation_manage_cgm", defaultValue = false, title = KeysStrings.pref_title_site_rotation_manage_cgm, sync = SyncSpec(SyncChannel.Cold, SyncDirection.Bidirectional)),
 
     // Modified for Eating Now
-    EatingNow_IgnoreCOB(key = "IgnoreCOB", defaultValue = false, title = KeysStrings.EatingNow_IgnoreCOB_title, summary = KeysStrings.EatingNow_IgnoreCOB_summary, hideParentScreenIfHidden = true),
-    EatingNow_UseISFscaler(key = "UseISFscaler", defaultValue = false, title = KeysStrings.EatingNow_useISFscaler_title, summary = KeysStrings.EatingNow_useISFscaler_summary, hideParentScreenIfHidden = true),
-    EatingNow_AutoStart(key = "AutostartEN", defaultValue = false, title = KeysStrings.EatingNow_AutoStart_title, summary = KeysStrings.EatingNow_AutoStart_summary, hideParentScreenIfHidden = true),
-    EatingNow_PhoneSteps(key = "EatingNow_PhoneSteps", defaultValue = false, title = KeysStrings.EatingNow_PhoneSteps_title, summary = KeysStrings.EatingNow_PhoneSteps_summary, hideParentScreenIfHidden = true),
-    EatingNow_FastingRise(key = "EatingNow_FastingRise", defaultValue = false, title = KeysStrings.EatingNow_FastingRise_title, summary = KeysStrings.EatingNow_FastingRise_summary, hideParentScreenIfHidden = true),
-    EatingNow_OverrideENWNetIOBMax(key = "EatingNow_OverrideENWNetIOBMax", defaultValue = false, title = KeysStrings.EatingNow_OverrideENWNetIOBMax_title, summary = KeysStrings.EatingNow_OverrideENWNetIOBMax_summary, hideParentScreenIfHidden = true),
+    EatingNow_IgnoreCOB(key = "IgnoreCOB", defaultValue = false, title = KeysStrings.EatingNow_IgnoreCOB_title, summary = KeysStrings.EatingNow_IgnoreCOB_summary, hideParentScreenIfHidden = true, sync = SyncSpec(SyncChannel.Cold, SyncDirection.Bidirectional)),
+    EatingNow_UseISFscaler(key = "UseISFscaler", defaultValue = false, title = KeysStrings.EatingNow_useISFscaler_title, summary = KeysStrings.EatingNow_useISFscaler_summary, hideParentScreenIfHidden = true, sync = SyncSpec(SyncChannel.Cold, SyncDirection.Bidirectional)),
+    EatingNow_AutoStart(key = "AutostartEN", defaultValue = false, title = KeysStrings.EatingNow_AutoStart_title, summary = KeysStrings.EatingNow_AutoStart_summary, hideParentScreenIfHidden = true, sync = SyncSpec(SyncChannel.Cold, SyncDirection.Bidirectional)),
+    EatingNow_PhoneSteps(key = "EatingNow_PhoneSteps", defaultValue = false, title = KeysStrings.EatingNow_PhoneSteps_title, summary = KeysStrings.EatingNow_PhoneSteps_summary, hideParentScreenIfHidden = true, sync = SyncSpec(SyncChannel.Cold, SyncDirection.Bidirectional)),
+    EatingNow_FastingRise(key = "EatingNow_FastingRise", defaultValue = false, title = KeysStrings.EatingNow_FastingRise_title, summary = KeysStrings.EatingNow_FastingRise_summary, hideParentScreenIfHidden = true, sync = SyncSpec(SyncChannel.Cold, SyncDirection.Bidirectional)),
+    EatingNow_OverrideENWNetIOBMax(key = "EatingNow_OverrideENWNetIOBMax", defaultValue = false, title = KeysStrings.EatingNow_OverrideENWNetIOBMax_title, summary = KeysStrings.EatingNow_OverrideENWNetIOBMax_summary, hideParentScreenIfHidden = true, sync = SyncSpec(SyncChannel.Cold, SyncDirection.Bidirectional)),
 
     ;
 

@@ -62,7 +62,12 @@ class PhoneStepCounter(
             aapsLogger.warn(LTag.APS, "PhoneStepCounter: this phone has no step counter")
             return false
         }
-        isRunning = sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+        isRunning = try {
+            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+        } catch (e: Exception) {
+            aapsLogger.error(LTag.APS, "PhoneStepCounter: cannot register the step sensor", e)
+            false
+        }
         aapsLogger.info(LTag.APS, "PhoneStepCounter: started=$isRunning device=$device")
         return isRunning
     }

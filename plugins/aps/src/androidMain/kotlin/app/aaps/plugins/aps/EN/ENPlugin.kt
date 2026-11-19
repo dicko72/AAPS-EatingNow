@@ -83,6 +83,7 @@ import app.aaps.plugins.aps.openAPSSMB.GlucoseStatusCalculatorSMB
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -135,7 +136,7 @@ open class ENPlugin(
         .icon(IcPluginOpenAPS)
         .pluginName(ApsStrings.eatingnow_plugin)
         .preferencesVisibleInSimpleMode(false)
-        .showInList { config.APS }
+        .showInList { config.APS || config.AAPSCLIENT }   // AAPSCLIENT: visible so a client follows the master's APS and can edit EN settings
         .description(ApsStrings.eatingnow_plugin_description)
         .setDefault(),
     ownPreferences = emptyList(),
@@ -164,7 +165,8 @@ open class ENPlugin(
 
     // The step counter needs "physical activity" from Android 10. Asked only when step counting is on.
     override fun requiredPermissions(): List<PermissionGroup> =
-        if (preferences.get(BooleanKey.EatingNow_PhoneSteps) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) listOf(
+        // Not on a client: the setting syncs from the master, but the steps are counted on the master phone only.
+        if (!config.AAPSCLIENT && preferences.get(BooleanKey.EatingNow_PhoneSteps) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) listOf(
             PermissionGroup(
                 permissions = listOf(Manifest.permission.ACTIVITY_RECOGNITION),
                 rationaleTitle = ApsStrings.eatingnow_permission_steps_title,
@@ -455,12 +457,22 @@ open class ENPlugin(
         val stepsLimit = preferences.get(IntKey.Eatingnow_steps_start)
         var stepsLimitTime: Long? = null   // when the steps passed the limit in this EN period
         val stepsSinceStart: Int? = if (preferences.get(BooleanKey.EatingNow_PhoneSteps)) {
-            phoneStepCounter.start()
-            phoneStepCounter.flush(now)
-            if (!phoneStepCounter.isRunning) -1
-            else {
-                if (stepsLimit > 0 && ENTimeOK) stepsLimitTime = phoneStepCounter.timeStepsReached(lastStartTime, now, stepsLimit)
-                phoneStepCounter.stepsSince(lastStartTime, now)
+            // The setting can be turned on from a client, also on a phone without permission or step sensor.
+            // A step counter error must never stop the loop: show "Steps: n/a" and do not start EN by steps.
+            try {
+                phoneStepCounter.start()
+                phoneStepCounter.flush(now)
+                if (!phoneStepCounter.isRunning) -1
+                else {
+                    if (stepsLimit > 0 && ENTimeOK) stepsLimitTime = phoneStepCounter.timeStepsReached(lastStartTime, now, stepsLimit)
+                    phoneStepCounter.stepsSince(lastStartTime, now)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                aapsLogger.error(LTag.APS, "PhoneStepCounter failed", e)
+                stepsLimitTime = null
+                -1
             }
         } else {
             phoneStepCounter.stop()
